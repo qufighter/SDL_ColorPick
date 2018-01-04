@@ -363,8 +363,16 @@ int EventFilter(void* userdata, SDL_Event* event){
 
 void ShowFrame(void*)
 {
-    if( !openglContext->renderShouldUpdate ) return SDL_Delay(1);
 
+//    currentTime = SDL_GetTicks();
+//    openglContext->updateFrame(currentTime - lastTimerTime);
+
+
+
+
+    if( !openglContext->renderShouldUpdate && !openglContext->generalUx->uxAnimations->shouldUpdate ) return SDL_Delay(1);
+
+    openglContext->generalUx->uxAnimations->shouldUpdate = false; // timer will keep reseetting this
 
     input_velocity_x *= 0.1;
     input_velocity_y *= 0.1; // debatably we need to use timing, and always decrease these unless they are below the threshold
@@ -377,17 +385,42 @@ void ShowFrame(void*)
     SDL_GL_SwapWindow(window); // move into render scene?
 }
 
-int
-main(int argc, char *argv[])
-{
 
+int main(int argc, char *argv[]) {
+
+//    lastTimerTime = SDL_GetTicks();
 
     //SDL_Renderer *renderer;
     bool result = false;
 
 
+    /*
+     
+SDL_INIT_TIMER
+timer subsystem
+SDL_INIT_AUDIO
+audio subsystem
+SDL_INIT_VIDEO
+video subsystem; automatically initializes the events subsystem
+SDL_INIT_JOYSTICK
+joystick subsystem; automatically initializes the events subsystem
+SDL_INIT_HAPTIC
+haptic (force feedback) subsystem
+SDL_INIT_GAMECONTROLLER
+controller subsystem; automatically initializes the joystick subsystem
+SDL_INIT_EVENTS
+events subsystem
+SDL_INIT_EVERYTHING
+all of the above subsystems
+SDL_INIT_NOPARACHUTE
+compatibility; this flag is ignored
+     
+     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0) {
+     
+     */
+
     /* initialize SDL */
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER) < 0) {
         printf("Could not initialize SDL\n");
         return 1;
     }
@@ -434,6 +467,7 @@ main(int argc, char *argv[])
 
 #if __IPHONEOS__
 
+    //SDL_iPhoneSetEventPump(SDL_TRUE);
     SDL_iPhoneSetAnimationCallback(window, 1, ShowFrame, NULL);
 
 #else

@@ -12,6 +12,9 @@
 #define SIX_ACROSS 6.0
 #define SIX_ACROSS_RATIO 0.16666666666667  // 1.0 / SIX_ACROSS
 
+
+
+
 //#include <stdio.h>
 #include "main.h"
 using namespace std;
@@ -24,6 +27,14 @@ const static int text_firstLetterOffset=32; //space is first ascii char represen
 const static int text_stride = 12;
 const static float text_xStep = 0.08333333333333;
 const static float text_yStep = 0.1;
+
+
+
+const static float const_friction = 0.99;
+const static float const_threshold = 0.0001; // velocity below this threshold stops
+
+
+//const static float historyPreviewHeight = 0.9; // todo this should be a return value
 
 
 typedef struct Float_Rect
@@ -60,6 +71,8 @@ struct uiInteraction
 //        mvy=0;
     }
     void update(float x, float y, float pdx, float pdy){ // todo pass delta and relative
+        // maybe we should scale the coordinates to screen here instead....
+
         rx = x - px;
         ry = y - py;
 
@@ -67,10 +80,20 @@ struct uiInteraction
         py=y;
 
         dx = px - ix;
-        dy = py - iy;
+        dy = py - iy; // when this is greater than 0 we have moved down
     }
     void fixX(Float_Rect r, Float_Rect p){
-        px = r.x + (r.w * 0.5 * p.w);
+        float max = r.x + (r.w * p.w);
+        float min = r.x;
+
+        if( px > max ){
+            px = max;
+        }
+        if( px < min ){
+            px = min;
+        }
+
+        //px = r.x + (r.w * 0.5 * p.w);// last known drag position was mid button
     }
 //    int distanceMoved(){// SIMPLIFIED to x + y
 //        rx = (px - ix);
@@ -88,14 +111,15 @@ struct uiInteraction
 //    int mvx;// unused ?
 //    int mvy;
 };
-
-
 class Ux {
 public:
 
 static Ux* Singleton();
 
 #include "uiObject.h" // referrs to Ux:: which referrs to uiObject...
+
+#include "ux-anim.h"
+    
 
 
     Ux(void); // Default constructor
@@ -126,19 +150,32 @@ static Ux* Singleton();
     bool interactionUpdate(uiInteraction *delta);
     bool interactionComplete(uiInteraction *delta);
 
+    static void interactionHistoryEnteredView(uiObject *interactionObj);
     static void interactionNoOp(uiObject *interactionObj, uiInteraction *delta);
+    static void interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta);
     static void interactionTouchRelease(uiObject *interactionObj, uiInteraction *delta);
     static void interactionHZ(uiObject *interactionObj, uiInteraction *delta);
+    static void interactionVert(uiObject *interactionObj, uiInteraction *delta);
 
     void updateColorValueDisplay(SDL_Color* color);
     void addCurrentToPickHistory();
     void updatePickHistoryPreview();
+    void renderFullPickHistory();
+
+    //bool updateAnimations(float elapsedMs);
+
+
+
+
 
     float screenRatio = 1.0f;
     bool widescreen = false;
 
     uiInteraction currentInteraction;
     uiObject *rootUiObject; // there is a root ui object
+
+    UxAnim *uxAnimations;
+
     // if we have 1off create functions, we will need to store a bunch of references to the "important" objects
 
         uiObject *bottomBar;
@@ -152,6 +189,9 @@ static Ux* Singleton();
 
 
         uiObject *historyPreview;
+        uiObject *historyFullsize;
+
+        bool viewing_full_history;
 
 //        uiObject *renderedletters[2048]; // we should just make ach letter once
 //        int renderedLettersCtr=0;
@@ -162,19 +202,23 @@ static Ux* Singleton();
 
 
     int pickHistoryIndex = 0;
-    int lastPickHistoryIndex = 0;
+    int lastPickHistoryIndex = -1;
     int largestPickHistoryIndex=0; // how far in history we have gone, to allow loop if we have greater history available
-    int pickHistoryMax = 255; //5; //derp
-    SDL_Color pickHistory[255]; // ui object may have a max of 8 child objects each
+    static const int pickHistoryMax = 255;
+    SDL_Color pickHistory[pickHistoryMax]; // ui object may have a max of 8 child objects each
     SDL_Color* currentlyPickedColor;
 
 
 private:
+
+    uiAminChain* fullPickHistoryAnimation;
 
 protected:
 
     static bool ms_bInstanceCreated;
     static Ux* pInstance;
 };
+
+
 
 #endif /* defined(__ColorPick_iOS_SDL__ux__) */

@@ -157,7 +157,7 @@ void main()
 		
 		
 	//corner color preview in shader helps determine if color is correct
-        float cornerSize = texWidth *0.25;
+        float cornerSize = texWidth *0.45;
 		if( inp.x < cornerSize && inp.y > texWidth - cornerSize ){
 			//bcolor = texelFetch2D(texture1, ivec2(ctr) , 0);
 			bcolor = pcolor;

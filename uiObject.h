@@ -1,5 +1,6 @@
 //
-//  uiObject.h
+//  uiObject.h /// really this should be uiObject.h.inc  inc.h ?  its a partial??
+// struct MyStruct ; /* Forward declaration */ - maybe we can use this?
 //  ColorPick iOS SDL
 //
 //  Created by Sam Larison on 8/27/17.
@@ -60,6 +61,7 @@ static float scaleRectForRenderY(Float_Rect * rect, Float_Rect * prect){
 struct uiObject
 {
     uiObject(){
+        isDebugObject=false;// used to print messge for certain object
         initialized=true;
         hasBackground=false;
         hasForeground=false;
@@ -78,19 +80,24 @@ struct uiObject
 
         containText=false;
         doesInFactRender=true;
+        isInBounds=true;
         textureCropRect = Float_Rect();
+        interactionProxy=nullptr;
     }
+    bool isDebugObject;
     bool isRoot;
     bool initialized;
     bool hasChildren = false;
 
     bool canCollide;
     bool doesNotCollide;
-    bool doesInFactRender; // child objects still will be rendered
+    bool doesInFactRender; // child objects still will be rendered, some objects are just containers and need not render anything
+    bool isInBounds; // equivilent to needs render
     bool containText;
 
     bool hasBackground;
-    Float_Rect boundryRect;
+    Float_Rect boundryRect; // please call setBoundaryRect if you are going to animate the object
+    Float_Rect origBoundryRect;
     SDL_Color backgroundColor;
     SDL_Color lastBackgroundColor;// onetime use state reset
     SDL_Color foregroundColor;
@@ -103,8 +110,13 @@ struct uiObject
     Float_Rect renderRect; /* private */
     Float_Rect collisionRect; /* private */
 
+    Float_Rect scrollyRect; //what tpye or sort of corrindants es this?
+
     typedef void (*anInteractionFn)(uiObject *interactionObj, uiInteraction *delta);
     typedef void (*anAnimationPercentCallback)(float animPercent);
+    typedef void (*aStateChangeFn)(uiObject *interactionObj);
+
+    uiObject *interactionProxy; // if our interaction is suppose to effect a different object
 
     // when collision occurs we must define what to do
     bool hasInteraction;
@@ -116,12 +128,25 @@ struct uiObject
     bool hasAnimCb;
     anAnimationPercentCallback animationPercCallback;
 
+    bool hasBoundaryCb;
+    aStateChangeFn boundaryEntreredCallback;
+
     //void (*interactionCallback)(uiObject *interactionObj); // once an interaction is complete, a reference to the object may be used to determine all sorts of thigns
+
+    void setBoundaryRect(float x, float y, float w, float h){
+        Ux::setRect(&boundryRect, x, y, w, h);
+        Ux::setRect(&origBoundryRect, x, y, w, h);
+    }
 
     void updateAnimationPercent(float perc){
         // if animation is HZ
         boundryRect.x = computedMovementRect.w * perc;
         updateRenderPosition();
+    }
+
+    void setBoundsEnterFunction( aStateChangeFn p_boundaryEntreredCallback ){
+        boundaryEntreredCallback = p_boundaryEntreredCallback;
+        hasBoundaryCb = true;
     }
 
     void setInteraction( anInteractionFn p_interactionFn ){
@@ -181,14 +206,29 @@ struct uiObject
         // c->parentObject = this; // neat?
         //childUiObjects.push_back(c);
 
+
+
+        // so if we dynamically alloc some random child ui objects and they are
+        // added to a X/ Y that is outside of boundary rect we wont' know now
+        // but when we compute position of child objects perhasp they can exceed parent
+     //  bounds and throw up the data to the parent about the sscroll rect and in this
+  //  case make some nifty barz to click and drag like old school scrolling shouuld work
+   //     then invert it for teh background drag for now until we find a way to compute the
+    //        step size for a true pixel within teh bounds
+
+        // so each time we recompute the boundary rect and the child object has completed recomputing positions that exceed 1.0 x/y ........
+
+        // the computation would only apply when objects change positions on the screen
+
+
+
         if( this->childListIndex < this->childListMax - 1 ){
             this->hasChildren=true;
             this->childList[this->childListIndex++] = c;
             c->parentObject = this; // neat?
-            this->hasParentObject =true;
+            c->hasParentObject =true;
         }else{
             SDL_Log("ERROR::: Max Child UI Objects %d Exceeded !!!!!!!!", childListMax);
-
         }
     }
 
@@ -197,15 +237,30 @@ struct uiObject
 
     int childListIndex = 0;
     int childListMax = 128; //derp
-    uiObject* childList[128]; // ui object may have a max of 8 child objects each
+    uiObject* childList[128]; // ui object may have a max of 128 child objects each
+
+
+    //uiObject *parentScrollObjectObject; /// gthinking about this if our x/y is outside of 0-1.0 range then we trigger a scrolly behavior
+    // on our barnt scroll object whatever level up from here that might be
+    // yet we wwouln't want to get noisy about it and have every color between here and infinity
+    // notify the scroll bar to recompute its total height, no
+    /// really only if the bounds exceed
+    // but for our curent scrolled view
+    // what we need to render and how it impacts hte bounds - no way thats not enough to know the total scroll height
+    /// so as we render we may constantly expand the
+    // parentScrollObjectObject -> scrollyRect property (brand new)
+
+    /// scrolly rect should maybe be a large -x,y position to indicate the amount of scroll possible
+    // while the w/h could be teh current offset position?
+    // or just reverse this
+    // w/h are the amount of scroll possible (could be negative or positive really? what simpler...) thinking negative quietly.
+    // x/y are the current offset so we can always get back to the origional renderRect x/y which become transformed by this amount
+    // what coulbe simplerly
+
+
+
 
     // updateRenderPosition v v vv v v v vvvv vvv vvvv vvv
-
-
-
-
-
-
 
 
 
@@ -232,9 +287,11 @@ struct uiObject
 
     // updateRenderPosition
     void updateRenderPosition(){
+        // TODO: we may pass a way to avoid updating  child nodes? (for testing if optimztion possible?)
+
 
         // todo this can be optmized out of the recursion?
-        if( !isRoot ){  // todo why cannot use hasParentObject  !!!!!!!!!!!!!!!!!!!!!!!
+        if( hasParentObject ){  // todo why cannot use ( hasParentObject )  !!!!!!!!!!!!!!!!!!!!!!!
             parentRenderRect = parentObject->renderRect;
             parentCollisionRect = parentObject->collisionRect;
         }else{
@@ -263,6 +320,8 @@ struct uiObject
         renderRect.y = parentRenderRect.y + scaleRectForRenderY(&boundryRect, &parentRenderRect);
         //}
 
+
+
         //    collisionRect.x = renderRect.x;
         //    collisionRect.y = renderRect.y;
         //    collisionRect.w = renderRect.w;
@@ -276,7 +335,20 @@ struct uiObject
         collisionRect.w = renderRect.w;
         collisionRect.h = renderRect.h; // ok optimized?
 
+        bool wasOob = false;
+        if( hasBoundaryCb && !isInBounds ){
+            wasOob = true;
+        }
 
+        isInBounds = false;
+        if( collisionRect.x < 1.0f && collisionRect.x + collisionRect.w > 0.0f ){
+            if( collisionRect.y < 1.0f && collisionRect.y + collisionRect.h > 0.0f ){
+                isInBounds = true;
+                if( wasOob ){
+                    boundaryEntreredCallback(this);
+                }
+            }
+        }
 
         // relative to parent rect, our rect should fall within parent boundary rect
         Ux::setRect(&computedMovementRect,
@@ -294,6 +366,14 @@ struct uiObject
         //    if( renderRect.w < 1.0 ){
         //        renderRect.x -= (parentRenderRect.w * 0.5) + (renderRect.w * parentRenderRect.w);
         //    }
+
+
+
+
+        // an optional "enforceMovementBoundary" could be useful - since animations could move things outside of this easily....
+        // most animations will reset themselves though....
+        // in any case the logic before delta->fixX may work... I guess if hte animation may continue it could also need to fixX ?  may animate unrealistically then....
+
 
         if( hasChildren  ){
             for( int x=0,l=childListIndex; x<l; x++ ){

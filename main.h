@@ -66,7 +66,8 @@ static int win_w = SCREEN_WIDTH;
 static int win_h = SCREEN_HEIGHT;
 
 
-
+//static Uint32 lastTimerTime = 0;
+//static Uint32 currentTime;
 
 
 

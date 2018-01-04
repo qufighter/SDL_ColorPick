@@ -248,6 +248,10 @@ void OpenGLContext::clearVelocity(){
     has_velocity = false;
 }
 
+//void OpenGLContext::updateFrame(Uint32 elapsedMs) {
+//    generalUx->updateAnimations(elapsedMs);
+//}
+
 /**
  renderScene will contain all our rendering code.
  Next up we are going to clear our COLOR, DEPTH and STENCIL buffers to avoid overlapping of renders.
@@ -414,7 +418,7 @@ void OpenGLContext::createSquare(void) {
     float sq_size = 0.725;
     sq_size = 0.985;
     //sq_size = 0.998;
-    //sq_size = 1.0;
+    sq_size = 1.0;
 
     vertices[0] = -sq_size; vertices[1] = -sq_size; vertices[2] = c1; // Bottom left corner
     colors[0] = 1.0; colors[1] = 1.0; colors[2] = 1.0; // Bottom left corner
