@@ -24,7 +24,6 @@ uniform float widthHeightRatio;
 attribute vec2 TexCoordIn;
 varying vec2 TexCoordOut;
 
-// its a new comment!
 
 //uniform vec3 in_Position;
 

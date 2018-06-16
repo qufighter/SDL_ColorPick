@@ -97,6 +97,7 @@ void main()
 
 
             gl_FragColor = mix(ui_color , ui_foreground_color * ocolor, ocolor.a);
+
             //gl_FragColor = mix(ui_color , ui_foreground_color, ocolor.a);
 
         }else{

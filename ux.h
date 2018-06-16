@@ -265,8 +265,7 @@ static Ux* Singleton();
         uiObject *zoomSlider;
 
         uiViewColor *curerntColorPreview;
-
-        //uiViewColor *palleteSelection;
+        uiViewColor *palleteSelectionColorPreview;
 
         uiObject *historyPalleteHolder;
         uiScrollController *historyScroller;

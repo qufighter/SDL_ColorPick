@@ -277,6 +277,10 @@ Ux::uiObject* Ux::create(void){
 
 
     curerntColorPreview = new uiViewColor(rootUiObject, Float_Rect(0.0, 0.04, 1.0, 0.27777777777778));
+
+
+
+
     //rootUiObject->addChild(curerntColorPreview->uiObjectItself);
 
 //    uiObject childObj = uiObject();
@@ -302,7 +306,10 @@ Ux::uiObject* Ux::create(void){
 
     //rootUiObject->addChild(historyFullsize); // todo remove all ref to this test obj
     historyPalleteHolder->addChild(newHistoryFullsize);
+    palleteSelectionColorPreview = new uiViewColor(historyPalleteHolder, Float_Rect(0.0, 0.5, 1.0, 0.5));
     historyPalleteHolder->addChild(newHistoryPallete);
+
+
     rootUiObject->addChild(historyPalleteHolder);
 
     //test cololr history
