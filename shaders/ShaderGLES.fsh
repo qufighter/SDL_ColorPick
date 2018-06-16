@@ -6,11 +6,13 @@
 //
 // #extension GL_EXT_gpu_shader4 : require
 
-precision mediump float; // required for IOS but not supported osx
+//precision mediump float; // required for IOS but not supported osx
+//SIGH - or not - now added in Shader.cpp
 
 varying vec4 colorVarying;
 
 varying vec2 TexCoordOut; // New
+
 
 uniform float fishEyeScale;
 uniform float fishEyeScalePercent;
@@ -108,14 +110,29 @@ void main()
 
 	}else{
 
+
+
 //gl_FragColor = texture2D(texture1, TexCoordOut);
 //return;
+        vec2 octr=vec2(0.5,0.5);
+        float dis=distance(octr,TexCoordOut) / fishEyeScale;
+
+        float maxDis = (0.3 / (fishEyeScale));
+        if( dis > maxDis ){
+            // blur if farther awy
+            float scaler = (dis - maxDis) * (texWidth * 0.2);
+            if( scaler < 1.0 ) scaler = 1.0;
+
+            //float scaler = 400.0;
+            texWidth *= scaler;
+            texWidthLessOne *= scaler;
+            halfTexWidth *= scaler;
+            //ccolor = vec4(1.0,1.0,1.0,1.0);
+        }
 
 		vec2 inp=(TexCoordOut * texWidth);
 		vec2 ctr=vec2(halfTexWidth,halfTexWidth);
-		vec2 octr=vec2(0.5,0.5);
 		vec2 agl=(inp.xy - ctr.xy);
-		float dis=distance(octr,TexCoordOut) / fishEyeScale;
 		//vec2 agl=(TexCoordOut.xy - octr.xy);
 		//float dis=dist(ctr,inp);
 		
@@ -126,23 +143,29 @@ void main()
 
 		
 		vec2 res=(ctr + (agl * dis)) + vec2(aRetDist,aRetDist);
-		ivec2 get=ivec2(floor(res+0.5));
+
+        float halfPixel = 0.5;
+
+		ivec2 get=ivec2(floor(res+halfPixel));
+
 		//ivec2 ictr=ivec2(ctr);
 			//if(inp_rough == res){
 			//	gl_FragColor = vec4(255.0,255.0,255.0,255.0);
 			//}else
 				
 		//vec4 bcolor=texelFetch(texture1, get, 0);
-		vec4 bcolor=texture2D(texture1, floor(res+0.5) / texWidthLessOne );
-		
+		vec4 bcolor=texture2D(texture1, floor(res+halfPixel) / texWidthLessOne );
+
+
 //gl_FragColor = bcolor;
 //return;
 		
 		
 		//vec4 pcolor = texelFetch2D(texture1, ivec2(ctr) , 0);//picked color
 		vec4 pcolor=texture2D(texture1, ctr / texWidthLessOne );
-		vec4 ccolor = vec4(0.0,0.0,0.0,1.0);//crosshair color
-		if(pcolor.r + pcolor.g + pcolor.b < 1.5){
+        vec4 ccolor = vec4(0.0,0.0,0.0,1.0);//crosshair color
+
+        if(pcolor.r + pcolor.g + pcolor.b < 1.5){
 			ccolor = vec4(1.0,1.0,1.0,1.0);
 		}
 		

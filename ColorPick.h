@@ -104,7 +104,7 @@ public:
     // do not set directly....
     
     void setFishScale(float modifierAmt);
-    static void setFishScalePerentage(float percent);
+    static void setFishScalePerentage(Ux::uiObject *interactionObj, float percent); // anAnimationPercentCallback
 
     void triggerVelocity(float x, float y);
     void clearVelocity();

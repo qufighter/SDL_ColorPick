@@ -194,7 +194,11 @@ int EventFilter(void* userdata, SDL_Event* event){
                     collected_x += openglContext->mmovex;
                     collected_y += openglContext->mmovey;
 
-                    input_velocity_x +=collected_x*0.1;
+   //TODO                 // there is a FLAW here - start dragging in one direction, then change direction AND release before reachign the origin point... it will fly in teh wrong direction
+                    // this is because the collected_x is really just dx (difference from origin) and not true measure of velocity
+                    // take a loook at uiInteraction........
+
+                    input_velocity_x +=collected_x*0.1; //TIMING
                     input_velocity_y +=collected_y*0.1;
 
                     SDL_Log("MOUSE xy %d %d", openglContext->mmovex,openglContext->mmovey);
@@ -210,16 +214,14 @@ int EventFilter(void* userdata, SDL_Event* event){
 
                     SDL_GetMouseState(&tx, &ty);
                     SDL_Log("MOUSE xy %d %d", tx,ty);
-
-
                     openglContext->generalUx->currentInteraction.update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h,  (collected_x*ui_mmv_scale)/win_w, (collected_y*ui_mmv_scale)/win_h );
-
                     SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
                     SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
 
 
                     // todo combine above into the following call?
                     openglContext->generalUx->interactionUpdate(&openglContext->generalUx->currentInteraction); // todo whyarg, BETTERARG
+                    // todo the above would appear to return a "should update??"
 
                     openglContext->renderShouldUpdate = true; /// TODO interactionUpdate calls generalUx->updateRenderPositions() should cause the UI to update... for now we just redraw everything
 
@@ -233,17 +235,33 @@ int EventFilter(void* userdata, SDL_Event* event){
                 // it was a single touch
                 SDL_Log("SDL_FINGERUP was reach - see if position did not change %d, %d",collected_x,collected_y );
 
+                // we may be able to add this, but we need to track velocity better
+                SDL_GetMouseState(&tx, &ty);
+                SDL_Log("MOUSE xy %d %d", tx,ty);
+                openglContext->generalUx->currentInteraction.update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h,  (collected_x*ui_mmv_scale)/win_w, (collected_y*ui_mmv_scale)/win_h );
+                SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
+                SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
 
-                didInteract = openglContext->generalUx->triggerInteraction() || didInteract; /// !!! collexted x + y is zero
+
+                // so if we already didInteract....
+                // calling triggerInteraction again might change our interaction object....
+                // which could be good or mediocure if we are currently doing a drag and drop
+                // but in this case we don't want to overwrite our interaction if we already have one
+
+                if( !didInteract ){ // didInteract really means didInteractWithUi and when we are, we leave the collected_x and collected_y zero at this time....
+                    didInteract = openglContext->generalUx->triggerInteraction();
+                }
+
+               // didInteract = openglContext->generalUx->triggerInteraction() || didInteract; /// !!! collexted x + y is zero
                 // we may really test for this outside of the condition above
                 // and determine mouse movement using the openglContext->generalUx->currentInteraction
 
  // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-
-
-                // todo openglContext->generalUx->currentInteraction.update not called anywhere here !
+// TODO the following may be important for swipey events since fingerup will have velocity or not????
+                // todo openglContext->generalUx->currentInteraction.update not called anywhere here ! (except we are now, rbove)
+                // maybe its okay?
 
 
                 if( ! didInteract )
@@ -373,6 +391,8 @@ void ShowFrame(void*)
     if( !openglContext->renderShouldUpdate && !openglContext->generalUx->uxAnimations->shouldUpdate ) return SDL_Delay(1);
 
     openglContext->generalUx->uxAnimations->shouldUpdate = false; // timer will keep reseetting this
+
+// TODO: TIMING!!!!
 
     input_velocity_x *= 0.1;
     input_velocity_y *= 0.1; // debatably we need to use timing, and always decrease these unless they are below the threshold

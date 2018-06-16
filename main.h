@@ -23,6 +23,32 @@
 #endif
 
 
+// font rendering constants, ascii.png (continued)
+// THESE ARE CHAR DEFS.... NOT INT OFFSET DEFS
+//#define CHAR_LINEAR_SLOPE 133
+//#define CHAR_ASYMP_SLOPE 134
+//#define CHAR_ARR_UP 135
+//#define CHAR_ARR_DN 136
+//#define CHAR_BARS 137
+//
+//#define CHAR_VERTICAL_BAR 138
+//#define CHAR_CIRCLE_PLUSS 139
+//#define CHAR_CIRCLE 140
+//
+//#define CHAR_ROUNDED_LEFT 141
+//#define CHAR_ROUNDED_RIGHT 142
+#define CHAR_LINEAR_SLOPE 129
+#define CHAR_ASYMP_SLOPE 130
+#define CHAR_ARR_UP 131
+#define CHAR_ARR_DN 132
+#define CHAR_BARS 133
+
+#define CHAR_VERTICAL_BAR 134
+#define CHAR_CIRCLE_PLUSS 135
+#define CHAR_CIRCLE 136
+
+#define CHAR_ROUNDED_LEFT 137
+#define CHAR_ROUNDED_RIGHT 138
 
 
 

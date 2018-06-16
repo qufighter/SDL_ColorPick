@@ -39,7 +39,9 @@ struct uiAnimation
         this->setFriction(const_friction);
         this->setThreshold(const_threshold);
         myUiObject = uiObject;
-
+        myAnimationCallbackFn = defaultUiObjectAnimationupdater;
+        myGetBoundsFn = defaultUiObjectGetBoundsFn;
+        animationReachedCallbackFn = nullptr;
         is_move=false;
     }
 
@@ -103,7 +105,23 @@ struct uiAnimation
         return this;
     }
 
+    uiAnimation* setAnimationCallback(animationUpdateCallbackFn pAnimUpdateFn){
+        if( pAnimUpdateFn != nullptr)
+            myAnimationCallbackFn = pAnimUpdateFn;
+        return this;
+    }
 
+    uiAnimation* setGetBoundsFn(animationGetRectFn pGetBoundsFn){
+        if( pGetBoundsFn!= nullptr )
+            myGetBoundsFn = pGetBoundsFn;
+        return this;
+    }
+
+    uiAnimation* setAnimationReachedCallback(animationCallbackFn pFn){
+        if( pFn!= nullptr )
+            animationReachedCallbackFn = pFn;
+        return this;
+    }
 
     // NOTE: always reutrn this; above
     // define other functions to chain off the constructor....
@@ -112,24 +130,42 @@ struct uiAnimation
     // other htan the function names being too long to effectively chain, this is great!
     //
 
+    animationGetRectFn myGetBoundsFn;
+    animationUpdateCallbackFn myAnimationCallbackFn; // detemrine what we will update, default to defaultUiObjectAnimationupdater
+    animationCallbackFn animationReachedCallbackFn;
 
+    // this is animationGetRectFn
+    static Float_Rect* defaultUiObjectGetBoundsFn(uiAnimation* self){
+        return new Float_Rect(self->myUiObject->boundryRect);
+    }
 
+    // this is animationUpdateCallbackFn
+    static void defaultUiObjectAnimationupdater(uiAnimation* self, Float_Rect *newBoundaryRect){
+        Ux::setRect(&self->myUiObject->boundryRect, newBoundaryRect->x, newBoundaryRect->y, newBoundaryRect->w, newBoundaryRect->h);
+        self->myUiObject->updateRenderPosition(); // this is occuring in the animation timeout thread.... if threaded
+    }
 
-    void updateUxObjectFromAnimation(Uint32 elapsedMs){ // not used when is_move
-        myUiObject->boundryRect.y += (vy * elapsedMs);
-        myUiObject->boundryRect.x += (vx * elapsedMs);
-
-        myUiObject->updateRenderPosition(); // this is occuring in the animation timeout thread.... if threaded
+    void updateUxObjectFromAnimation(Uint32 elapsedMs, Float_Rect* newBounds){ // not used when is_move
+        newBounds->y += (vy * elapsedMs);
+        newBounds->x += (vx * elapsedMs);
+        myAnimationCallbackFn(this, newBounds);
     }
 
 
     bool update(Uint32 elapsedMs){ // todo pass delta and relative
 
+        if( animationReachedCallbackFn != nullptr ){
+            animationReachedCallbackFn(this);
+            return true; // this animation is done (that was it)
+        }
+
+        Float_Rect* newBounds = myGetBoundsFn(this);
+
         if( is_move ) {
             // we are moving to a point, so we compute a new vx/vy dynamically
 
-            vx = (px - myUiObject->boundryRect.x);
-            vy = (py - myUiObject->boundryRect.y);
+            vx = (px - newBounds->x);
+            vy = (py - newBounds->y);
 // this is easing out "unfortunately" since the total range is only used the first time....
 // so ease out being deafult we can still probably define ways to scale for ease in or linear
 // and manipulate progressBar accordinly?
@@ -171,14 +207,14 @@ struct uiAnimation
             if( vy < threshold && vy > negThreshold ){ vy  = 0; ani_done_count++; }
             if( ani_done_count == 2 ){
                 moveProgress = moveDurationMs + 1;
-                myUiObject->boundryRect.y = py;
-                myUiObject->boundryRect.x = px;
+                newBounds->y = py;
+                newBounds->x = px;
             }else{
-                myUiObject->boundryRect.y += vy;
-                myUiObject->boundryRect.x += vx;
+                newBounds->y += vy;
+                newBounds->x += vx;
             }
-            
-            myUiObject->updateRenderPosition(); // this is occuring in the animation timeout thread.... if threaded
+
+            myAnimationCallbackFn(this, newBounds);
 
             if( moveProgress > moveDurationMs ){
                 // we are totally done animating...., tell the chain to drop us
@@ -187,7 +223,7 @@ struct uiAnimation
             return false;
         }
 
-        updateUxObjectFromAnimation(elapsedMs);
+        updateUxObjectFromAnimation(elapsedMs, newBounds);
 
         // apply elapsedMs ?
         tempf =  1.0 - friction;
@@ -326,6 +362,7 @@ struct uiAminChain
             animListIndex-=animListCurrent;
             animListCurrent = 0;
         }
+        // btw today we never append to a runnign chain after init time :! (today is 2018)
 
         if( this->animListIndex < this->animListMaxLen ){
             this->animList[this->animListIndex++] = myAnim;
@@ -346,9 +383,10 @@ struct UxAnim
     UxAnim(){//constructor
 
         animChainIndex = 0;
+        newChainIndex = 0;
         lastTimerTime = SDL_GetTicks();
         shouldUpdate = false;
-
+        aniIsUpdating = false; // prevent multiple simultaneous updates from different timer threads? !
         //    currentTime = SDL_GetTicks();
         //    openglContext->updateFrame(currentTime - lastTimerTime);
 
@@ -360,18 +398,25 @@ struct UxAnim
     bool result2_done;
     bool shouldUpdate;
 
-    int animChainIndex;
-    int animChainsMax = 128; //derp
-    uiAminChain* animChains[128]; //  128 parallel anim chains
+    bool aniIsUpdating = false;
 
+    int animChainIndex;
+    static const int animChainsMax = 128;
+    uiAminChain* animChains[animChainsMax]; //  128 parallel anim chains
+    int newChainIndex;
+    uiAminChain* newChains[animChainsMax];
 
     Uint32 lastTimerTime;
     Uint32 currentTime;
     SDL_TimerID my_timer_id;
 
     bool updateAnimations(float elapsedMs){
+        /// hmmm begs question if timer thread will multi fire....
 
+        if( aniIsUpdating ) return false; // If we return false it won't have an effect on the runnign animation
+        aniIsUpdating = true; // one at a time please
         animChainsDeletedCount = 0;
+
 
         for( int x=0,l=animChainIndex; x<l; x++ ){
 
@@ -381,6 +426,9 @@ struct UxAnim
 
             if( result_done ){
                 if( animChains[x]->autoFree ){
+                    // WE GET AN EXCEPTION HERE SOMETIMES>>>>>
+                    // malloc: *** error for object 0x7fbb4330: pointer being freed was not allocated
+                    // sometimes this is caused by adding an animation chain while updating another animation perhaps?
                     free(animChains[x]); // GARBAGE COLLECTION ?! (we may mark a chain to not auto delete in the future, for reusing it?)
                 }else{
                     animChains[x]->chainCompleted = true; // the only way the garbage can be otherwise collected
@@ -392,8 +440,17 @@ struct UxAnim
         }
 
         animChainIndex -= animChainsDeletedCount; // we shifted everythign after deleted items into position
+        // but while we do this we could be loosing references to items that are not yet free'd!
+        // I gues we cannot delete anything so hastily in teh multi threaded universe, we MUST leave it to the thread, removing threading is a TODO though
 
-        shouldUpdate = true;
+        shouldUpdate = true; // main loop render will check this - not ideal... but works - can likely be modified later!!!!!! TODO
+        aniIsUpdating = false;
+
+        
+        for( int x=0,l=newChainIndex; x<l; x++ ){
+            pushAnimChain(newChains[x]);
+        }
+        newChainIndex=0;
 
         if( animChainIndex > 0 ) return false;
         else{
@@ -409,7 +466,7 @@ struct UxAnim
 
         UxAnim* self = (UxAnim*)parm;
 
-        SDL_Log("Our animition timere is firign loke mad");
+        SDL_Log("Our animition timere is firign loke mad"); // useful to see that animations DO stop...
         self->currentTime = SDL_GetTicks();
 
         self->result2_done = self->updateAnimations(self->currentTime - self->lastTimerTime);
@@ -441,6 +498,20 @@ struct UxAnim
     }
 
     void pushAnimChain(uiAminChain* myAnimChain){
+        if( aniIsUpdating ){
+            // TODO: make this call thread safe... we can only push at the end of the update
+            if( newChainIndex < animChainsMax - 1 ){
+                newChains[newChainIndex++] = myAnimChain;
+            }else{
+                SDL_Log("ERROR::: Max Animation Chains -newChains- %d Exceeded !!!!!!!!", animChainsMax);
+            }
+            SDL_Log("WARNING: adding animation is currently being updated from the update thread... safely...");
+            return;
+            // I think there may be ohter negative implications of allowing this though, specifically uiElements that hold references to the aniChain
+            // which may have already "forgot" their currently running animation as soon as this function is called, may leak memory
+            // I suggest using the arbatraryCompletionCallback instead animationReachedCallbackFn ?
+        }
+
         if( animChainIndex < animChainsMax - 1 ){
             animChains[animChainIndex++] = myAnimChain;
         }else{
@@ -456,6 +527,14 @@ struct UxAnim
     /*
      A we can chain addAnim now too!
      */
+
+    uiAminChain* moveTo(Ux::uiObject *uiObject, float x, float y, animationUpdateCallbackFn pAnimUpdateFn, animationGetRectFn pGetBoundsFn){
+        uiAminChain* myAnimChain = new uiAminChain();
+        myAnimChain->addAnim((new uiAnimation(uiObject))->moveTo(x, y)->setAnimationCallback(pAnimUpdateFn)->setGetBoundsFn(pGetBoundsFn) );
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+        
+    }
 
     uiAminChain* bounce(Ux::uiObject *uiObject){
 
@@ -484,6 +563,22 @@ struct UxAnim
         pushAnimChain(myAnimChain);
         return myAnimChain;
     }
+
+//    uiAminChain* impulseUp(Ux::uiObject *uiObject){ /* slideDownOut */
+//        uiAminChain* myAnimChain = new uiAminChain();
+//        //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
+//        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialMoveVelocity(0, -1.0) );
+//        pushAnimChain(myAnimChain);
+//        return myAnimChain;
+//    }
+//
+//    uiAminChain* impulseDown(Ux::uiObject *uiObject){ /* slideDownOut */
+//        uiAminChain* myAnimChain = new uiAminChain();
+//        //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
+//        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialMoveVelocity(0, 1.0) );
+//        pushAnimChain(myAnimChain);
+//        return myAnimChain;
+//    }
 
     uiAminChain* rvbounce(Ux::uiObject *uiObject){
 

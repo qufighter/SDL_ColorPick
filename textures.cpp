@@ -255,8 +255,8 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
     //SDL_Log("w:%d h:%d BytesPerPixel:%d textureId:%d ", newSurface->w, newSurface->h, newSurface->format->BytesPerPixel, textureid);
 
-    // these affect how this texture is drawn later on...
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    // these affect how this texture is drawn later on... but mostly teh shader picks how pixly it gets
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);//GL_NEAREST
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 
 
@@ -360,10 +360,13 @@ GLuint Textures::LoadTextureFromSdlSurface(SDL_Surface *surface, GLuint& texture
 
     //SDL_Log("w:%d h:%d BytesPerPixel:%d textureId:%d ", surface->w, surface->h, surface->format->BytesPerPixel, textureid);
 
-    // these affect how this texture is drawn later on...
+    // these affect how this texture is drawn later on... ascii etc
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 
+
+//    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+//    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
 
     // just experimenting...
     //    debugGLerror();

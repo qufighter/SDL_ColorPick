@@ -61,6 +61,8 @@ void OpenGLContext::chooseFile(void) {
 }
 
 void OpenGLContext::updateColorPreview(void){
+    //glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
+
     glClearColor(textures->selectedColor.r / 255.0f,
                  textures->selectedColor.g / 255.0f,
                  textures->selectedColor.b / 255.0f,
@@ -221,11 +223,11 @@ void  OpenGLContext::setFishScale(float modifierAmt){
 
         // todo should be a helper on the UI object zoomSlider instead
 
-    generalUx->zoomSlider->updateAnimationPercent(fishEyeScalePct);
+    generalUx->zoomSlider->updateAnimationPercent(fishEyeScalePct, 0.0);
 }
 
 //static for use as UI:: callback
-void OpenGLContext::setFishScalePerentage(float percent){
+void OpenGLContext::setFishScalePerentage(Ux::uiObject *interactionObj, float percent){
     SDL_Log("MMV PERC SLIDER %f %%", (percent));
     // from static function we must get instance
 
@@ -464,10 +466,10 @@ void OpenGLContext::createSquare(void) {
     glEnableVertexAttribArray(SHADER_POSITION); // Enable the first our Vertex Array Object
 
     //you can comment out this block, we dont use colors for rects
-    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[1]); // Bind our second Vertex Buffer Object
-    glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(GLfloat), colors, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
-    glVertexAttribPointer((GLuint)SHADER_COLOR, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
-    glEnableVertexAttribArray(SHADER_COLOR); // Enable the second vertex attribute array
+//    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[1]); // Bind our second Vertex Buffer Object
+//    glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(GLfloat), colors, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
+//    glVertexAttribPointer((GLuint)SHADER_COLOR, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
+//    glEnableVertexAttribArray(SHADER_COLOR); // Enable the second vertex attribute array
 
     glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[2]); // Bind our second Vertex Buffer Object
     glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), texCoord, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
@@ -475,12 +477,12 @@ void OpenGLContext::createSquare(void) {
     glEnableVertexAttribArray(SHADER_TEXTURE); // Enable the second vertex attribute array
 
     //you can comment out this block we dn't use normals for rendering rects
-    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[3]); // Bind our second Vertex Buffer Object
-    glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(GLfloat), normals, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
-    glVertexAttribPointer((GLuint)SHADER_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
-    glEnableVertexAttribArray(SHADER_NORMAL); // Enable the second vertex attribute array
-    
-    
+//    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[3]); // Bind our second Vertex Buffer Object
+//    glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(GLfloat), normals, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
+//    glVertexAttribPointer((GLuint)SHADER_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
+//    glEnableVertexAttribArray(SHADER_NORMAL); // Enable the second vertex attribute array
+
+
     
     glBindVertexArray(0); // Disable our Vertex Buffer Object
     delete [] vertices; // Delete our vertices from memory

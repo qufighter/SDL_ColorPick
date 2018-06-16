@@ -13,6 +13,11 @@
 //varying vec4 colorVarying;
 
 varying vec2 TexCoordOut; // New
+
+// lets get the orig texcoord out too....
+varying vec2 OrigTexCoordOut; // New
+
+
 //
 //uniform float fishEyeScale;
 //uniform float fishEyeScalePercent;
@@ -23,6 +28,11 @@ uniform sampler2D texture3;
 
 uniform vec4 ui_color;
 uniform vec4 ui_foreground_color;
+uniform float ui_corner_radius;
+
+//uniform vec4 ui_corner_radius_x_tl_tr_br_bl;
+//uniform vec4 ui_corner_radius_y_tl_tr_br_bl;
+
 
 /*
 float dist(vec2 a, vec2 b){
@@ -66,6 +76,15 @@ void main()
 //	return floor(in + 0.5);
 //}
 
+void roundCorner(vec2 OrigTexCoordOut, vec2 center, float radius, float fuzz) {
+
+    float dis = distance(OrigTexCoordOut, center);
+    if( dis >= radius ){
+        gl_FragColor.a = gl_FragColor.a * (((radius + fuzz) - dis) / fuzz);
+    }
+
+}
+
 
 void main()
 {
@@ -95,6 +114,41 @@ void main()
             //
         }else{
             gl_FragColor = ui_foreground_color;
+        }
+    }
+
+
+
+
+    /// IF YOU SEE ARTIFACTS - its because you are moving dragged item on sub-pixel increments
+    // we should try to keep the level of drag matching full pixels but use hi-dpi pixels if available.
+    if( ui_corner_radius > 0.0 ) {
+        float radius = ui_corner_radius;
+        float rradius = 1.0 - radius;
+        float fuzz = 0.025;
+        float hfuzz =(fuzz * 0.5);
+
+        float fuzzradius = radius + hfuzz;
+        float rfuzzzradius = rradius - hfuzz;
+
+        if( OrigTexCoordOut.y <= fuzzradius ){
+            if( OrigTexCoordOut.x <= fuzzradius ) {
+                // TOP LEFT
+                roundCorner(OrigTexCoordOut, vec2(fuzzradius,fuzzradius), radius, fuzz);
+
+            }else if(OrigTexCoordOut.x >= rfuzzzradius ) {
+                // TOP RIGHT
+                roundCorner(OrigTexCoordOut, vec2(rfuzzzradius ,fuzzradius), radius, fuzz);
+            }
+        }else if (OrigTexCoordOut.y >= rfuzzzradius){
+            if( OrigTexCoordOut.x <= fuzzradius ) {
+                // BOTTOM LEFT
+                roundCorner(OrigTexCoordOut, vec2(fuzzradius,rfuzzzradius), radius, fuzz);
+
+            }else if(OrigTexCoordOut.x >= rfuzzzradius ) {
+                // BOTTOM RIGHT
+                roundCorner(OrigTexCoordOut, vec2(rfuzzzradius ,rfuzzzradius), radius, fuzz);
+            }
         }
     }
 

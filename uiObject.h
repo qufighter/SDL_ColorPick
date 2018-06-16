@@ -10,6 +10,8 @@
 #ifndef ColorPick_iOS_SDL_uiObject_h
 #define ColorPick_iOS_SDL_uiObject_h
 
+#define SCROLLY_WIDTH 0.1
+
 
 // FUNCTIONS DEFINED HERE ARE SATAIC UX:: member functions
 
@@ -28,6 +30,13 @@ static void setRect(Float_Rect * rect, float x, float y, float w, float h){
     rect->y = y;
     rect->w = w;
     rect->h = h;
+}
+
+static void setRect(Float_Rect * rect, Float_Rect * rect2){
+    rect->x = rect2->x;
+    rect->y = rect2->y;
+    rect->w = rect2->w;
+    rect->h = rect2->h;
 }
 
 
@@ -58,6 +67,27 @@ static float scaleRectForRenderY(Float_Rect * rect, Float_Rect * prect){
 
 
 
+/* Forward declarations */
+struct uiAnimation; /* see ux-anim.h for full definition */
+struct uiAminChain; /* see ux-anim.h for full definition */
+struct uiScrollController;
+struct uiObject;
+
+
+// typedef used scross all these! possibly move to ux.h if we can move hte fwd decl too
+typedef void (*animationUpdateCallbackFn)(uiAnimation* self, Float_Rect *newBoundaryRect);
+typedef void (*animationCallbackFn)(uiAnimation* self);
+typedef Float_Rect* (*animationGetRectFn)(uiAnimation* self);
+
+// these types uses exclusively by uiObject
+typedef bool (*anInteractionAllowedFn)(uiObject *interactionObj, uiInteraction *delta); // a function that return true if the interaction did pass to a valid interactionObject (aka the results of didBubble if releasing the interaction to another object)
+typedef void (*anInteractionFn)(uiObject *interactionObj, uiInteraction *delta);
+typedef void (*anAnimationPercentCallback)(uiObject *interactionObj, float animPercent);
+typedef void (*aStateChangeFn)(uiObject *interactionObj);
+
+
+// move to own file, but requires the above....
+
 struct uiObject
 {
     uiObject(){
@@ -65,7 +95,7 @@ struct uiObject
         initialized=true;
         hasBackground=false;
         hasForeground=false;
-        canCollide=false;
+        canCollide=false; // with cursor
         doesNotCollide=false;
         hasInteraction=false;
         hasInteractionCb=false;
@@ -75,27 +105,39 @@ struct uiObject
         parentObject=nullptr;
         hasChildren=false;
         isRoot=false;
+        cropParentObject=nullptr;
+        hasCropParent=false;
         childListIndex = 0;
         Ux::setColor(&foregroundColor, 255, 255, 255, 255);
 
         containText=false;
         doesInFactRender=true;
+        doesRenderChildObjects=true;
         isInBounds=true;
+        testChildCollisionIgnoreBounds = false;
         textureCropRect = Float_Rect();
         interactionProxy=nullptr;
+        myCurrentAnimation=nullptr;
+
+        boundaryEntreredCallback=nullptr;
+        shouldCeaseInteractionChecker=nullptr;
+        myScrollController=nullptr;
     }
     bool isDebugObject;
     bool isRoot;
     bool initialized;
     bool hasChildren = false;
 
-    bool canCollide;
+    bool canCollide; // with cursor
     bool doesNotCollide;
     bool doesInFactRender; // child objects still will be rendered, some objects are just containers and need not render anything
+    bool doesRenderChildObjects;
     bool isInBounds; // equivilent to needs render
     bool containText;
+    bool testChildCollisionIgnoreBounds = false;
 
     bool hasBackground;
+    uiScrollController *myScrollController; // child objects will inherit this I think!
     Float_Rect boundryRect; // please call setBoundaryRect if you are going to animate the object
     Float_Rect origBoundryRect;
     SDL_Color backgroundColor;
@@ -112,11 +154,9 @@ struct uiObject
 
     Float_Rect scrollyRect; //what tpye or sort of corrindants es this?
 
-    typedef void (*anInteractionFn)(uiObject *interactionObj, uiInteraction *delta);
-    typedef void (*anAnimationPercentCallback)(float animPercent);
-    typedef void (*aStateChangeFn)(uiObject *interactionObj);
 
     uiObject *interactionProxy; // if our interaction is suppose to effect a different object
+    uiAminChain* myCurrentAnimation;
 
     // when collision occurs we must define what to do
     bool hasInteraction;
@@ -128,19 +168,34 @@ struct uiObject
     bool hasAnimCb;
     anAnimationPercentCallback animationPercCallback;
 
-    bool hasBoundaryCb;
+    bool hasBoundaryCb; // not stricly needed if we use the nullptr test
     aStateChangeFn boundaryEntreredCallback;
-
+    anInteractionAllowedFn shouldCeaseInteractionChecker;
     //void (*interactionCallback)(uiObject *interactionObj); // once an interaction is complete, a reference to the object may be used to determine all sorts of thigns
+
+    void setModeWhereChildCanCollideAndOwnBoundsIgnored(){
+        testChildCollisionIgnoreBounds = true;
+        canCollide = false;
+    }
+
+    void setBoundaryRect(Float_Rect *r){
+        Ux::setRect(&boundryRect, r);
+        Ux::setRect(&origBoundryRect, r);
+    }
 
     void setBoundaryRect(float x, float y, float w, float h){
         Ux::setRect(&boundryRect, x, y, w, h);
         Ux::setRect(&origBoundryRect, x, y, w, h);
     }
 
-    void updateAnimationPercent(float perc){
-        // if animation is HZ
-        boundryRect.x = computedMovementRect.w * perc;
+    void updateAnimationPercent(float hzPerc, float vtPerc){
+        // we will constrain these to 100%
+        if( hzPerc < 0 ) hzPerc = 0;
+        else if( vtPerc < 0 ) vtPerc = 0;
+        if( hzPerc > 1.0 ) hzPerc = 1.0;
+        else if( vtPerc > 1.0 ) vtPerc = 1.0;
+        boundryRect.x = computedMovementRect.x + (computedMovementRect.w * hzPerc);
+        boundryRect.y = computedMovementRect.y + (computedMovementRect.h * vtPerc);
         updateRenderPosition();
     }
 
@@ -149,12 +204,19 @@ struct uiObject
         hasBoundaryCb = true;
     }
 
+    void setShouldCeaseInteractionChek( anInteractionAllowedFn p_timeToCancelAnimCheckFn ){
+        shouldCeaseInteractionChecker = p_timeToCancelAnimCheckFn; // when panning, this is the test(when set) to determine if the interaction should be gifted to the parent object instead.  Allows a scrollable object to be panned out of view when the scroll distance is maximized.
+        hasBoundaryCb = true;
+    }
+
     void setInteraction( anInteractionFn p_interactionFn ){
+        this->canCollide = true; // so for click functions we are just setting this automatically nnow!
         interactionFn = p_interactionFn;
         hasInteraction = true;
     }
-    // interaction complete callback
+    // interaction complete callback aka click
     void setInteractionCallback( anInteractionFn p_interactionCallback ){
+        this->canCollide = true; // so for click functions we are just setting this automatically nnow!
         interactionCallback = p_interactionCallback;
         hasInteractionCb = true;
     }
@@ -162,6 +224,19 @@ struct uiObject
         animationPercCallback = p_animationPercentageCallback;
         hasAnimCb = true;
     }
+
+    void cancelCurrentAnimation(){
+        if( myCurrentAnimation!= nullptr ){
+            myCurrentAnimation->endAnimation(); // thread safe, and will probably garbage collect :)
+            myCurrentAnimation = nullptr;
+        }
+    }
+
+    void setAnimation(uiAminChain* chain){
+        cancelCurrentAnimation(); // why not! ? extra null check?/ pffft
+        myCurrentAnimation = chain->preserveReference(); // do not auto garbage collect!
+    }
+
     bool hasForeground;
     /*
      texture
@@ -223,22 +298,57 @@ struct uiObject
 
 
         if( this->childListIndex < this->childListMax - 1 ){
-            this->hasChildren=true;
             this->childList[this->childListIndex++] = c;
+            this->hasChildren=true;
             c->parentObject = this; // neat?
             c->hasParentObject =true;
+            if( this->myScrollController != nullptr ){
+                c->myScrollController = this->myScrollController;
+            }
+
+            if( this->hasCropParent ){
+                c->setCropParent(this->cropParentObject);
+            }
+
         }else{
             SDL_Log("ERROR::: Max Child UI Objects %d Exceeded !!!!!!!!", childListMax);
         }
     }
 
+    void setCropParent(uiObject *c){
+        this->cropParentObject = c; // ORDER MATTERS HERE!!
+        this->hasCropParent = true;
+    }
+
+    uiObject* bubbleInteraction(){
+        // seek interactable parent objects, return nullptr if none found
+
+        uiObject* foundObj = this;
+
+        while(foundObj->hasParentObject ){
+            foundObj = foundObj->parentObject;
+            if( foundObj->hasInteraction ){
+                return foundObj;
+            }
+        }
+
+        return nullptr;
+    }
+
+
     bool hasParentObject;
     uiObject *parentObject;
+
+    bool hasCropParent;
+    uiObject *cropParentObject;
 
     int childListIndex = 0;
     int childListMax = 128; //derp
     uiObject* childList[128]; // ui object may have a max of 128 child objects each
 
+    int getChildCount(){
+        return childListIndex;
+    }
 
     //uiObject *parentScrollObjectObject; /// gthinking about this if our x/y is outside of 0-1.0 range then we trigger a scrolly behavior
     // on our barnt scroll object whatever level up from here that might be
@@ -270,7 +380,7 @@ struct uiObject
 
 
 
-
+    
 
 
 
@@ -283,6 +393,7 @@ struct uiObject
     // these "private" props only used by the update loops!
     Float_Rect parentRenderRect;
     Float_Rect parentCollisionRect;
+
 
 
     // updateRenderPosition
@@ -344,7 +455,7 @@ struct uiObject
         if( collisionRect.x < 1.0f && collisionRect.x + collisionRect.w > 0.0f ){
             if( collisionRect.y < 1.0f && collisionRect.y + collisionRect.h > 0.0f ){
                 isInBounds = true;
-                if( wasOob ){
+                if( wasOob && boundaryEntreredCallback != nullptr ){
                     boundaryEntreredCallback(this);
                 }
             }
@@ -354,8 +465,8 @@ struct uiObject
         Ux::setRect(&computedMovementRect,
                     movementBoundaryRect.x,
                     movementBoundaryRect.y,
-                    (movementBoundaryRect.w * parentRenderRect.w) - renderRect.w,
-                    (movementBoundaryRect.h * parentRenderRect.h) - renderRect.h
+                    (movementBoundaryRect.w /*- movementBoundaryRect.x*/ /** parentRenderRect.w*/) - boundryRect.w,
+                    (movementBoundaryRect.h /*- movementBoundaryRect.y*/ /** parentRenderRect.h*/) - boundryRect.h
                     );
 
 

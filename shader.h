@@ -18,6 +18,8 @@ struct uniformLocationStruct
             ui_position,
             ui_color,
             ui_foreground_color,
+            ui_crop,
+            ui_corner_radius,
             widthHeightRatio,
             fishScale,
             fishScalePct,

@@ -34,7 +34,10 @@ Ux::~Ux(void) {
 Ux::Ux(void) {
     isInteracting = false;
     currentInteraction = uiInteraction();
-    fullPickHistoryAnimation = nullptr;
+
+    for( int x=0; x<COLOR_INDEX_MAX; x++ ){
+        palleteColorsIndex[x] = -1;
+    }
 }
 
 void Ux::updateStageDimension(float w, float h){
@@ -66,10 +69,6 @@ Ux::uiObject* Ux::create(void){
 
     uxAnimations = new UxAnim();
 
-    char* resultText; //leaking memory???
-    bool resizeLater = false; // assert resizeLater === false
-    // todo use a ?
-
     rootUiObject = new uiObject();
     rootUiObject->isRoot = true;
     rootUiObject->setBoundaryRect( 0, 0, 1.0, 1.0);
@@ -95,8 +94,8 @@ Ux::uiObject* Ux::create(void){
 
 
     bottomBar->hasForeground = true;
-    printCharToUiObject(bottomBar, '_', resizeLater);
-
+    //printCharToUiObject(bottomBar, '_', DO_NOT_RESIZE_NOW);
+    printCharToUiObject(bottomBar, CHAR_ASYMP_SLOPE, DO_NOT_RESIZE_NOW);
 
 
 
@@ -105,14 +104,15 @@ Ux::uiObject* Ux::create(void){
     pickSourceBtn->hasBackground = true;
     pickSourceBtn->setInteractionCallback(&Ux::interactionTouchRelease);
 
+
     //pickSourceBtn->setInteractionCallback(&Ux::addCurrentToPickHistory);
 
     pickSourceBtn->setBoundaryRect( 0.8, 0, 0.2, 1);  /// TODO move size components into function to calculate on window rescale bonus points
     Ux::setColor(&pickSourceBtn->backgroundColor, 32, 0, 0, 128);
     Ux::setColor(&pickSourceBtn->foregroundColor, 0, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-    pickSourceBtn->canCollide = true;
 
-    printCharToUiObject(pickSourceBtn, '+', resizeLater);
+    //printCharToUiObject(pickSourceBtn, '+', DO_NOT_RESIZE_NOW);
+    printCharToUiObject(pickSourceBtn, CHAR_CIRCLE_PLUSS, DO_NOT_RESIZE_NOW);
 
     bottomBar->addChild(pickSourceBtn);
 
@@ -124,12 +124,15 @@ Ux::uiObject* Ux::create(void){
     zoomSlider->hasBackground = true;
     Ux::setColor(&zoomSlider->backgroundColor, 32, 0, 0, 128);
     Ux::setColor(&zoomSlider->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-    zoomSlider->setInteraction(&Ux::interactionHZ);
-    zoomSlider->canCollide = true;
+    zoomSlider->setInteraction(&Ux::interactionHZ);//zoomSlider->canCollide = true;
+    
     zoomSlider->setBoundaryRect( 0.0, 0, 0.2, 1);  /// TODO move size components into function to calculate on window rescale bonus points
     Ux::setRect(&zoomSlider->movementBoundaryRect, 0.0, 0, 0.5, 0.0);
 
-    printCharToUiObject(zoomSlider, '^', resizeLater);
+
+    //printCharToUiObject(zoomSlider, '^', DO_NOT_RESIZE_NOW);
+    printCharToUiObject(zoomSlider, CHAR_VERTICAL_BAR, DO_NOT_RESIZE_NOW);
+
 
     bottomBar->addChild(zoomSlider);
 
@@ -137,39 +140,80 @@ Ux::uiObject* Ux::create(void){
 
     rootUiObject->addChild(bottomBar);
 
+
+    historyPalleteHolder = new uiObject();
+    historyPalleteHolder->hasBackground = true;
+    Ux::setColor(&historyPalleteHolder->backgroundColor, 0, 0, 0, 192);
+    historyPalleteHolder->setBoundaryRect( 0.0, 0.04, 1.0, 0.8);
+
+    historyPalleteHolder->setInteractionCallback(&Ux::interactionToggleHistory);
+    historyPalleteHolder->setInteraction(&Ux::interactionVert);
+    historyPalleteHolder->setBoundsEnterFunction(&Ux::interactionHistoryEnteredView);
+
+
+    historyScroller = new uiScrollController();
+    historyScroller->initTilingEngine(6, 6, &Ux::updateUiObjectFromHistory, &Ux::getHistoryTotalCount, &Ux::clickHistoryColor);
+
+    newHistoryFullsize = historyScroller->uiObjectItself;
+
+    newHistoryFullsize->isDebugObject=true;
+
+    newHistoryFullsize->hasBackground = true;
+    Ux::setColor(&newHistoryFullsize->backgroundColor, 0, 0, 0, 192);
+
+    newHistoryFullsize->setBoundaryRect( 0.0, 0.0, 1.0, 0.6);
+
+
+
+    palleteScroller = new uiScrollController();
+    palleteScroller->initTilingEngine(1, 3, &Ux::updateUiObjectFromPallete, &Ux::getPalleteTotalCount, nullptr);
+
+    newHistoryPallete = palleteScroller->uiObjectItself;
+
+    newHistoryPallete->hasBackground = true;
+    Ux::setColor(&newHistoryPallete->backgroundColor, 0, 0, 0, 255);
+
+    newHistoryPallete->setBoundaryRect( 0.0, 0.6, 1.0, 0.4);
+
+
+    //newHistoryFullsize->isDebugObject= true;
     viewing_full_history = true;
-    historyFullsize = new uiObject();
-    historyFullsize->hasBackground = true;
-    Ux::setColor(&historyFullsize->backgroundColor, 0, 0, 0, 192);
-    historyFullsize->setBoundaryRect( 0.0, 0.0, 1.0, 1.0);
-    historyFullsize->canCollide = true;
-    historyFullsize->setInteractionCallback(&Ux::interactionToggleHistory);
-    historyFullsize->setInteraction(&Ux::interactionVert);
-    historyFullsize->setBoundsEnterFunction(&Ux::interactionHistoryEnteredView);
 
-    //historyFullsize->doesInFactRender = false; // has no BG so nothing to render here
-    historyFullsize->isDebugObject= true;
 
-    int rowsTotal = 7;
-    int rowCtr = -1;
-    while(++rowCtr < rowsTotal ){
 
-        int ctr = SIX_ACROSS;
-        while( --ctr >= 0 ){
-            uiObject * colora = new uiObject();
-            colora->hasBackground = true;
-            Ux::setColor(&colora->backgroundColor, 255, 0, 32, 0);
 
-            //colora->setBoundaryRect( ctr * (1/across), 1.0, 1/across, 1/across * screenRatio );
-            colora->setBoundaryRect( ctr * SIX_ACROSS_RATIO, rowCtr * SIX_ACROSS_RATIO, SIX_ACROSS_RATIO, SIX_ACROSS_RATIO );
-            //colora->setBoundaryRect( 0, 0.0, 1, 1 );
-
-            colora->hasForeground = true;
-            printCharToUiObject(colora, 'E'-ctr, resizeLater);
-
-            historyFullsize->addChild(colora);
-        }
-    }
+//    historyFullsize = new uiObject();
+//    historyFullsize->hasBackground = true;
+//    Ux::setColor(&historyFullsize->backgroundColor, 0, 0, 0, 192);
+//    historyFullsize->setBoundaryRect( 0.0, 0.0, 1.0, 0.5);
+//    historyFullsize->canCollide = true; // not stricly needed for setInteractionCallback
+//    historyFullsize->setInteractionCallback(&Ux::interactionToggleHistory);
+//    historyFullsize->setInteraction(&Ux::interactionVert);
+//    historyFullsize->setBoundsEnterFunction(&Ux::interactionHistoryEnteredView);
+//
+//    //historyFullsize->doesInFactRender = false; // has no BG so nothing to render here
+//    historyFullsize->isDebugObject= true;
+//
+//    int rowsTotal = 7;
+//    int rowCtr = -1;
+//    while(++rowCtr < rowsTotal ){
+//
+//        int ctr = SIX_ACROSS;
+//        while( --ctr >= 0 ){
+//            uiObject * colora = new uiObject();
+//            colora->hasBackground = true;
+//            Ux::setColor(&colora->backgroundColor, 255, 0, 32, 0);
+//
+//            //colora->setBoundaryRect( ctr * (1/across), 1.0, 1/across, 1/across * screenRatio );
+//            colora->setBoundaryRect( ctr * SIX_ACROSS_RATIO, rowCtr * SIX_ACROSS_RATIO, SIX_ACROSS_RATIO, SIX_ACROSS_RATIO );
+//            //colora->setBoundaryRect( 0, 0.0, 1, 1 );
+//
+//            colora->hasForeground = true;
+//            printCharToUiObject(colora, 'E'-ctr, DO_NOT_RESIZE_NOW);
+//
+//            historyFullsize->addChild(colora);
+//        }
+//    }
 
 
 
@@ -209,7 +253,7 @@ Ux::uiObject* Ux::create(void){
         //colora->setBoundaryRect( 0, 0.0, 1, 1 );
 
         //colora->hasForeground = true;
-        //printCharToUiObject(colora, 'F'-ctr, resizeLater);
+        //printCharToUiObject(colora, 'F'-ctr, DO_NOT_RESIZE_NOW);
 
 
 
@@ -218,79 +262,22 @@ Ux::uiObject* Ux::create(void){
 
 
     //historyPreview->hasForeground = true;
-    //printCharToUiObject(historyPreview, '_', resizeLater);
-    historyPreview->canCollide = true;
+    //printCharToUiObject(historyPreview, '_', DO_NOT_RESIZE_NOW);
+
+    //historyPreview->canCollide = true; // set by setInteractionCallback
     historyPreview->setInteractionCallback(&Ux::interactionToggleHistory);
 
     historyPreview->setInteraction(&Ux::interactionVert);
-    historyPreview->interactionProxy = historyFullsize; // when we drag the preview effect the fullsize sliding into view...
+    historyPreview->interactionProxy = historyPalleteHolder; // when we drag the preview effect the fullsize sliding into view...
 
-    //printCharToUiObject(historyPreview, 'H', resizeLater);
+    //printCharToUiObject(historyPreview, 'H', DO_NOT_RESIZE_NOW);
 
     //bottomBar->addChild(historyPreview);
     rootUiObject->addChild(historyPreview);
 
 
-    hexValueText = new uiObject();
-    
-
-    //NEW rule size the container for the letter size of first letter
-    hexValueText->setBoundaryRect( 0.0, 0.04, 0.16666666666667, 0.16666666666667);
-
-    //NEW rule 2 - the ohter properties define the text rendering only
-    hexValueText->hasForeground = true;
-    Ux::setColor(&hexValueText->foregroundColor, 255, 255, 255, 223); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-
-    hexValueText->hasBackground = true;
-    Ux::setColor(&hexValueText->backgroundColor,0, 0, 0, 0);
-
-
-    // perhaps properties on container are inherited by text
-    // however container itself will no longer render?
-
-    rootUiObject->addChild(hexValueText);
-
-    //sprintf(resultText, "000000");
-   // printStringToUiObject(hexValueText, resultText, resizeLater); // this method wont work on desktop , malloc? 
-    printStringToUiObject(hexValueText, "000000", resizeLater);
-
-    // very odd not initializing these...
-
-    rgbRedText = new uiObject();
-    //NEW rule size the container for the letter size of first letter
-    rgbRedText->setBoundaryRect( 0.0, 0.04+0.16666666666667, 0.11111111111111, 0.11111111111111);
-    //NEW rule 2 - the ohter properties define the text rendering only
-    rgbRedText->hasForeground = true;
-    Ux::setColor(&rgbRedText->foregroundColor, 255, 100, 100, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-    rgbRedText->hasBackground = true;
-    Ux::setColor(&rgbRedText->backgroundColor, 32, 0, 0, 192);
-    rootUiObject->addChild(rgbRedText);
-    printStringToUiObject(rgbRedText, "  R", resizeLater);
-
-
-    rgbGreenText = new uiObject();
-    //NEW rule size the container for the letter size of first letter
-    rgbGreenText->setBoundaryRect( 0.33333333333333, 0.04+0.16666666666667, 0.11111111111111, 0.11111111111111);
-    //NEW rule 2 - the ohter properties define the text rendering only
-    rgbGreenText->hasForeground = true;
-    Ux::setColor(&rgbGreenText->foregroundColor, 100, 255, 100, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-    rgbGreenText->hasBackground = true;
-    Ux::setColor(&rgbGreenText->backgroundColor, 0, 32, 0, 192);
-    rootUiObject->addChild(rgbGreenText);
-    printStringToUiObject(rgbGreenText, "  G", resizeLater);
-
-
-    rgbBlueText = new uiObject();
-    //NEW rule size the container for the letter size of first letter
-    rgbBlueText->setBoundaryRect( 0.66666666666666, 0.04+0.16666666666667, 0.11111111111111, 0.11111111111111);
-    //NEW rule 2 - the ohter properties define the text rendering only
-    rgbBlueText->hasForeground = true;
-    Ux::setColor(&rgbBlueText->foregroundColor, 100, 100, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-    rgbBlueText->hasBackground = true;
-    Ux::setColor(&rgbBlueText->backgroundColor, 0, 0, 32, 192);
-    rootUiObject->addChild(rgbBlueText);
-    printStringToUiObject(rgbBlueText, "  B", resizeLater);
-
+    curerntColorPreview = new uiViewColor(rootUiObject, Float_Rect(0.0, 0.04, 1.0, 0.27777777777778));
+    //rootUiObject->addChild(curerntColorPreview->uiObjectItself);
 
 //    uiObject childObj = uiObject();
 //    childObj.hasForeground = true;
@@ -313,7 +300,17 @@ Ux::uiObject* Ux::create(void){
     // the parent coordinate space? for render purposes, later seems nice
 
 
-    rootUiObject->addChild(historyFullsize);
+    //rootUiObject->addChild(historyFullsize); // todo remove all ref to this test obj
+    historyPalleteHolder->addChild(newHistoryFullsize);
+    historyPalleteHolder->addChild(newHistoryPallete);
+    rootUiObject->addChild(historyPalleteHolder);
+
+    //test cololr history
+    for( int q=0; q<36; q++ ){
+        currentlyPickedColor = new SDL_Color();
+        setColor(currentlyPickedColor, randomInt(0,44), randomInt(0,185), randomInt(0,44), 0);
+        addCurrentToPickHistory();
+    }
 
 
     updateRenderPositions();
@@ -338,11 +335,15 @@ void Ux::updateRenderPosition(uiObject *renderObj){
 
 
 // so should the print functions move into uiObject?
+// maybe just be static Ux:: member functions defined the same way as others
 
 void Ux::printStringToUiObject(uiObject* printObj, char* text, bool resizeText){
     // this function will print or update text, adding characters if needed
     // the object must be empy (essentially to become a text container and no loner normal UI object)
 
+
+    // todo possibly create container on fly if nonempty?
+    // see "NEW rule" where it basically defines how to maybe go about this....
 
     // TODO these are global constants
 
@@ -370,7 +371,7 @@ void Ux::printStringToUiObject(uiObject* printObj, char* text, bool resizeText){
             letter = new uiObject();
 
             if( printObj->containText == true ){
-                float w = 1.0 / len ; // todo move
+                float w = 1.0 / len ; // todo move maths
 
                 // move this right out of the else aboe, since we should fit any len text within, and also needs resize IF text len changed.... !?! easy compute
                 letter->setBoundaryRect( (ctr*w), 0, w, w);  /// TODO move size components into function to calculate on window rescale bonus points for suqare?
@@ -392,7 +393,7 @@ void Ux::printStringToUiObject(uiObject* printObj, char* text, bool resizeText){
         //  // we should very likely inherit styles from parent (printObj)
         ///  whenever text changes
 
-        printCharOffsetUiObject(letter, charOffset);
+        Ux::printCharOffsetUiObject(letter, charOffset);
         //        renderedletters[renderedLettersCtr++] = letter;
         ctr++;
     }
@@ -419,7 +420,11 @@ void Ux::printStringToUiObject(uiObject* printObj, char* text, bool resizeText){
 }
 
 void Ux::printCharToUiObject(uiObject* letter, char character, bool resizeText){
-    printCharOffsetUiObject(letter, (int)character - text_firstLetterOffset);
+    printCharToUiObject(letter, (int)character, resizeText);
+}
+
+void Ux::printCharToUiObject(uiObject* letter, int character, bool resizeText){
+    printCharOffsetUiObject(letter, character - text_firstLetterOffset);
     if( resizeText ){
         // we must rebuild this object otherwise strange effects
         // not needed during first init where we build once at end...
@@ -447,13 +452,6 @@ void Ux::printCharOffsetUiObject(uiObject* letter, int charOffset){
 }
 
 
-
-
-
-
-
-
-
 bool Ux::triggerInteraction(void){ // mouseup, mouse didn't move
 
     return objectCollides(currentInteraction.px, currentInteraction.py);
@@ -466,7 +464,7 @@ bool Ux::objectCollides(float x, float  y){
 bool Ux::objectCollides(uiObject* renderObj, float x, float y){
 
     bool collides = false;
-
+    bool childCollides = false;
     // update ???? seems handled by interactionUpdate
     // test collision with object itself, then render all child obj
 
@@ -477,7 +475,7 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
     }
 
 
-    if( pointInRect(&renderObj->collisionRect, x, y) ){
+    if( renderObj->testChildCollisionIgnoreBounds || pointInRect(&renderObj->collisionRect, x, y) ){
    // if( pointInRect(&renderObj->renderRect, x, y) ){
         if( renderObj->canCollide ){
             collides = true;
@@ -485,8 +483,14 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
             if( renderObj->hasInteraction || renderObj->hasInteractionCb ){
                 // quite arguable we can return here, continuing to seek interaction on child objects may produce odd effects
                 interactionObject = renderObj;
+
+                SDL_Log("WE DID FIND ANOTHER MATCH");
+
                 isInteracting = true;
-                return collides;
+                    // I will argue we want the deepest interaction to tell us if it can be activated currently....
+                    // and should not return at once..
+                //return collides;
+                //collides = true;
             }
 
 
@@ -500,10 +504,10 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
             // we need to check the children in reverse, the ones that render last are on top
             for( int ix=renderObj->childListIndex-1; ix>-1; ix-- ){
                 // if already has collides and already isInteracting then return it?????
-                collides = objectCollides(renderObj->childList[ix], x, y);// || collides;
+                childCollides = objectCollides(renderObj->childList[ix], x, y);// || collides;
 
-                if( collides ) {
-                    return collides;
+                if( childCollides ) {
+                    return childCollides;
                 }
             }
         }
@@ -516,12 +520,38 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
     return collides;
 }
 
+// todo investigate dropping this function?  much of this should be split into a different file otherwise
+bool Ux::bubbleCurrentInteraction(){ // true if we found a match
+    uiObject* anObj = interactionObject->bubbleInteraction();
+    if( anObj != nullptr ){
+        interactionObject = anObj;
+        return true;
+    }
+    return false;
+}
+
 bool Ux::interactionUpdate(uiInteraction *delta){
     // TODO ret bool determine modification?
 
-    if( isInteracting && interactionObject->hasInteraction ){
-        interactionObject->interactionFn(interactionObject, delta);
-        return true;
+    uiObject* orig = interactionObject;
+
+    if( isInteracting && (interactionObject->hasInteraction || interactionObject->interactionCallback ) ){
+
+        // IF the object has a 'drop interaction' function and we can instead gift the animation to the parent object if it collides..... we will do so now....
+        if( interactionObject->shouldCeaseInteractionChecker == nullptr ||
+           interactionObject->shouldCeaseInteractionChecker(interactionObject, delta) ){
+            // if we did cease interaction, it is a point of note that interactionObject just changed
+            if( orig == interactionObject ){
+                // however it is also possible we have the same object here, and also possible we merly have interactionCallback
+                if( interactionObject->hasInteraction ){
+                    interactionObject->interactionFn(interactionObject, delta);
+                }
+                return true;
+            }else{
+                return interactionUpdate(delta); // we allow recursion here in case of double bubble
+            }
+        }
+
     }
 
     return false;
@@ -544,6 +574,7 @@ void Ux::interactionHistoryEnteredView(uiObject *interactionObj){
     // check delta->dx for movement amount
     // no movement total
     Ux* self = Ux::Singleton();
+    //self->historyScroller->allowUp = true;
     self->updatePickHistoryPreview();
 }
 
@@ -553,36 +584,62 @@ void Ux::interactionNoOp(uiObject *interactionObj, uiInteraction *delta){
     // no movement total
 }
 
-//static
-void Ux::interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta){
-    Ux* self = Ux::Singleton();
 
-    // we should store a ref to the last animation and cancel it....
-    // the problem is that ref we have is being updated from another thread
-    // and also may already be free'd by the time we need to use it!
-    // a) we can't mark it without first checkign it
-    // b) we can't clear it without possibly breaking the update thread.
-    // this may be another good argument to process all animation updates from the main thread.
+void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){
 
-    // we can mark some chain to not auto free, but if we do his we should find a way to reset that chain too (to truly reuse it)
+    // check delta->dx for movement amount
+    // no movement total
 
-    if( self->fullPickHistoryAnimation != nullptr ){
-        self->fullPickHistoryAnimation->endAnimation(); // thread safe
-        self->fullPickHistoryAnimation = nullptr;
+    if( !interactionObj->doesInFactRender ){
+        return; // this means our tile is invalid/out of range
     }
 
-    if( self->viewing_full_history ) {
-        self->fullPickHistoryAnimation = self->uxAnimations->slideDown(self->historyFullsize)->preserveReference(); // returns uiAminChain*
-        self->viewing_full_history=false;
-    }else{
-        self->historyFullsize->isInBounds = true; // nice hack
-        self->updatePickHistoryPreview();
-        self->fullPickHistoryAnimation = self->uxAnimations->slideUp(self->historyFullsize)->preserveReference(); // returns uiAminChain*
-        self->viewing_full_history=true;
+    Ux* myUxRef = Ux::Singleton();
+
+    myUxRef->uxAnimations->rvbounce(interactionObj);
+
+
+    // A couple things
+    // if image is already in the pallete, we sholud probably not add it twice
+    // we should instead scroll to the color and animate it
+    // we should always scroll to that index though...
+
+     myUxRef->lastPalleteIndex = myUxRef->palleteIndex;
+
+    if( myUxRef->palleteIndex > myUxRef->largestPalleteIndex ) myUxRef->largestPalleteIndex = myUxRef->palleteIndex;
+
+
+    int colorIndexOffset = interactionObj->backgroundColor.r * interactionObj->backgroundColor.g * interactionObj->backgroundColor.b;
+
+    if( myUxRef->palleteColorsIndex[colorIndexOffset] > -1 && myUxRef->palleteColorsIndex[colorIndexOffset] < palleteMax ){
+
+        return;
     }
+
+
+    SDL_Color exi = myUxRef->palleteColors[myUxRef->palleteIndex];
+    myUxRef->palleteColorsIndex[exi.r * exi.g * exi.b] = -1; // we are about to overwrite this color... lets reset it from index
+
+
+    setColor( &myUxRef->palleteColors[myUxRef->palleteIndex++], &interactionObj->backgroundColor);
+
+    myUxRef->palleteColorsIndex[colorIndexOffset] = myUxRef->lastPalleteIndex;
+
+
+    if( myUxRef->palleteIndex >= palleteMax ){
+        myUxRef->palleteIndex = 0;
+    }
+
+
+
+
+    //if( myUxRef->historyPalleteHolder->isInBounds ){
+        myUxRef->palleteScroller->updateTiles(); // calls updateUiObjectFromPallete for each tile
+    //}
 }
 
-//static
+
+//static // RENAME ME
 void Ux::interactionTouchRelease(uiObject *interactionObj, uiInteraction *delta){
 
 
@@ -595,20 +652,33 @@ void Ux::interactionTouchRelease(uiObject *interactionObj, uiInteraction *delta)
 
 }
 
-// this function is a bit odd for now, but is planned to be used to drag and throw objects that will otherwise animiate in, or not animate in based on this
+//static
+void Ux::interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta){
+    Ux* self = Ux::Singleton();
+
+    //self->newHistoryFullsize->cancelCurrentAnimation();
+
+    if( self->viewing_full_history ) {
+        self->historyPalleteHolder->setAnimation( self->uxAnimations->slideDown(self->historyPalleteHolder) ); // returns uiAminChain*
+        self->viewing_full_history=false;
+    }else{
+        self->historyPalleteHolder->isInBounds = true; // nice hack
+        self->updatePickHistoryPreview();
+        self->historyPalleteHolder->setAnimation( self->uxAnimations->slideUp(self->historyPalleteHolder) ); // returns uiAminChain*
+        self->viewing_full_history=true;
+        //self->historyScroller->allowUp = true;
+    }
+}
+
+// this overrides the interface fn?
+// this function is a bit odd for now, but is planned to be used to drag and throw objects that will otherwise animiate in, or not animate in based on this - Pane
 //static
 void Ux::interactionVert(uiObject *interactionObj, uiInteraction *delta){
     Ux* self = Ux::Singleton();
 
-    // if we are already panning .... this is the second thing thats history specific in this function... this and what to do when direciton changes
-    // this function is really a "pan in/out" sort of function for now and not at all like HZ
-    if( self->fullPickHistoryAnimation != nullptr ){
-        self->fullPickHistoryAnimation->endAnimation(); // thread safe
-        self->fullPickHistoryAnimation = nullptr;
-        // so uiObject cannot currently have references to uiAminChain since they must be defined after uiAnimation and uiObject
-        // we could define something after that could hold references to both though
-        // and then we could track that thing instead of uiObject
-    }
+    // if we are already panning ....
+    interactionObj->cancelCurrentAnimation();
+    //self->historyFullsize // right now there is still some history specific stuff here
 
     if( interactionObj->interactionProxy != nullptr ){
         interactionObj = interactionObj->interactionProxy;
@@ -616,11 +686,10 @@ void Ux::interactionVert(uiObject *interactionObj, uiInteraction *delta){
 
     interactionObj->boundryRect.y += (delta->ry * (1.0/interactionObj->parentObject->collisionRect.h));
 
-    // first todo: will mouseup always trigger the toggle pick history fn - current not (drag up mouse up on ctrl that has its own interactionCb)
-    // now if the control supports drop then maybe the existing way is good
     if( delta->ry > 0.003 ){ // moving down
         self->viewing_full_history = true; // toggle still to be called..... ?
         // and once thats certain, we can more easily modify self->viewing_full_history as needed based on which dir this drag is going!
+        // seems like we need a boolean on the UI object to indicate the toggled state- I think a generic like checked or toggled is a good plan...
     }
 
     if( delta->ry < -0.003 ){
@@ -631,10 +700,35 @@ void Ux::interactionVert(uiObject *interactionObj, uiInteraction *delta){
 }
 
 //static
+void Ux::interactionSliderVT(uiObject *interactionObj, uiInteraction *delta){
+
+    interactionObj->boundryRect.y += (delta->ry * (1.0/interactionObj->parentObject->collisionRect.h));
+    /// we cannot modify the rect directly like this?
+
+    //computedMovementRect
+    if( interactionObj->boundryRect.y < interactionObj->computedMovementRect.y ){
+        interactionObj->boundryRect.y = interactionObj->computedMovementRect.y;
+        delta->fixY(interactionObj->collisionRect,  interactionObj->parentObject->collisionRect);
+
+    }else if( interactionObj->boundryRect.y > interactionObj->computedMovementRect.y + interactionObj->computedMovementRect.h){
+        interactionObj->boundryRect.y = interactionObj->computedMovementRect.y + interactionObj->computedMovementRect.h;
+        delta->fixY(interactionObj->collisionRect,  interactionObj->parentObject->collisionRect);
+    }
+
+
+    if( interactionObj->hasAnimCb ){
+        interactionObj->animationPercCallback(interactionObj, interactionObj->computedMovementRect.h > 0 ? ((interactionObj->boundryRect.y - interactionObj->computedMovementRect.y) / interactionObj->computedMovementRect.h) : 0.0);
+    }
+
+    Ux* myUxRef = Ux::Singleton();
+    myUxRef->updateRenderPosition(interactionObj);
+}
+
+//static
 void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
 
     interactionObj->boundryRect.x += (delta->rx * (1.0/interactionObj->parentObject->collisionRect.w));
-    /// we cannot modify the rect directly like this
+    /// we cannot modify the rect directly like this?
 
 //computedMovementRect
     if( interactionObj->boundryRect.x < interactionObj->computedMovementRect.x ){
@@ -655,7 +749,7 @@ void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
 
 
     if( interactionObj->hasAnimCb ){
-        interactionObj->animationPercCallback(interactionObj->boundryRect.x / interactionObj->computedMovementRect.w);
+        interactionObj->animationPercCallback(interactionObj, interactionObj->computedMovementRect.w > 0 ? ((interactionObj->boundryRect.x - interactionObj->computedMovementRect.x) / interactionObj->computedMovementRect.w) : 0.0);
     }
 
     //updateRenderPositions();  // WHY NOT MOVE HERE
@@ -670,11 +764,114 @@ void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
     // currently does not consider width of the object, since given a width it could remain within boundaries, but this is not usefl
     // for sliders where the center point of the object is all that is considered for positioning (bool isCentered) <-- ? untrue ? planing stage problems
 }
+
+
+
 //
 //
 //void Ux::setVolume(uiObject *interactionObj, uiInteraction *delta){
 //
 //}
+
+
+//static add Ux::
+bool Ux::bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
+    // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
+
+    Ux* self = Ux::Singleton();
+    // see also interactionUpdate
+
+    if( delta->dy != 0 || delta->dx != 0 ){
+        return self->bubbleCurrentInteraction(); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
+    }
+
+    return true;
+}
+
+
+// **** PALLETTE ****
+//static
+bool Ux::updateUiObjectFromPallete(uiObject *historyTile, int offset){
+    Ux* self = Ux::Singleton();
+
+    if( offset > self->largestPalleteIndex || offset < 0 ){
+        historyTile->doesInFactRender = false;
+        historyTile->doesRenderChildObjects = false;
+        return false;
+    }
+
+    offset = offset; // no reverse here
+
+    historyTile->hasBackground = true;
+
+    SDL_Color* clr = &self->palleteColors[offset];
+    Ux::setColor(&historyTile->backgroundColor, clr->r, clr->g, clr->b, 255);
+
+    char* resultText = (char*)malloc( 6 ); //leaking memory??
+    sprintf(resultText, "%02x%02x%02x", clr->r, clr->g, clr->b);
+
+
+    if( historyTile->getChildCount() < 1 ){
+        uiObject * letterSize = new uiObject();
+        letterSize->setBoundaryRect( 0.0, 0.0, 0.16666666666667, 1.0);
+        historyTile->addChild(letterSize);
+
+        self->printStringToUiObject(letterSize, resultText, RESIZE_NOW);
+    }else{
+        self->printStringToUiObject(historyTile->childList[0], resultText, DO_NOT_RESIZE_NOW);
+    }
+
+    free(resultText);
+
+    //historyTile->hasForeground = true;
+    //self->printCharToUiObject(historyTile, 'Z'-offset, true); // meh>>>?!
+
+    historyTile->doesInFactRender = true;
+    historyTile->doesRenderChildObjects = true;
+
+    return true;
+}
+
+int Ux::getPalleteTotalCount(){
+    Ux* self = Ux::Singleton();
+    return self->palleteIndex - 1;
+}
+
+
+
+// **** HISTORY ****
+//static
+bool Ux::updateUiObjectFromHistory(uiObject *historyTile, int offset){
+    Ux* self = Ux::Singleton();
+
+    if( offset > self->pickHistoryIndex - 1 || offset < 0 ){
+        historyTile->doesInFactRender = false;
+        return false;
+    }
+
+    // TODO we need to also account for largestPickHistoryIndex to see if we looped!!!!!!!!!
+    // if largest is max, then we loop from the current index, but continue looping after reaching the bottom, its a modulous problem
+    // really this only applies if offset computed next is less than zero
+
+    offset = self->pickHistoryIndex - offset - 1; // we show them in reverse here
+
+    historyTile->hasBackground = true;
+
+    SDL_Color* clr = &self->pickHistory[offset];
+    Ux::setColor(&historyTile->backgroundColor, clr->r, clr->g, clr->b, 255);
+
+    //historyTile->hasForeground = true;
+    //self->printCharToUiObject(historyTile, 'Z'-offset, true); // meh>>>?!
+
+    historyTile->doesInFactRender = true;
+
+    return true;
+}
+
+int Ux::getHistoryTotalCount(){
+    Ux* self = Ux::Singleton();
+    return self->pickHistoryIndex - 1;
+}
 
 
 
@@ -684,29 +881,13 @@ void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
 ///   or otherwise seperate function for addPickHistory from this
 void Ux::updateColorValueDisplay(SDL_Color* color){
 
-    char* resultText; //leaking memory???
-    bool doNotResizeText = false;  // assert doNotResizeText == false;
-    bool doResizeText = true; // assert doResizeText == true;
+    curerntColorPreview->update(color);
 
-    sprintf(resultText, "%02x%02x%02x", color->r, color->g, color->b);
-    Ux::setColor(&hexValueText->backgroundColor,color->r, color->g, color->b, 255);
-    printStringToUiObject(hexValueText, resultText, doNotResizeText);
-
-    sprintf(resultText, "%3d", color->r);
-    rgbRedText->backgroundColor.a = color->r;
-    printStringToUiObject(rgbRedText, resultText, doNotResizeText);
-
-    sprintf(resultText, "%3d", color->g);
-    rgbGreenText->backgroundColor.a = color->g;
-    printStringToUiObject(rgbGreenText, resultText, doNotResizeText);
-
-    sprintf(resultText, "%3d", color->b);
-    rgbBlueText->backgroundColor.a = color->b;
-    printStringToUiObject(rgbBlueText, resultText, doNotResizeText);
-
-    currentlyPickedColor = color;
+    currentlyPickedColor = color; // maybe really leaking memory ?
     //addCurrentToPickHistory();
 }
+
+
 
 void Ux::addCurrentToPickHistory(){
 
@@ -743,7 +924,7 @@ void Ux::addCurrentToPickHistory(){
 
     lastPickHistoryIndex = pickHistoryIndex;
     if( pickHistoryIndex > largestPickHistoryIndex ) largestPickHistoryIndex = pickHistoryIndex;
-    pickHistory[pickHistoryIndex++] = *currentlyPickedColor;
+    pickHistory[pickHistoryIndex++] = *currentlyPickedColor; // 
 
     if( pickHistoryIndex >= pickHistoryMax ){
         pickHistoryIndex = 0;
@@ -802,46 +983,50 @@ void Ux::updatePickHistoryPreview(){
 
     // somertimes upate the full histoury preview too
 
-
-
-    if( !historyFullsize->isInBounds ) return;
-
-    int historyTile = 0;
-    int historyOffset = pickHistoryIndex - 1; // 0;
-    if( histIndex < 0 ){
-        histIndex = largestPickHistoryIndex;
+    if( historyPalleteHolder->isInBounds ){
+        historyScroller->updateTiles(); // calls updateUiObjectFromHistory for each tile
+        //palleteScroller->updateTiles();
     }
-    int rowsTotal = 7;
-    int rowCtr = -1;
-    while(++rowCtr < rowsTotal ){
 
-        int ctr = SIX_ACROSS; // redefinition of ctr....
-        while( --ctr >= 0 ){
+    //if( !historyPalleteHolder->isInBounds ) return;
 
-            //if( historyOffset > largestPickHistoryIndex ) break;
-            if( historyOffset < 0 ) break;
-
-
-            clr = &pickHistory[historyOffset];
-
-
-            colora = historyFullsize->childList[historyTile];
-
-            Ux::setColor(&colora->backgroundColor, clr->r, clr->g, clr->b, 255);
-
-
-            historyTile++;
-            historyOffset--;
-        }
-
-        //if( historyOffset > largestPickHistoryIndex ) break;
-        if( historyOffset < 0 ) break;
-
-
-    }
+//    int historyTile = 0;
+//    int historyOffset = pickHistoryIndex - 1; // 0;
+//    if( histIndex < 0 ){
+//        histIndex = largestPickHistoryIndex;
+//    }
+//    int rowsTotal = 7;
+//    int rowCtr = -1;
+//    while(++rowCtr < rowsTotal ){
+//
+//        int ctr = SIX_ACROSS; // redefinition of ctr....
+//        while( --ctr >= 0 ){
+//
+//            //if( historyOffset > largestPickHistoryIndex ) break;
+//            if( historyOffset < 0 ) break;
+//
+//
+//            clr = &pickHistory[historyOffset];
+//
+//
+//            colora = historyFullsize->childList[historyTile];
+//
+//            Ux::setColor(&colora->backgroundColor, clr->r, clr->g, clr->b, 255);
+//
+//
+//            historyTile++;
+//            historyOffset--;
+//        }
+//
+//        //if( historyOffset > largestPickHistoryIndex ) break;
+//        if( historyOffset < 0 ) break;
+//
+//
+//    }
 
 
 }
+
 
 //bool Ux::updateAnimations(float elapsedMs){
 //
@@ -849,31 +1034,6 @@ void Ux::updatePickHistoryPreview(){
 //
 //}
 
-
-void Ux::renderFullPickHistory(){
-    // so we might dynamically allocate a bunch of UI object if we don't find existing ones in the positon
-    /// this could get interesting..
-
-    // so we recompute positon
-    // and must notify our parent object if our boundaries exceed our parent rect bounds?
-
-    /// but what about the root object/
-
-    // maybe we keep reporting thisup the tree until we reach an object taht has scroollll barsz enabled
-    // and the root UI object must alwasy jus in case something else does not capture hte scrol// and it works gud' ? no
-
-
-    //// sooo - whjen do we detect that we left the render bounds
-    /// and defer adding more ojbects
-    // or avoid rendering objects....
-    // or avoid recomputing positions
-    // or ??
-    /// so its really got to be updated based on scroll X though we still render from 0
-    // at least to create empty objects to take ups pace
-    // only if the child object size is predictable asi t will be inthis case
-    /// such taht and given scroll offset has a known object offset to begin the rendering gud"
-
-}
 
 int Ux::renderObject(uniformLocationStruct *uniformLocations){
     return renderObjects(uniformLocations, rootUiObject);
@@ -916,6 +1076,51 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
                     1.0,
                     1.0);
 
+
+
+
+
+        glUniform1f(uniformLocations->ui_corner_radius, 0.15);
+
+
+
+
+        if( renderObj->hasCropParent ){
+//            if( renderObj->isDebugObject ){
+//                SDL_Log("DEBUG OBJECT IS BEING UPDATED NOW!");
+//
+//// crop may need to be parent of parent..... maybe just ask teh scroll controller about it?
+//    // TODO: also seems some recursive need where all(or some) children may also share the same crop parent????
+////                SDL_Log("child   render rect %f %f %f %f",
+////                        renderObj->renderRect.x,
+////                        renderObj->renderRect.y,
+////                        renderObj->renderRect.w,
+////                        renderObj->renderRect.h);
+////
+////                SDL_Log("parent2 render rect %f %f %f %f",
+////                        renderObj->cropParentObject->renderRect.x,
+////                        renderObj->cropParentObject->renderRect.y,
+////                        renderObj->cropParentObject->renderRect.w,
+////                        renderObj->cropParentObject->renderRect.h);
+//            }
+
+
+            glUniform4f(uniformLocations->ui_crop,
+                        renderObj->cropParentObject->renderRect.x,
+                        -renderObj->cropParentObject->renderRect.y,
+                        renderObj->cropParentObject->renderRect.w,
+                        renderObj->cropParentObject->renderRect.h);
+
+
+        }else{
+            // also note maybe this should only apply for the first and last 2 rows of tiles (optmimization) see allocateChildTiles and uiShader.vsh
+            glUniform4f(uniformLocations->ui_crop,
+                        0,
+                        0,
+                        /*disabled*/0,//1,
+                        /*disabled*/0);//1); // 0,0,1,1  is screen crop, but we can skip this logic in vsh
+        }
+
     //
     //    glUniform4f(uniformLocations->ui_scale,
     //                1.0,
@@ -957,12 +1162,13 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 
         }
 
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        // see updateStageDimension and consider SDL_RenderSetClipRect
+        glDrawArrays(GL_TRIANGLES, 0, 6); // hmmm
 
     }
 
 
-    if( renderObj->hasChildren  ){
+    if( renderObj->hasChildren && renderObj->doesRenderChildObjects ){
         //for( int x=0, l=(int)renderObj->childUiObjects.size(); x<l; x++ ){
 
 //
