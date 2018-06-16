@@ -13,6 +13,8 @@ varying vec2 TexCoordOut; // New
 uniform float fishEyeScale;
 uniform float fishEyeScalePercent;
 
+// commenting here
+
 uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform sampler2D texture3;

@@ -17,7 +17,6 @@ varying vec2 TexCoordOut; // New
 // lets get the orig texcoord out too....
 varying vec2 OrigTexCoordOut; // New
 
-
 //
 //uniform float fishEyeScale;
 //uniform float fishEyeScalePercent;
