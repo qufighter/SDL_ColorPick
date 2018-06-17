@@ -211,7 +211,9 @@ static Ux* Singleton();
     static void interactionHistoryEnteredView(uiObject *interactionObj);
     static void interactionNoOp(uiObject *interactionObj, uiInteraction *delta);
     static void interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta);
+    static void interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction *delta);
     static void interactionTouchRelease(uiObject *interactionObj, uiInteraction *delta);
+    static void clickPalleteColor(uiObject *interactionObj, uiInteraction *delta);
     static void clickHistoryColor(uiObject *interactionObj, uiInteraction *delta);
     static void interactionHZ(uiObject *interactionObj, uiInteraction *delta);
     static void interactionSliderVT(uiObject *interactionObj, uiInteraction *delta);
@@ -230,14 +232,15 @@ static Ux* Singleton();
 
     int palleteIndex = 0;
     int lastPalleteIndex = -1;
-    int largestPalleteIndex=0; // how far in history we have gone, to allow loop if we have greater history available
-    static const int palleteMax = 3; // WARN do not exeede
+    int largestPalleteIndex=-1; // how far in history we have gone, to allow loop if we have greater history available
+    static const int palleteMax = 6; // WARN do not exeede max size Uint8 palleteColorsIndex 255
     SDL_Color palleteColors[palleteMax];
     static bool updateUiObjectFromPallete(uiObject *historyTile, int offset);
     static int getPalleteTotalCount();
 
     // pallete max CANNOT exceede the size of Uint16 now, which is about 65536
     Uint8 palleteColorsIndex[COLOR_INDEX_MAX]; // we do not search the array
+    //Uint8* palleteColorsIndex = (Uint8*)malloc( COLOR_INDEX_MAX ); // totally equivilent to above
 
 
     void updateColorValueDisplay(SDL_Color* color);
@@ -276,7 +279,6 @@ static Ux* Singleton();
         uiObject *historyPreview;
         uiObject *historyFullsize;
 
-        bool viewing_full_history;
 
 //        uiObject *renderedletters[2048]; // we should just make ach letter once
 //        int renderedLettersCtr=0;

@@ -107,6 +107,7 @@ struct uiObject
         isRoot=false;
         cropParentObject=nullptr;
         hasCropParent=false;
+        is_being_viewed_state=false;
         childListIndex = 0;
         Ux::setColor(&foregroundColor, 255, 255, 255, 255);
 
@@ -135,6 +136,8 @@ struct uiObject
     bool isInBounds; // equivilent to needs render
     bool containText;
     bool testChildCollisionIgnoreBounds = false;
+
+    bool is_being_viewed_state = false; // some object interactions need to track the state of the toggle into/outof view
 
     bool hasBackground;
     uiScrollController *myScrollController; // child objects will inherit this I think!

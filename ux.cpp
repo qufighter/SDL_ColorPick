@@ -36,7 +36,7 @@ Ux::Ux(void) {
     currentInteraction = uiInteraction();
 
     for( int x=0; x<COLOR_INDEX_MAX; x++ ){
-        palleteColorsIndex[x] = -1;
+        palleteColorsIndex[x] = -1; // largest Uint..
     }
 }
 
@@ -146,7 +146,7 @@ Ux::uiObject* Ux::create(void){
     Ux::setColor(&historyPalleteHolder->backgroundColor, 0, 0, 0, 192);
     historyPalleteHolder->setBoundaryRect( 0.0, 0.04, 1.0, 0.8);
 
-    historyPalleteHolder->setInteractionCallback(&Ux::interactionToggleHistory);
+    historyPalleteHolder->setInteractionCallback(&Ux::interactionToggleHistory); // if we dragged and released... it will animate the rest of the way because of this
     historyPalleteHolder->setInteraction(&Ux::interactionVert);
     historyPalleteHolder->setBoundsEnterFunction(&Ux::interactionHistoryEnteredView);
 
@@ -166,7 +166,7 @@ Ux::uiObject* Ux::create(void){
 
 
     palleteScroller = new uiScrollController();
-    palleteScroller->initTilingEngine(1, 3, &Ux::updateUiObjectFromPallete, &Ux::getPalleteTotalCount, nullptr);
+    palleteScroller->initTilingEngine(1, 3, &Ux::updateUiObjectFromPallete, &Ux::getPalleteTotalCount, &Ux::clickPalleteColor);
 
     newHistoryPallete = palleteScroller->uiObjectItself;
 
@@ -177,7 +177,6 @@ Ux::uiObject* Ux::create(void){
 
 
     //newHistoryFullsize->isDebugObject= true;
-    viewing_full_history = true;
 
 
 
@@ -308,6 +307,13 @@ Ux::uiObject* Ux::create(void){
     historyPalleteHolder->addChild(newHistoryFullsize);
     palleteSelectionColorPreview = new uiViewColor(historyPalleteHolder, Float_Rect(0.0, 0.5, 1.0, 0.5));
     historyPalleteHolder->addChild(newHistoryPallete);
+
+
+
+
+    palleteSelectionColorPreview->uiObjectItself->setInteractionCallback(&Ux::interactionTogglePalletePreview); // if we dragged and released... it will animate the rest of the way because of this
+    palleteSelectionColorPreview->uiObjectItself->setInteraction(&Ux::interactionVert);
+    // palleteSelectionColorPreview->uiObjectItself->setBoundsEnterFunction(&Ux::interactionHistoryEnteredView);
 
 
     rootUiObject->addChild(historyPalleteHolder);
@@ -592,6 +598,67 @@ void Ux::interactionNoOp(uiObject *interactionObj, uiInteraction *delta){
 }
 
 
+//static
+void Ux::interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction *delta){
+    Ux* self = Ux::Singleton();
+
+// this is the SAME as interactionToggleHistory ?
+
+    /*
+     palleteSelectionColorPreview = new uiViewColor(historyPalleteHolder, Float_Rect(0.0, 0.5, 1.0, 0.5));
+     historyPalleteHolder->addChild(newHistoryPallete);
+     palleteSelectionColorPreview->uiObjectItself->setInteractionCallback(&Ux::interactionTogglePalletePreview); // if we dragged and released... it will animate the rest of the way because of this
+     palleteSelectionColorPreview->uiObjectItself->setInteraction(&Ux::interactionVert);
+     */
+
+    if( interactionObj->is_being_viewed_state ) {
+        self->palleteSelectionColorPreview->uiObjectItself->setAnimation( self->uxAnimations->slideDown(self->palleteSelectionColorPreview->uiObjectItself) ); // returns uiAminChain*
+        interactionObj->is_being_viewed_state =false;
+    }else{
+        self->palleteSelectionColorPreview->uiObjectItself->isInBounds = true; // nice hack
+        self->updatePickHistoryPreview();
+        self->palleteSelectionColorPreview->uiObjectItself->setAnimation( self->uxAnimations->slideUp(self->palleteSelectionColorPreview->uiObjectItself) ); // returns uiAminChain*
+        interactionObj->is_being_viewed_state = true;
+    }
+}
+
+
+void Ux::clickPalleteColor(uiObject *interactionObj, uiInteraction *delta){
+
+    if( !interactionObj->doesInFactRender ){
+        return; // this means our tile is invalid/out of range
+    }
+    Ux* myUxRef = Ux::Singleton();
+
+    myUxRef->palleteSelectionColorPreview->update(&interactionObj->backgroundColor);
+
+    if( !myUxRef->palleteSelectionColorPreview->uiObjectItself->is_being_viewed_state ) {
+        myUxRef->interactionTogglePalletePreview(myUxRef->palleteSelectionColorPreview->uiObjectItself, delta);
+    }
+
+}
+
+//static
+void Ux::interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta){
+    Ux* self = Ux::Singleton();
+
+    // this is the SAME as interactionTogglePalletePreview ?
+
+
+    //self->newHistoryFullsize->cancelCurrentAnimation();
+
+    if( interactionObj->is_being_viewed_state ) {
+        self->historyPalleteHolder->setAnimation( self->uxAnimations->slideDown(self->historyPalleteHolder) ); // returns uiAminChain*
+        interactionObj->is_being_viewed_state = false;
+    }else{
+        self->historyPalleteHolder->isInBounds = true; // nice hack
+        self->updatePickHistoryPreview();
+        self->historyPalleteHolder->setAnimation( self->uxAnimations->slideUp(self->historyPalleteHolder) ); // returns uiAminChain*
+        interactionObj->is_being_viewed_state = true;
+        //self->historyScroller->allowUp = true;
+    }
+}
+
 void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){
 
     // check delta->dx for movement amount
@@ -659,23 +726,7 @@ void Ux::interactionTouchRelease(uiObject *interactionObj, uiInteraction *delta)
 
 }
 
-//static
-void Ux::interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta){
-    Ux* self = Ux::Singleton();
 
-    //self->newHistoryFullsize->cancelCurrentAnimation();
-
-    if( self->viewing_full_history ) {
-        self->historyPalleteHolder->setAnimation( self->uxAnimations->slideDown(self->historyPalleteHolder) ); // returns uiAminChain*
-        self->viewing_full_history=false;
-    }else{
-        self->historyPalleteHolder->isInBounds = true; // nice hack
-        self->updatePickHistoryPreview();
-        self->historyPalleteHolder->setAnimation( self->uxAnimations->slideUp(self->historyPalleteHolder) ); // returns uiAminChain*
-        self->viewing_full_history=true;
-        //self->historyScroller->allowUp = true;
-    }
-}
 
 // this overrides the interface fn?
 // this function is a bit odd for now, but is planned to be used to drag and throw objects that will otherwise animiate in, or not animate in based on this - Pane
@@ -694,13 +745,11 @@ void Ux::interactionVert(uiObject *interactionObj, uiInteraction *delta){
     interactionObj->boundryRect.y += (delta->ry * (1.0/interactionObj->parentObject->collisionRect.h));
 
     if( delta->ry > 0.003 ){ // moving down
-        self->viewing_full_history = true; // toggle still to be called..... ?
-        // and once thats certain, we can more easily modify self->viewing_full_history as needed based on which dir this drag is going!
-        // seems like we need a boolean on the UI object to indicate the toggled state- I think a generic like checked or toggled is a good plan...
+        interactionObj->is_being_viewed_state = true;
     }
 
     if( delta->ry < -0.003 ){
-        self->viewing_full_history = false; // toggle still to be called.....
+        interactionObj->is_being_viewed_state = false; // toggle still to be called..... on touch release (interactionCallback)
     }
 
     self->updateRenderPosition(interactionObj);
@@ -841,7 +890,8 @@ bool Ux::updateUiObjectFromPallete(uiObject *historyTile, int offset){
 
 int Ux::getPalleteTotalCount(){
     Ux* self = Ux::Singleton();
-    return self->palleteIndex - 1;
+    //return self->palleteIndex - 1;
+    return self->largestPalleteIndex;
 }
 
 
