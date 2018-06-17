@@ -548,7 +548,7 @@ struct UxAnim
 
     }
 
-    uiAminChain* slideUp(Ux::uiObject *uiObject){ /* slideUpIn */
+    uiAminChain* resetPosition(Ux::uiObject *uiObject){ /* slideUpIn */ /* reset position */
         uiAminChain* myAnimChain = new uiAminChain();
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, -0.5) );
         myAnimChain->addAnim( (new uiAnimation(uiObject))->resetPosition() );
@@ -560,6 +560,14 @@ struct UxAnim
         uiAminChain* myAnimChain = new uiAminChain();
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
         myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(0, 1.0) );
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
+
+    uiAminChain* slideDownFullHeight(Ux::uiObject *uiObject){ /* slideDownOut */
+        uiAminChain* myAnimChain = new uiAminChain();
+        //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(0, uiObject->origBoundryRect.y + uiObject->origBoundryRect.h) ); // WE SHOULD CONSIDER A WAY TO JUST USE THE OBJECTS MOVEMENT BOUNDARY RECT?
         pushAnimChain(myAnimChain);
         return myAnimChain;
     }

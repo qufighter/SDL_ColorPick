@@ -305,15 +305,26 @@ Ux::uiObject* Ux::create(void){
 
     //rootUiObject->addChild(historyFullsize); // todo remove all ref to this test obj
     historyPalleteHolder->addChild(newHistoryFullsize);
-    palleteSelectionColorPreview = new uiViewColor(historyPalleteHolder, Float_Rect(0.0, 0.5, 1.0, 0.5));
+    palleteSelectionColorPreview = new uiViewColor(historyPalleteHolder, Float_Rect(0.0, 0.5, 1.0, 0.5)); // this rect is reset next...
     historyPalleteHolder->addChild(newHistoryPallete);
 
-
-
+    palleteSelectionColorPreview->uiObjectItself->setBoundaryRect(
+        newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y - newHistoryPallete->boundryRect.h,
+        newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h
+    );
 
     palleteSelectionColorPreview->uiObjectItself->setInteractionCallback(&Ux::interactionTogglePalletePreview); // if we dragged and released... it will animate the rest of the way because of this
     palleteSelectionColorPreview->uiObjectItself->setInteraction(&Ux::interactionVert);
     // palleteSelectionColorPreview->uiObjectItself->setBoundsEnterFunction(&Ux::interactionHistoryEnteredView);
+
+
+    // lets give palleteSelectionColorPreview a background
+    palleteSelectionColorPreview->uiObjectItself->hasBackground = true;
+    Ux::setColor(&palleteSelectionColorPreview->uiObjectItself->backgroundColor, 0, 0, 0, 192);
+
+
+    palleteSelectionColorPreview->uiObjectItself->setCropParent(historyPalleteHolder); // THIS REALLY DOESN'T WORK! - ALL CHILD OBJECTS NEED TO GET THIS TOO... IT DOES WORK FOR TOP LEVEL OBJ BG ONLY....
+
 
 
     rootUiObject->addChild(historyPalleteHolder);
@@ -327,6 +338,9 @@ Ux::uiObject* Ux::create(void){
 
 
     updateRenderPositions();
+
+    historyScroller->updateTiles();
+    palleteScroller->updateTiles();
 
     return rootUiObject;
 }
@@ -602,7 +616,6 @@ void Ux::interactionNoOp(uiObject *interactionObj, uiInteraction *delta){
 void Ux::interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction *delta){
     Ux* self = Ux::Singleton();
 
-// this is the SAME as interactionToggleHistory ?
 
     /*
      palleteSelectionColorPreview = new uiViewColor(historyPalleteHolder, Float_Rect(0.0, 0.5, 1.0, 0.5));
@@ -611,14 +624,14 @@ void Ux::interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction
      palleteSelectionColorPreview->uiObjectItself->setInteraction(&Ux::interactionVert);
      */
 
-    if( interactionObj->is_being_viewed_state ) {
-        self->palleteSelectionColorPreview->uiObjectItself->setAnimation( self->uxAnimations->slideDown(self->palleteSelectionColorPreview->uiObjectItself) ); // returns uiAminChain*
-        interactionObj->is_being_viewed_state =false;
+    if( self->palleteSelectionColorPreview->uiObjectItself->is_being_viewed_state ) {
+        self->palleteSelectionColorPreview->uiObjectItself->setAnimation( self->uxAnimations->slideDownFullHeight(self->palleteSelectionColorPreview->uiObjectItself) ); // returns uiAminChain*
+        self->palleteSelectionColorPreview->uiObjectItself->is_being_viewed_state =false;
     }else{
         self->palleteSelectionColorPreview->uiObjectItself->isInBounds = true; // nice hack
         self->updatePickHistoryPreview();
-        self->palleteSelectionColorPreview->uiObjectItself->setAnimation( self->uxAnimations->slideUp(self->palleteSelectionColorPreview->uiObjectItself) ); // returns uiAminChain*
-        interactionObj->is_being_viewed_state = true;
+        self->palleteSelectionColorPreview->uiObjectItself->setAnimation( self->uxAnimations->resetPosition(self->palleteSelectionColorPreview->uiObjectItself) ); // returns uiAminChain*
+        self->palleteSelectionColorPreview->uiObjectItself->is_being_viewed_state = true;
     }
 }
 
@@ -628,6 +641,7 @@ void Ux::clickPalleteColor(uiObject *interactionObj, uiInteraction *delta){
     if( !interactionObj->doesInFactRender ){
         return; // this means our tile is invalid/out of range
     }
+
     Ux* myUxRef = Ux::Singleton();
 
     myUxRef->palleteSelectionColorPreview->update(&interactionObj->backgroundColor);
@@ -642,19 +656,17 @@ void Ux::clickPalleteColor(uiObject *interactionObj, uiInteraction *delta){
 void Ux::interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta){
     Ux* self = Ux::Singleton();
 
-    // this is the SAME as interactionTogglePalletePreview ?
-
 
     //self->newHistoryFullsize->cancelCurrentAnimation();
 
-    if( interactionObj->is_being_viewed_state ) {
+    if( self->historyPalleteHolder->is_being_viewed_state ) {
         self->historyPalleteHolder->setAnimation( self->uxAnimations->slideDown(self->historyPalleteHolder) ); // returns uiAminChain*
-        interactionObj->is_being_viewed_state = false;
+        self->historyPalleteHolder->is_being_viewed_state = false;
     }else{
         self->historyPalleteHolder->isInBounds = true; // nice hack
         self->updatePickHistoryPreview();
-        self->historyPalleteHolder->setAnimation( self->uxAnimations->slideUp(self->historyPalleteHolder) ); // returns uiAminChain*
-        interactionObj->is_being_viewed_state = true;
+        self->historyPalleteHolder->setAnimation( self->uxAnimations->resetPosition(self->historyPalleteHolder) ); // returns uiAminChain*
+        self->historyPalleteHolder->is_being_viewed_state = true;
         //self->historyScroller->allowUp = true;
     }
 }
