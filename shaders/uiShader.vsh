@@ -10,7 +10,7 @@ attribute vec4 position; // one of 4 sq verticies (-1,-1, 1,-1, 1,1, -1,1)
 
 //varying vec4 colorVarying;
 
-//uniform mat4 modelMatrix;
+uniform mat4 modelMatrix;
 //uniform mat4 viewMatrix;
 //uniform mat4 projectionMatrix;
 
@@ -108,7 +108,8 @@ void main()
 //        oPos.y=parPos.y + parPos.a;
 //    }
 
-    vec4 objPosition = (position * ui_scale) + ui_position;
+    vec4 objPosition = (modelMatrix * position * ui_scale) + ui_position;
+
 
     if( ui_crop.b != 0.0 || ui_crop.a != 0.0 ){
 
@@ -124,6 +125,8 @@ void main()
 
 
         if( position.y < 0.0 ){ // "bottom" left or right corner of sq
+
+// rotate will move these coords slightly enough to mess up the cropping!?
 
             float lostY = 0.0;
 

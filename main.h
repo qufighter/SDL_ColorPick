@@ -54,11 +54,11 @@
 
 
 // GLM include files
-//#include "glm/glm.hpp"
-//#include "glm/gtx/projection.hpp"
-//#include "glm/gtc/matrix_transform.hpp"
-//#include "glm/gtx/fast_square_root.hpp"
-//#include "glm/gtx/perpendicular.hpp"
+#include "glm/glm.hpp"
+#include "glm/gtx/projection.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/fast_square_root.hpp"
+#include "glm/gtx/perpendicular.hpp"
 
 
 // ^ glm possibly not needed for such simple project

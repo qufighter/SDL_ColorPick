@@ -160,6 +160,17 @@ struct uiScrollController{
 
     }
 
+    void animateScrollXyAbsolute(float x, float y){
+        Ux* uxInstance = Ux::Singleton();
+
+        uiAminChain* myAnimChain = new uiAminChain();
+        myAnimChain->addAnim((new uiAnimation(this->scrollChildContainer))->moveTo(x, y)->setAnimationCallback(scrollAnimationUpdaterCb)->setGetBoundsFn(scrollAnimationGetBoundsFn) );
+        myAnimChain->addAnim((new uiAnimation(this->scrollChildContainer))->setAnimationReachedCallback(ourAnimationCompleted) );
+        this->scrollChildContainer->setAnimation(myAnimChain); // imporrtant to do this before we push it..
+        uxInstance->uxAnimations->pushAnimChain(myAnimChain);
+        
+    }
+
     static bool testIfObjectCanInteract(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
                                                                                 // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
         uiScrollController* self = interactionObj->myScrollController;
@@ -302,8 +313,9 @@ struct uiScrollController{
         scrollVtDrag->boundryRect.h = totalScrollRows < 1 ? 1.0 : ((1.0f * rowsToShow) / (totalScrollRows + rowsToShow));
         scrollVtDrag->updateRenderPosition(); // this update th computed mvmt boundary rect
         scrollVtDrag->updateAnimationPercent(0.0, totalScrollRows < 1 ? 0.0 : (scrolly / minimumScrollY));// this does updateRenderPosition too!
-
     }
+
+
 
     void reflowTiles(){
         reflowTiles(true);
@@ -360,6 +372,44 @@ struct uiScrollController{
         rowsOffset = newRowsOffset;
     }
 
+    uiObject* getVisibleTileForOffsetOrNull(int itemOffset){
+        int offset = getTileOffsetFromScroll();
+        return scrollChildContainer->getChildOrNullPtr(itemOffset-offset);
+    }
+
+    // this is the public interface, the offset for the item in the total set of items
+    void scrollToItemByIndex(int itemOffset){
+        updateTotalScrollRows();
+        if( totalScrollRows < 1 ){ return; }// no scrollable region
+        int seekRow = itemOffset / childObjectsPerRow;
+        int currentRow = abs((int)(scrolly / tileHeight));
+        //        int maxRow = currentRow + rowsToShow;
+        //        if( seekRow > currentRow && seekRow < maxRow ){
+        //            // row is in full view already
+        //            return;
+        //        }
+        if( seekRow < currentRow ){
+            animateScrollXyAbsolute(0, ((seekRow) * -tileHeight) );
+            return;
+
+        }else if(seekRow >= (currentRow + rowsToShow)){
+            animateScrollXyAbsolute(0, ((seekRow-(rowsToShow-1)) * -tileHeight) );
+            return;
+        }else{
+            // row is in already full view (or is first row in partial view)
+            if( seekRow == currentRow ){
+                animateScrollXyAbsolute(0, ((seekRow) * -tileHeight) ); // first row partially visible... make it full vis
+            }
+            //int offset = getTileOffsetFromScroll();
+            //Ux* myUxRef = Ux::Singleton();
+            //myUxRef->uxAnimations->rvbounce(scrollChildContainer->getChildOrNullPtr(itemOffset-offset));
+        }
+    }
+
+    int getTileOffsetFromScroll(){ // based on the current scroll this is the offset of the first visible tile.  it may be partially obscured from view
+        return -int(scrolly / tileHeight) * childObjectsPerRow;
+    }
+
     void updateTiles(){ // we need to call this when 1) rows shift or 2) new history is added
         /// hope you called initTilingEngine!
         if( getTile == nullptr){
@@ -369,7 +419,7 @@ struct uiScrollController{
 
 
         // this will be offset based on how far down we are scrolled (rows down times items per row)
-        int offset = -int(scrolly / tileHeight) * childObjectsPerRow;
+        int offset = getTileOffsetFromScroll();
 
         bool result;
         for( int x=0,l=scrollChildContainer->childListIndex; x<l; x++ ){
@@ -436,7 +486,7 @@ struct uiScrollController{
         // we monitor the first tile now
 //        if( !is_monitoring ){
 //            is_monitoring=true;
-//            scrollChildContainer->childList[0]->isDebugObject= true;
+            scrollChildContainer->childList[0]->isDebugObject= true;
 //            // setCropParent
 //        }
 

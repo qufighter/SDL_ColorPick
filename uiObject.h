@@ -321,6 +321,24 @@ struct uiObject
     void setCropParent(uiObject *c){
         this->cropParentObject = c; // ORDER MATTERS HERE!!
         this->hasCropParent = true;
+
+
+    }
+
+    void setCropParentRecursive(uiObject *c){
+        setCropParent(c);
+        if( hasChildren  ){
+            for( int x=0,l=childListIndex; x<l; x++ ){
+                childList[x]->setCropParentRecursive(c);
+            }
+        }
+    }
+
+    uiObject* getChildOrNullPtr(int index){
+        if( index > -1 && index < childListIndex ){
+            return childList[index];
+        }
+        return nullptr;
     }
 
     uiObject* bubbleInteraction(){

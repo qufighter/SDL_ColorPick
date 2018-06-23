@@ -17,6 +17,26 @@ struct uiAnimation
 {
     Ux::uiObject *myUiObject;
 
+    int ani_done_count;
+    int required_done_count;
+
+    //OH JUST MAKE A CONSTNT ALREADY
+    float friction; //const_friction
+    float threshold;
+    float negThreshold;
+    float friction_factor;
+    // float fvx = 0.95; // friction x/y ?
+    // float fvy = 0.95;
+    // float fsvx = 0.95; // friction scale velocity x
+    // float fsvy = 0.95;
+    // float frv = 0.95; // friction rotational velocity
+
+    // float tvx = 0.0001;
+    // float tvy = 0.0001;
+    // float tsvx = 0.0001;
+    // float tsvy = 0.0001;
+    // float trv = 0.0001;
+
     float vx; // velocity
     float vy;
     float svx; // scale velocity
@@ -24,6 +44,9 @@ struct uiAnimation
     float rv; // rotational velocity
 
     bool is_move;
+    bool scale_velocity_set;
+    bool rotate_velocity_set;
+    bool move_velocity_set;
     int moveSteps; // could be dynamic per unit time
     float moveProgress;
     int moveDurationMs;
@@ -43,10 +66,14 @@ struct uiAnimation
         myGetBoundsFn = defaultUiObjectGetBoundsFn;
         animationReachedCallbackFn = nullptr;
         is_move=false;
+        scale_velocity_set=false;
+        rotate_velocity_set=false;
+        move_velocity_set=false;
     }
 
     uiAnimation* setFriction(float ifriction){
         friction=ifriction;
+        friction_factor = 1.0 - friction;
         return this;
     }
 
@@ -59,20 +86,24 @@ struct uiAnimation
     uiAnimation* initialMoveVelocity(float ivx, float ivy){
         vx=ivx;
         vy=ivy;
+        move_velocity_set=true;
         return this;
     }
 
     uiAnimation* initialScaleVelocity(float isvx, float isvy){
         svx=isvx;
         svy=isvy;
+        scale_velocity_set=true;
         return this;
     }
 
     uiAnimation* initialRotationVelocity(float irv){
         rv=irv;
+        rotate_velocity_set=true;
         return this;
     }
 
+    // you CAN moveTo and combine with animations like scale/rotate BUT those should be handled be a seperate parallel animation chain.... at least for now
     uiAnimation* moveTo(float ix, float iy){
         px = ix;
         py = iy;
@@ -144,13 +175,6 @@ struct uiAnimation
         Ux::setRect(&self->myUiObject->boundryRect, newBoundaryRect->x, newBoundaryRect->y, newBoundaryRect->w, newBoundaryRect->h);
         self->myUiObject->updateRenderPosition(); // this is occuring in the animation timeout thread.... if threaded
     }
-
-    void updateUxObjectFromAnimation(Uint32 elapsedMs, Float_Rect* newBounds){ // not used when is_move
-        newBounds->y += (vy * elapsedMs);
-        newBounds->x += (vx * elapsedMs);
-        myAnimationCallbackFn(this, newBounds);
-    }
-
 
     bool update(Uint32 elapsedMs){ // todo pass delta and relative
 
@@ -226,9 +250,7 @@ struct uiAnimation
         updateUxObjectFromAnimation(elapsedMs, newBounds);
 
         // apply elapsedMs ?
-        tempf =  1.0 - friction;
-        vx -= (tempf * vx) * elapsedMs;
-        vy -= (tempf * vy) * elapsedMs;
+
 
         // tempf =  friction;
         // vx *= tempf;
@@ -238,17 +260,12 @@ struct uiAnimation
         //        rv *= tempf;
 
 
-
-        ani_done_count=0;
-
-        if( vx < threshold && vx > negThreshold ){ vx  = 0; ani_done_count++; }
-        if( vy < threshold && vy > negThreshold ){ vy  = 0; ani_done_count++; }
 //        if( svx < threshold ){ svx = 0; ani_done_count++; }
 //        if( svy < threshold ){ svy = 0; ani_done_count++; }
 //        if( rv < threshold  ){ rv  = 0; ani_done_count++; }
 
 
-        if( ani_done_count == 2){
+        if( ani_done_count >= required_done_count){
             // we are totally done animating...., tell the chain to drop us
             return true; // done bool
         }
@@ -256,25 +273,34 @@ struct uiAnimation
         return false;
     }
 
-    int ani_done_count;
+    void updateUxObjectFromAnimation(Uint32 elapsedMs, Float_Rect* newBounds){ // not used when is_move
+        required_done_count = 0;
+        ani_done_count=0;
+
+        if( move_velocity_set ){
+            newBounds->y += (vy * elapsedMs);
+            newBounds->x += (vx * elapsedMs);
+
+            vx -= (friction_factor * vx) * elapsedMs;
+            vy -= (friction_factor * vy) * elapsedMs;
+
+            if( vx < threshold && vx > negThreshold ){ vx  = 0; ani_done_count++; }
+            if( vy < threshold && vy > negThreshold ){ vy  = 0; ani_done_count++; }
+
+            required_done_count+=2;
+        }
+
+        if( scale_velocity_set ){
+
+            // doing scale or rotate with the bounds rect is just painful... (and not compatible with moveTo, or move really) lets pipe this into the shader
+        }
+
+        if( rotate_velocity_set ){
 
 
-//OH JUST MAKE A CONSTNT ALREADY
-    float friction;
-    float threshold;
-    float negThreshold;
-    float tempf;
-    // float fvx = 0.95; // friction x/y ?
-    // float fvy = 0.95;
-    // float fsvx = 0.95; // friction scale velocity x
-    // float fsvy = 0.95;
-    // float frv = 0.95; // friction rotational velocity
-
-    // float tvx = 0.0001;
-    // float tvy = 0.0001;
-    // float tsvx = 0.0001;
-    // float tsvy = 0.0001;
-    // float trv = 0.0001;
+        }
+        myAnimationCallbackFn(this, newBounds);
+    }
 
 };
 

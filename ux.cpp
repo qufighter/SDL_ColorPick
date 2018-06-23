@@ -7,7 +7,6 @@
 //
 
 #include "ux.h"
-#include "ux-anim.h"
 
 bool Ux::ms_bInstanceCreated = false;
 Ux* Ux::pInstance = NULL;
@@ -156,13 +155,12 @@ Ux::uiObject* Ux::create(void){
 
     newHistoryFullsize = historyScroller->uiObjectItself;
 
-    newHistoryFullsize->isDebugObject=true;
+    //newHistoryFullsize->isDebugObject=true;
 
     newHistoryFullsize->hasBackground = true;
     Ux::setColor(&newHistoryFullsize->backgroundColor, 0, 0, 0, 192);
 
     newHistoryFullsize->setBoundaryRect( 0.0, 0.0, 1.0, 0.6);
-
 
 
     palleteScroller = new uiScrollController();
@@ -323,7 +321,9 @@ Ux::uiObject* Ux::create(void){
     Ux::setColor(&palleteSelectionColorPreview->uiObjectItself->backgroundColor, 0, 0, 0, 192);
 
 
-    palleteSelectionColorPreview->uiObjectItself->setCropParent(historyPalleteHolder); // THIS REALLY DOESN'T WORK! - ALL CHILD OBJECTS NEED TO GET THIS TOO... IT DOES WORK FOR TOP LEVEL OBJ BG ONLY....
+    palleteSelectionColorPreview->uiObjectItself->setCropParentRecursive(historyPalleteHolder); // THIS REALLY DOESN'T WORK! - ALL CHILD OBJECTS NEED TO GET THIS TOO... IT DOES WORK FOR TOP LEVEL OBJ BG ONLY....
+
+    palleteSelectionColorPreview->uiObjectItself->setAnimation( uxAnimations->slideDownFullHeight(palleteSelectionColorPreview->uiObjectItself) ); // returns uiAminChain*
 
 
 
@@ -616,6 +616,7 @@ void Ux::interactionNoOp(uiObject *interactionObj, uiInteraction *delta){
 void Ux::interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction *delta){
     Ux* self = Ux::Singleton();
 
+    uiObject* trueInteractionObj = self->palleteSelectionColorPreview->uiObjectItself;
 
     /*
      palleteSelectionColorPreview = new uiViewColor(historyPalleteHolder, Float_Rect(0.0, 0.5, 1.0, 0.5));
@@ -624,14 +625,14 @@ void Ux::interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction
      palleteSelectionColorPreview->uiObjectItself->setInteraction(&Ux::interactionVert);
      */
 
-    if( self->palleteSelectionColorPreview->uiObjectItself->is_being_viewed_state ) {
-        self->palleteSelectionColorPreview->uiObjectItself->setAnimation( self->uxAnimations->slideDownFullHeight(self->palleteSelectionColorPreview->uiObjectItself) ); // returns uiAminChain*
-        self->palleteSelectionColorPreview->uiObjectItself->is_being_viewed_state =false;
+    if( trueInteractionObj->is_being_viewed_state ) {
+        trueInteractionObj->setAnimation( self->uxAnimations->slideDownFullHeight(trueInteractionObj) ); // returns uiAminChain*
+        trueInteractionObj->is_being_viewed_state =false;
     }else{
-        self->palleteSelectionColorPreview->uiObjectItself->isInBounds = true; // nice hack
+        trueInteractionObj->isInBounds = true; // nice hack
         self->updatePickHistoryPreview();
-        self->palleteSelectionColorPreview->uiObjectItself->setAnimation( self->uxAnimations->resetPosition(self->palleteSelectionColorPreview->uiObjectItself) ); // returns uiAminChain*
-        self->palleteSelectionColorPreview->uiObjectItself->is_being_viewed_state = true;
+        trueInteractionObj->setAnimation( self->uxAnimations->resetPosition(trueInteractionObj) ); // returns uiAminChain*
+        trueInteractionObj->is_being_viewed_state = true;
     }
 }
 
@@ -682,7 +683,7 @@ void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){
 
     Ux* myUxRef = Ux::Singleton();
 
-    myUxRef->uxAnimations->rvbounce(interactionObj);
+
 
 
     // A couple things
@@ -692,19 +693,41 @@ void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){
 
      myUxRef->lastPalleteIndex = myUxRef->palleteIndex;
 
-    if( myUxRef->palleteIndex > myUxRef->largestPalleteIndex ) myUxRef->largestPalleteIndex = myUxRef->palleteIndex;
+
 
 
     int colorIndexOffset = interactionObj->backgroundColor.r * interactionObj->backgroundColor.g * interactionObj->backgroundColor.b;
 
     if( myUxRef->palleteColorsIndex[colorIndexOffset] > -1 && myUxRef->palleteColorsIndex[colorIndexOffset] < palleteMax ){
 
+        // this color is already taken then
+
+
+        // pallete offset
+        Uint8 palleteOffset = myUxRef->palleteColorsIndex[colorIndexOffset];
+        //&myUxRef->palleteColors[palleteOffset]
+
+        myUxRef->palleteScroller->scrollToItemByIndex(palleteOffset);
+
+        uiObject* visibleTile = myUxRef->palleteScroller->getVisibleTileForOffsetOrNull(palleteOffset);
+
+        //uxAnimations->rvbounce(historyPreview);
+
+
+        if( visibleTile != nullptr ){
+            myUxRef->uxAnimations->rvbounce(visibleTile);
+        }
+
+
+        myUxRef->uxAnimations->rvbounce(interactionObj);
         return;
     }
 
+    if( myUxRef->palleteIndex > myUxRef->largestPalleteIndex ) myUxRef->largestPalleteIndex = myUxRef->palleteIndex;
 
     SDL_Color exi = myUxRef->palleteColors[myUxRef->palleteIndex];
     myUxRef->palleteColorsIndex[exi.r * exi.g * exi.b] = -1; // we are about to overwrite this color... lets reset it from index
+    // but is this really biggst value using -1 in this way?
 
 
     setColor( &myUxRef->palleteColors[myUxRef->palleteIndex++], &interactionObj->backgroundColor);
@@ -722,6 +745,8 @@ void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){
     //if( myUxRef->historyPalleteHolder->isInBounds ){
         myUxRef->palleteScroller->updateTiles(); // calls updateUiObjectFromPallete for each tile
     //}
+
+    myUxRef->palleteScroller->scrollToItemByIndex(myUxRef->lastPalleteIndex);
 }
 
 
@@ -1115,11 +1140,25 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 
     if( !renderObj->isInBounds ) return 1;
 
+    glm::mat4 uiMatrix = glm::mat4(1.0f);
+
+
+
     if( renderObj->isDebugObject ){
         SDL_Log("DEBUG OBJECT IS BEING RENDERED NOW!");
 //        renderObj->boundryRect.y+=0.01; // this proves the boundary tests is working for this object, when out of view they do not render...
 //        renderObj->updateRenderPosition();
+
     }
+
+    uiMatrix = glm::scale(uiMatrix, glm::vec3(0.9,0.9,1.0));
+    uiMatrix = glm::rotate(uiMatrix,  88.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+
+
+    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &uiMatrix[0][0]); // Send our model matrix to the shader
+
+    //textMatrix = glm::translate(textMatrix, screenToWorldSpace(1000.0,500.0,450.1));  // just try screen coord like -512??
+
 
     if( renderObj->doesInFactRender ){
         glUniform4f(uniformLocations->ui_position,
