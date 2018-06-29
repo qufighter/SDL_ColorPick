@@ -37,6 +37,8 @@
 //
 //#define CHAR_ROUNDED_LEFT 141
 //#define CHAR_ROUNDED_RIGHT 142
+
+//okay here are the int defs... should be more reliable right?
 #define CHAR_LINEAR_SLOPE 129
 #define CHAR_ASYMP_SLOPE 130
 #define CHAR_ARR_UP 131
@@ -51,6 +53,8 @@
 #define CHAR_ROUNDED_RIGHT 138
 
 
+#define CHAR_SAVE_ICON 147
+#define CHAR_GEAR_ICON 148
 
 
 // GLM include files

@@ -360,13 +360,34 @@ GLuint Textures::LoadTextureFromSdlSurface(SDL_Surface *surface, GLuint& texture
 
     //SDL_Log("w:%d h:%d BytesPerPixel:%d textureId:%d ", surface->w, surface->h, surface->format->BytesPerPixel, textureid);
 
-    // these affect how this texture is drawn later on... ascii etc
+/*
+ 
+ // TextureMagFilter
+#define GL_NEAREST                                       0x2600
+#define GL_LINEAR                                        0x2601
+
+//
+         GL_NEAREST
+         GL_LINEAR
+#define GL_NEAREST_MIPMAP_NEAREST                        0x2700
+#define GL_LINEAR_MIPMAP_NEAREST                         0x2701
+#define GL_NEAREST_MIPMAP_LINEAR                         0x2702
+#define GL_LINEAR_MIPMAP_LINEAR                          0x2703
+ */
+
+    // these affect how this texture is drawn later on... including ascii, etc
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 
 
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+
 //    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 //    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    //
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // just experimenting...
     //    debugGLerror();

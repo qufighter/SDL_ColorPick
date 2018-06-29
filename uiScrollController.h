@@ -43,16 +43,19 @@ struct uiScrollController{
         uxInstance->printCharToUiObject(scrollUp, CHAR_ARR_UP, true);
         scrollUp->setBoundaryRect( 0.0, 0.0, 1.0, SCROLLY_WIDTH);
         scrollUp->setInteractionCallback(&this->interactionScrollUp);
-        scrollUp->hasBackground = true;
-        Ux::setColor(&scrollUp->backgroundColor, 255, 255, 255, 50);
+        //scrollUp->hasBackground = true;
+        //Ux::setColor(&scrollUp->backgroundColor, 255, 255, 255, 50);
+        Ux::setColor(&scrollUp->foregroundColor, 255, 255, 255, 224);
 
         scrollDown->hasForeground = true;
         //uxInstance->printCharToUiObject(scrollDown, 'v', true);
         uxInstance->printCharToUiObject(scrollDown, CHAR_ARR_DN, true);
         scrollDown->setBoundaryRect( 0.0, 1.0 - SCROLLY_WIDTH, 1.0, SCROLLY_WIDTH);
         scrollDown->setInteractionCallback(&this->interactionScrollDown);
-        scrollDown->hasBackground = true;
-        Ux::setColor(&scrollDown->backgroundColor, 255, 255, 255, 50);
+        //scrollDown->hasBackground = true;
+        //Ux::setColor(&scrollDown->backgroundColor, 255, 255, 255, 50);
+        Ux::setColor(&scrollDown->foregroundColor, 255, 255, 255, 224);
+
 
         // TODO scrollVtDrag should become a container, that way it can intercept clicks etc..., then we can do the dynamic part below...
 
@@ -73,8 +76,9 @@ struct uiScrollController{
 
         scrollVtDrag->setInteractionCallback(&this->interactionDragReleased);
         scrollVtDrag->hasBackground = true;
-        Ux::setColor(&scrollVtDrag->backgroundColor, 0, 255, 0, 50);
+        Ux::setColor(&scrollVtDrag->backgroundColor, 255, 255, 255, 192);
 
+        scrollVtDrag->matrix = glm::scale(scrollVtDrag->matrix, glm::vec3(0.6,1.0,1.0));
 
         // IF WE DO NOT ADJUST THE HEIGHT HERE WE WON"T BE ABLE TO CLICK THE BOTTOM ROW OF TILES>>>> AND PERHAPS WE WILL INSTEAD INTERACT WITH A DIFFERENT OBJECT. (we did search for this line)
 //        scrollChildContainer->setInteraction(&this->interactionScrollDragVert);
@@ -137,15 +141,18 @@ struct uiScrollController{
     anInteractionFn tileClicked=nullptr;
 
     void initTilingEngine(int itemsPerRow, int rows, updateTileFunction getTileCb, getTotalFunction getTotalCb, anInteractionFn tileClickedFn){
-        childObjectsPerRow = itemsPerRow;
-        rowsToShow = rows;
         getTile = getTileCb;
         getTotal = getTotalCb;
         tileClicked = tileClickedFn;
 
+        resizeTililngEngine(itemsPerRow, rows);
+    }
+
+    void resizeTililngEngine(int itemsPerRow, int rows){
+        childObjectsPerRow = itemsPerRow;
+        rowsToShow = rows;
         tileWidth = 1.0 / childObjectsPerRow;
         tileHeight = 1.0 / rowsToShow;
-
         allocateChildTiles();
     }
 
@@ -252,6 +259,7 @@ struct uiScrollController{
     static void scrollAnimationUpdaterCb(uiAnimation* uiAnim, Float_Rect *newBoundaryRect){
         uiScrollController* self = uiAnim->myUiObject->myScrollController;
         self->scrolly = newBoundaryRect->y;
+        free(newBoundaryRect);
         self->reflowTiles();
     }
 
@@ -429,6 +437,17 @@ struct uiScrollController{
 
 
         updateScrollProgIndicator();
+
+        if( totalScrollRows < 1 ){
+            scrollBarVertHolder->boundryRect.w = 0;
+            scrollChildContainer->boundryRect.w=1.0;
+            uiObjectItself->updateRenderPosition();
+
+        }else{
+            scrollBarVertHolder->boundryRect.w = SCROLLY_WIDTH;
+            scrollChildContainer->boundryRect.w=1.0 - SCROLLY_WIDTH;
+            uiObjectItself->updateRenderPosition();
+        }
     }
 
 
@@ -472,6 +491,13 @@ struct uiScrollController{
 //                    // draw letters
 //                    scrollTile->hasForeground = true;
 //                    uxInstance->printCharToUiObject(scrollTile, 'Z'-tileCounter, true);
+
+                    scrollTile->setRoundedCorners(0.1, 0.2, 0.3, 0.4);
+                    scrollTile->setRoundedCorners(0.1, 0.1, 0.1, 0.1);
+
+                    //scrollTile->setRoundedCorners(0.0, 0.2, 0.0, 0.0);
+                    //scrollTile->setRoundedCorners(0.0, 0.0, 0.2, 0.0);
+                    //scrollTile->setRoundedCorners(0.0, 0.0, 0.0, 0.4);
 
                     scrollTile->setCropParent(uiObjectItself); // maybe only needed on first and last 2 rows....
                 }

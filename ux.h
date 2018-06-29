@@ -58,6 +58,7 @@ typedef struct Float_Rect
     float w, h;
 } Float_Rect;
 
+
 struct uiInteraction
 {
     uiInteraction(){
@@ -166,7 +167,8 @@ static Ux* Singleton();
 #include "uiObject.h" // referrs to Ux:: which referrs to uiObject...
 #include "uiScrollController.h"
 #include "uiViewColor.h"
-
+#include "uiRoundedRectangle.h"
+#include "uiSqware.h"  // its because we don't really have square, and if we do we do not really need this, because squares would already be squares
 
 #include "ux-anim.h"
     
@@ -233,7 +235,7 @@ static Ux* Singleton();
     int palleteIndex = 0;
     int lastPalleteIndex = -1;
     int largestPalleteIndex=-1; // how far in history we have gone, to allow loop if we have greater history available
-    static const int palleteMax = 6; // WARN do not exeede max size Uint8 palleteColorsIndex 255
+    static const int palleteMax = 254; // WARN do not exeede max size Uint8 palleteColorsIndex 255
     SDL_Color palleteColors[palleteMax];
     static bool updateUiObjectFromPallete(uiObject *historyTile, int offset);
     static int getPalleteTotalCount();

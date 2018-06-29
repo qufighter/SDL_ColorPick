@@ -167,12 +167,13 @@ struct uiAnimation
 
     // this is animationGetRectFn
     static Float_Rect* defaultUiObjectGetBoundsFn(uiAnimation* self){
-        return new Float_Rect(self->myUiObject->boundryRect);
+        return new Float_Rect(self->myUiObject->boundryRect); // why are we copying the rect? its leaking hte memory?
     }
 
     // this is animationUpdateCallbackFn
     static void defaultUiObjectAnimationupdater(uiAnimation* self, Float_Rect *newBoundaryRect){
         Ux::setRect(&self->myUiObject->boundryRect, newBoundaryRect->x, newBoundaryRect->y, newBoundaryRect->w, newBoundaryRect->h);
+        free(newBoundaryRect);
         self->myUiObject->updateRenderPosition(); // this is occuring in the animation timeout thread.... if threaded
     }
 
@@ -292,11 +293,29 @@ struct uiAnimation
 
         if( scale_velocity_set ){
 
-            // doing scale or rotate with the bounds rect is just painful... (and not compatible with moveTo, or move really) lets pipe this into the shader
+            myUiObject->matrix = glm::scale(myUiObject->matrix, glm::vec3(1.0-(svx * elapsedMs),1.0-(svy * elapsedMs),1.0));;
+
+            svx -= (friction_factor * svx) * elapsedMs;
+            svy -= (friction_factor * svy) * elapsedMs;
+
+            SDL_Log("%f %f ljkljkljklj", svx, svy);
+
+            if( svx < threshold && svx > negThreshold ){ svx  = 0; ani_done_count++; }
+            if( svy < threshold && svy > negThreshold ){ svy  = 0; ani_done_count++; }
+
+            required_done_count+=2;
+
         }
 
         if( rotate_velocity_set ){
 
+            myUiObject->matrix = glm::rotate(myUiObject->matrix, rv, glm::vec3(0.0f, 0.0f, 1.0f));
+
+            rv -= (friction_factor * rv) * elapsedMs;
+
+            if( rv < threshold && rv > negThreshold ){ rv  = 0; ani_done_count++; }
+
+            required_done_count+=1;
 
         }
         myAnimationCallbackFn(this, newBounds);
@@ -621,6 +640,13 @@ struct UxAnim
 
         myAnimChain->addAnim( (new uiAnimation(uiObject))->initialMoveVelocity(-0.001, 0) );
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->initialMoveVelocity(0.001, 0) );
+
+        //myAnimChain->addAnim( (new uiAnimation(uiObject))->initialRotationVelocity(5) );
+        //myAnimChain->addAnim( (new uiAnimation(uiObject))->initialScaleVelocity(-0.01, 0.0) );
+
+        //uiMatrix = glm::scale(uiMatrix, glm::vec3(0.9,0.9,1.0));
+        //uiMatrix = glm::rotate(uiMatrix,  2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+
 
         myAnimChain->addAnim( (new uiAnimation(uiObject))->resetPosition() );
 //        myAnimChain->addAnim( (new uiAnimation(uiObject->childList[0]))->initialMoveVelocity(0, -0.01) );

@@ -164,7 +164,7 @@ Ux::uiObject* Ux::create(void){
 
 
     palleteScroller = new uiScrollController();
-    palleteScroller->initTilingEngine(1, 3, &Ux::updateUiObjectFromPallete, &Ux::getPalleteTotalCount, &Ux::clickPalleteColor);
+    palleteScroller->initTilingEngine(1, 1, &Ux::updateUiObjectFromPallete, &Ux::getPalleteTotalCount, &Ux::clickPalleteColor);
 
     newHistoryPallete = palleteScroller->uiObjectItself;
 
@@ -382,6 +382,8 @@ void Ux::printStringToUiObject(uiObject* printObj, char* text, bool resizeText){
 
     int len=sizeof(text) - 1;  // unfortunately sizeof not really work right here
 
+    float letterWidth = 1.0 / len;
+
     printObj->doesNotCollide = true;
     printObj->doesInFactRender = printObj->containText; // the container is never the size to render.. unless contains text?!
 
@@ -398,10 +400,9 @@ void Ux::printStringToUiObject(uiObject* printObj, char* text, bool resizeText){
             letter = new uiObject();
 
             if( printObj->containText == true ){
-                float w = 1.0 / len ; // todo move maths
 
                 // move this right out of the else aboe, since we should fit any len text within, and also needs resize IF text len changed.... !?! easy compute
-                letter->setBoundaryRect( (ctr*w), 0, w, w);  /// TODO move size components into function to calculate on window rescale bonus points for suqare?
+                letter->setBoundaryRect( (ctr*letterWidth), 0, letterWidth, letterWidth);  /// TODO move size components into function to calculate on window rescale bonus points for suqare?
             }else{
                 letter->setBoundaryRect( (ctr*1.0), 0, 1, 1);  /// TODO move size components into function to calculate on window rescale bonus points
             }
@@ -739,7 +740,18 @@ void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){
         myUxRef->palleteIndex = 0;
     }
 
-
+    //resize pallete scroller as we add more selections....
+    if( myUxRef->largestPalleteIndex > 5 ){
+        myUxRef->palleteScroller->resizeTililngEngine(4, 2);
+    }else if( myUxRef->largestPalleteIndex > 3 ){
+        myUxRef->palleteScroller->resizeTililngEngine(3, 2);
+    }else if( myUxRef->largestPalleteIndex > 2 ){
+        myUxRef->palleteScroller->resizeTililngEngine(4, 1);
+    }else if( myUxRef->largestPalleteIndex > 1 ){
+        myUxRef->palleteScroller->resizeTililngEngine(3, 1);
+    }else if( myUxRef->largestPalleteIndex > 0 ){
+        myUxRef->palleteScroller->resizeTililngEngine(2, 1);
+    }
 
 
     //if( myUxRef->historyPalleteHolder->isInBounds ){
@@ -1140,7 +1152,7 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 
     if( !renderObj->isInBounds ) return 1;
 
-    glm::mat4 uiMatrix = glm::mat4(1.0f);
+    //glm::mat4 uiMatrix = glm::mat4(1.0f);
 
 
 
@@ -1151,11 +1163,13 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 
     }
 
-    uiMatrix = glm::scale(uiMatrix, glm::vec3(0.9,0.9,1.0));
-    uiMatrix = glm::rotate(uiMatrix,  88.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+    //uiMatrix = glm::scale(uiMatrix, glm::vec3(0.9,0.9,1.0));
+    //uiMatrix = glm::rotate(uiMatrix,  2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+//
 
+    //renderObj->matrix = glm::scale(renderObj->matrix, glm::vec3(0.998,0.998,1.0));
 
-    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &uiMatrix[0][0]); // Send our model matrix to the shader
+    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &renderObj->matrix[0][0]); // Send our model matrix to the shader
 
     //textMatrix = glm::translate(textMatrix, screenToWorldSpace(1000.0,500.0,450.1));  // just try screen coord like -512??
 
@@ -1188,9 +1202,14 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 
 
 
-        glUniform1f(uniformLocations->ui_corner_radius, 0.15);
+        //glUniform1f(uniformLocations->ui_corner_radius, 0.15);
+       // glUniform1f(uniformLocations->ui_corner_radius, 0.0);
 
-
+        glUniform4f(uniformLocations->ui_corner_radius,
+                    renderObj->roundedCornersRect.x,
+                    renderObj->roundedCornersRect.y,
+                    renderObj->roundedCornersRect.w,
+                    renderObj->roundedCornersRect.h);
 
 
         if( renderObj->hasCropParent ){

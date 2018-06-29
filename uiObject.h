@@ -117,12 +117,14 @@ struct uiObject
         isInBounds=true;
         testChildCollisionIgnoreBounds = false;
         textureCropRect = Float_Rect();
+        roundedCornersRect = Float_Rect(0.0,0.0,0.0,0.0);
         interactionProxy=nullptr;
         myCurrentAnimation=nullptr;
 
         boundaryEntreredCallback=nullptr;
         shouldCeaseInteractionChecker=nullptr;
         myScrollController=nullptr;
+        matrix = glm::mat4(1.0f);
     }
     bool isDebugObject;
     bool isRoot;
@@ -143,6 +145,7 @@ struct uiObject
     uiScrollController *myScrollController; // child objects will inherit this I think!
     Float_Rect boundryRect; // please call setBoundaryRect if you are going to animate the object
     Float_Rect origBoundryRect;
+    Float_Rect roundedCornersRect;
     SDL_Color backgroundColor;
     SDL_Color lastBackgroundColor;// onetime use state reset
     SDL_Color foregroundColor;
@@ -155,8 +158,9 @@ struct uiObject
     Float_Rect renderRect; /* private */
     Float_Rect collisionRect; /* private */
 
-    Float_Rect scrollyRect; //what tpye or sort of corrindants es this?
+    //Float_Rect scrollyRect; //what tpye or sort of corrindants es this?
 
+    glm::mat4 matrix;
 
     uiObject *interactionProxy; // if our interaction is suppose to effect a different object
     uiAminChain* myCurrentAnimation;
@@ -189,6 +193,10 @@ struct uiObject
     void setBoundaryRect(float x, float y, float w, float h){
         Ux::setRect(&boundryRect, x, y, w, h);
         Ux::setRect(&origBoundryRect, x, y, w, h);
+    }
+
+    void setRoundedCorners(float tl, float tr, float br, float bl){
+        Ux::setRect(&roundedCornersRect, tl, tr, br, bl);
     }
 
     void updateAnimationPercent(float hzPerc, float vtPerc){

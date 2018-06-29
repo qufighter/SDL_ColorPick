@@ -111,7 +111,18 @@ void main()
     vec4 objPosition = (modelMatrix * position * ui_scale) + ui_position;
 
 
+    // modelMatrix[0][1] == -1.0 // 90 degree rotation
+    // modelMatrix[0][1] == -1.0 // 90 degree rotation
+
+    // this really means not rotated: (modelMatrix[0][1] == 0.0 && modelMatrix[1][0] == 0.0)
+    // but detecting exact rotation doesn't seem simple... it may be
+
+    //rotate
     if( ui_crop.b != 0.0 || ui_crop.a != 0.0 ){
+
+        // rotate will move these coords completely so you won't be able to rely on this to detect if the corner has left when rotation is occuring.
+        // it is probably better off to do nothing wrt crop when rotating than this approach to it... we could still crop in the FSH but not cheap
+        // so what field in modelMatrix is our rotation?
 
         //    float crop_positionx=ui_crop.r;
         //    float crop_positiony=ui_crop.g;
@@ -126,7 +137,6 @@ void main()
 
         if( position.y < 0.0 ){ // "bottom" left or right corner of sq
 
-// rotate will move these coords slightly enough to mess up the cropping!?
 
             float lostY = 0.0;
 
