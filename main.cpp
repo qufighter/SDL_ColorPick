@@ -448,6 +448,10 @@ compatibility; this flag is ignored
     /* seed random number generator */
     srand(time(NULL));
 
+
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+    SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
+
     /* create window and renderer */
     window =
         SDL_CreateWindow(NULL, 0, 0, win_w, win_h,

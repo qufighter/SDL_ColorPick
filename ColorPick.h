@@ -6,10 +6,17 @@
 //
 //
 
+//data:text/html;plain,<b>bold</b>
+
 #ifndef _____PROJECTNAME_____ColorPick__
 #define _____PROJECTNAME_____ColorPick__
 
+//class OpenGLContext; /* forward decl ???? */
+
+
 #include "main.h"
+
+#include "ColorPickState.h"
 
 #include "shader.h"
 
@@ -98,7 +105,10 @@ public:
     Ux *generalUx;
 
     // probably should not be public but easier this way!
-    int mmovex, mmovey;
+    int mmovex, mmovey; /// needs to be ux accessible singleton.......
+
+
+
     float fishEyeScale = 7.0f;
     float fishEyeScalePct = fishEyeScale / MAX_FISHEYE_ZOOM;
     // do not set directly....

@@ -118,10 +118,14 @@ void main()
         float dis=distance(octr,TexCoordOut) / fishEyeScale;
 
         float maxDis = (0.3 / (fishEyeScale));
+        if( fishEyeScale < 2.0 ){
+
+            maxDis=fishEyeScale*0.25;
+        }
         if( dis > maxDis ){
             // blur if farther awy
             float scaler = (dis - maxDis) * (texWidth * 0.2);
-            if( scaler < 1.0 ) scaler = 1.0;
+            if( scaler < 2.0 ) scaler = 1.0;
 
             //float scaler = 400.0;
             texWidth *= scaler;
@@ -154,7 +158,8 @@ void main()
 			//}else
 				
 		//vec4 bcolor=texelFetch(texture1, get, 0);
-		vec4 bcolor=texture2D(texture1, floor(res+halfPixel) / texWidthLessOne );
+		vec4 bcolor=texture2D(texture1, floor(res+halfPixel) / texWidthLessOne ); //maths
+        //vec4 ncolor=texture2D(texture1, (floor(res+halfPixel+0.01) / texWidthLessOne )); // next pxl
 
 
 //gl_FragColor = bcolor;
@@ -163,28 +168,45 @@ void main()
 		
 		//vec4 pcolor = texelFetch2D(texture1, ivec2(ctr) , 0);//picked color
 		vec4 pcolor=texture2D(texture1, ctr / texWidthLessOne );
+
+
         vec4 ccolor = vec4(0.0,0.0,0.0,1.0);//crosshair color
 
         if(pcolor.r + pcolor.g + pcolor.b < 1.5){
 			ccolor = vec4(1.0,1.0,1.0,1.0);
-		}
+		}// logical default
+        //ccolor = vec4(1.0,1.0,1.0,2.0) - pcolor;//inverse
+        //ccolor = (vec4(1.0,1.0,1.0,2.0) - pcolor) * 0.5;//inverse subdued
 		
 		if( get.x == halfTexWidthInt && get.y == halfTexWidthInt ){
 			if( res.x < halfTexWidthLessOne + pointSix || res.x > halfTexWidth + pointFour || res.y > halfTexWidth + pointFour || res.y < halfTexWidthLessOne + pointSix ){
+
+
+                if( distance(ccolor, pcolor) < 0.015 ){// inverese isn't exact match grey
+                    ccolor += 0.3;
+                }
+
 				bcolor = ccolor;
-				bcolor = mix(bcolor,ccolor,0.8);
+				//bcolor = mix(bcolor,ccolor,0.8);
 				//bcolor = vec4(1.0,1.0,1.0,1.0);
 				//
 			}
 		}
-		
+
+
+//        if( ncolor != bcolor ){
+////fxaa
+//            bcolor = (ncolor + bcolor) * 0.5;
+//            //bcolor= vec4(0.0,0.0,0.0,1.0);
+//        }
+
 		
 	//corner color preview in shader helps determine if color is correct
-        float cornerSize = texWidth *0.45;
-		if( inp.x < cornerSize && inp.y > texWidth - cornerSize ){
-			//bcolor = texelFetch2D(texture1, ivec2(ctr) , 0);
-			bcolor = pcolor;
-		}
+//        float cornerSize = texWidth *0.45;
+//		if( inp.x < cornerSize && inp.y > texWidth - cornerSize ){
+//			//bcolor = texelFetch2D(texture1, ivec2(ctr) , 0);
+//			bcolor = pcolor;
+//		}
 
 		
 		//gl_FragColor = bcolor + (ocolor * ocolor.a);

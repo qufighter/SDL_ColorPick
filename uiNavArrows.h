@@ -1,0 +1,172 @@
+//
+//  uiScrollController.h
+//  ColorPick iOS SDL
+//
+//  Created by Sam Larison on 1/7/18.
+//
+//
+
+#ifndef ColorPick_iOS_SDL_uiNavArrows_h
+#define ColorPick_iOS_SDL_uiNavArrows_h
+
+
+struct uiNavArrows{
+
+    uiNavArrows(uiObject* parentObj, Float_Rect boundaries, anInteractionFn tileClickedFn){
+
+
+        tileClicked = tileClickedFn;
+
+        Ux* uxInstance = Ux::Singleton(); // some useful helper?
+
+        uiObjectItself = new uiObject();
+        up = new uiObject();
+        dn = new uiObject();
+        lf = new uiObject();
+        rt = new uiObject();
+        //
+        //        uiObjectItself->addChild(round_tl);
+        //        uiObjectItself->addChild(middle);
+        //        uiObjectItself->addChild(round_br);
+
+
+        uiObjectItself->myUiController = this; // this propagates to the other child objects
+
+
+        //uiObjectItself->setInteractionCallback(tileClickedFn);
+
+
+
+        up->hasBackground=true;
+        up->hasForeground=true;
+        Ux::setColor(&up->backgroundColor, 32, 0, 0, 128);
+        Ux::setColor(&up->foregroundColor, 0, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        uxInstance->printCharToUiObject(up, '^', DO_NOT_RESIZE_NOW);
+        up->setInteractionCallback(interactionDirectionalArrowClicked);
+        up->forceDelta = new uiInteraction();
+        up->forceDelta->begin(0, -1.0);
+
+        dn->hasBackground=true;
+        dn->hasForeground=true;
+        Ux::setColor(&dn->backgroundColor, 32, 0, 0, 128);
+        Ux::setColor(&dn->foregroundColor, 0, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        uxInstance->printCharToUiObject(dn, '^', DO_NOT_RESIZE_NOW);
+        dn->rotate(180.0f);
+        dn->setInteractionCallback(interactionDirectionalArrowClicked);
+        dn->forceDelta = new uiInteraction();
+        dn->forceDelta->begin(0, 1.0);
+
+        lf->hasBackground=true;
+        lf->hasForeground=true;
+        Ux::setColor(&lf->backgroundColor, 32, 0, 0, 128);
+        Ux::setColor(&lf->foregroundColor, 0, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        uxInstance->printCharToUiObject(lf, '^', DO_NOT_RESIZE_NOW);
+        lf->rotate(90.0f);
+        lf->setInteractionCallback(interactionDirectionalArrowClicked);
+        lf->forceDelta = new uiInteraction();
+        lf->forceDelta->begin(1.0, 0.0);
+
+        rt->hasBackground=true;
+        rt->hasForeground=true;
+        Ux::setColor(&rt->backgroundColor, 32, 0, 0, 128);
+        Ux::setColor(&rt->foregroundColor, 0, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        uxInstance->printCharToUiObject(rt, '^', DO_NOT_RESIZE_NOW);
+        rt->rotate(-90.0f);
+        rt->setInteractionCallback(interactionDirectionalArrowClicked);
+        rt->forceDelta = new uiInteraction();
+        rt->forceDelta->begin(-1.0, 0.0);
+
+        uiObjectItself->addChild(up);
+        uiObjectItself->addChild(dn);
+        uiObjectItself->addChild(lf);
+        uiObjectItself->addChild(rt);
+
+        parentObj->addChild(uiObjectItself);
+
+        resize(boundaries);
+    }
+
+    anInteractionFn tileClicked=nullptr;
+
+    uiObject* uiObjectItself; // no real inheritance here, this its the uiSqware, I would use self->
+    uiObject *up;
+    uiObject *dn;
+    uiObject *lf;
+    uiObject *rt;
+
+    static void interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteraction *delta){
+       // Ux* uxInstance = Ux::Singleton();
+        uiNavArrows* self = ((uiNavArrows*)interactionObj->myUiController);
+
+
+        self->tileClicked(interactionObj, interactionObj->forceDelta);
+
+
+    }
+
+    void resize(Float_Rect boundaries){
+
+        uiObjectItself->setBoundaryRect(&boundaries);
+
+        float w = 0.1;
+        float h = w;
+        float hh = h * 0.5;
+        float hw = w * 0.5;
+
+        up->setBoundaryRect( 0.5 - hw, 0.0, w, h);
+        dn->setBoundaryRect( 0.5 - hw, 1.0 - h, w, h);
+        lf->setBoundaryRect( 0.0, 0.5-hh, w, h);
+        rt->setBoundaryRect( 1.0-w, 0.5-hh, w, h);
+
+        update();
+    }
+
+    void update(){ // w/h
+
+        // does this get realle whenever reshape?
+
+
+//        if( aspect > 1.0 ){
+//            is_vertical = false; //hopefully unused var
+//
+//        }else{
+//            is_vertical = true; //hopefully unused var
+//
+//
+//        }
+//
+//        round_tl->setBoundaryRect( 0.0, 0.0, 1.0, 1.0);
+//        middle->setBoundaryRect( 0.0, 0.0, 1.0, 1.0);
+//        round_br->setBoundaryRect( 0.0, 0.0, 1.0, 1.0);
+
+
+        uiObjectItself->updateRenderPosition();
+
+        //Ux* uxInstance = Ux::Singleton();
+
+        // what the
+
+//        sprintf(resultText6char, "%02x%02x%02x", color->r, color->g, color->b);
+//        Ux::setColor(&hexValueText->backgroundColor,color->r, color->g, color->b, 255);
+//        uxInstance->printStringToUiObject(hexValueText, resultText6char, DO_NOT_RESIZE_NOW);
+//
+//        sprintf(resultText6char, "%3d", color->r);
+//        rgbRedText->backgroundColor.a = color->r;
+//        uxInstance->printStringToUiObject(rgbRedText, resultText6char, DO_NOT_RESIZE_NOW);
+//
+//        sprintf(resultText6char, "%3d", color->g);
+//        rgbGreenText->backgroundColor.a = color->g;
+//        uxInstance->printStringToUiObject(rgbGreenText, resultText6char, DO_NOT_RESIZE_NOW);
+//
+//        sprintf(resultText6char, "%3d", color->b);
+//        rgbBlueText->backgroundColor.a = color->b;
+//        uxInstance->printStringToUiObject(rgbBlueText, resultText6char, DO_NOT_RESIZE_NOW);
+
+
+        //free(resultText6char);
+    }
+
+};
+
+
+#endif

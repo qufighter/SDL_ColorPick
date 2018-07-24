@@ -44,6 +44,7 @@ struct uiAnimation
     float rv; // rotational velocity
 
     bool is_move;
+    bool is_reset;
     bool scale_velocity_set;
     bool rotate_velocity_set;
     bool move_velocity_set;
@@ -66,6 +67,7 @@ struct uiAnimation
         myGetBoundsFn = defaultUiObjectGetBoundsFn;
         animationReachedCallbackFn = nullptr;
         is_move=false;
+        is_reset=false;
         scale_velocity_set=false;
         rotate_velocity_set=false;
         move_velocity_set=false;
@@ -128,6 +130,8 @@ struct uiAnimation
 
 
     uiAnimation* resetPosition(){
+        // todo - what if our orig position moves while we are going there?  we really need to update this as teh animation progresses......
+        is_reset = true;
         return moveTo(myUiObject->origBoundryRect.x, myUiObject->origBoundryRect.y);
     }
 
@@ -188,6 +192,11 @@ struct uiAnimation
 
         if( is_move ) {
             // we are moving to a point, so we compute a new vx/vy dynamically
+
+            if( is_reset ){
+                px = myUiObject->origBoundryRect.x;
+                py = myUiObject->origBoundryRect.y;
+            }
 
             vx = (px - newBounds->x);
             vy = (py - newBounds->y);

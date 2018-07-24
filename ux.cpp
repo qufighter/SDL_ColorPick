@@ -273,6 +273,8 @@ Ux::uiObject* Ux::create(void){
     rootUiObject->addChild(historyPreview);
 
 
+    movementArrows = new uiNavArrows(rootUiObject, Float_Rect(0.0, 0.04 + 0.27777777777778, 1.0, 0.38), &Ux::interactionDirectionalArrowClicked);
+
     curerntColorPreview = new uiViewColor(rootUiObject, Float_Rect(0.0, 0.04, 1.0, 0.27777777777778));
 
 
@@ -772,6 +774,34 @@ void Ux::interactionTouchRelease(uiObject *interactionObj, uiInteraction *delta)
 
     Ux* myUxRef = Ux::Singleton();
     myUxRef->addCurrentToPickHistory();
+
+}
+
+void Ux::interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteraction *delta){
+    //
+    SDL_Log("directionalllly");
+
+
+    // see OpenGLContext::Singleton
+
+    Ux* myUxRef = Ux::Singleton();
+
+    // see OpenGLContext::Singleton
+
+    //OpenGLContext* colorPick = OpenGLContext::Singleton();
+
+
+    if( delta->py < 0 ){
+//colorPick mmovex, mmovey
+// see openglContext-> in main.cpp - lets split it out inyo colorpick and gl ctx
+// commit changes first....
+    }else if( delta->py > 0 ){
+
+    }else if( delta->px < 0 ){
+
+    }else if( delta->px > 0 ){
+
+    }
 
 }
 

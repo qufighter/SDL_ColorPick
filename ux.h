@@ -167,8 +167,9 @@ static Ux* Singleton();
 #include "uiObject.h" // referrs to Ux:: which referrs to uiObject...
 #include "uiScrollController.h"
 #include "uiViewColor.h"
-#include "uiRoundedRectangle.h"
-#include "uiSqware.h"  // its because we don't really have square, and if we do we do not really need this, because squares would already be squares
+//#include "uiRoundedRectangle.h"
+//#include "uiSqware.h"  // its because we don't really have square, and if we do we do not really need this, because squares would already be squares
+#include "uiNavArrows.h"
 
 #include "ux-anim.h"
     
@@ -220,6 +221,7 @@ static Ux* Singleton();
     static void interactionHZ(uiObject *interactionObj, uiInteraction *delta);
     static void interactionSliderVT(uiObject *interactionObj, uiInteraction *delta);
     static void interactionVert(uiObject *interactionObj, uiInteraction *delta);
+    static void interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteraction *delta);
 
     static bool bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *delta);
 
@@ -271,6 +273,8 @@ static Ux* Singleton();
 
         uiViewColor *curerntColorPreview;
         uiViewColor *palleteSelectionColorPreview;
+
+        uiNavArrows* movementArrows;
 
         uiObject *historyPalleteHolder;
         uiScrollController *historyScroller;

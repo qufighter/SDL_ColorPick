@@ -503,6 +503,7 @@ struct uiScrollController{
                 }
                 
                 scrollTile->setBoundaryRect( ctr * tileWidth, rowCtr * tileHeight, tileWidth, tileHeight );
+                // any pending animation needs to reset to this new position now.... hmmm....
                 
                 tileCounter++;
             }

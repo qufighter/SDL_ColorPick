@@ -30,7 +30,9 @@ OpenGLContext::OpenGLContext(void) {
 bool OpenGLContext::createContext(SDL_Window *PsdlWindow) {
 
     sdlWindow = PsdlWindow;
+
     gl = SDL_GL_CreateContext(sdlWindow);
+
     if( gl == 0 ){
         printf("SDL_GL_CreateContext failed: %s\n", SDL_GetError());
         return false;
@@ -63,10 +65,10 @@ void OpenGLContext::chooseFile(void) {
 void OpenGLContext::updateColorPreview(void){
     //glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
 
-    glClearColor(textures->selectedColor.r / 255.0f,
-                 textures->selectedColor.g / 255.0f,
-                 textures->selectedColor.b / 255.0f,
-                 textures->selectedColor.a / 255.0f); // IF WE DONT DO THIS WE WONT HAVE THE REFERENCES UP NEXT!
+//    glClearColor(textures->selectedColor.r / 255.0f,
+//                 textures->selectedColor.g / 255.0f,
+//                 textures->selectedColor.b / 255.0f,
+//                 textures->selectedColor.a / 255.0f); // IF WE DONT DO THIS WE WONT HAVE THE REFERENCES UP NEXT!
 
     generalUx->updateColorValueDisplay(&textures->selectedColor);
 
@@ -101,6 +103,9 @@ void OpenGLContext::createUI(void) {
 
 
     generalUx->zoomSlider->setAnimationPercCallback(&OpenGLContext::setFishScalePerentage);
+
+
+//generalUx->movementArrows->uiObjectItself->setAnimationPercCallback(&OpenGLContext::setFishScalePerentage);
 
 //    uiObject childObj2 = uiObject();
 //    childObj2.hasForeground = true;
@@ -240,6 +245,21 @@ void OpenGLContext::setFishScalePerentage(Ux::uiObject *interactionObj, float pe
     myOglContext->fishEyeScale = MIN_FISHEYE_ZOOM + (zoomRange * myOglContext->fishEyeScalePct);
 
 }
+
+//static for use as UI:: callback
+//void OpenGLContext::setFishScalePerentage(Ux::uiObject *interactionObj, float percent){
+//    SDL_Log("MMV PERC SLIDER %f %%", (percent));
+//    // from static function we must get instance
+//
+//    OpenGLContext* myOglContext = OpenGLContext::Singleton();
+//
+//    // todo need to use logscale or crop
+//    myOglContext->fishEyeScalePct = percent;
+//
+//
+//    myOglContext->fishEyeScale = MIN_FISHEYE_ZOOM + (zoomRange * myOglContext->fishEyeScalePct);
+//    
+//}
 
 void OpenGLContext::triggerVelocity(float x, float y){
     velocity_x = x;

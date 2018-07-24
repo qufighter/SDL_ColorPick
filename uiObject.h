@@ -99,7 +99,7 @@ struct uiObject
         doesNotCollide=false;
         hasInteraction=false;
         hasInteractionCb=false;
-        canMove=false;
+        //canMove=false;
         isCentered=false;
         hasParentObject=false;
         parentObject=nullptr;
@@ -123,7 +123,10 @@ struct uiObject
 
         boundaryEntreredCallback=nullptr;
         shouldCeaseInteractionChecker=nullptr;
-        myScrollController=nullptr;
+        myScrollController=nullptr; // not genric enough... remove it
+        myUiController = nullptr;
+        forceDelta=nullptr;
+
         matrix = glm::mat4(1.0f);
     }
     bool isDebugObject;
@@ -142,7 +145,12 @@ struct uiObject
     bool is_being_viewed_state = false; // some object interactions need to track the state of the toggle into/outof view
 
     bool hasBackground;
+
     uiScrollController *myScrollController; // child objects will inherit this I think!
+    void * myUiController; // ditto!
+
+    uiInteraction *forceDelta;
+
     Float_Rect boundryRect; // please call setBoundaryRect if you are going to animate the object
     Float_Rect origBoundryRect;
     Float_Rect roundedCornersRect;
@@ -254,7 +262,7 @@ struct uiObject
      shader
      */
 
-    bool canMove;
+    //bool canMove;
 
 
 
@@ -316,6 +324,9 @@ struct uiObject
             if( this->myScrollController != nullptr ){
                 c->myScrollController = this->myScrollController;
             }
+            if( this->myUiController != nullptr ){
+                c->myUiController = this->myUiController;
+            }
 
             if( this->hasCropParent ){
                 c->setCropParent(this->cropParentObject);
@@ -364,6 +375,13 @@ struct uiObject
         return nullptr;
     }
 
+    // chainables: unlike bove
+    uiObject* rotate(float deg){
+        this->matrix = glm::rotate(this->matrix,  deg, glm::vec3(0.0f, 0.0f, 1.0f));
+        return this;
+    }
+
+
 
     bool hasParentObject;
     uiObject *parentObject;
@@ -374,6 +392,7 @@ struct uiObject
     int childListIndex = 0;
     int childListMax = 128; //derp
     uiObject* childList[128]; // ui object may have a max of 128 child objects each
+
 
     int getChildCount(){
         return childListIndex;
