@@ -68,8 +68,8 @@ struct uiScrollController{
         uxInstance->printCharToUiObject(scrollVtDrag, CHAR_BARS, true);
         scrollVtDrag->setBoundaryRect( 0.0, 0.0, 1.0, 0.23); // 0.23 is the height of the scrolly widget... make it dynamic :!
         //scrollVtDrag->setBoundaryRect( 0.0, SCROLLY_WIDTH, 1.0, 0.23); // 0.23 is the height of the scrolly widget... make it dynamic :!
-        //Ux::setRect(&scrollVtDrag->movementBoundaryRect, 0.0, SCROLLY_WIDTH, 0.0, 1.0 - SCROLLY_WIDTH - SCROLLY_WIDTH);
-        Ux::setRect(&scrollVtDrag->movementBoundaryRect, 0.0, 0.0, 0.0, 1.0);
+        //scrollVtDrag->setMovementBoundaryRect( 0.0, SCROLLY_WIDTH, 0.0, 1.0 - SCROLLY_WIDTH - SCROLLY_WIDTH);
+        scrollVtDrag->setMovementBoundaryRect( 0.0, 0.0, 0.0, 1.0);
         scrollVtDrag->setInteraction(&Ux::interactionSliderVT);
         scrollVtDrag->setAnimationPercCallback(setScrollToPercent);
 
@@ -92,8 +92,8 @@ struct uiScrollController{
 
         scrollx = 0.0;
         scrolly = 0.0;
-        allowUp = true; /// if OOB maybe not...
-        allowDown = true;
+        allowUp = false; /// if OOB maybe not...
+        allowDown = false;
 
         tileChildObjects = true;
         childObjectsPerRow = 1;
@@ -139,12 +139,13 @@ struct uiScrollController{
     updateTileFunction getTile=nullptr;
     getTotalFunction getTotal=nullptr;
     anInteractionFn tileClicked=nullptr;
+    anInteractionFn tileDragged=nullptr;
 
-    void initTilingEngine(int itemsPerRow, int rows, updateTileFunction getTileCb, getTotalFunction getTotalCb, anInteractionFn tileClickedFn){
+    void initTilingEngine(int itemsPerRow, int rows, updateTileFunction getTileCb, getTotalFunction getTotalCb, anInteractionFn tileClickedFn, anInteractionFn tileDraggedFn){
         getTile = getTileCb;
         getTotal = getTotalCb;
         tileClicked = tileClickedFn;
-
+        tileDragged = tileDraggedFn;
         resizeTililngEngine(itemsPerRow, rows);
     }
 
@@ -259,7 +260,7 @@ struct uiScrollController{
     static void scrollAnimationUpdaterCb(uiAnimation* uiAnim, Float_Rect *newBoundaryRect){
         uiScrollController* self = uiAnim->myUiObject->myScrollController;
         self->scrolly = newBoundaryRect->y;
-        free(newBoundaryRect);
+        SDL_free(newBoundaryRect);
         self->reflowTiles();
     }
 
@@ -277,13 +278,23 @@ struct uiScrollController{
 
     void updateTotalScrollRows(){
         totalChildObjects = getTotal();
-        totalScrollRows = (int(totalChildObjects / childObjectsPerRow) + 1) - rowsToShow;
-        if( totalScrollRows < 1 ) totalScrollRows = 0; // sometimes no scrolling necessary, if fewer rows than scrollable
+
+        totalScrollRows = (int(ceil(totalChildObjects / (float)childObjectsPerRow))) - rowsToShow;
+        if( totalScrollRows < 1 ){
+            totalScrollRows = 0; // sometimes no scrolling necessary, if fewer rows than scrollable
+        }
         minimumScrollY = -tileHeight * totalScrollRows;
+//        if( scrolly < minimumScrollY ){
+//            scrolly = minimumScrollY;
+//        }
 
     }
 
     bool animConstrainToScrollableRegion(){
+        return animConstrainToScrollableRegion(false);
+    }
+
+    bool animConstrainToScrollableRegion(bool skipUpdate){
         Ux* uxInstance = Ux::Singleton();
 
         if(scrolly > 0){
@@ -297,19 +308,37 @@ struct uiScrollController{
             return true; // short circult hte rest, save some cpus
         }
 
-        updateTotalScrollRows(); // in some cases, this call is redundant since its already updated by reflowTiles() inadvertantly!  I think its tricky to optimize away since we also do not always need to get here
+        if(!skipUpdate)
+            updateTotalScrollRows(); // in some cases, this call is redundant since its already updated by reflowTiles() inadvertantly!  I think its tricky to optimize away since we also do not always need to get here
 
         if( scrolly <= minimumScrollY){
             //scrolly = -tileHeight * totalScrollRows; // we animate the scrolly instaed
             // I reallyt hink we should not call such a custom 1off fn? moveTo  could pass nullptr though :D (this does cancel existing anim)
             this->scrollChildContainer->setAnimation( uxInstance->uxAnimations->moveTo(this->scrollChildContainer,0.0,minimumScrollY, scrollAnimationUpdaterCb, scrollAnimationGetBoundsFn) );
 
-            allowUp = true;
+
+            if( totalChildObjects > 0 ){
+                allowUp = true;
+            }else{
+                allowUp = false;
+            }
+
             allowDown = false;
 
             return true;
 
         }
+
+
+//        if( totalChildObjects > 0 ){
+//            allowUp = true;
+//            allowDown = true;
+//        }else{
+//            allowUp = false; /// if OOB maybe not...
+//            allowDown = false;
+//        }
+
+//
         allowDown = true;
         allowUp = true;
 
@@ -436,18 +465,30 @@ struct uiScrollController{
         }
 
 
-        updateScrollProgIndicator();
+        updateScrollProgIndicator(); // calls updateTotalScrollRows()
 
         if( totalScrollRows < 1 ){
             scrollBarVertHolder->boundryRect.w = 0;
             scrollChildContainer->boundryRect.w=1.0;
             uiObjectItself->updateRenderPosition();
 
+
+
         }else{
             scrollBarVertHolder->boundryRect.w = SCROLLY_WIDTH;
             scrollChildContainer->boundryRect.w=1.0 - SCROLLY_WIDTH;
             uiObjectItself->updateRenderPosition();
+
+
         }
+
+        if( totalChildObjects < 1 ){
+             uiObjectItself->doesNotCollide = true;
+        }else{
+            uiObjectItself->doesNotCollide = false;
+        }
+
+        animConstrainToScrollableRegion(true);  // also... calls updateTotalScrollRows()
     }
 
 
@@ -481,7 +522,9 @@ struct uiScrollController{
 
                     if( tileClicked != nullptr ){
                         scrollTile->setInteractionCallback(tileClicked); // needs more
-                        scrollTile->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
+                        scrollTile->setInteraction(tileDragged);
+
+                        scrollTile->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonHorozontalMovement);
                     } // HMM first 2 tiles are not clickable...
                     // why do we do this: this should just allocate 2 tiles.
 
@@ -503,6 +546,7 @@ struct uiScrollController{
                 }
                 
                 scrollTile->setBoundaryRect( ctr * tileWidth, rowCtr * tileHeight, tileWidth, tileHeight );
+                
                 // any pending animation needs to reset to this new position now.... hmmm....
                 
                 tileCounter++;
@@ -513,7 +557,7 @@ struct uiScrollController{
         // we monitor the first tile now
 //        if( !is_monitoring ){
 //            is_monitoring=true;
-            scrollChildContainer->childList[0]->isDebugObject= true;
+    //        scrollChildContainer->childList[0]->isDebugObject= true;
 //            // setCropParent
 //        }
 

@@ -11,9 +11,6 @@
 #ifndef _____PROJECTNAME_____ColorPickState__
 #define _____PROJECTNAME_____ColorPickState__
 
-//class ColorPickState; /* forward decl ???? */
-
-
 
 class ColorPickState {
 
@@ -22,7 +19,7 @@ public:
 
     // probably should not be public but easier this way!
     int mmovex, mmovey; /// needs to be ux accessible singleton.......
-
+    float viewport_ratio;
 
 private:
 
@@ -40,29 +37,6 @@ protected:
 static bool cps_ms_bInstanceCreated=false;
 static ColorPickState* cps_pInstance=0;
 
-
-//ColorPickState::ms_bInstanceCreated = false;
-//ColorPickState::pInstance = nullptr;
-
-//ColorPickState* ColorPickState::Singleton() {
-//    if(!cps_ms_bInstanceCreated){
-//        cps_pInstance = new ColorPickState();
-//        cps_ms_bInstanceCreated=true;
-//    }
-//    return cps_pInstance;
-//}
-//
-//ColorPickState::ColorPickState(void) {
-//    //constructor
-//    mmovex=0;
-//    mmovey=0;
-//
-//}
-
-
-
-
-//ends up mulitply defined (?? in future?)
 static ColorPickState* colorPickState = ColorPickState::Singleton();
 
 

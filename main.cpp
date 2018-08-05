@@ -97,7 +97,7 @@ void ReshapeWindow(){
     openglContext->reshapeWindow(win_w, win_h);
     SDL_Log("WindowSize %d %d", win_w,win_h);
 
-
+    colorPickState->viewport_ratio = (win_w+1.0f)/win_h;
 
     if( win_w < SCREEN_WIDTH ) {
         // low dpi?
@@ -144,7 +144,7 @@ int EventFilter(void* userdata, SDL_Event* event){
             openglContext->clearVelocity(); // stop any active panning
             mousStateDown = 1;
             //SDL_SetRelativeMouseMode(SDL_TRUE);
-            //SDL_GetRelativeMouseState(&openglContext->mmovex, &openglContext->mmovey);
+            //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 
             int tx,ty;
             SDL_GetRelativeMouseState(&tx, &ty);
@@ -175,7 +175,7 @@ int EventFilter(void* userdata, SDL_Event* event){
 
 
 
-                    SDL_GetRelativeMouseState(&openglContext->mmovex, &openglContext->mmovey);
+                    SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 
 
                     // velocity has a multiplier the closer
@@ -184,15 +184,15 @@ int EventFilter(void* userdata, SDL_Event* event){
                     //
                     if( openglContext->fishEyeScalePct < 0.05 ){
                         float factor = (0.05 - openglContext->fishEyeScalePct);
-                        openglContext->mmovex *= 1 + (80.0 * factor);
-                        openglContext->mmovey *= 1 + (80.0 * factor);
+                        colorPickState->mmovex *= 1 + (80.0 * factor);
+                        colorPickState->mmovey *= 1 + (80.0 * factor);
                     }
 
                     // todo some equivilent near other exterme end
                     // where movements are scaled down?
 
-                    collected_x += openglContext->mmovex;
-                    collected_y += openglContext->mmovey;
+                    collected_x += colorPickState->mmovex;
+                    collected_y += colorPickState->mmovey;
 
    //TODO                 // there is a FLAW here - start dragging in one direction, then change direction AND release before reachign the origin point... it will fly in teh wrong direction
                     // this is because the collected_x is really just dx (difference from origin) and not true measure of velocity
@@ -201,16 +201,16 @@ int EventFilter(void* userdata, SDL_Event* event){
                     input_velocity_x +=collected_x*0.1; //TIMING
                     input_velocity_y +=collected_y*0.1;
 
-                    SDL_Log("MOUSE xy %d %d", openglContext->mmovex,openglContext->mmovey);
+                    SDL_Log("MOUSE xy %d %d", colorPickState->mmovex,colorPickState->mmovey);
                     openglContext->renderShouldUpdate = true;
 
                 }else{
-                //openglContext->mmovex = event->motion.xrel;
-                //openglContext->mmovey = event->motion.yrel;
+                //colorPickState->mmovex = event->motion.xrel;
+                //colorPickState->mmovey = event->motion.yrel;
 
-//                    SDL_GetRelativeMouseState(&openglContext->mmovex, &openglContext->mmovey);
-//                    collected_x += openglContext->mmovex;
-//                    collected_y += openglContext->mmovey;
+//                    SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
+//                    collected_x += colorPickState->mmovex;
+//                    collected_y += colorPickState->mmovey;
 
                     SDL_GetMouseState(&tx, &ty);
                     SDL_Log("MOUSE xy %d %d", tx,ty);
@@ -244,7 +244,7 @@ int EventFilter(void* userdata, SDL_Event* event){
 
 
                 // so if we already didInteract....
-                // calling triggerInteraction again might change our interaction object....
+            // calling triggerInteraction again might change our interaction object....
                 // which could be good or mediocure if we are currently doing a drag and drop
                 // but in this case we don't want to overwrite our interaction if we already have one
 
@@ -294,7 +294,7 @@ int EventFilter(void* userdata, SDL_Event* event){
 
 
             //SDL_SetRelativeMouseMode(SDL_FALSE); // bit unsure if this mouse stuff will work for touch
-            //SDL_GetRelativeMouseState(&openglContext->mmovex, &openglContext->mmovey);
+            //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 
             SDL_Log("SDL_FINGERUP");
 
@@ -310,21 +310,21 @@ int EventFilter(void* userdata, SDL_Event* event){
 //        case SDL_MOUSEBUTTONDOWN:
 //        //    mousStateDown = 1;
 //            //SDL_SetRelativeMouseMode(SDL_TRUE);
-//            //SDL_GetRelativeMouseState(&openglContext->mmovex, &openglContext->mmovey);
+//            //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 //
 //            return 0;
 //        case SDL_MOUSEMOTION:
 //            // SDL_Log("Mouse Motion X,Y %d,%d", event->motion.xrel, event->motion.yrel);
 //            if( mousStateDown ){
-//                //SDL_GetRelativeMouseState(&openglContext->mmovex, &openglContext->mmovey);
-//                //openglContext->mmovex = event->motion.xrel;
-//                //openglContext->mmovey = event->motion.yrel; // still like simplicity of these, not working well once SDL_SetRelativeMouseMode(SDL_TRUE), which captures hte cursor nicely and is OK in window mode....
+//                //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
+//                //colorPickState->mmovex = event->motion.xrel;
+//                //colorPickState->mmovey = event->motion.yrel; // still like simplicity of these, not working well once SDL_SetRelativeMouseMode(SDL_TRUE), which captures hte cursor nicely and is OK in window mode....
 //            }
 //            return 0;
 //        case SDL_MOUSEBUTTONUP:
 //        //    mousStateDown = 0;
 //            //SDL_SetRelativeMouseMode(SDL_FALSE);
-//            //SDL_GetRelativeMouseState(&openglContext->mmovex, &openglContext->mmovey);
+//            //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 //
 //            return 0;
 
@@ -452,6 +452,7 @@ compatibility; this flag is ignored
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
     SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
 
+
     /* create window and renderer */
     window =
         SDL_CreateWindow(NULL, 0, 0, win_w, win_h,
@@ -460,6 +461,9 @@ compatibility; this flag is ignored
         printf("Could not initialize Window\n");
         return 1;
     }
+
+    colorPickState->viewport_ratio = (win_w+1.0f)/win_h;
+
 
 //    renderer = SDL_CreateRenderer(window, -1, 0);
 //    if (!renderer) {

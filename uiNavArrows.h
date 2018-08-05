@@ -37,40 +37,40 @@ struct uiNavArrows{
 
 
 
-        up->hasBackground=true;
+        //up->hasBackground=true;
         up->hasForeground=true;
-        Ux::setColor(&up->backgroundColor, 32, 0, 0, 128);
-        Ux::setColor(&up->foregroundColor, 0, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-        uxInstance->printCharToUiObject(up, '^', DO_NOT_RESIZE_NOW);
+        //Ux::setColor(&up->backgroundColor, 32, 0, 0, 128);
+        Ux::setColor(&up->foregroundColor, 255, 255, 255, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        uxInstance->printCharToUiObject(up, CHAR_ARR_UP, DO_NOT_RESIZE_NOW);
         up->setInteractionCallback(interactionDirectionalArrowClicked);
         up->forceDelta = new uiInteraction();
         up->forceDelta->begin(0, -1.0);
 
-        dn->hasBackground=true;
+        //dn->hasBackground=true;
         dn->hasForeground=true;
-        Ux::setColor(&dn->backgroundColor, 32, 0, 0, 128);
-        Ux::setColor(&dn->foregroundColor, 0, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-        uxInstance->printCharToUiObject(dn, '^', DO_NOT_RESIZE_NOW);
+        //Ux::setColor(&dn->backgroundColor, 32, 0, 0, 128);
+        Ux::setColor(&dn->foregroundColor, 255, 255, 255, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        uxInstance->printCharToUiObject(dn, CHAR_ARR_UP, DO_NOT_RESIZE_NOW);
         dn->rotate(180.0f);
         dn->setInteractionCallback(interactionDirectionalArrowClicked);
         dn->forceDelta = new uiInteraction();
         dn->forceDelta->begin(0, 1.0);
 
-        lf->hasBackground=true;
+        //lf->hasBackground=true;
         lf->hasForeground=true;
-        Ux::setColor(&lf->backgroundColor, 32, 0, 0, 128);
-        Ux::setColor(&lf->foregroundColor, 0, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-        uxInstance->printCharToUiObject(lf, '^', DO_NOT_RESIZE_NOW);
+        //Ux::setColor(&lf->backgroundColor, 32, 0, 0, 128);
+        Ux::setColor(&lf->foregroundColor, 255, 255, 255, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        uxInstance->printCharToUiObject(lf, CHAR_ARR_UP, DO_NOT_RESIZE_NOW);
         lf->rotate(90.0f);
         lf->setInteractionCallback(interactionDirectionalArrowClicked);
         lf->forceDelta = new uiInteraction();
         lf->forceDelta->begin(1.0, 0.0);
 
-        rt->hasBackground=true;
+        //rt->hasBackground=true;
         rt->hasForeground=true;
-        Ux::setColor(&rt->backgroundColor, 32, 0, 0, 128);
-        Ux::setColor(&rt->foregroundColor, 0, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-        uxInstance->printCharToUiObject(rt, '^', DO_NOT_RESIZE_NOW);
+        //Ux::setColor(&rt->backgroundColor, 32, 0, 0, 128);
+        Ux::setColor(&rt->foregroundColor, 255, 255, 255, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        uxInstance->printCharToUiObject(rt, CHAR_ARR_UP, DO_NOT_RESIZE_NOW);
         rt->rotate(-90.0f);
         rt->setInteractionCallback(interactionDirectionalArrowClicked);
         rt->forceDelta = new uiInteraction();
@@ -163,7 +163,7 @@ struct uiNavArrows{
 //        uxInstance->printStringToUiObject(rgbBlueText, resultText6char, DO_NOT_RESIZE_NOW);
 
 
-        //free(resultText6char);
+        //SDL_free(resultText6char);
     }
 
 };

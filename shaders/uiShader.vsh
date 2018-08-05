@@ -25,8 +25,6 @@ attribute vec2 TexCoordIn;
 varying vec2 TexCoordOut;
 varying vec2 OrigTexCoordOut;
 
-
-
 uniform vec4 ui_scale;
 uniform vec4 ui_position;
 uniform vec4 texture_crop;  // this means the texture position really.
@@ -37,6 +35,7 @@ uniform vec4 ui_crop;
 void main()
 {
 	//TexCoordOut = vec2((-texture_crop.r * texture_crop.b) + texture_crop.b * TexCoordIn.s,  (-texture_crop.g * texture_crop.a ) + texture_crop.a * TexCoordIn.t);
+
 
     OrigTexCoordOut = TexCoordIn;
 
@@ -135,14 +134,34 @@ void main()
         vec4 cropParentPosition = (position * crop_scale) + crop_position;
 
 
-        if( position.y < 0.0 ){ // "bottom" left or right corner of sq
+        if( position.y < 0.0 ){ // "bottom" left or right corner of sq (unless rotated)
 
 
             float lostY = 0.0;
+            float lostX = 0.0;
 
             if( objPosition.y < cropParentPosition.y ){
                 lostY = cropParentPosition.y - objPosition.y;
                 objPosition.y = cropParentPosition.y;
+            }
+
+            if( position.x  < 0.0 ){ // left
+
+
+//                if( objPosition.x < cropParentPosition.x ){
+//                    lostX = cropParentPosition.x - objPosition.x;
+//                    objPosition.x = cropParentPosition.x;
+//                }
+
+            }else{ // right
+
+                if( objPosition.x > cropParentPosition.x ){
+                    lostX = objPosition.x - cropParentPosition.x;
+                    objPosition.x = cropParentPosition.x;
+                }
+
+                //objPosition.x -= 0.1;
+
             }
 
             // now we move our texure coord, which is for btm right/left
@@ -155,14 +174,32 @@ void main()
 
             /*there are more conditions to check here but tiling engine wraps and does not produce these edge conditions*/
 
-        }else{
+        }else{ // "top" left or right corner (unless rotated)
 
             float lostY = 0.0;
+            float lostX = 0.0;
 
             // oob top coord
             if( objPosition.y > cropParentPosition.y ){
                 lostY = objPosition.y - cropParentPosition.y;
                 objPosition.y = cropParentPosition.y;
+            }
+
+            if( position.x  < 0.0 ){ // left
+
+
+//                if( objPosition.x < cropParentPosition.x ){
+//                    lostX = cropParentPosition.x - objPosition.x;
+//                    objPosition.x = cropParentPosition.x;
+//                }
+
+            }else{ // right
+
+                if( objPosition.x > cropParentPosition.x ){
+                    lostX = objPosition.x - cropParentPosition.x;
+                    objPosition.x = cropParentPosition.x;
+                }
+
             }
 
             TexCoordOut.y += (lostY / 2.0);
@@ -171,10 +208,11 @@ void main()
 
 
             // we need to check if we're outside the other side of the crop position rect..., so we move to the other corner (top of our rect went out bottom of crop rect)
-            vec4 cropParentPositionOpposite = ((position * -1.0) * crop_scale) + crop_position;
-            if( objPosition.y < cropParentPositionOpposite.y ){
-                objPosition.y = cropParentPositionOpposite.y;
-            }
+            // we enabled back face culling so this is no longer needed :) glCullFace
+//            vec4 cropParentPositionOpposite = ((position * -1.0) * crop_scale) + crop_position;
+//            if( objPosition.y < cropParentPositionOpposite.y ){
+//                objPosition.y = cropParentPositionOpposite.y;
+//            }
 
         }
 

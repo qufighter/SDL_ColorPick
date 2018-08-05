@@ -16,8 +16,6 @@
 
 #include "main.h"
 
-#include "ColorPickState.h"
-
 #include "shader.h"
 
 #include "textures.h"

@@ -177,7 +177,7 @@ struct uiAnimation
     // this is animationUpdateCallbackFn
     static void defaultUiObjectAnimationupdater(uiAnimation* self, Float_Rect *newBoundaryRect){
         Ux::setRect(&self->myUiObject->boundryRect, newBoundaryRect->x, newBoundaryRect->y, newBoundaryRect->w, newBoundaryRect->h);
-        free(newBoundaryRect);
+        SDL_free(newBoundaryRect);
         self->myUiObject->updateRenderPosition(); // this is occuring in the animation timeout thread.... if threaded
     }
 
@@ -366,7 +366,7 @@ struct uiAminChain
             result_done = this->animList[animListCurrent]->update(elapsedMs);
             if( result_done ){
 
-                free(this->animList[animListCurrent]); // GARBAGE COLLECTION ?! (we may mark an animation to not auto delete in the future, for reusing it)
+                SDL_free(this->animList[animListCurrent]); // GARBAGE COLLECTION ?! (we may mark an animation to not auto delete in the future, for reusing it)
 
                 animListCurrent++;
                 if( animListCurrent >= animListMaxLen ){
@@ -381,7 +381,7 @@ struct uiAminChain
 
     void end(){ // think about thread safe-ness if update is stll called in different thread
         while( animListCurrent < animListIndex ){
-            free(this->animList[animListCurrent]); // GARBAGE COLLECTION ?! (we may mark an animation to not auto delete in the future, for reusing it)
+            SDL_free(this->animList[animListCurrent]); // GARBAGE COLLECTION ?! (we may mark an animation to not auto delete in the future, for reusing it)
             animListCurrent++;
             if( animListCurrent >= animListMaxLen ){
                 break; // chain completed
@@ -391,7 +391,7 @@ struct uiAminChain
 
     void endAnimation(){ // thread safe, but you must call preserveReference if you want to call anything later
         if( this->chainCompleted ){
-            free(this);
+            SDL_free(this);
         }else{
             this->invalidateChain = true;
         }
@@ -483,7 +483,7 @@ struct UxAnim
                     // WE GET AN EXCEPTION HERE SOMETIMES>>>>>
                     // malloc: *** error for object 0x7fbb4330: pointer being freed was not allocated
                     // sometimes this is caused by adding an animation chain while updating another animation perhaps?
-                    free(animChains[x]); // GARBAGE COLLECTION ?! (we may mark a chain to not auto delete in the future, for reusing it?)
+                    SDL_free(animChains[x]); // GARBAGE COLLECTION ?! (we may mark a chain to not auto delete in the future, for reusing it?)
                 }else{
                     animChains[x]->chainCompleted = true; // the only way the garbage can be otherwise collected
                 }
@@ -610,6 +610,22 @@ struct UxAnim
         return myAnimChain;
     }
 
+    uiAminChain* slideLeft(Ux::uiObject *uiObject){ /* slideDownOut */
+        uiAminChain* myAnimChain = new uiAminChain();
+        //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(-1.0, 0.0) );
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
+
+    uiAminChain* slideRight(Ux::uiObject *uiObject){ /* slideDownOut */
+        uiAminChain* myAnimChain = new uiAminChain();
+        //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(1.0, 0.0) );
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
+
     uiAminChain* slideDown(Ux::uiObject *uiObject){ /* slideDownOut */
         uiAminChain* myAnimChain = new uiAminChain();
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
@@ -618,14 +634,45 @@ struct UxAnim
         return myAnimChain;
     }
 
-    uiAminChain* slideDownFullHeight(Ux::uiObject *uiObject){ /* slideDownOut */
+    uiAminChain* slideUp(Ux::uiObject *uiObject){ /* slideDownOut */
         uiAminChain* myAnimChain = new uiAminChain();
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
-        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(0, uiObject->origBoundryRect.y + uiObject->origBoundryRect.h) ); // WE SHOULD CONSIDER A WAY TO JUST USE THE OBJECTS MOVEMENT BOUNDARY RECT?
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(0, -1.0) );
         pushAnimChain(myAnimChain);
         return myAnimChain;
     }
 
+    uiAminChain* slideLeftFullWidth(Ux::uiObject *uiObject){ /* slideDownOut */
+        uiAminChain* myAnimChain = new uiAminChain();
+        //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(uiObject->origBoundryRect.x - uiObject->origBoundryRect.w, uiObject->origBoundryRect.y) ); // WE SHOULD CONSIDER A WAY TO JUST USE THE OBJECTS MOVEMENT BOUNDARY RECT?
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
+
+    uiAminChain* slideRightFullWidth(Ux::uiObject *uiObject){ /* slideDownOut */
+        uiAminChain* myAnimChain = new uiAminChain();
+        //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(uiObject->origBoundryRect.x + uiObject->origBoundryRect.w, uiObject->origBoundryRect.y) ); // WE SHOULD CONSIDER A WAY TO JUST USE THE OBJECTS MOVEMENT BOUNDARY RECT?
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
+
+    uiAminChain* slideDownFullHeight(Ux::uiObject *uiObject){ /* slideDownOut */
+        uiAminChain* myAnimChain = new uiAminChain();
+        //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(uiObject->origBoundryRect.x, uiObject->origBoundryRect.y + uiObject->origBoundryRect.h) ); // WE SHOULD CONSIDER A WAY TO JUST USE THE OBJECTS MOVEMENT BOUNDARY RECT?
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
+
+    uiAminChain* slideUpFullHeight(Ux::uiObject *uiObject){ /* slideDownOut */
+        uiAminChain* myAnimChain = new uiAminChain();
+        //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(uiObject->origBoundryRect.x, uiObject->origBoundryRect.y - uiObject->origBoundryRect.h) ); // WE SHOULD CONSIDER A WAY TO JUST USE THE OBJECTS MOVEMENT BOUNDARY RECT?
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
 //    uiAminChain* impulseUp(Ux::uiObject *uiObject){ /* slideDownOut */
 //        uiAminChain* myAnimChain = new uiAminChain();
 //        //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );

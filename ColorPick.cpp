@@ -22,8 +22,8 @@ OpenGLContext* OpenGLContext::Singleton() {
 
 OpenGLContext::OpenGLContext(void) {
     //constructor
-    mmovex=0;
-    mmovey=0;
+//    colorPickState->mmovex=0;
+//    colorPickState->mmovey=0;
 
 }
 
@@ -154,8 +154,9 @@ void OpenGLContext::setupScene(void) {
 
     textureId_fonts = textures->LoadTexture("textures/ascii.png");
 
-
-
+    glFrontFace(GL_CW);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     //projectionMatrix = glm::perspective(60.0f, (float)windowWidth / (float)windowHeight, 0.1f, (float)VIEW_MAX_CLIP_DISTANCE);  // Create our perspective projection matrix
 
@@ -284,8 +285,8 @@ float velocityMin = 0.0000001f;
 void OpenGLContext::renderScene(void) {
 
     if( has_velocity ){
-        mmovex = velocity_x;
-        mmovey = velocity_y;
+        colorPickState->mmovex = velocity_x;
+        colorPickState->mmovey = velocity_y;
 
         velocity_x *= pan_friction;
         velocity_y *= pan_friction;
@@ -297,11 +298,11 @@ void OpenGLContext::renderScene(void) {
     }
 
     // update
-    if(mmovex != 0 || mmovey != 0){
-        position_x += mmovex;
-        mmovex=0;
-        position_y += mmovey;
-        mmovey=0;
+    if(colorPickState->mmovex != 0 || colorPickState->mmovey != 0){
+        position_x += colorPickState->mmovex;
+        colorPickState->mmovex=0;
+        position_y += colorPickState->mmovey;
+        colorPickState->mmovey=0;
 
         // contraint to textureSize does not match image size when image is < 2048...
         // validate to surface size instead
@@ -377,7 +378,7 @@ void OpenGLContext::renderScene(void) {
     glBindTexture(GL_TEXTURE_2D,  textureId_default);
 
     glActiveTexture( GL_TEXTURE0 + 2);
-    glBindTexture(GL_TEXTURE_2D,  textureId_fonts); // well its bound now, wh y not leave this in the main loop for no reason?
+    glBindTexture(GL_TEXTURE_2D,  textureId_fonts); // TODO -  well its bound now, wh y not leave this in the main loop for no reason?
 
 
     glDisable(GL_BLEND);

@@ -93,13 +93,13 @@ struct uiViewColor{
     uiObject *rgbGreenText;
     uiObject *rgbBlueText;
 
-    char* resultText6char = (char*)malloc( 6 ); // seems that we should reuse this and not free it
+    char* resultText6char = (char*)SDL_malloc( 6 ); // seems that we should reuse this and not free it
 
     void update(SDL_Color* color){
         //char* resultText6char; //leaking memory???
         Ux* uxInstance = Ux::Singleton();
 
-        //char* resultText6char = (char*)malloc( 6 ); // seems that we should reuse this and not free it
+        //char* resultText6char = (char*)SDL_malloc( 6 ); // seems that we should reuse this and not free it
 
 
         sprintf(resultText6char, "%02x%02x%02x", color->r, color->g, color->b);
@@ -119,7 +119,7 @@ struct uiViewColor{
         uxInstance->printStringToUiObject(rgbBlueText, resultText6char, DO_NOT_RESIZE_NOW);
 
 
-        //free(resultText6char);
+        //SDL_free(resultText6char);
     }
 
 };

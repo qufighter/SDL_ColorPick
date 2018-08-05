@@ -7,8 +7,10 @@
 // #extension GL_EXT_gpu_shader4 : require
 
 //precision mediump float; // required for IOS but not supported osx
-//SIGH - or not - now added in Shader.cpp
+// - or not - now added in Shader.cpp
 
+
+//  Fragment shaders also have access to the discard command. When executed, this command causes the fragment's output values to be discarded.
 
 //varying vec4 colorVarying;
 
@@ -90,6 +92,11 @@ void roundCorner(vec2 OrigTexCoordOut, vec2 center, float radius, float fuzz) {
 void main()
 {
 
+
+//    if( !gl_FrontFacing ) {
+//        gl_FragColor=vec4(255,0,0,255);
+//    }
+
 	vec4 ocolor=texture2D(texture1, TexCoordOut);
 
 
@@ -124,6 +131,12 @@ void main()
     float tr_radius = ui_corner_radius.g;
     float br_radius = ui_corner_radius.b;
     float bl_radius = ui_corner_radius.a;
+
+
+    //gl_PointCoord
+    //The location within a point primitive that defines the position of the fragment relative to the side of the point. Points are effectively rasterized as window-space squares of a certain pixel size. Since points are defined by a single vertex, the only way to tell where in that square a particular fragment is is with gl_PointCoord.
+    //The values of gl_PointCoord's coordinates range from [0, 1]. OpenGL uses a upper-left origin for point-coordinates by default, so (0, 0) is the upper-left. However, the origin can be switched to a bottom-left origin by calling glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
+
 
 
     /// IF YOU SEE ARTIFACTS - its because you are moving dragged item on sub-pixel increments

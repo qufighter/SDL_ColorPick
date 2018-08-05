@@ -117,6 +117,8 @@ static int collected_y =0;
 static float input_velocity_x =0;
 static float input_velocity_y =0;
 
+#include "ColorPickState.h"
+
 #include <iostream> // cpp functioanlity, not .c
 #include <stdio.h>
 

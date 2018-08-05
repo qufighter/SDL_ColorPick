@@ -40,6 +40,15 @@ static void setRect(Float_Rect * rect, Float_Rect * rect2){
 }
 
 
+static bool setColorNotifyOfChange(SDL_Color * color, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
+    bool changed = color->r != r || color->g != g || color->b != b;
+    color->r = r;
+    color->g = g;
+    color->b = b;
+    color->a = a;
+    return changed;
+}
+
 static void setColor(SDL_Color * color, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
     color->r = r;
     color->g = g;
@@ -100,14 +109,16 @@ struct uiObject
         hasInteraction=false;
         hasInteractionCb=false;
         //canMove=false;
-        isCentered=false;
         hasParentObject=false;
         parentObject=nullptr;
         hasChildren=false;
         isRoot=false;
         cropParentObject=nullptr;
         hasCropParent=false;
+        useCropParentOrig=false;
+        calculateCropParentOrig=false;
         is_being_viewed_state=false;
+        hasMovementBoundary=false;
         childListIndex = 0;
         Ux::setColor(&foregroundColor, 255, 255, 255, 255);
 
@@ -125,9 +136,13 @@ struct uiObject
         shouldCeaseInteractionChecker=nullptr;
         myScrollController=nullptr; // not genric enough... remove it
         myUiController = nullptr;
+        myIntegerIndex = -1;
         forceDelta=nullptr;
 
         matrix = glm::mat4(1.0f);
+        isCentered=false;
+
+        squarify_keep_hz=false;
     }
     bool isDebugObject;
     bool isRoot;
@@ -146,8 +161,10 @@ struct uiObject
 
     bool hasBackground;
 
-    uiScrollController *myScrollController; // child objects will inherit this I think!
+    uiScrollController *myScrollController; // child objects will inherit this I think! - we should just use myUiController though.... TODO remove this
+    // GENERICS -- all UI object may have and or use these, but the purpose depends on exact context in which this is used....
     void * myUiController; // ditto!
+    int myIntegerIndex;
 
     uiInteraction *forceDelta;
 
@@ -164,6 +181,7 @@ struct uiObject
      */
 
     Float_Rect renderRect; /* private */
+    Float_Rect origRenderRect; /* private */
     Float_Rect collisionRect; /* private */
 
     //Float_Rect scrollyRect; //what tpye or sort of corrindants es this?
@@ -203,19 +221,40 @@ struct uiObject
         Ux::setRect(&origBoundryRect, x, y, w, h);
     }
 
+    void resetPosition(){
+        Ux::setRect(&boundryRect, &origBoundryRect); // consider alternative interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) ); 
+    }
+
+
+    void setMovementBoundaryRect(Float_Rect *r){
+        Ux::setRect(&movementBoundaryRect, r);
+        hasMovementBoundary=true;
+    }
+
+    void setMovementBoundaryRect(float x, float y, float w, float h){
+        Ux::setRect(&movementBoundaryRect, x, y, w, h);
+        hasMovementBoundary=true;
+    }
+
     void setRoundedCorners(float tl, float tr, float br, float bl){
         Ux::setRect(&roundedCornersRect, tl, tr, br, bl);
     }
 
     void updateAnimationPercent(float hzPerc, float vtPerc){
-        // we will constrain these to 100%
-        if( hzPerc < 0 ) hzPerc = 0;
-        else if( vtPerc < 0 ) vtPerc = 0;
-        if( hzPerc > 1.0 ) hzPerc = 1.0;
-        else if( vtPerc > 1.0 ) vtPerc = 1.0;
-        boundryRect.x = computedMovementRect.x + (computedMovementRect.w * hzPerc);
-        boundryRect.y = computedMovementRect.y + (computedMovementRect.h * vtPerc);
-        updateRenderPosition();
+        if( hasMovementBoundary ){
+            // we will constrain these to 100%
+            if( hzPerc < 0 ) hzPerc = 0;
+            else if( vtPerc < 0 ) vtPerc = 0;
+            if( hzPerc > 1.0 ) hzPerc = 1.0;
+            else if( vtPerc > 1.0 ) vtPerc = 1.0;
+
+            boundryRect.x = computedMovementRect.x + (computedMovementRect.w * hzPerc);
+            boundryRect.y = computedMovementRect.y + (computedMovementRect.h * vtPerc);
+
+
+            updateRenderPosition();
+
+        }
     }
 
     void setBoundsEnterFunction( aStateChangeFn p_boundaryEntreredCallback ){
@@ -227,6 +266,10 @@ struct uiObject
         shouldCeaseInteractionChecker = p_timeToCancelAnimCheckFn; // when panning, this is the test(when set) to determine if the interaction should be gifted to the parent object instead.  Allows a scrollable object to be panned out of view when the scroll distance is maximized.
         hasBoundaryCb = true;
     }
+
+    // todo what if we do not want to bubble to parent object or better yet, on different condiiton, do not bubble at all but simply change state (toggle)
+    // or really just handle this in interactionCallback? which we will do for delete x
+
 
     void setInteraction( anInteractionFn p_interactionFn ){
         this->canCollide = true; // so for click functions we are just setting this automatically nnow!
@@ -269,7 +312,8 @@ struct uiObject
 
 
     // VV V V V VV    VV V V VVVV V
-    Float_Rect movementBoundaryRect; // relative to parent rect, our rect should fall within parent boundary rect
+    bool hasMovementBoundary;
+    Float_Rect movementBoundaryRect; // relative to parent rect, our rect should fall within parent boundary rect, call setter fn
     Float_Rect computedMovementRect;
     Float_Rect textureCropRect; //used for font rendering
 
@@ -291,9 +335,11 @@ struct uiObject
     // alternative is all position are offesets from boundary.x,y - position then defaults to 0 but when centered
     // position is applied to/from x,y coordinate... this simplifies collision+rendering, and extra computation only needed
     // when interacting/repositioning the object
-    SDL_Point offset = {0,0};
+    SDL_Point offset = {0,0}; // int only?
     // position is top left corner of boundary, or offset from that some amount
     //^
+    bool squarify_keep_hz;
+
 
     void addChild(uiObject *c){
         // so the child boundryRect, could be global space, or could be local space already....
@@ -328,7 +374,7 @@ struct uiObject
                 c->myUiController = this->myUiController;
             }
 
-            if( this->hasCropParent ){
+            if( this->hasCropParent && !c->hasCropParent ){
                 c->setCropParent(this->cropParentObject);
             }
 
@@ -337,18 +383,35 @@ struct uiObject
         }
     }
 
+    void setCropModeOrigPosition(){
+        this->useCropParentOrig=true;
+        if( this->hasCropParent ){
+            this->cropParentObject->calculateCropParentOrig=true;
+        }
+    }
+
     void setCropParent(uiObject *c){
-        this->cropParentObject = c; // ORDER MATTERS HERE!!
-        this->hasCropParent = true;
+        setCropParent(c, false);
+    }
 
-
+    void setCropParent(uiObject *c, bool forceSet){
+        if( forceSet || this->hasCropParent==false ){
+            this->cropParentObject = c; // ORDER MATTERS HERE!!
+            this->hasCropParent = true;
+        }else{
+            //SDL_Log("WARN object already has crop parent");
+        }
     }
 
     void setCropParentRecursive(uiObject *c){
-        setCropParent(c);
+        setCropParentRecursive(c, false);
+    }
+
+    void setCropParentRecursive(uiObject *c, bool forceSetAll){
+        setCropParent(c, forceSetAll);
         if( hasChildren  ){
             for( int x=0,l=childListIndex; x<l; x++ ){
-                childList[x]->setCropParentRecursive(c);
+                childList[x]->setCropParentRecursive(c, forceSetAll);
             }
         }
     }
@@ -387,6 +450,8 @@ struct uiObject
     uiObject *parentObject;
 
     bool hasCropParent;
+    bool useCropParentOrig;
+    bool calculateCropParentOrig;
     uiObject *cropParentObject;
 
     int childListIndex = 0;
@@ -463,8 +528,27 @@ struct uiObject
 
         //    renderRect.x = parentRenderRect.x + boundryRect.x;
         //    renderRect.y = parentRenderRect.y + boundryRect.y;
-        renderRect.w = parentRenderRect.w * boundryRect.w;
+        renderRect.w = parentRenderRect.w * boundryRect.w; //uniformLocations->ui_scale
         renderRect.h = parentRenderRect.h * boundryRect.h;
+
+
+
+        //glm::mat4 uiMatrix = glm::mat4(1.0f);
+
+        //uiMatrix = glm::scale(uiMatrix, glm::vec3(0.9,0.9,1.0));
+        //uiMatrix = glm::rotate(uiMatrix,  2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+        //
+
+        //matrix = glm::scale(uiMatrix, glm::vec3(0.998,0.998,1.0));
+
+        //matrix = glm::scale(uiMatrix, glm::vec3(0.998,0.998,1.0));
+
+        //    colorPickState->viewport_ratio = win_w/win_h;
+
+        // to width
+        //float ysc=(renderRect.w / renderRect.h);
+        //matrix = glm::scale(uiMatrix, glm::vec3(1.0,colorPickState->viewport_ratio,1.0));
+
 
         /*
          // scaleRectForRenderX(&boundryRect) < = is this not the collision rect for x
@@ -480,6 +564,14 @@ struct uiObject
         //}
 
 
+        // these are needed on some objects only in certain edge cases..............
+        // assuming we don't animate size, this is a bit of hack to reduce maths
+        if( calculateCropParentOrig ){
+            origRenderRect.w = parentRenderRect.w * origBoundryRect.w;
+            origRenderRect.h = parentRenderRect.h * origBoundryRect.h;
+            origRenderRect.x = (parentRenderRect.x + scaleRectForRenderX(&origBoundryRect, &parentRenderRect)) ;
+            origRenderRect.y = (parentRenderRect.y + scaleRectForRenderY(&origBoundryRect, &parentRenderRect)) ;
+        }
 
         //    collisionRect.x = renderRect.x;
         //    collisionRect.y = renderRect.y;
@@ -509,14 +601,31 @@ struct uiObject
             }
         }
 
-        // relative to parent rect, our rect should fall within parent boundary rect
-        Ux::setRect(&computedMovementRect,
-                    movementBoundaryRect.x,
-                    movementBoundaryRect.y,
-                    (movementBoundaryRect.w /*- movementBoundaryRect.x*/ /** parentRenderRect.w*/) - boundryRect.w,
-                    (movementBoundaryRect.h /*- movementBoundaryRect.y*/ /** parentRenderRect.h*/) - boundryRect.h
-                    );
 
+
+        if( squarify_keep_hz ){
+            renderRect.h *= colorPickState->viewport_ratio;
+
+
+            float diff = collisionRect.h - renderRect.h;
+
+            collisionRect.h = renderRect.h;
+            collisionRect.y += (diff * 0.5);
+        }
+
+
+
+        if( hasMovementBoundary ){ //seems here to set if not intialized
+
+            // relative to parent rect, our rect should fall within parent boundary rect
+            Ux::setRect(&computedMovementRect,
+                        movementBoundaryRect.x,
+                        movementBoundaryRect.y,
+                        (movementBoundaryRect.w /*- movementBoundaryRect.x*/ /** parentRenderRect.w*/) - boundryRect.w,
+                        (movementBoundaryRect.h /*- movementBoundaryRect.y*/ /** parentRenderRect.h*/) - boundryRect.h
+                        );
+
+        }
 
         //    if( renderRect.w < 1.0 ){
         //        renderRect.x -= (parentRenderRect.w * 0.5) + (renderRect.w * parentRenderRect.w);

@@ -484,7 +484,7 @@ GLuint Textures::LoadTexture(const char* filename, GLuint& textureid) {
 
 	ilBindImage(0);
 	ilDeleteImage(ImgId);
-	//if(data) free(data);
+	//if(data) SDL_free(data);
 
 /*
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
@@ -557,7 +557,7 @@ GLuint Textures::LoadTexture(char * filename, GLuint& textureid) {
 
 
 		if (treeTexture.imageData) 
-			free(treeTexture.imageData);
+			SDL_free(treeTexture.imageData);
 	}else return 0;
 
 	return texture_id;
@@ -657,7 +657,7 @@ GLuint Textures::LoadTexture(const char * filename) {
 	glGenerateMipmap(texture);
 
     // free buffer
-    free( data );
+    SDL_free( data );
 
     return texture;
 }*/
