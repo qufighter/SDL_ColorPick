@@ -12,7 +12,7 @@
 #define SIX_ACROSS 6.0
 #define SIX_ACROSS_RATIO 0.16666666666667  // 1.0 / SIX_ACROSS
 
-#define COLOR_INDEX_MAX 16581376
+#define COLOR_INDEX_MAX 16581376 //  255^3 +1
 
 #define RESIZE_NOW true
 #define DO_NOT_RESIZE_NOW false
@@ -82,8 +82,10 @@ typedef struct Float_Rect
 class Ux {
 public:
 
-    
 static Ux* Singleton();
+
+
+#include "uiList.h" // referrs to Ux:: which referrs to uiObject...
 
 #include "uiObject.h" // referrs to Ux:: which referrs to uiObject...
 #include "uiScrollController.h"
@@ -152,27 +154,32 @@ static Ux* Singleton();
     static bool bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *delta);
     static bool bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiInteraction *delta); // return true always, unless the interaction should be dropped and not bubble for some reason....
 
+    static int indexForColor(SDL_Color* c);
 
-    int pickHistoryIndex = 0;
-    int lastPickHistoryIndex = -1;
-    int largestPickHistoryIndex=0; // how far in history we have gone, to allow loop if we have greater history available
+
+    uiList<SDL_Color, Uint8>* pickHistoryList; // WARN - do not enable index if using Uint8 - max Uint8 is far less than pickHistoryMax
+
+    //int pickHistoryIndex = 0;
+    //int lastPickHistoryIndex = -1;
+    //int largestPickHistoryIndex=0; // how far in history we have gone, to allow loop if we have greater history available
     static const int pickHistoryMax = 2048;
-    SDL_Color pickHistory[pickHistoryMax];
+    //SDL_Color pickHistory[pickHistoryMax];
     static bool updateUiObjectFromHistory(uiObject *historyTile, int offset);
     static int getHistoryTotalCount();
 
+    uiList<SDL_Color, Uint8>* palleteList;
 
-    int palleteIndex = 0;
-    int lastPalleteIndex = -1;
-    int largestPalleteIndex=-1; // how far in history we have gone, to allow loop if we have greater history available
+    //int palleteIndex = 0;
+    //int lastPalleteIndex = -1;
+    //int largestPalleteIndex=-1; // how far in history we have gone, to allow loop if we have greater history available
     static const int palleteMax = 254; // WARN do not exeede max size Uint8 palleteColorsIndex 255
-    SDL_Color palleteColors[palleteMax];
+    //SDL_Color palleteColors[palleteMax];
     static bool updateUiObjectFromPallete(uiObject *historyTile, int offset);
     static int getPalleteTotalCount();
 
-    // pallete max CANNOT exceede the size of Uint16 now, which is about 65536
-    // pallete max CANNOT exceede the size of Uint8 now, which is about 256
-    Uint8 palleteColorsIndex[COLOR_INDEX_MAX]; // we do not search the array
+    // palleteMax CANNOT exceede the size of Uint16 now, which is about 65536
+    // palleteMax CANNOT exceede the size of Uint8 now, which is about 256
+    //Uint8 palleteColorsIndex[COLOR_INDEX_MAX]; // we do not search the array
     //Uint8* palleteColorsIndex = (Uint8*)SDL_malloc( COLOR_INDEX_MAX ); // totally equivilent to above
 
     void colorTileAddChildObjects(uiObject *historyTile, anInteractionFn removeClickedFn);
@@ -180,7 +187,6 @@ static Ux* Singleton();
     void addCurrentToPickHistory();
     void updatePickHistoryPreview();
 
-    //bool updateAnimations(float elapsedMs);
 
     float screenRatio = 1.0f;
     bool widescreen = false;
@@ -224,6 +230,8 @@ static Ux* Singleton();
 
     SDL_Color* currentlyPickedColor;
 
+    char* historyPath;
+    char* palletePath;
 
 private:
 

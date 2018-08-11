@@ -95,9 +95,14 @@ struct uiViewColor{
 
     char* resultText6char = (char*)SDL_malloc( 6 ); // seems that we should reuse this and not free it
 
+    SDL_Color* last_color;
+
     void update(SDL_Color* color){
         //char* resultText6char; //leaking memory???
         Ux* uxInstance = Ux::Singleton();
+
+
+        last_color = color;
 
         //char* resultText6char = (char*)SDL_malloc( 6 ); // seems that we should reuse this and not free it
 

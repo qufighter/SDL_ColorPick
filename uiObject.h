@@ -58,11 +58,19 @@ static void setColor(SDL_Color * color, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
 
 
 static void setColor(SDL_Color * color, SDL_Color * bcolor){
-    color->r = bcolor->r;
-    color->g = bcolor->g;
-    color->b = bcolor->b;
-    color->a = bcolor->a;
+    SDL_memcpy(color, bcolor, sizeof(SDL_Color));
+//    color->r = bcolor->r;
+//    color->g = bcolor->g;
+//    color->b = bcolor->b;
+//    color->a = bcolor->a;
 }
+
+
+static bool colorEquals(SDL_Color * color, SDL_Color * bcolor){
+    //return SDL_memcmp(color, bcolor, sizeof(SDL_Color)) == 0; // there is no short circut with memcmp....
+    return color->r == bcolor->r && color->g == bcolor->g && color->b == bcolor->b;
+}
+
 
 
 
@@ -93,6 +101,7 @@ typedef bool (*anInteractionAllowedFn)(uiObject *interactionObj, uiInteraction *
 typedef void (*anInteractionFn)(uiObject *interactionObj, uiInteraction *delta);
 typedef void (*anAnimationPercentCallback)(uiObject *interactionObj, float animPercent);
 typedef void (*aStateChangeFn)(uiObject *interactionObj);
+
 
 
 // move to own file, but requires the above....
@@ -222,9 +231,17 @@ struct uiObject
     }
 
     void resetPosition(){
-        Ux::setRect(&boundryRect, &origBoundryRect); // consider alternative interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) ); 
+        Ux::setRect(&boundryRect, &origBoundryRect); // consider alternative interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) );
     }
 
+    void hide(){
+        doesInFactRender = false;
+        doesRenderChildObjects = false;
+    }
+    void show(){
+        doesInFactRender = true;
+        doesRenderChildObjects = true;
+    }
 
     void setMovementBoundaryRect(Float_Rect *r){
         Ux::setRect(&movementBoundaryRect, r);
