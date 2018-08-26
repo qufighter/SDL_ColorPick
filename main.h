@@ -52,10 +52,21 @@
 #define CHAR_ROUNDED_LEFT 137
 #define CHAR_ROUNDED_RIGHT 138
 
+#define CHAR_CLOSE_ICON 140
+#define CHAR_CHECKMARK_ICON 141
+#define CHAR_CANCEL_ICON 142
+
+#define CHAR_ARR_LEFT 143
+#define CHAR_ARR_RIGHT 144
+
+#define CHAR_SHADOWED_BARS 145
+#define CHAR_VERTICAL_BAR_POINTED 146
 
 #define CHAR_SAVE_ICON 147
 #define CHAR_GEAR_ICON 148
 
+#define CHAR_PLUSS 149
+#define CHAR_LIGHTENING_BOLT 150
 
 // GLM include files
 #include "glm/glm.hpp"
@@ -76,6 +87,7 @@ void DebugStr(const char *c_str ); // since we have SDL_Log not sure if this is 
 void debugGLerror(const char *c_str);
 void debugGLerror();
 
+void ReshapeWindow();
 void ShowFrame(void*);
 
 typedef enum { SHADER_POSITION, SHADER_COLOR, SHADER_TEXTURE, SHADER_NORMAL } SHADER_BIND_LOCATIONS;
@@ -119,7 +131,10 @@ static float input_velocity_y =0;
 
 #include "ColorPickState.h"
 
+
+
 #include <iostream> // cpp functioanlity, not .c
 #include <stdio.h>
+
 
 #endif

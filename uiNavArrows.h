@@ -41,40 +41,47 @@ struct uiNavArrows{
         up->hasForeground=true;
         //Ux::setColor(&up->backgroundColor, 32, 0, 0, 128);
         Ux::setColor(&up->foregroundColor, 255, 255, 255, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-        uxInstance->printCharToUiObject(up, CHAR_ARR_UP, DO_NOT_RESIZE_NOW);
+        uxInstance->printCharToUiObject(up, CHAR_ARR_RIGHT, DO_NOT_RESIZE_NOW);
         up->setInteractionCallback(interactionDirectionalArrowClicked);
         up->forceDelta = new uiInteraction();
         up->forceDelta->begin(0, -1.0);
+        up->squarifyKeepHz();
+        up->rotate(90.0f);
 
         //dn->hasBackground=true;
         dn->hasForeground=true;
         //Ux::setColor(&dn->backgroundColor, 32, 0, 0, 128);
         Ux::setColor(&dn->foregroundColor, 255, 255, 255, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-        uxInstance->printCharToUiObject(dn, CHAR_ARR_UP, DO_NOT_RESIZE_NOW);
-        dn->rotate(180.0f);
+        uxInstance->printCharToUiObject(dn, CHAR_ARR_LEFT, DO_NOT_RESIZE_NOW);
+        //dn->rotate(180.0f);
         dn->setInteractionCallback(interactionDirectionalArrowClicked);
         dn->forceDelta = new uiInteraction();
         dn->forceDelta->begin(0, 1.0);
+        dn->squarifyKeepHz();
+        dn->rotate(90.0f);
 
         //lf->hasBackground=true;
         lf->hasForeground=true;
         //Ux::setColor(&lf->backgroundColor, 32, 0, 0, 128);
         Ux::setColor(&lf->foregroundColor, 255, 255, 255, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-        uxInstance->printCharToUiObject(lf, CHAR_ARR_UP, DO_NOT_RESIZE_NOW);
-        lf->rotate(90.0f);
+        uxInstance->printCharToUiObject(lf, CHAR_ARR_LEFT, DO_NOT_RESIZE_NOW);
+        //lf->rotate(90.0f);
         lf->setInteractionCallback(interactionDirectionalArrowClicked);
         lf->forceDelta = new uiInteraction();
         lf->forceDelta->begin(1.0, 0.0);
+        lf->squarifyKeepHz();
+
 
         //rt->hasBackground=true;
         rt->hasForeground=true;
         //Ux::setColor(&rt->backgroundColor, 32, 0, 0, 128);
         Ux::setColor(&rt->foregroundColor, 255, 255, 255, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-        uxInstance->printCharToUiObject(rt, CHAR_ARR_UP, DO_NOT_RESIZE_NOW);
-        rt->rotate(-90.0f);
+        uxInstance->printCharToUiObject(rt, CHAR_ARR_RIGHT, DO_NOT_RESIZE_NOW);
+        //rt->rotate(-90.0f);
         rt->setInteractionCallback(interactionDirectionalArrowClicked);
         rt->forceDelta = new uiInteraction();
         rt->forceDelta->begin(-1.0, 0.0);
+        rt->squarifyKeepHz();
 
         uiObjectItself->addChild(up);
         uiObjectItself->addChild(dn);

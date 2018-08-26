@@ -78,7 +78,9 @@ struct uiScrollController{
         scrollVtDrag->hasBackground = true;
         Ux::setColor(&scrollVtDrag->backgroundColor, 255, 255, 255, 192);
 
-        scrollVtDrag->matrix = glm::scale(scrollVtDrag->matrix, glm::vec3(0.6,1.0,1.0));
+        scrollVtDrag->matrix = glm::scale(scrollVtDrag->matrix, glm::vec3(0.7,1.0,1.0));
+
+        scrollVtDrag->setRoundedCorners(0.05);
 
         // IF WE DO NOT ADJUST THE HEIGHT HERE WE WON"T BE ABLE TO CLICK THE BOTTOM ROW OF TILES>>>> AND PERHAPS WE WILL INSTEAD INTERACT WITH A DIFFERENT OBJECT. (we did search for this line)
 //        scrollChildContainer->setInteraction(&this->interactionScrollDragVert);
@@ -241,7 +243,10 @@ struct uiScrollController{
     static void interactionScrollDragVert(uiObject *interactionObj, uiInteraction *delta){
         uiScrollController* self = interactionObj->myScrollController;
         self->scrollChildContainer->cancelCurrentAnimation();
-        self->scrolly += delta->ry * (1.0/interactionObj->parentObject->collisionRect.h);
+
+        //SDL_Log("%f <--- delta ry %f", delta->ry, (1.0/interactionObj->parentObject->collisionRect.h));
+        self->scrolly += delta->ry * (1.0/interactionObj->collisionRect.h);
+
         self->reflowTiles();
         self->allowDown = true;
         self->allowUp = true;
@@ -479,7 +484,6 @@ struct uiScrollController{
             scrollChildContainer->boundryRect.w=1.0 - SCROLLY_WIDTH;
             uiObjectItself->updateRenderPosition();
 
-
         }
 
         if( totalChildObjects < 1 ){
@@ -535,7 +539,7 @@ struct uiScrollController{
 //                    scrollTile->hasForeground = true;
 //                    uxInstance->printCharToUiObject(scrollTile, 'Z'-tileCounter, true);
 
-                    scrollTile->setRoundedCorners(0.1, 0.2, 0.3, 0.4);
+                    //scrollTile->setRoundedCorners(0.1, 0.2, 0.3, 0.4);
                     scrollTile->setRoundedCorners(0.1, 0.1, 0.1, 0.1);
 
                     //scrollTile->setRoundedCorners(0.0, 0.2, 0.0, 0.0);

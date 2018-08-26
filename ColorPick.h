@@ -16,6 +16,8 @@
 
 #include "main.h"
 
+
+
 #include "shader.h"
 
 #include "textures.h"
@@ -30,7 +32,6 @@
 #define MIN_FISHEYE_ZOOM 0.1f
 #define MAX_FISHEYE_ZOOM 64.0f
 
-#define SHD_TEXTURE_SIZE 2048
 
 #define VIEW_MAX_CLIP_DISTANCE 100
 
@@ -80,6 +81,8 @@ public:
     void chooseFile(void);
 
     SDL_Surface *fullPickImgSurface;
+    SDL_Surface *colorPickerFGSurfaceGradient;
+    SDL_Color* lastHue;
 
 //    void keyDown(int key);
 //    void keyUp(int key);
@@ -91,6 +94,8 @@ public:
     Shader *shader_ui_shader_default;
 
     uniformLocationStruct* uniformLocations;
+
+    GLuint textureNone = 0;
 
     GLuint	textureId_default,
             textureId_pickImage,
@@ -119,9 +124,10 @@ public:
 
     //typedef void (*imageSelectedCallback)(const char *); // < its this type
     void imageWasSelectedCb(SDL_Surface *myCoolSurface);
+    void loadNextTestImage();
+    void pickerForHue(SDL_Color* color);
     void updateColorPreview(void);
 
-    //imageSelectedCallback imageWasSelectedCb;
 
     void reloadShaders(void);
     bool renderShouldUpdate = true;
@@ -133,8 +139,11 @@ private:
     int halfTextureSize = textureSize * 0.5;
     int position_x = 0;
     int position_y = 0;
+    int loadedImageMaxSize = 0;
 
     Ux::uiObject* rootUiObject; // there is a root ui object
+
+    Ux::uiListLoopingIterator<Ux::uiList<const char*, Uint8>, const char*>* testTexturesBuiltin;
 
     bool has_velocity = false;
     float velocity_x =0;
@@ -143,9 +152,9 @@ private:
 
 
 
-    int windowWidth; // Store the width of our window
+    int windowWidth; // Store the width of our window  - this is a dupe of var in color pick state!?
     int windowHeight; // Store the height of our window
-    float widthHeightRatio;
+    float widthHeightRatio;  // unused - see color pick state
     unsigned int cur_shader_id;
 
     void createSquare(void); // Method for creating our squares Vertex Array Object

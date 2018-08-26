@@ -8,6 +8,9 @@
 
 #include "ux.h"
 
+#include "FileChooser.h" // includes openglContext
+
+
 bool Ux::ms_bInstanceCreated = false;
 Ux* Ux::pInstance = NULL;
 
@@ -42,9 +45,9 @@ Ux::Ux(void) {
     const char* filename2 = "pallete.bin";
 
     char* preferencesPath = SDL_GetPrefPath("vidsbee", "colorpick");
-    SDL_Log("Pref file path: %s", preferencesPath);
-    SDL_Log("Pref file len: %i", SDL_strlen(filename1));
-    SDL_Log("Pref file len: %i", SDL_strlen(preferencesPath));
+//    SDL_Log("Pref file path: %s", preferencesPath);
+//    SDL_Log("Pref file len: %i", SDL_strlen(filename1));
+//    SDL_Log("Pref file len: %i", SDL_strlen(preferencesPath));
     size_t len;
 
     len = SDL_strlen(preferencesPath) + SDL_strlen(filename1) + 4;
@@ -59,20 +62,116 @@ Ux::Ux(void) {
     //SDL_memcpy(filePath1, preferencesPath, SDL_strlen(preferencesPath));
     //SDL_memcpy(&filePath1[SDL_strlen(preferencesPath)], filename1, SDL_strlen(filename1));
 
+//    SDL_Log("Pref file path: %s", historyPath);
+//    SDL_Log("Pref file len: %i", SDL_strlen(historyPath));
+//
+//    SDL_Log("Pref file path: %s", palletePath);
+//    SDL_Log("Pref file len: %i", SDL_strlen(palletePath));
+
+}
+
+void Ux::readInState(char* filepath, void* dest, int destMaxSize, int* readSize){
+    SDL_RWops* fileref = SDL_RWFromFile(filepath, "r");
+    if( fileref == NULL ) return;
+
+    //int autoFree=1;
+    //size_t readDataSize;
+    //return SDL_LoadFile_RW(fileref, &readDataSize, autoFree);
+
+
+    SDL_RWops* memref = SDL_RWFromMem(dest, destMaxSize);
+
+    Sint64 filesize = SDL_RWsize(fileref); // this filesize is in ? units... not a count of u8? (actually it seems to count u8s)
+
+    int currentPosition = 0;
+    while( currentPosition < filesize && currentPosition < destMaxSize ){
+
+        SDL_WriteU8(memref, SDL_ReadU8(fileref));
+
+        currentPosition++;
+    }
+
+    *readSize = currentPosition;
+
+}
+
+void Ux::readInState(void){
+
+    int quantityBytesRead = 0;
+
+    SDL_Color* newHistoryList = (SDL_Color*)SDL_malloc( pickHistoryList->maxSize );
+
+    readInState(historyPath, newHistoryList, pickHistoryList->maxMemorySize(), &quantityBytesRead);
+
+    pickHistoryList->clear();
+    pickHistoryList->addAll(newHistoryList, quantityBytesRead);
+
+    SDL_free(newHistoryList);
+    updatePickHistoryPreview();
+
+
+
+    quantityBytesRead = 0;
+
+    SDL_Color* newPalleteList = (SDL_Color*)SDL_malloc( palleteList->maxSize );
+
+    readInState(palletePath, newPalleteList, palleteList->maxMemorySize(), &quantityBytesRead);
+
+    palleteList->clear();
+    palleteList->addAll(newPalleteList, quantityBytesRead);
+
+    SDL_free(newPalleteList);
+
+    updatePalleteScroller();
+
+    //readInState(palletePath, palleteList->listItself, palleteList->maxMemorySize(), &quantityBytesRead);
+
+    // todo pallete index will now be wrong
+    // total and last index will now be wrong
+    // etc.....
+    // maybe its easier to allocate some new memory and then call ->add for each item?
+
+}
+
+void Ux::writeOutState(void){
+
     SDL_Log("Pref file path: %s", historyPath);
     SDL_Log("Pref file len: %i", SDL_strlen(historyPath));
 
     SDL_Log("Pref file path: %s", palletePath);
     SDL_Log("Pref file len: %i", SDL_strlen(palletePath));
 
-//    SDL_RWops* memref = SDL_RWFromMem(<#void *mem#>, <#int size#>);
-//    SDL_RWops* fileref = SDL_RWFromFile(<#const char *file#>, <#const char *mode#>);
 
-    //fileref->read(fileref, );
+    int totalUint8s;
+    int currentPosition;
+    SDL_RWops* memref;
+    SDL_RWops* fileref;
 
-//    SDL_WriteU8(<#SDL_RWops *dst#>, <#Uint8 value#>);
-//    SDL_ReadU8(<#SDL_RWops *src#>);
+    totalUint8s = pickHistoryList->memorySize();
+    memref = SDL_RWFromMem(pickHistoryList->listItself, totalUint8s);
+    fileref = SDL_RWFromFile(historyPath, "w");
+    currentPosition = 0;
+    while( currentPosition < totalUint8s ){
+        SDL_WriteU8(fileref, SDL_ReadU8(memref));
+        currentPosition++;
+    }
+    if( memref != NULL ) SDL_RWclose(memref);
+    SDL_RWclose(fileref);
+
+
+    totalUint8s = palleteList->memorySize();
+    memref = SDL_RWFromMem(palleteList->listItself, totalUint8s);
+    fileref = SDL_RWFromFile(palletePath, "w");
+    currentPosition = 0;
+    while( currentPosition < totalUint8s ){
+        SDL_WriteU8(fileref, SDL_ReadU8(memref));
+        currentPosition++;
+    }
+    if( memref != NULL ) SDL_RWclose(memref);
+    SDL_RWclose(fileref);
+
 }
+
 
 void Ux::updateStageDimension(float w, float h){
 
@@ -96,10 +195,12 @@ void Ux::resizeUiElements(void){
 
 
     // what about elements that have auto sizing properties??? like>  square,
+
+    rootUiObject->updateRenderPosition();
 }
 
-int Ux::indexForColor(SDL_Color* c){
-    return c->r * c->g * c->b;
+int Ux::indexForColor(SDL_Color* c){ // warn if your index components return zero its all zeroes
+    return (c->r+1) * (c->g+1) * (c->b+1);
 
 }
 
@@ -110,6 +211,7 @@ Ux::uiObject* Ux::create(void){
     pickHistoryList = new uiList<SDL_Color, Uint8>(pickHistoryMax); // WARN - do not enable index if using Uint8 - max Uint8 is far less than pickHistoryMax
     palleteList = new uiList<SDL_Color, Uint8>(palleteMax);
     palleteList->index(COLOR_INDEX_MAX, indexForColor);
+
 
     uxAnimations = new UxAnim();
 
@@ -127,11 +229,14 @@ Ux::uiObject* Ux::create(void){
 
     // make this color the selected color ! ! ! ! !! ^ ^ ^
 
+
     bottomBar = new uiObject();
     bottomBar->hasBackground = true;
     //bottomBar.setInteraction(&Ux::interactionHZ);
     bottomBar->setBoundaryRect( 0.1, 0.7, 0.8, 0.2);
-    bottomBar->setBoundaryRect( 0.0, 0.7, 1.0, 0.2);
+    bottomBar->setBoundaryRect( 0.25, 0.75, 0.5, 0.15);
+
+   // bottomBar->setBoundaryRect( 0.0, 0.7, 1.0, 0.2);
     //bottomBar->setBoundaryRect( 0.0, 0.7, 0.5, 0.2);
 
     Ux::setColor(&bottomBar->backgroundColor, 0, 0, 0, 198);
@@ -159,7 +264,8 @@ Ux::uiObject* Ux::create(void){
     printCharToUiObject(pickSourceBtn, CHAR_CIRCLE_PLUSS, DO_NOT_RESIZE_NOW);
 
     bottomBar->addChild(pickSourceBtn);
-
+    pickSourceBtn->squarify();
+    pickSourceBtn->stack_right = true;
 
 
 
@@ -184,6 +290,10 @@ Ux::uiObject* Ux::create(void){
 
     rootUiObject->addChild(bottomBar);
 
+    huePicker = new uiHueGradient(rootUiObject, Float_Rect(0.0, 0.60, 1.0, 0.09), &Ux::hueClicked);
+    huePicker->resize(Float_Rect(0.0, 0.7, 1.0, 0.05));
+    //    bottomBar->setBoundaryRect( 0.25, 0.75, 0.5, 0.15);
+
 
     historyPalleteHolder = new uiObject();
     historyPalleteHolder->hasBackground = true;
@@ -198,8 +308,8 @@ Ux::uiObject* Ux::create(void){
 
 
     historyScroller = new uiScrollController();
-                                   // 6  6
-    historyScroller->initTilingEngine(3, 2, &Ux::updateUiObjectFromHistory, &Ux::getHistoryTotalCount, &Ux::clickHistoryColor, &Ux::interactionHorizontal);
+                                   // 3  2
+    historyScroller->initTilingEngine(6, 6, &Ux::updateUiObjectFromHistory, &Ux::getHistoryTotalCount, &Ux::clickHistoryColor, &Ux::interactionHorizontal);
 
     newHistoryFullsize = historyScroller->uiObjectItself;
 
@@ -219,7 +329,7 @@ Ux::uiObject* Ux::create(void){
     newHistoryPallete->hasBackground = true;
     Ux::setColor(&newHistoryPallete->backgroundColor, 0, 0, 0, 255);
 
-    newHistoryPallete->setBoundaryRect( 0.0, 0.6, 1.0, 0.4);
+    newHistoryPallete->setBoundaryRect( 0.0, 0.61, 1.0, 0.4);
 
 
 
@@ -286,7 +396,7 @@ Ux::uiObject* Ux::create(void){
 
     movementArrows = new uiNavArrows(rootUiObject, Float_Rect(0.0, 0.04 + 0.27777777777778, 1.0, 0.38), &Ux::interactionDirectionalArrowClicked);
 
-    curerntColorPreview = new uiViewColor(rootUiObject, Float_Rect(0.0, 0.04, 1.0, 0.27777777777778));
+    curerntColorPreview = new uiViewColor(rootUiObject, Float_Rect(0.0, 0.04, 1.0, 0.27777777777778), false);
 
 
 
@@ -316,7 +426,7 @@ Ux::uiObject* Ux::create(void){
 
     //rootUiObject->addChild(historyFullsize); // todo remove all ref to this test obj
     historyPalleteHolder->addChild(newHistoryFullsize);
-    palleteSelectionColorPreview = new uiViewColor(historyPalleteHolder, Float_Rect(0.0, 0.5, 1.0, 0.5)); // this rect is reset next...
+    palleteSelectionColorPreview = new uiViewColor(historyPalleteHolder, Float_Rect(0.0, 0.5, 1.0, 0.5), true); // this rect is reset next...
     historyPalleteHolder->addChild(newHistoryPallete);
 
     palleteSelectionColorPreview->uiObjectItself->setBoundaryRect(
@@ -331,15 +441,12 @@ Ux::uiObject* Ux::create(void){
 
     // lets give palleteSelectionColorPreview a background
     palleteSelectionColorPreview->uiObjectItself->hasBackground = true;
-    Ux::setColor(&palleteSelectionColorPreview->uiObjectItself->backgroundColor, 0, 0, 0, 192);
-
+    Ux::setColor(&palleteSelectionColorPreview->uiObjectItself->backgroundColor, 0, 0, 0, 255);
+    palleteSelectionColorPreview->alphaMulitiplier = 4;
 
     palleteSelectionColorPreview->uiObjectItself->setCropParentRecursive(historyPalleteHolder);
 
-    //palleteSelectionColorPreview->uiObjectItself->setAnimation( uxAnimations->slideDownFullHeight(palleteSelectionColorPreview->uiObjectItself) ); // returns uiAminChain*
-    // todo we should just chain a interactionTogglePalletePreview
-    interactionTogglePalletePreview(nullptr, nullptr);
-    interactionTogglePalletePreview(nullptr, nullptr);
+
 
 
 
@@ -356,12 +463,6 @@ Ux::uiObject* Ux::create(void){
     //defaultYesNoChoiceDialogue->uiObjectItself->setAnimation( uxAnimations->slideUp(defaultYesNoChoiceDialogue->uiObjectItself) ); // returns uiAminChain*
 
 
-    //test cololr history
-    for( int q=0; q<6; q++ ){
-        currentlyPickedColor = new SDL_Color();
-        setColor(currentlyPickedColor, randomInt(0,44), randomInt(0,185), randomInt(0,44), 0);
-        addCurrentToPickHistory();
-    }
 
 
     updateRenderPositions();
@@ -369,8 +470,32 @@ Ux::uiObject* Ux::create(void){
     historyScroller->updateTiles();
     palleteScroller->updateTiles();
 
+
+    readInState(); // reads saved state into lists
+
+
+    //test cololr history
+//    for( int q=0; q<6; q++ ){
+//        currentlyPickedColor = new SDL_Color();
+//        setColor(currentlyPickedColor, randomInt(0,44), randomInt(0,185), randomInt(0,44), 0);
+//        addCurrentToPickHistory();
+//    }
+
+
+    //writeOutState(); // testing
+
+
+    // for awful reasons during init some things should not be called....
+
+    //palleteSelectionColorPreview->uiObjectItself->setAnimation( uxAnimations->slideDownFullHeight(palleteSelectionColorPreview->uiObjectItself) ); // returns uiAminChain*
+    // todo we should just chain a interactionTogglePalletePreview
+    interactionTogglePalletePreview(nullptr, nullptr);
+    interactionTogglePalletePreview(nullptr, nullptr);
+
     return rootUiObject;
 }
+
+
 
 
 void Ux::updateRenderPositions(void){
@@ -530,7 +655,7 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
     }
 
 
-    if( renderObj->testChildCollisionIgnoreBounds || pointInRect(&renderObj->collisionRect, x, y) ){
+    if( renderObj->testChildCollisionIgnoreBounds || renderObj->collidesWithPoint(x, y) ){
    // if( pointInRect(&renderObj->renderRect, x, y) ){
         if( renderObj->canCollide ){
             collides = true;
@@ -707,6 +832,26 @@ void Ux::clickDeletePalleteColor(uiObject *interactionObj, uiInteraction *delta)
 
 }
 
+void Ux::clickClearPallete(uiObject *interactionObj, uiInteraction *delta){
+    Ux* myUxRef = Ux::Singleton();
+
+    myUxRef->palleteList->clear();
+    myUxRef->updatePalleteScroller();
+
+}
+
+void Ux::clickCancelClearPallete(uiObject *interactionObj, uiInteraction *delta){
+    Ux* myUxRef = Ux::Singleton();
+    // we should show delete x on all visible tiles....
+    for( int x=0,l=myUxRef->palleteScroller->scrollChildContainer->childListIndex; x<l; x++ ){
+        uiObject* removeButton = myUxRef->palleteScroller->scrollChildContainer->childList[x]->childList[0];
+        removeButton->setAnimation( myUxRef->uxAnimations->resetPosition(removeButton) );
+    }
+    
+    
+}
+
+
 
 void Ux::clickPalleteColor(uiObject *interactionObj, uiInteraction *delta){ // see also updateUiObjectFromPallete
 
@@ -722,6 +867,62 @@ void Ux::clickPalleteColor(uiObject *interactionObj, uiInteraction *delta){ // s
 
         return; // this means our tile is invalid/out of range
     }
+
+
+    if( interactionObj->myIntegerIndex < -1 ){
+
+        if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_CLEAR_PALLETE ){
+            SDL_Log("PALLETEClear Button ---------------------");
+
+            // we should show delete x on all visible tiles....
+            for( int x=0,l=myUxRef->palleteScroller->scrollChildContainer->childListIndex; x<l; x++ ){
+                uiObject* removeButton = myUxRef->palleteScroller->scrollChildContainer->childList[x]->childList[0];
+                removeButton->setAnimation( myUxRef->uxAnimations->slideLeftFullWidth(removeButton) );
+            }
+
+            myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::clickClearPallete, &Ux::clickCancelClearPallete);
+
+
+        }else if(interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_SAVE_PALLETE ){
+            SDL_Log("PALLETE SAVE Button ---------------------");
+
+            //const char* urlBase = "data:text/html;<b>world";
+            const char* urlBase = "http://www.vidsbee.com/ColorPick/Pallete#";
+            
+
+            int totalColors = myUxRef->palleteList->total();
+            int perColorChars = 7; // 6 plus seperator
+
+            uiListIterator<uiList<SDL_Color, Uint8>, SDL_Color>* myIterator = myUxRef->palleteList->iterate();
+
+            int len = (totalColors * perColorChars) + SDL_strlen(urlBase);
+            char* clrStr = (char*)SDL_malloc( len );
+
+            SDL_snprintf(clrStr, SDL_strlen(urlBase)+1,  "%s", urlBase);
+
+
+            SDL_Color *color = myIterator->next();
+            while(color != nullptr){
+                // hex is best compression
+                //SDL_Log("%i %i %i", color->r, color->g, color->b);
+                SDL_snprintf(clrStr, len,  "%s%02x%02x%02x,", clrStr, color->r, color->g, color->b);
+                color = myIterator->next();
+            }
+
+            //SDL_snprintf(clrStr, len,  "%s%s", urlBase, clrStr);
+
+            SDL_Log("%s", clrStr);
+
+            openURL(clrStr);
+
+            SDL_free(clrStr);
+            SDL_free(myIterator); // does free recurse
+        }
+        
+        return;
+    }
+
+
 
     uiObject* interactionObjectOrProxy = interactionObj->interactionProxy;
 
@@ -793,6 +994,7 @@ void Ux::removeHistoryColor(uiObject *interactionObj, uiInteraction *delta){
 void Ux::clickDeleteHistoryColor(uiObject *interactionObj, uiInteraction *delta){
 
     if( !interactionObj->doesInFactRender || !interactionObj->parentObject->doesInFactRender ){
+        SDL_Log("CLICKED INVISIBLE REMOVE TILE");
         return; // this means our tile is invalid/out of range.. it is arguable we should not even get the event in this case? // todo (delete last tile and click again - it will prompt again without this or some solution)
     }
 
@@ -805,11 +1007,32 @@ void Ux::clickDeleteHistoryColor(uiObject *interactionObj, uiInteraction *delta)
     }
 }
 
+void Ux::clickClearHistory(uiObject *interactionObj, uiInteraction *delta){
+    Ux* myUxRef = Ux::Singleton();
+
+    myUxRef->pickHistoryList->clear();
+    myUxRef->updatePickHistoryPreview();
+
+}
+
+void Ux::clickCancelClearHistory(uiObject *interactionObj, uiInteraction *delta){
+    Ux* myUxRef = Ux::Singleton();
+
+    // we should show delete x on all visible tiles....
+    for( int x=0,l=myUxRef->historyScroller->scrollChildContainer->childListIndex; x<l; x++ ){
+        uiObject* removeButton = myUxRef->historyScroller->scrollChildContainer->childList[x]->childList[0];
+        removeButton->setAnimation( myUxRef->uxAnimations->resetPosition(removeButton) );
+    }
+
+
+}
+
 void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // see also updateUiObjectFromHistory
 
     // check delta->dx for movement amount
     // no movement total
 
+    //SDL_Log("clickHistoryColor --------------------- %i", interactionObj->myIntegerIndex);
 
 
     if( !interactionObj->doesInFactRender ){
@@ -823,11 +1046,16 @@ void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // s
 
     if( interactionObj->myIntegerIndex < -1 ){
 
-        if( interactionObj->myIntegerIndex == -2 - BUTTON_CLEAR_ALL ){
-            SDL_Log("Clear Button (to be) ---------------------");
+        if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_CLEAR_HISTORY ){
+            SDL_Log("Clear Button ---------------------");
 
+            // we should show delete x on all visible tiles....
+            for( int x=0,l=myUxRef->historyScroller->scrollChildContainer->childListIndex; x<l; x++ ){
+                uiObject* removeButton = myUxRef->historyScroller->scrollChildContainer->childList[x]->childList[0];
+                removeButton->setAnimation( myUxRef->uxAnimations->slideLeftFullWidth(removeButton) );
+            }
 
-
+            myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::clickClearHistory, &Ux::clickCancelClearHistory);
         }
 
         return;
@@ -880,25 +1108,7 @@ void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // s
 
     myUxRef->palleteList->add(interactionObj->backgroundColor);
 
-    //resize pallete scroller as we add more selections....
-    if( myUxRef->palleteList->largestIndex() > 5 ){
-        myUxRef->palleteScroller->resizeTililngEngine(4, 2);
-    }else if( myUxRef->palleteList->largestIndex() > 3 ){
-        myUxRef->palleteScroller->resizeTililngEngine(3, 2);
-    }else if( myUxRef->palleteList->largestIndex() > 2 ){
-        myUxRef->palleteScroller->resizeTililngEngine(4, 1);
-    }else if( myUxRef->palleteList->largestIndex() > 1 ){
-        myUxRef->palleteScroller->resizeTililngEngine(3, 1);
-    }else if( myUxRef->palleteList->largestIndex() > 0 ){
-        myUxRef->palleteScroller->resizeTililngEngine(2, 1);
-    }else{
-        myUxRef->palleteScroller->resizeTililngEngine(1, 1);
-    }
-
-
-    //if( myUxRef->historyPalleteHolder->isInBounds ){
-        myUxRef->palleteScroller->updateTiles(); // calls updateUiObjectFromPallete for each tile
-    //}
+    myUxRef->updatePalleteScroller();
 
     myUxRef->palleteScroller->scrollToItemByIndex(myUxRef->palleteList->previousIndex());
 }
@@ -918,6 +1128,11 @@ void Ux::interactionTouchRelease(uiObject *interactionObj, uiInteraction *delta)
     Ux* myUxRef = Ux::Singleton();
     myUxRef->addCurrentToPickHistory();
 
+}
+
+void Ux::hueClicked(uiObject *interactionObj, uiInteraction *delta){
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    ogg->pickerForHue(&interactionObj->backgroundColor);
 }
 
 void Ux::interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteraction *delta){
@@ -1017,6 +1232,8 @@ void Ux::interactionSliderVT(uiObject *interactionObj, uiInteraction *delta){
 //static // this seems like interactionSliderHZ ? // must have move boundary rect....
 void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
 
+
+
     interactionObj->boundryRect.x += (delta->rx * (1.0/interactionObj->parentObject->collisionRect.w));
     /// we cannot modify the rect directly like this?
 
@@ -1037,7 +1254,6 @@ void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
 // now why do we set the volume?
     //setVolume
 
-
     if( interactionObj->hasAnimCb ){
         interactionObj->animationPercCallback(interactionObj, interactionObj->computedMovementRect.w > 0 ? ((interactionObj->boundryRect.x - interactionObj->computedMovementRect.x) / interactionObj->computedMovementRect.w) : 0.0);
     }
@@ -1047,9 +1263,16 @@ void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
     // and call member functions
     // see OpenGLContext::Singleton
 
+    //OpenGLContext* ogg=OpenGLContext::Singleton();
+
     Ux* myUxRef = Ux::Singleton();
     //myUxRef->updateRenderPositions();
     myUxRef->updateRenderPosition(interactionObj);
+
+
+//    SDL_Log(" (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((( FIX ME");
+//    myUxRef->bottomBar->updateRenderPosition();
+
 
     // currently does not consider width of the object, since given a width it could remain within boundaries, but this is not usefl
     // for sliders where the center point of the object is all that is considered for positioning (bool isCentered) <-- ? untrue ? planing stage problems
@@ -1078,16 +1301,20 @@ bool Ux::bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *de
     return true;
 }
 
+// this really means when swiping left far enough we disable scrolling
+// other conditions we should bubble (if it seems like scrolling)
 bool Ux::bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
     // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
 
     Ux* self = Ux::Singleton();
     // see also interactionUpdate
 
-    //SDL_Log("00))))0000000000000000000000000 y:%f x:%f",delta->dy, delta->dx);
-    //SDL_Log("00))))0000000000000000000000000 y:%f x:%f",delta->dy, fabs(0.0f-delta->dx));
 
-    if( delta->dy != 0.0 && fabs(0.0f-delta->dx) < 0.01f ){ // or is approx 0
+
+    //SDL_Log("00))))0000000000000000000000000 y:%f x:%f",delta->dy, delta->dx);
+    SDL_Log("00))))0000000000000000000000000 y:%f x:%f",delta->dy, fabs(0.0f-delta->dx));
+
+    if( !interactionObj->doesInFactRender || ( fabs(delta->dy) > 0.01f && delta->dx > -0.04f) ){ // or is approx 0
 
         // since we were animating and its about to get lost, lets reset
         if( interactionObj->interactionProxy != nullptr ){
@@ -1109,62 +1336,92 @@ bool Ux::updateUiObjectFromPallete(uiObject *historyTile, int offset){  // see a
     Ux* self = Ux::Singleton();
 
     self->colorTileAddChildObjects(historyTile, &Ux::clickDeletePalleteColor);
+    uiObject * removeButton = historyTile->childList[0];
+    uiObject * iconBtn = historyTile->childList[1];
+
 
     if( offset > self->palleteList->largestIndex() || offset < 0 ){
+
+        removeButton->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // reset out of view (otherwise it is in the way of clicks!)
+
+        if( self->palleteList->total() > 0 ){
+
+            if( offset == self->palleteList->total() + BUTTON_CLEAR_PALLETE ){
+
+                historyTile->show();
+                removeButton->hide(); // it still collides..... so we set the rect above!
+                iconBtn->show();
+                Ux::setColor(&historyTile->backgroundColor, 0, 0, 0, 255);
+
+                self->printCharToUiObject(iconBtn, CHAR_LIGHTENING_BOLT, DO_NOT_RESIZE_NOW);
+
+                historyTile->myIntegerIndex = BTN_NEGATIVE_START - BUTTON_CLEAR_PALLETE; //awkward but using negative space beyond -1 for codes
+
+                historyTile->hasInteraction = false; // disable animations which are default for this scroll controller....
+
+                historyTile->interactionProxy=nullptr;
+                
+                return true;
+            }else if( offset == self->palleteList->total() + BUTTON_SAVE_PALLETE ){
+
+                historyTile->show();
+                removeButton->hide(); // it still collides..... so we set the rect above!
+                iconBtn->show();
+                Ux::setColor(&historyTile->backgroundColor, 0, 0, 0, 255);
+
+                self->printCharToUiObject(iconBtn, CHAR_SAVE_ICON, DO_NOT_RESIZE_NOW);
+
+                historyTile->myIntegerIndex = BTN_NEGATIVE_START - BUTTON_SAVE_PALLETE; //awkward but using negative space beyond -1 for codes
+
+                historyTile->hasInteraction = false; // disable animations which are default for this scroll controller....
+
+                historyTile->interactionProxy=nullptr;
+
+                return true;
+            }
+        }
+
         historyTile->hide();
+        historyTile->myIntegerIndex = -1;
         return false;
     }
 
+    SDL_Color* clr = self->palleteList->get(offset);
+
+    // following code is very much shared... requires (clr, offset, historyTile, removeButton ...)
     historyTile->show();
+    removeButton->show();
+    iconBtn->hide();
+    historyTile->hasInteraction = true; // re enable animations which are default for this scroll controller....
 
     bool wasBlank = historyTile->myIntegerIndex < 0;
-
     historyTile->hasBackground = true;
     historyTile->myIntegerIndex = offset;
 
-    SDL_Color* clr = self->palleteList->get(offset);// &self->palleteColors[offset];
     Ux::setColor(&historyTile->backgroundColor, clr->r, clr->g, clr->b, 255);
 
-//    char* resultText = (char*)SDL_malloc( 6 ); /// todo we should not need to realloc this... but if we do not print its oka
-//    sprintf(resultText, "%02x%02x%02x", clr->r, clr->g, clr->b);
-//
-//
-//    if( historyTile->getChildCount() < 1 ){
-//        uiObject * letterSize = new uiObject();
-//        letterSize->setBoundaryRect( 0.0, 0.0, 0.16666666666667, 1.0);
-//        historyTile->addChild(letterSize);
-//
-//        self->printStringToUiObject(letterSize, resultText, RESIZE_NOW);
-//    }else{
-//        self->printStringToUiObject(historyTile->childList[0], resultText, DO_NOT_RESIZE_NOW);
-//    }
-//
-//    SDL_free(resultText);
-
-    //historyTile->hasForeground = true;
-    //self->printCharToUiObject(historyTile, 'Z'-offset, true); // meh>>>?!
-
-
-    // defined by colorTileAddChildObjects()
-    uiObject * removeButton = historyTile->childList[0];
-
-
-
     // so if we are showing removeButton and our color changed, we know that something changed and we should hide our deleteX simple as that....
-
-    bool changed = Ux::setColorNotifyOfChange(&removeButton->backgroundColor, clr->r, clr->g, clr->b, 255);
+    bool changed = Ux::setColorNotifyOfChange(&removeButton->backgroundColor, clr->r, clr->g, clr->b, 255) || wasBlank;
     removeButton->myIntegerIndex = offset;
-    if( changed || wasBlank ){
-        removeButton->setBoundaryRect( 1.0, 0.0, 1.0, 1.0);
+    if( changed  ){
+        removeButton->cancelCurrentAnimation();// but what if we are currently animating in?  this will just jump to the wrong element...
+        removeButton->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // reset out of view
+
     }
     historyTile->interactionProxy=removeButton; // the tile actually interacts with the delete x....
-
     return true;
 }
 
 int Ux::getPalleteTotalCount(){
     Ux* self = Ux::Singleton();
-    return self->palleteList->largestIndex() + 1;
+    //return self->palleteList->largestIndex() + 1;
+
+    int total = self->palleteList->total();
+    if( total > 0 ){
+        total+=PALLETE_EXTRA_BUTTONS_TOTAL;
+    }
+    return total;
+
 }
 
 
@@ -1180,68 +1437,70 @@ bool Ux::updateUiObjectFromHistory(uiObject *historyTile, int offset){ // see al
 
     if( offset > self->pickHistoryList->total() - 1 || offset < 0 ){
 
-        if( self->pickHistoryList->total() > 0 && offset == self->pickHistoryList->total() + BUTTON_CLEAR_ALL ){
+        removeButton->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // reset out of view (otherwise it is in the way of clicks!)
 
-            historyTile->show();
-            removeButton->hide();
-            iconBtn->show();
-            Ux::setColor(&historyTile->backgroundColor, 255, 0, 0, 255);
+        if( self->pickHistoryList->total() > 0 ){
+            if(offset == self->pickHistoryList->total() + BUTTON_CLEAR_HISTORY ){
+                historyTile->show();
+                removeButton->hide(); // it still collides..... so we set the rect above!
+                iconBtn->show();
+                Ux::setColor(&historyTile->backgroundColor, 0, 0, 0, 255);
 
-            historyTile->myIntegerIndex = -2 - BUTTON_CLEAR_ALL; //awkward but using negative space beyond -1 for codes
+                historyTile->myIntegerIndex = BTN_NEGATIVE_START - BUTTON_CLEAR_HISTORY; //awkward but using negative space beyond -1 for codes
 
-            historyTile->hasInteraction = false; // disable animations which are default for this scroll controller....
+                historyTile->hasInteraction = false; // disable animations which are default for this scroll controller....
 
-            historyTile->interactionProxy=nullptr;
+                historyTile->interactionProxy=nullptr;
 
-            return true;
+                return true;
+            }
         }
 
+        //historyTile->hasInteraction = true; // re enable animations which are default for this scroll controller....
         historyTile->hide();
-        historyTile->doesInFactRender = false;
-        historyTile->doesRenderChildObjects = false;
         historyTile->myIntegerIndex = -1;
         return false;
     }
-    historyTile->show();
-    removeButton->show();
-    iconBtn->hide();
 
-    historyTile->hasInteraction = true; // re enable animations which are default for this scroll controller....
-
+    offset = self->pickHistoryList->total() - offset - 1; // we show them in reverse here
+    SDL_Color* clr = self->pickHistoryList->get(offset);
 
     // TODO we need to also account for largestPickHistoryIndex to see if we looped!!!!!!!!!
     // if largest is max, then we loop from the current index, but continue looping after reaching the bottom, its a modulous problem
     // (((really this only applies if offset computed next (here?) is less than zero))???)
+    //(or not)
 
-    offset = self->pickHistoryList->total() - offset - 1; // we show them in reverse here
+    // following code is very much shared... (clr, offset, historyTile, removeButton ...)
+    historyTile->show();
+    removeButton->show();
+    iconBtn->hide();
+    historyTile->hasInteraction = true; // re enable animations which are default for this scroll controller....
 
     bool wasBlank = historyTile->myIntegerIndex < 0;
-
     historyTile->hasBackground = true;
     historyTile->myIntegerIndex = offset;
 
-    SDL_Color* clr = self->pickHistoryList->get(offset);
-
     Ux::setColor(&historyTile->backgroundColor, clr->r, clr->g, clr->b, 255);
 
-    // defined by colorTileAddChildObjects()
-
     // so if we are showing removeButton and our color changed, we know that something changed and we should hide our deleteX simple as that....
-    bool changed = Ux::setColorNotifyOfChange(&removeButton->backgroundColor, clr->r, clr->g, clr->b, 255);
+    bool changed = Ux::setColorNotifyOfChange(&removeButton->backgroundColor, clr->r, clr->g, clr->b, 255) || wasBlank;
     removeButton->myIntegerIndex = offset;
-    if( changed || wasBlank ){
+    if( changed ){
         removeButton->cancelCurrentAnimation();// but what if we are currently animating in?  this will just jump to the wrong element...
         removeButton->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // reset out of view
         
     }
     historyTile->interactionProxy=removeButton; // the tile actually interacts with the delete x....
-
     return true;
 }
 
 int Ux::getHistoryTotalCount(){
     Ux* self = Ux::Singleton();
-    return ( self->pickHistoryList->total() ) + PICK_HISRTORY_EXTRA_BUTTONS_TOTAL;
+    int total = self->pickHistoryList->total();
+    if( total > 0 ){
+        total+=PICK_HISRTORY_EXTRA_BUTTONS_TOTAL;
+    }
+    return total;
 }
 
 
@@ -1265,11 +1524,14 @@ void Ux::colorTileAddChildObjects(uiObject *historyTile, anInteractionFn removeC
 
         historyTile->addChild(removeButton);
 
-        printCharToUiObject(removeButton, 'X', DO_NOT_RESIZE_NOW);
+        printCharToUiObject(removeButton, CHAR_CLOSE_ICON, DO_NOT_RESIZE_NOW);
         removeButton->hasForeground = true;
         removeButton->hasBackground = true;
 
-        Ux::setColor(&removeButton->foregroundColor, 255, 0, 0, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        removeButton->squarify();
+        //removeButton->isDebugObject=true;
+
+        Ux::setColor(&removeButton->foregroundColor, 200, 0, 0, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
 
         removeButton->setInteraction(&Ux::interactionHorizontal);
         removeButton->setInteractionCallback(removeClickedFn);
@@ -1279,7 +1541,7 @@ void Ux::colorTileAddChildObjects(uiObject *historyTile, anInteractionFn removeC
         uiObject* buttonIcon = new uiObject();
         buttonIcon->setBoundaryRect( 0.0, 0.0, 1.0, 1.0); // ofset to right 1.0
         buttonIcon->hasForeground = true;
-        printCharToUiObject(buttonIcon, 'X', DO_NOT_RESIZE_NOW);
+        printCharToUiObject(buttonIcon, CHAR_LIGHTENING_BOLT, DO_NOT_RESIZE_NOW);
         historyTile->addChild(buttonIcon);
         buttonIcon->hide();
 
@@ -1317,6 +1579,7 @@ void Ux::addCurrentToPickHistory(){
 
 
 
+
     // if we have a lastPickHistoryIndex
     if( pickHistoryList->total() > 0 || pickHistoryList->largestIndex() > 0 ){
         // the new color must be unique
@@ -1340,6 +1603,9 @@ void Ux::addCurrentToPickHistory(){
     pickHistoryList->add(*currentlyPickedColor);
 
     updatePickHistoryPreview();
+
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    ogg->loadNextTestImage();
 }
 
 
@@ -1410,6 +1676,32 @@ void Ux::updatePickHistoryPreview(){
     }
 }
 
+
+
+void Ux::updatePalleteScroller(){
+
+    int palleteIconsTotal = getPalleteTotalCount();
+
+    //resize pallete scroller as we add more selections....
+    if( palleteIconsTotal > 5 ){
+        palleteScroller->resizeTililngEngine(4, 2);
+    }else if( palleteIconsTotal > 4 ){
+        palleteScroller->resizeTililngEngine(3, 2);
+    }else if( palleteIconsTotal > 3 ){
+        palleteScroller->resizeTililngEngine(4, 1);
+    }else if( palleteIconsTotal > 2 ){
+        palleteScroller->resizeTililngEngine(3, 1);
+    }else if( palleteIconsTotal > 1 ){
+        palleteScroller->resizeTililngEngine(2, 1);
+    }else{
+        palleteScroller->resizeTililngEngine(1, 1);
+    }
+
+
+    //if( myUxRef->historyPalleteHolder->isInBounds ){
+    palleteScroller->updateTiles(); // calls updateUiObjectFromPallete for each tile
+    //}
+}
 
 //bool Ux::updateAnimations(float elapsedMs){
 //

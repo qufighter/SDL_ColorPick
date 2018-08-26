@@ -4,6 +4,41 @@
 #ifndef ColorPick_iOS_SDL_uiList_h
 #define ColorPick_iOS_SDL_uiList_h
 
+template <typename parentType, typename genType>
+struct uiListIterator
+{
+    parentType* listInstance;
+    int nextIndex;
+
+    uiListIterator(parentType* plistInstance){
+        listInstance=plistInstance;
+        nextIndex = 0;
+    }
+
+    genType* next(){
+        return listInstance->get(nextIndex++);
+    }
+};
+
+template <typename parentType, typename genType>
+struct uiListLoopingIterator
+{
+    parentType* listInstance;
+    int nextIndex;
+
+    uiListLoopingIterator(parentType* plistInstance){
+        listInstance=plistInstance;
+        nextIndex = 0;
+    }
+
+    genType* next(){
+        genType* next = listInstance->get(nextIndex++);
+        if( nextIndex > listInstance->largestIndex() ){
+            nextIndex = 0;
+        }
+        return next;
+    }
+};
 
 
 // min
@@ -11,11 +46,14 @@ template <typename genType, typename indexType>// index is optional...
 struct uiList
 {
     typedef int (*aIndexUpdateFn)(genType* item);
+    typedef int (*aIteratorFn)(genType* item);
 
     uiList(){
+        _indexed=false;
         clear();
     }
     uiList(int pmaxSize){
+        _indexed=false;
         clear();
         setSize(pmaxSize);
     }
@@ -27,20 +65,27 @@ struct uiList
 
     void clear(){
         _nextIndex=0;
-        _previousIndex=0;
-        _largestIndex=0;
-        _indexed=false;
+        _previousIndex=-1;
+        _largestIndex=-1;
+        clearIndex();
     }
 
-    void index(int size, aIndexUpdateFn pindexOffsetGen){
-        // index is used to guarante unique entries and locate entries
-        indexOffsetGen=pindexOffsetGen;
-        indexItself = (indexType*)SDL_malloc( size );
-        for( int x=0; x<size; x++ ){
+    void clearIndex(){
+        if(!_indexed) return;
+        for( int x=0; x<_indexSize; x++ ){
             indexItself[x] = maxSize; //-1; // largest Uint..
         }
-        // todo: we could loop and update the index.... but it is empty right now
+    }
+
+    // helpful tip - don't return zero for more than a single value
+    void index(int size, aIndexUpdateFn pindexOffsetGen){
+        // index is used to guarante unique entries (though not enforced by add) and locate entries
+        _indexSize=size;
+        indexOffsetGen=pindexOffsetGen;
+        indexItself = (indexType*)SDL_malloc( _indexSize );
         _indexed=true;
+        clearIndex();
+        // todo: we could loop and update the index.... but it is empty right now
 
     }
 
@@ -55,6 +100,7 @@ struct uiList
     int _tmp_index_offset;
 
     bool _indexed;
+    int _indexSize;
 
     int locate(genType item){
         if( _indexed ){
@@ -73,6 +119,10 @@ struct uiList
         return -1; // missing
     }
 
+    uiListIterator<uiList, genType>* iterate(){
+        return new uiListIterator<uiList, genType>(this);
+    }
+
     int add(genType item){
 
         _previousIndex = _nextIndex; // now curent
@@ -86,9 +136,6 @@ struct uiList
             if( indexItself[_offset_in_exi_index] == _nextIndex){
                 indexItself[_offset_in_exi_index] = maxSize; // unset // we are about to overwrite this entry in list... lets reset it from index
             }
-
-            // really this shold only happen after we assing = item; below.... so this is not exactly thread safe but we do not want to test the boolean again...
-            //indexItself[_tmp_index_offset] = _previousIndex;
         }
 
         if( _nextIndex > _largestIndex ) _largestIndex = _nextIndex;
@@ -100,14 +147,15 @@ struct uiList
         }
 
         if( _nextIndex >= maxSize ){
-            _nextIndex = 0; // LOOP!!!
+            //_nextIndex = 0; // LOOP!!!
+            _nextIndex = maxSize-1; // stuck
         }
 
         return _previousIndex;
     }
 
     genType* get(int index){
-        if( index < 0 || index > _largestIndex || index >= maxSize-1 ) return nullptr;
+        if( index < 0 || index > _largestIndex || index >= maxSize ) return nullptr;
         return &listItself[index];
     }
 
@@ -116,7 +164,7 @@ struct uiList
     }
 
     void remove(int index){
-        if( index < 0 || index > _largestIndex || index >= maxSize-1 ) return;
+        if( index < 0 || index > _largestIndex || index >= maxSize ) return;
 
         if( _indexed ){     // also the location for ALL the moving entries will need to be now updated........
             genType* item = &listItself[index];
@@ -151,7 +199,7 @@ struct uiList
     }
 
     int total(){
-        return _nextIndex;
+        return _largestIndex+1;//_nextIndex; // if we looped... then this will be wrong
     }
     int largestIndex(){
         return _largestIndex;
@@ -159,6 +207,30 @@ struct uiList
     int previousIndex(){
         return _previousIndex;
     }
+
+    void addAll(genType* newItems, int totalBytes){
+        int eachElementSize = elementSize();
+        int memOffset = 0;
+        int offset = 0;
+
+        while( memOffset < totalBytes ){
+            add(newItems[offset++]);
+            memOffset+=eachElementSize;
+        }
+    }
+
+    int elementSize(){
+        return sizeof(genType);
+    }
+
+    int memorySize(){
+        return total() * sizeof(genType);
+    }
+
+    int maxMemorySize(){
+        return maxSize * sizeof(genType);
+    }
+
     //Uint8 palleteColorsIndex[COLOR_INDEX_MAX]; // we do not search the array
     //Uint8* palleteColorsIndex = (Uint8*)SDL_malloc( COLOR_INDEX_MAX ); // totally equivilent to above
 
@@ -200,6 +272,7 @@ struct uiList
 
  */
 };
+
 
 
 

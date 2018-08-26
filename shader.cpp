@@ -18,8 +18,14 @@ static string textFileRead(const char *fileName) {
     // IF its an FSH and we are on IOS we should prepend the amazing
     // precision mediump float;
     // which is requird by ios in at least some cases but banned on osx
+    // cannot fathom it but highp works and is in fact required by our shader.... in order for 2048 size to "work right" on true device.... mediump leaves us off by a whole pixel!
 #ifndef COLORPICK_PLATFORM_DESKTOP
-    fileString.append("precision mediump float;\n");
+    //if( SHD_TEXTURE_SIZE > 1024 ){
+        // todo veerify platform really supports this size?
+        fileString.append("precision highp float;\n");
+    //}else{
+     //   fileString.append("precision mediump float;\n");
+    //}
 #endif
 
 	if (file.is_open()) { // If the file opened successfully
@@ -192,12 +198,14 @@ void Shader::reload() {
 
     uniformLocations->fishScale = glGetUniformLocation(shader_id, "fishEyeScale");
     uniformLocations->fishScalePct = glGetUniformLocation(shader_id, "fishEyeScalePercent");
+    uniformLocations->textureWidth = glGetUniformLocation(shader_id, "textureWidth");
 
     uniformLocations->textureSampler = glGetUniformLocation(shader_id, "texture1");
     uniformLocations->textureSampler2 = glGetUniformLocation(shader_id, "texture2");
     uniformLocations->textureSampler3 = glGetUniformLocation(shader_id, "texture3");
     // = glGetUniformLocation(_program, "TexCoordIn");
  //????   uniformLocations->textureCoord = glGetAttribLocation(shader_id, "TexCoordIn");
+    uniformLocations->positionOffset = glGetUniformLocation(shader_id, "positionOffset");
 
     uniformLocations->normalLightingMat = glGetAttribLocation(shader_id, "lightingMat");
 

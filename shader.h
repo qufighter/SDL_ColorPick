@@ -3,6 +3,8 @@
 
 #include "main.h"
 
+#define SHD_TEXTURE_SIZE 2048
+
 
 struct uniformLocationStruct
 {
@@ -23,6 +25,8 @@ struct uniformLocationStruct
             widthHeightRatio,
             fishScale,
             fishScalePct,
+            textureWidth,
+            positionOffset,
             textureCoord,
             texture_crop,
             normalLightingMat,

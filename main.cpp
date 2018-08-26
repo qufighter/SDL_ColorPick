@@ -91,23 +91,6 @@ render(SDL_Renderer *renderer) // DEFAULT demo using sdl render, delete me
     SDL_RenderPresent(renderer);
 }
 
-void ReshapeWindow(){
-    // just in case we didn't get hi-dpi from SDL_WINDOW_ALLOW_HIGHDPI we can see what size we actually got here
-    SDL_GL_GetDrawableSize(window, &win_w, &win_h);
-    openglContext->reshapeWindow(win_w, win_h);
-    SDL_Log("WindowSize %d %d", win_w,win_h);
-
-    colorPickState->viewport_ratio = (win_w+1.0f)/win_h;
-
-    if( win_w < SCREEN_WIDTH ) {
-        // low dpi?
-        ui_mmv_scale = 1.0;
-    }else{
-        // even if win_w == SCREEN_WIDTH
-        //  not guaranteed to be hidpi !~!!! !
-    }
-
-}
 
 bool mousStateDown = false; // really should count fingers down possibly, finger event support multi touch, mosue events dont!
 bool multiTouchMode = false;
@@ -212,11 +195,12 @@ int EventFilter(void* userdata, SDL_Event* event){
 //                    collected_x += colorPickState->mmovex;
 //                    collected_y += colorPickState->mmovey;
 
+
                     SDL_GetMouseState(&tx, &ty);
                     SDL_Log("MOUSE xy %d %d", tx,ty);
                     openglContext->generalUx->currentInteraction.update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h,  (collected_x*ui_mmv_scale)/win_w, (collected_y*ui_mmv_scale)/win_h );
                     SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
-                    SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
+                    SDL_Log("MOUSE xy delta %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
 
 
                     // todo combine above into the following call?
@@ -240,7 +224,7 @@ int EventFilter(void* userdata, SDL_Event* event){
                 SDL_Log("MOUSE xy %d %d", tx,ty);
                 openglContext->generalUx->currentInteraction.update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h,  (collected_x*ui_mmv_scale)/win_w, (collected_y*ui_mmv_scale)/win_h );
                 SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
-                SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
+                SDL_Log("MOUSE xy delta %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
 
 
                 // so if we already didInteract....
@@ -264,12 +248,12 @@ int EventFilter(void* userdata, SDL_Event* event){
                 // maybe its okay?
 
 
-                if( ! didInteract )
+                if( ! didInteract ){
                     openglContext->chooseFile(); // this breaks multigesture somehow
 
                     // this feature will move
 
-                else{
+                }else{
                     //
                     //openglContext->generalUx->interactionUpdate(uiInteraction *delta);
 
@@ -339,6 +323,7 @@ int EventFilter(void* userdata, SDL_Event* event){
             /* Terminate the app.
              Shut everything down before returning from this function.
              */
+           // openglContext->generalUx->writeOutState();
             SDL_Log("SDL_APP_TERMINATING !!!!");
             return 0;
 
@@ -347,6 +332,8 @@ int EventFilter(void* userdata, SDL_Event* event){
              This gets called when the user hits the home button, or gets a call.
              */
             openglContext->renderShouldUpdate = false;
+
+            openglContext->generalUx->writeOutState();
             SDL_Log("SDL_APP_WILLENTERBACKGROUND !!!!");
             return 0;
         case SDL_APP_DIDENTERBACKGROUND:
@@ -406,6 +393,85 @@ void ShowFrame(void*)
 }
 
 
+void ReshapeWindow(){
+    // just in case we didn't get hi-dpi from SDL_WINDOW_ALLOW_HIGHDPI we can see what size we actually got here
+
+    SDL_GetWindowSize(window, &colorPickState->windowWidth, &colorPickState->windowHeight);
+
+    win_w=colorPickState->windowWidth;
+    win_h=colorPickState->windowHeight;
+
+    colorPickState->viewport_ratio = (win_w+1.0f)/win_h;
+    SDL_Log("SDL_GetWindowSize %d %d %f", win_w,win_h, colorPickState->viewport_ratio);
+
+    SDL_GL_GetDrawableSize(window, &colorPickState->drawableWidth, &colorPickState->drawableHiehgt);
+
+    openglContext->reshapeWindow(colorPickState->drawableWidth, colorPickState->drawableHiehgt);
+
+    SDL_Log("SDL_GL_GetDrawableSize %d %d %f", colorPickState->drawableWidth,colorPickState->drawableHiehgt, (colorPickState->drawableWidth+1.0f)/colorPickState->drawableHiehgt);
+
+
+    if( win_w < SCREEN_WIDTH ) {
+        // low dpi?
+        ui_mmv_scale = 1.0;
+    }else{
+        // even if win_w == SCREEN_WIDTH
+        //  not guaranteed to be hidpi !~!!! !
+    }
+
+    // none of this experimental stuff really works:
+    int displayIndex = SDL_GetWindowDisplayIndex(window);
+    float ddpi=1.0f;
+    float hdpi=1.0f;
+    float vdpi=1.0f;
+    SDL_Rect usableBounds;
+    SDL_Rect miScreen;
+    int dpi_result = SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi);
+
+    //SDL_Log(SDL_GetError());
+
+    int bounds_result =  SDL_GetDisplayUsableBounds(displayIndex, &usableBounds);
+
+    int size_result =  SDL_GetDisplayBounds(displayIndex, &miScreen);
+
+    SDL_DisplayMode mode;
+    SDL_GetCurrentDisplayMode(displayIndex, &mode);
+
+
+    int modeIndex=0;
+    for( int modeIndex=0,totalModes=SDL_GetNumDisplayModes(displayIndex); modeIndex<totalModes; modeIndex++){
+        SDL_GetDisplayMode(displayIndex, modeIndex, &mode);
+
+        SDL_Log("POSSIBLE: w:%i h:%i %ihz ", mode.w, mode.h, mode.refresh_rate );
+    }
+
+
+    //SDL_SetWindowDisplayMode(<#SDL_Window *window#>, <#const SDL_DisplayMode *mode#>)
+
+
+
+    //SDL_GetDisplayMode(<#int displayIndex#>, <#int modeIndex#>, SDL_DisplayMode *mode)
+    // Uint32 format;              /**< pixel format */
+    //    int w;                      /**< width, in screen coordinates */
+    //    int h;                      /**< height, in screen coordinates */
+    //    int refresh_rate;           /**< refresh rate (or zero for unspecified) */
+    //    void *driverdata;           /**< driver-specific data, initialize to 0 */
+    //} SDL_DisplayMode;
+
+    SDL_Log("HERE IS WHAT DISPPLAY %i REPORtS: (dpiRrslt: %i ddpi %f hdpi %f vdpi %f)\n\
+            \t Screeen Rect(%i): %i %i %i %i rDetectedDpiScaleIs: %f\n\
+            \t Usable Bounds Rect(%i): %i %i %i %i \n\
+            finally then %i %i" ,
+            displayIndex, dpi_result, ddpi, hdpi, vdpi,
+            size_result, miScreen.x, miScreen.y, miScreen.w, miScreen.h, ui_mmv_scale,
+            bounds_result, usableBounds.x, usableBounds.y, usableBounds.w, usableBounds.h,
+            int(miScreen.w*ui_mmv_scale), int(miScreen.h*ui_mmv_scale));
+
+    //if( )
+
+}
+
+
 int main(int argc, char *argv[]) {
 
 //    lastTimerTime = SDL_GetTicks();
@@ -449,18 +515,29 @@ compatibility; this flag is ignored
     srand(time(NULL));
 
 
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
-    SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
+//    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+//    SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
+
 
 
     /* create window and renderer */
     window =
         SDL_CreateWindow(NULL, 0, 0, win_w, win_h,
-                         SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE );
+                         SDL_WINDOW_OPENGL
+                         | (TARGET_OS_SIMULATOR?0:SDL_WINDOW_ALLOW_HIGHDPI)
+                       //  | SDL_WINDOW_ALLOW_HIGHDPI
+                         | SDL_WINDOW_RESIZABLE
+                         //| SDL_WINDOW_MAXIMIZED
+                         //| SDL_WINDOW_BORDERLESS
+        );
     if (!window) {
         printf("Could not initialize Window\n");
         return 1;
     }
+
+    //SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
+    //SDL_HINT_IDLE_TIMER_DISABLED
+    SDL_EnableScreenSaver();
 
     colorPickState->viewport_ratio = (win_w+1.0f)/win_h;
 
@@ -494,6 +571,11 @@ compatibility; this flag is ignored
 
 
 #if __IPHONEOS__
+
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+    SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
+
+    //SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256);
 
     //SDL_iPhoneSetEventPump(SDL_TRUE);
     SDL_iPhoneSetAnimationCallback(window, 1, ShowFrame, NULL);

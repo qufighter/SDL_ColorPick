@@ -25,6 +25,10 @@ OpenGLContext::OpenGLContext(void) {
 //    colorPickState->mmovex=0;
 //    colorPickState->mmovey=0;
 
+    textureNone=0;
+    lastHue=nullptr;
+    position_x = 0;
+    position_y = 0;
 }
 
 bool OpenGLContext::createContext(SDL_Window *PsdlWindow) {
@@ -76,21 +80,74 @@ void OpenGLContext::updateColorPreview(void){
 
 void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
 
+    if( lastHue!=nullptr ) SDL_free(lastHue);
+    lastHue = nullptr;
     SDL_Log("an image was selected !!!!");
     // free previous surface
     position_x = 0;
     position_y = 0;
     SDL_FreeSurface(fullPickImgSurface);
 
-    fullPickImgSurface = myCoolSurface;
+    // at least for ios we shold standardize this format now
+    fullPickImgSurface = textures->ConvertSurface(myCoolSurface);
+    loadedImageMaxSize = SDL_max(fullPickImgSurface->clip_rect.w, fullPickImgSurface->clip_rect.h);
 
-    textures->LoadTextureSized(fullPickImgSurface, textureId_pickImage, textureSize, &position_x, &position_y);
+    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
+
+    // tada: also shrink image to be within some other texture.....
+    //  then we can maintain magic when zoomed out...
 
     updateColorPreview();
 
     renderShouldUpdate = true;
 }
 
+void OpenGLContext:: loadNextTestImage(){
+
+    if( lastHue!=nullptr ) SDL_free(lastHue);
+    lastHue = nullptr;
+    SDL_Log("an image was selected !!!!");
+    // free previous surface
+    position_x = 0;
+    position_y = 0;
+    SDL_FreeSurface(fullPickImgSurface);
+
+    // at least for ios we shold standardize this format now using textures->ConvertSurface
+    fullPickImgSurface = textures->ConvertSurface(textures->LoadSurface(*testTexturesBuiltin->next()));
+    loadedImageMaxSize = SDL_max(fullPickImgSurface->clip_rect.w, fullPickImgSurface->clip_rect.h);
+
+    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
+
+    // tada: also shrink image to be within some other texture.....
+    //  then we can maintain magic when zoomed out... (done?! textureId_default)
+
+    updateColorPreview();
+
+    renderShouldUpdate = true;
+}
+
+void OpenGLContext:: pickerForHue(SDL_Color* color){
+
+    lastHue = new SDL_Color();
+    Ux::setColor(lastHue, color);
+    SDL_Log("we wish to get a picker for a color hue !!!!"); // TODO: second arg for selecting color???? position_y ??position_x
+
+//    position_x = 0;
+//    position_y = 0;
+
+    SDL_FreeSurface(fullPickImgSurface);// free previous surface
+
+
+    // at least for ios we shold standardize this format now using textures->ConvertSurface
+    fullPickImgSurface = textures->ConvertSurface(SDL_DuplicateSurface(colorPickerFGSurfaceGradient));
+    loadedImageMaxSize = SDL_max(fullPickImgSurface->clip_rect.w, fullPickImgSurface->clip_rect.h);
+
+    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
+
+    updateColorPreview();
+
+    renderShouldUpdate = true;
+}
 
 void OpenGLContext::createUI(void) {
 
@@ -134,23 +191,147 @@ void OpenGLContext::setupScene(void) {
 
     // todo - store texture paths and possibly resolve using [NSBundle mainBundle] pathForResource:@"256" ofType:@"png"]
 
-    //textureId_default = textures->LoadTexture("textures/4.png"); // NOT SQUARE IMAGE WILL NOT WORK
+//    textureId_default = textures->LoadTexture("textures/4.png"); // NOT SQUARE IMAGE WILL NOT WORK
 //    textureId_default = textures->LoadTexture("textures/default.png");
 //    textureId_pickImage = textures->LoadTexture("textures/snow.jpg");
 
 //    textureId_default = textures->LoadTexture("textures/snow.jpg");
-//    textureId_pickImage = textures->LoadTexture("textures/default.png");
+ //   textureId_pickImage = textures->LoadTexture("textures/default.png");
  //   textureId_default = textures->LoadTexture("textures/blank.png");
 
 
+//    ColorPick iOS SDL(4046,0x10d290380) malloc: Heap corruption detected, free list is damaged at 0x600000101b00
+//    *** Incorrect guard value: 4448617117
+//    ColorPick iOS SDL(4046,0x10d290380) malloc: *** set a breakpoint in malloc_error_break to debug
+    // todo: wrong number of items in list -> crash simulator
+    Ux::uiList<const char*, Uint8>* textureList = new Ux::uiList<const char*, Uint8>(128);
+    textureList->add("textures/4.png");
+    textureList->add("textures/simimage.png");
 
-    fullPickImgSurface = textures->LoadSurface("textures/crate.jpg");
+ //   textureList->add("textures/p04_shape1.bmp");
+    textureList->add("textures/p10_shape1.bmp");
+    textureList->add("textures/p10_shape1_rotated.png");
+//    textureList->add("textures/p16_shape1.bmp");
+//    textureList->add("textures/p04_shape1.bmp");
+//    textureList->add("textures/p10_shape1.bmp");
+//    textureList->add("textures/p16_shape1.bmp");
+    
+    textureList->add("textures/default.png"); // ok
+    //textureList->add("textures/snow.jpg");
+    textureList->add("textures/cp_bg.png");
+    textureList->add("textures/SDL_logo.png"); // TODO: bad colors (in preview) (picks accurate colro?!)
+    //textureList->add("textures/blank.png");
+    textureList->add("textures/crate.jpg");
+    textureList->add("textures/bark.jpg");
+    textureList->add("textures/bark2.png"); // TODO fix this! png index bad colors (in preview) (picks accurate colro?!)
+    textureList->add("textures/256.png"); // ok
+    textureList->add("textures/512.png");  //TODO fix this!  png index! bad colors (in preview) (picks accurate colro?!)
+    textureList->add("textures/unnamed.jpg");
+    textureList->add("textures/DSC04958.JPG");
+    textureList->add("textures/IMG_0172.jpg");
+    textureList->add("textures/anim.gif");
+    testTexturesBuiltin = new Ux::uiListLoopingIterator<Ux::uiList<const char*, Uint8>, const char*>(textureList);
 
-    textureId_default = textures->LoadTexture("textures/register.png");
+    //fullPickImgSurface = textures->LoadSurface("textures/4.png");
+    //fullPickImgSurface = textures->LoadSurface("textures/default.png"); // ok
+    //fullPickImgSurface = textures->LoadSurface("textures/snow.jpg");
+    //fullPickImgSurface = textures->LoadSurface("textures/simimage.png");
+    //fullPickImgSurface = textures->LoadSurface("textures/SDL_logo.png"); // TODO: bad colors (in preview) (picks accurate colro?!)
+    //fullPickImgSurface = textures->LoadSurface("textures/blank.png");
+    //fullPickImgSurface = textures->LoadSurface("textures/unnamed.jpg");
+    //fullPickImgSurface = textures->LoadSurface("textures/crate.jpg");
+    //fullPickImgSurface = textures->LoadSurface("textures/bark.jpg");
+    //fullPickImgSurface = textures->LoadSurface("textures/bark2.png"); // TODO fix this! png index bad colors (in preview) (picks accurate colro?!)
+    //fullPickImgSurface = textures->LoadSurface("textures/256.png"); // ok
+    //fullPickImgSurface = textures->LoadSurface("textures/512.png");  //TODO fix this!  png index! bad colors (in preview) (picks accurate colro?!)
+    //fullPickImgSurface = textures->LoadSurface("textures/unnamed.jpg");
+    //fullPickImgSurface = textures->LoadSurface("textures/DSC04958.JPG");
+    //fullPickImgSurface = textures->LoadSurface("textures/IMG_0172.jpg");
+    //fullPickImgSurface = textures->LoadSurface("textures/anim.gif");
 
+
+    colorPickerFGSurfaceGradient = textures->LoadSurface("textures/cp_bg.png");
+    fullPickImgSurface = textures->ConvertSurface(textures->LoadSurface(*testTexturesBuiltin->next()));
+    loadedImageMaxSize = SDL_max(fullPickImgSurface->clip_rect.w, fullPickImgSurface->clip_rect.h);
+
+
+
+
+// move this?!
+// // we will try to automagically generate cp_bg.png - this failed since we are avoiding going pixel by piel and SDL_ComposeCustomBlendMode doesn't work with surfaces
+//
+//    SDL_Surface* temp1 = SDL_DuplicateSurface(colorPickerFGSurfaceGradient);
+//    SDL_Surface* temp2 = SDL_DuplicateSurface(colorPickerFGSurfaceGradient);
+//    SDL_Rect rect;
+//
+//    for( int row =0; row<colorPickerFGSurfaceGradient->h; row++ ){
+//        rect.x = 0.0f;
+//        rect.y = row + 0.0f;
+//        rect.w = colorPickerFGSurfaceGradient->w;//*2;
+//        rect.h = 1;
+//        SDL_FillRect(temp1, &rect, SDL_MapRGBA(colorPickerFGSurfaceGradient->format, 255-row, 255-row, 255-row, row) );
+//    }
+//
+//    for( int col =0; col<colorPickerFGSurfaceGradient->w; col++ ){
+//        rect.x = col + 0.0f;
+//        rect.y = 0.0f;
+//        rect.w = 1;//*2;
+//        rect.h = colorPickerFGSurfaceGradient->h;
+//        SDL_FillRect(temp2, &rect, SDL_MapRGBA(colorPickerFGSurfaceGradient->format, 255-col, 255-col, 255-col, 255-col) );
+//    }
+//
+//    SDL_SetSurfaceBlendMode(temp1, SDL_BLENDMODE_NONE);
+//
+//    rect.x = 0.0f;
+//    rect.y = 0.0f;
+//    rect.w = colorPickerFGSurfaceGradient->w;
+//    rect.h = colorPickerFGSurfaceGradient->h;
+//    int didBlit = SDL_BlitSurface(temp1,
+//                                  &rect, // src rect entire surface
+//                                  colorPickerFGSurfaceGradient,
+//                                  &rect);
+//
+//
+//    //SDL_SetSurfaceBlendMode(temp2, SDL_BLENDMODE_BLEND);
+//    //SDL_SetSurfaceBlendMode(temp2, SDL_BLENDMODE_MOD);
+//    SDL_SetSurfaceBlendMode(temp2, SDL_BLENDMODE_ADD);
+//
+//    // todo patch sdl so custom blend mode works on surface???
+////    int success = SDL_SetSurfaceBlendMode(temp1,
+////                            SDL_ComposeCustomBlendMode(SDL_BLENDFACTOR_ONE, SDL_BLENDFACTOR_ONE,
+////                                                     SDL_BLENDOPERATION_ADD,
+////                                                     SDL_BLENDFACTOR_ONE, SDL_BLENDFACTOR_ONE,
+////                                                     SDL_BLENDOPERATION_REV_SUBTRACT));
+//
+//
+//    rect.x = 0.0f;
+//    rect.y = 0.0f;
+//    rect.w = colorPickerFGSurfaceGradient->w;
+//    rect.h = colorPickerFGSurfaceGradient->h;
+//    didBlit = SDL_BlitSurface(temp2,
+//                                  &rect, // src rect entire surface
+//                                  colorPickerFGSurfaceGradient,
+//                                  &rect) && didBlit;
+//
+//
+//    SDL_FreeSurface(temp2);
+//    SDL_FreeSurface(temp1);
+
+
+
+
+
+    textureId_default = textures->GenerateTexture();
     textureId_pickImage = textures->GenerateTexture();
-    textures->LoadTextureSized(fullPickImgSurface, textureId_pickImage, textureSize, &position_x, &position_y);
+    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
+    
     updateColorPreview();
+
+    SDL_Color c;
+    c.r=255;
+    c.g=255;
+    c.b=0;
+    pickerForHue(&c);
 
     textureId_fonts = textures->LoadTexture("textures/ascii.png");
 
@@ -225,7 +406,7 @@ void  OpenGLContext::setFishScale(float modifierAmt){
     }
 
     fishEyeScalePct = fishEyeScale / MAX_FISHEYE_ZOOM;
-    //SDL_Log("%f", fishEyeScalePct);
+    //SDL_Log("FISH EYE SCALE %f", fishEyeScale);
 
         // todo should be a helper on the UI object zoomSlider instead
 
@@ -304,27 +485,16 @@ void OpenGLContext::renderScene(void) {
         position_y += colorPickState->mmovey;
         colorPickState->mmovey=0;
 
-        // contraint to textureSize does not match image size when image is < 2048...
-        // validate to surface size instead
-        // these should all be moved to update/helper fn
-        if( position_x > halfTextureSize ){
-            position_x = halfTextureSize;
-        }else if( position_x < -halfTextureSize ){
-            position_x = -halfTextureSize;
-        }
-
-        if( position_y > halfTextureSize ){
-            position_y = halfTextureSize;
-        }else if( position_y < -halfTextureSize ){
-            position_y = -halfTextureSize;
-        }
-
         //SDL_Log("position before %d %d" , position_x, position_y);
 
         // pass a reference to the posiiton - then use that, rather than above
-        textures->LoadTextureSized(fullPickImgSurface, textureId_pickImage, textureSize, &position_x, &position_y);
+        // since textureId_default is not changing..... we should omit it here... (we keep moving it, but we can move it in shader...) // maths
+        // can also just omit when zoomed. - excep when u can see it... so near edges it does not work // fishEyeScale < 3.0f ? textureId_default : textureNone
+        //textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
 
+        textures->LoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
 
+// lets figure out how to maintain this position into the shader for the full image texture...
 
         updateColorPreview();
 
@@ -360,9 +530,23 @@ void OpenGLContext::renderScene(void) {
 //    glEnable(GL_BLEND);  //this enables alpha blending, important for faux shader
 //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+
+
     glUniform1f(uniformLocations->fishScale, fishEyeScale);
     glUniform1f(uniformLocations->fishScalePct, fishEyeScalePct);
-    //glUniform1f(uniformLocations->widthHeightRatio, widthHeightRatio);
+    glUniform1f(uniformLocations->textureWidth, (float)textureSize);
+
+    glUniform2f(uniformLocations->positionOffset, (float)position_x / -loadedImageMaxSize, (float)position_y/ -loadedImageMaxSize);
+    //glUniform2f(uniformLocations->positionOffset, 0.1f, 0.1f);
+
+//    glUniform4f(uniformLocations->ui_foreground_color,
+//                renderObj->foregroundColor.r/255.0,
+//                renderObj->foregroundColor.g/255.0,
+//                renderObj->foregroundColor.b/255.0,
+//                renderObj->foregroundColor.a/255.0
+//                );
+
+    glUniform1f(uniformLocations->widthHeightRatio, colorPickState->viewport_ratio);
 
 //    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 //    glUniformMatrix4fv(uniformLocations->projectionMatrixLocation,	1, GL_FALSE, &projectionMatrix[0][0]); // Send our projection matrix to the shader

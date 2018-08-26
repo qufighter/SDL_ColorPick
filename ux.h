@@ -12,7 +12,8 @@
 #define SIX_ACROSS 6.0
 #define SIX_ACROSS_RATIO 0.16666666666667  // 1.0 / SIX_ACROSS
 
-#define COLOR_INDEX_MAX 16581376 //  255^3 +1
+//#define COLOR_INDEX_MAX 16581376 //  255^3 +1
+#define COLOR_INDEX_MAX 16777217 //  256^3 +1
 
 #define RESIZE_NOW true
 #define DO_NOT_RESIZE_NOW false
@@ -20,7 +21,8 @@
 //#include <stdio.h>
 #include "main.h"
 using namespace std;
-#include <vector>
+//#include <vector>
+
 
 #include "shader.h"
 
@@ -35,8 +37,10 @@ const static float text_yStep = 0.1;
 const static float const_friction = 0.99;
 const static float const_threshold = 0.0001; // velocity below this threshold stops
 
-typedef enum { BUTTON_CLEAR_ALL, PICK_HISRTORY_EXTRA_BUTTONS_TOTAL } PICK_HISRTORY_EXTRA_BUTTONS;
+#define BTN_NEGATIVE_START -2
 
+typedef enum { BUTTON_CLEAR_HISTORY, PICK_HISRTORY_EXTRA_BUTTONS_TOTAL } PICK_HISRTORY_EXTRA_BUTTONS;
+typedef enum { BUTTON_CLEAR_PALLETE, BUTTON_SAVE_PALLETE, PALLETE_EXTRA_BUTTONS_TOTAL } PALLETE_EXTRA_BUTTONS;
 
 //const static float historyPreviewHeight = 0.9; // todo this should be a return value
 
@@ -94,6 +98,7 @@ static Ux* Singleton();
 //#include "uiSqware.h"  // its because we don't really have square, and if we do we do not really need this, because squares would already be squares
 #include "uiNavArrows.h"
 #include "uiYesNoChoice.h"
+#include "uiHueGradient.h"
 
 #include "ux-anim.h"
     
@@ -112,6 +117,13 @@ static Ux* Singleton();
     void resizeUiElements(void);
 
     uiObject* create();
+
+
+
+
+    void writeOutState(void);
+    void readInState(void);
+    void readInState(char* filepath, void* dest, int destMaxSize, int* readSize);
 
     void updateRenderPositions(void);
     void updateRenderPosition(uiObject *renderObj);
@@ -144,12 +156,17 @@ static Ux* Singleton();
     static void clickHistoryColor(uiObject *interactionObj, uiInteraction *delta);
     static void clickDeletePalleteColor(uiObject *interactionObj, uiInteraction *delta);
     static void clickDeleteHistoryColor(uiObject *interactionObj, uiInteraction *delta);
+    static void clickClearHistory(uiObject *interactionObj, uiInteraction *delta);
+    static void clickClearPallete(uiObject *interactionObj, uiInteraction *delta);
+    static void clickCancelClearHistory(uiObject *interactionObj, uiInteraction *delta);
+    static void clickCancelClearPallete(uiObject *interactionObj, uiInteraction *delta);
     static void removePalleteColor(uiObject *interactionObj, uiInteraction *delta);
     static void removeHistoryColor(uiObject *interactionObj, uiInteraction *delta);
     static void interactionHZ(uiObject *interactionObj, uiInteraction *delta);
     static void interactionSliderVT(uiObject *interactionObj, uiInteraction *delta);
     static void interactionHorizontal(uiObject *interactionObj, uiInteraction *delta);
     static void interactionVert(uiObject *interactionObj, uiInteraction *delta);
+    static void hueClicked(uiObject *interactionObj, uiInteraction *delta);
     static void interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteraction *delta);
     static bool bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *delta);
     static bool bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiInteraction *delta); // return true always, unless the interaction should be dropped and not bubble for some reason....
@@ -162,7 +179,7 @@ static Ux* Singleton();
     //int pickHistoryIndex = 0;
     //int lastPickHistoryIndex = -1;
     //int largestPickHistoryIndex=0; // how far in history we have gone, to allow loop if we have greater history available
-    static const int pickHistoryMax = 2048;
+    static const int pickHistoryMax = 4096;  // cannot be less than SIX_ACROSS
     //SDL_Color pickHistory[pickHistoryMax];
     static bool updateUiObjectFromHistory(uiObject *historyTile, int offset);
     static int getHistoryTotalCount();
@@ -172,7 +189,7 @@ static Ux* Singleton();
     //int palleteIndex = 0;
     //int lastPalleteIndex = -1;
     //int largestPalleteIndex=-1; // how far in history we have gone, to allow loop if we have greater history available
-    static const int palleteMax = 254; // WARN do not exeede max size Uint8 palleteColorsIndex 255
+    static const int palleteMax = 254; // 254 // WARN do not exeede max size Uint8 palleteColorsIndex 255
     //SDL_Color palleteColors[palleteMax];
     static bool updateUiObjectFromPallete(uiObject *historyTile, int offset);
     static int getPalleteTotalCount();
@@ -186,6 +203,7 @@ static Ux* Singleton();
     void updateColorValueDisplay(SDL_Color* color);
     void addCurrentToPickHistory();
     void updatePickHistoryPreview();
+    void updatePalleteScroller();
 
 
     float screenRatio = 1.0f;
@@ -206,7 +224,7 @@ static Ux* Singleton();
         uiViewColor *palleteSelectionColorPreview;
 
         uiYesNoChoice* defaultYesNoChoiceDialogue;
-
+        uiHueGradient* huePicker;
         uiNavArrows* movementArrows;
 
         uiObject *historyPalleteHolder;

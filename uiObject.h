@@ -12,15 +12,28 @@
 
 #define SCROLLY_WIDTH 0.1
 
-
 // FUNCTIONS DEFINED HERE ARE SATAIC UX:: member functions
-
-
 static bool pointInRect(Float_Rect* rect, float x, float y){
     if( x > rect->x && y > rect->y ){
         if( x < rect->x + rect->w && y < rect->y + rect->h ){
             return true;
         }
+    }
+    return false;
+}
+
+static float distance(float x1, float y1, float x2, float y2){
+    return SDL_sqrtf(SDL_powf(y1-y2, 2.0) + SDL_powf(x1-x2, 2.0));
+}
+
+static bool screenCollisionRadial(float x1, float y1, Float_Rect * collisionRect){
+    float xPct = (x1 - collisionRect->x) / collisionRect->w;
+    float yPct = (y1 - collisionRect->y) / collisionRect->h;
+    float ydiff = 0.5-xPct;
+    float xdiff = 0.5-yPct;
+    float distance = SDL_sqrtf(SDL_powf(ydiff, 2.0) + SDL_powf(xdiff, 2.0));
+    if( distance < 0.5){
+       return true;
     }
     return false;
 }
@@ -37,6 +50,44 @@ static void setRect(Float_Rect * rect, Float_Rect * rect2){
     rect->y = rect2->y;
     rect->w = rect2->w;
     rect->h = rect2->h;
+}
+
+static void containRectWithin(Float_Rect * rect, Float_Rect * co /*container*/){
+    // modifies rect
+    if( co->x > rect->x ){
+        rect->w -= co->x - rect->x;
+        rect->x = co->x;
+    }
+    if( co->y > rect->y ){
+        rect->h -= co->y - rect->y;
+        rect->y = co->y;
+    }
+    if( rect->w > co->w ){
+        rect->w = co->w;
+    }
+    if( rect->h > co->h  ){
+        rect->h = co->h;
+    }
+}
+
+static void containRenderRectWithinRender(Float_Rect * rect, Float_Rect * co /*container*/){
+    // modifies rect
+//    float hh = rect->h * 0.5;
+//    float chh = co->h * 0.5;
+//
+//    float yloss = (co->y - chh) - ( rect->y - hh );
+//
+//    if( yloss > 0 ){
+//        rect->h -= yloss;// * 0.5;
+//        rect->y += yloss;// * 0.5;
+//    }
+}
+
+static float scaleRectForRenderX(Float_Rect * rect, Float_Rect * prect){
+    return ((( ((rect->x)+  (rect->w * 0.5) ) * 2.0 ) - 1.0) ) * prect->w;
+}
+static float scaleRectForRenderY(Float_Rect * rect, Float_Rect * prect){
+    return ((( (rect->y+  (rect->h * 0.5) ) * 2.0) - 1.0) ) * prect->h;
 }
 
 
@@ -74,12 +125,6 @@ static bool colorEquals(SDL_Color * color, SDL_Color * bcolor){
 
 
 
-static float scaleRectForRenderX(Float_Rect * rect, Float_Rect * prect){
-    return ((( ((rect->x)+  (rect->w * 0.5) ) * 2.0 ) - 1.0) ) * prect->w;
-}
-static float scaleRectForRenderY(Float_Rect * rect, Float_Rect * prect){
-    return ((( (rect->y+  (rect->h * 0.5) ) * 2.0) - 1.0) ) * prect->h;
-}
 
 
 
@@ -151,7 +196,15 @@ struct uiObject
         matrix = glm::mat4(1.0f);
         isCentered=false;
 
+        is_circular = false;
+        stack_right = false;
+        stack_left = false;
+
+        squarify_enabled=false;
         squarify_keep_hz=false;
+        squarify_keep_vt=false;
+        squarify_keep_contained=false;
+
     }
     bool isDebugObject;
     bool isRoot;
@@ -192,6 +245,8 @@ struct uiObject
     Float_Rect renderRect; /* private */
     Float_Rect origRenderRect; /* private */
     Float_Rect collisionRect; /* private */
+
+    bool is_circular;
 
     //Float_Rect scrollyRect; //what tpye or sort of corrindants es this?
 
@@ -243,6 +298,23 @@ struct uiObject
         doesRenderChildObjects = true;
     }
 
+    void squarify(){
+        squarify(true, false, false);
+    }
+    void squarifyKeepHz(){
+        squarify(false, true, false);
+    }
+    void squarifyKeepVt(){
+        squarify(false, false, true);
+    }
+    void squarify(bool contained, bool keep_hz, bool keep_vt){
+        // pick one bool only... first bool is enough
+        squarify_keep_contained=contained;
+        squarify_keep_hz=keep_hz;
+        squarify_keep_vt=keep_vt;
+        squarify_enabled=contained||keep_hz||keep_vt;
+    }
+
     void setMovementBoundaryRect(Float_Rect *r){
         Ux::setRect(&movementBoundaryRect, r);
         hasMovementBoundary=true;
@@ -253,8 +325,29 @@ struct uiObject
         hasMovementBoundary=true;
     }
 
+    void setRoundedCorners(float radius){
+        setRoundedCorners(radius,radius,radius,radius);
+        if( radius >= 0.4999 ){
+            is_circular = true;
+        }
+    }
     void setRoundedCorners(float tl, float tr, float br, float bl){
         Ux::setRect(&roundedCornersRect, tl, tr, br, bl);
+    }
+
+    bool collidesWithPoint(float x, float y){
+        if( pointInRect(&collisionRect, x, y) ){
+            if( is_circular ){
+                //float dist = screenCollisionRadial(x, y, &collisionRect );
+                //SDL_Log("%f radius distance %f",dist , collisionRadius);
+                if(  screenCollisionRadial(x, y, &collisionRect ) ){
+                    return true;
+                }
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     void updateAnimationPercent(float hzPerc, float vtPerc){
@@ -316,6 +409,13 @@ struct uiObject
         myCurrentAnimation = chain->preserveReference(); // do not auto garbage collect!
     }
 
+    bool isAnimating(){
+        if( myCurrentAnimation!= nullptr ){
+            return !myCurrentAnimation->chainCompleted;
+        }
+        return false;
+    }
+
     bool hasForeground;
     /*
      texture
@@ -355,7 +455,10 @@ struct uiObject
     SDL_Point offset = {0,0}; // int only?
     // position is top left corner of boundary, or offset from that some amount
     //^
-    bool squarify_keep_hz;
+    bool squarify_enabled; // private
+    bool squarify_keep_hz; // private
+    bool squarify_keep_vt; // private
+    bool squarify_keep_contained; // private
 
 
     void addChild(uiObject *c){
@@ -461,7 +564,8 @@ struct uiObject
         return this;
     }
 
-
+    bool stack_right;
+    bool stack_left;
 
     bool hasParentObject;
     uiObject *parentObject;
@@ -520,9 +624,6 @@ struct uiObject
 
 
 
-    // these "private" props only used by the update loops!
-    Float_Rect parentRenderRect;
-    Float_Rect parentCollisionRect;
 
 
 
@@ -530,17 +631,23 @@ struct uiObject
     void updateRenderPosition(){
         // TODO: we may pass a way to avoid updating  child nodes? (for testing if optimztion possible?)
 
+        Float_Rect parentRenderRect;
+        Float_Rect parentCollisionRect;
 
-        // todo this can be optmized out of the recursion?
-        if( hasParentObject ){  // todo why cannot use ( hasParentObject )  !!!!!!!!!!!!!!!!!!!!!!!
+        if( hasParentObject ){
             parentRenderRect = parentObject->renderRect;
             parentCollisionRect = parentObject->collisionRect;
         }else{
             // note we s hould get here rarely if its workign right
-            SDL_Log("EXPECTED ONCE AT BOOT ONLY - updateRenderPosition root element");
+            SDL_Log("EXPECTED ONCE AT BOOT ONLY - updateRenderPosition root element (reshape/resize window ok)");
             parentRenderRect = Float_Rect();
             parentCollisionRect = Float_Rect();
         }
+
+        updateRenderPosition(parentRenderRect, parentCollisionRect);
+    }
+
+    void updateRenderPosition(Float_Rect parentRenderRect, Float_Rect parentCollisionRect){
 
 
         //    renderRect.x = parentRenderRect.x + boundryRect.x;
@@ -588,6 +695,14 @@ struct uiObject
             origRenderRect.h = parentRenderRect.h * origBoundryRect.h;
             origRenderRect.x = (parentRenderRect.x + scaleRectForRenderX(&origBoundryRect, &parentRenderRect)) ;
             origRenderRect.y = (parentRenderRect.y + scaleRectForRenderY(&origBoundryRect, &parentRenderRect)) ;
+
+
+            if( hasCropParent ){
+                //                Float_Rect tempRect;//leak?
+                //                setRect(&tempRect, &origBoundryRect);
+                //                containRectWithin(&tempRect, &cropParentObject->renderRect);
+                containRenderRectWithinRender(&origRenderRect, &cropParentObject->renderRect);
+            }
         }
 
         //    collisionRect.x = renderRect.x;
@@ -619,17 +734,73 @@ struct uiObject
         }
 
 
+        if( squarify_enabled ){
+            if( squarify_keep_contained ){
 
-        if( squarify_keep_hz ){
-            renderRect.h *= colorPickState->viewport_ratio;
+                float parent_ratio  = (parentRenderRect.w  * colorPickState->viewport_ratio) / parentRenderRect.h;
+                float item_ratio = renderRect.w / renderRect.h;
+
+                if( parent_ratio < 1.0 ){
+                    // taller than wide, squarify_keep_hz
+
+                    renderRect.h *= item_ratio; //squarify itself (this should now match the viewport ratio, so still non square)
+                    renderRect.h *= colorPickState->viewport_ratio;
+
+                    float diff = collisionRect.h - renderRect.h;
+                    collisionRect.h = renderRect.h;
+                    collisionRect.y += (diff * 0.5);
+
+                }else{// parent wider than tall
+                      // we should match parent height
+                      // essentially squarify_keep_vt
+
+                    renderRect.w /= item_ratio; //squarify itself (this should now match the viewport ratio, so still non square)
+                    renderRect.w /= colorPickState->viewport_ratio;
+
+                    float diff = collisionRect.w - renderRect.w;
+                    collisionRect.w = renderRect.w;
+                    collisionRect.x += (diff * 0.5);
+
+                }
+
+            //if( isDebugObject )
+//                SDL_Log("keeping it real "\
+//                        "\n\t parent_ratio %f, parentRenderRect.w %f, parentRenderRect.h %f"\
+//                        "\n\t item_ratio %f ,renderRect.w %f, renderRect.h %f"\
+//                        "\n\t colorPickState->viewport_ratio %f",
+//                        parent_ratio, parentRenderRect.w, parentRenderRect.h,
+//                        item_ratio,renderRect.w, renderRect.h,
+//                        colorPickState->viewport_ratio);
+
+            }else if( squarify_keep_hz ){
+
+                float item_ratio = renderRect.w / renderRect.h;
+
+                renderRect.h *= item_ratio; //squarify itself (this should now match the viewport ratio, so still non square)
+
+                renderRect.h *= colorPickState->viewport_ratio;
+
+                float diff = collisionRect.h - renderRect.h;
+
+                collisionRect.h = renderRect.h;
+                collisionRect.y += (diff * 0.5);
 
 
-            float diff = collisionRect.h - renderRect.h;
+            }else if ( squarify_keep_vt ){
 
-            collisionRect.h = renderRect.h;
-            collisionRect.y += (diff * 0.5);
+                float item_ratio = renderRect.w / renderRect.h;
+
+                renderRect.w /= item_ratio; //squarify itself (this should now match the viewport ratio, so still non square)
+
+                renderRect.w /= colorPickState->viewport_ratio;
+
+                float diff = collisionRect.w - renderRect.w;
+
+                collisionRect.w = renderRect.w;
+                collisionRect.x += (diff * 0.5);
+
+            }
         }
-
 
 
         if( hasMovementBoundary ){ //seems here to set if not intialized
@@ -660,13 +831,37 @@ struct uiObject
         // in any case the logic before delta->fixX may work... I guess if hte animation may continue it could also need to fixX ?  may animate unrealistically then....
 
 
+
         if( hasChildren  ){
+            float stackingOffset=0;
+            // we could thread this???
             for( int x=0,l=childListIndex; x<l; x++ ){
-                childList[x]->updateRenderPosition();
+                childList[x]->updateRenderPosition(renderRect, collisionRect);
+                // for this child list... we might slowly stack these elements?
+                stackingOffset = childList[x]->applyStacking(&renderRect, stackingOffset);
             }
         }
         
         
+    }
+
+    float applyStacking(Float_Rect* parentRenderRect, float stackingOffset){
+
+        if( stack_right ){
+
+
+            float newPosition = parentRenderRect->x + parentRenderRect->w - renderRect.w - stackingOffset;
+
+            float displacement = newPosition - renderRect.x;
+            renderRect.x += displacement;
+
+            collisionRect.x  += (displacement * 0.5);
+
+        }else if(stack_left){
+
+        }
+
+        return stackingOffset + renderRect.w;
     }
     
 

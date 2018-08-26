@@ -234,6 +234,8 @@ UIViewController *top;
     [self dismissViewControllerAnimated:NO completion:NULL]; // dismiss myFc
 }
 
+
+
 - (void)takePhoto {
 
     if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
@@ -263,16 +265,33 @@ UIViewController *top;
 - (void)selectPhoto {
 
 
-    [self presentSelf];
+    if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
 
-    UIImagePickerController *picker = [[UIImagePickerController alloc] init];
-    picker.delegate = self;
-    picker.allowsEditing = YES;
-    picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+        UIAlertView *myAlertView = [[UIAlertView alloc] initWithTitle:@"Error"
+                                                              message:@"Photo Library source unavailable"
+                                                             delegate:nil
+                                                    cancelButtonTitle:@"OK"
+                                                    otherButtonTitles: nil];
+        [myAlertView show];
 
-    [self presentViewController:picker animated:NO completion:NULL];
+    }else{
 
+        [self presentSelf];
 
+        UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+        picker.delegate = self;
+        picker.allowsEditing = YES;
+        //picker.accessibilityElementsHidden = false;
+
+//        UIBarButtonItem* takePhotoBtn = [[UIBarButtonItem alloc] init];
+//        takePhotoBtn.icon
+
+        //picker.toolbarItems.add
+        picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+
+        [self presentViewController:picker animated:NO completion:NULL];
+
+    }
 }
 //test
 #pragma mark - Image Picker Controller delegate methods
@@ -321,6 +340,27 @@ FileChooser *myFc = [[FileChooser alloc] init];
 
 void beginImageSelector()
 {
+
+//NSFileProviderItemCapabilitiesAllowsReading
+
     [myFc selectPhoto];
+
+    //return success;
 }
 
+
+bool openURL(const std::string &url)
+{
+    bool success = false;
+
+    @autoreleasepool
+    {
+        UIApplication *app = [UIApplication sharedApplication];
+        NSURL *nsurl = [NSURL URLWithString:@(url.c_str())];
+
+        if ([app canOpenURL:nsurl])
+            success = [app openURL:nsurl];
+    }
+
+    return success;
+}

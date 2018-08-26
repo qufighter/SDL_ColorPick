@@ -21,8 +21,9 @@ public:
 
     SDL_Surface* LoadSurface(const char* filename);
 
-    GLuint LoadTextureSized(SDL_Surface *surface, GLuint& textureid, int size, int *x, int *y);
-    GLuint LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthHeight, int *x, int *y, GLuint& textureid);
+    GLuint LoadTextureSized(SDL_Surface *surface, GLuint& contained_in_texture_id, GLuint& textureid_centered_on, int size, int *x, int *y, SDL_Color* backgroundColor);
+    GLuint LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthHeight, int *x, int *y, GLuint& contained_in_texture_id, GLuint& textureid_centered_on, SDL_Color* backgroundColor);
+    SDL_Surface* ConvertSurface(SDL_Surface *origSurface);
 
     GLuint LoadTexture(const char* filename, GLuint& textureid);
 	GLuint LoadTexture(const char* filename);

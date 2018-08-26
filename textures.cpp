@@ -61,8 +61,8 @@ GLuint Textures::GenerateTexture(){
 //    return textureid;
 //}
 
-GLuint Textures::LoadTextureSized(SDL_Surface *surface, GLuint& textureid, int size, int *x, int *y) {
-    LoadTextureSizedFromSdlSurface( surface, size, x, y, textureid);
+GLuint Textures::LoadTextureSized(SDL_Surface *surface, GLuint& contained_in_texture_id, GLuint& textureid, int size, int *x, int *y, SDL_Color* backgroundColor) {
+    LoadTextureSizedFromSdlSurface( surface, size, x, y, contained_in_texture_id, textureid, backgroundColor);
     return textureid;
 }
 
@@ -109,21 +109,64 @@ Uint32 getpixel(SDL_Surface *surface, int x, int y)
     }
 }
 
-GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthHeight, int *x, int *y, GLuint& textureid){
+SDL_Surface* Textures::ConvertSurface(SDL_Surface *origSurface) {
+
+
+//        Uint32 curFormat = SDL_MasksToPixelFormatEnum(origSurface->format->BitsPerPixel,
+//                                                                  origSurface->format->Rmask,
+//                                                                  origSurface->format->Gmask,
+//                                                                  origSurface->format->Bmask,
+//                                                                  origSurface->format->Amask);
+//
+//        SDL_Log("images pixel format name: %s", SDL_GetPixelFormatName(curFormat));
+    SDL_Log("images pixel format name: %s", SDL_GetPixelFormatName(origSurface->format->format));
+
+    return origSurface;
+//
+//    SDL_Surface *surface;
+//
+
+//
+//    // work out what format to tell glTexImage2D to use...
+//    if (origSurface->format->BytesPerPixel == 4 && origSurface->format->Amask > 0) { // RGB 24bit
+//        //mode = GL_RGB;
+//        // shall we check current format first?  or otherwise update origSurface elsewhere? // maths codeword
+//        // TODO leeaking memory !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! freee surface
+//        surface = SDL_ConvertSurfaceFormat(origSurface, curFormat, 0);
+//        //GL_APPLE_texture_format_BGRA8888
+//
+//    } else /*if (origSurface->format->BytesPerPixel == 3) */{ // RGBA 32bit
+//
+//        //mode = GL_RGBA;
+//        // TODO leeaking memory !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! freee surface
+//
+//        surface = SDL_ConvertSurfaceFormat(origSurface, curFormat, 0);
+//        //GL_APPLE_texture_format_BGRA8888
+//    }
+////    else {
+////        SDL_Log("Possible ERROR or otherwise %d BytesPerPixel not supported", surface->format->BytesPerPixel);
+////        //SDL_FreeSurface(surface);
+////    }
+//
+//    SDL_FreeSurface(origSurface);
+//
+//    return surface;
+}
+
+
+GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthHeight, int *x, int *y, GLuint& contained_in_texture_id, GLuint& textureid, SDL_Color* backgroundColor){
     int mode;
 
-    // work out what format to tell glTexImage2D to use...
-    if (surface->format->BytesPerPixel == 3) { // RGB 24bit
+    //SDL_Surface *surface;
 
+    // work out what format to tell glTexImage2D to use... // Textures::ConvertSurface was called on this right?
+    if (surface->format->BytesPerPixel == 3  /*surface->format->format == SDL_PIXELFORMAT_RGB888*/ ) { // RGB 24bit
         mode = GL_RGB;
-
-    } else if (surface->format->BytesPerPixel == 4) { // RGBA 32bit
-
+    } else if (surface->format->BytesPerPixel == 4 /*surface->format->format == SDL_PIXELFORMAT_ARGB8888 */) { // RGBA 32bit
         mode = GL_RGBA;
-
     } else {
         SDL_Log("Possible ERROR or otherwise %d BytesPerPixel not supported", surface->format->BytesPerPixel);
-        SDL_FreeSurface(surface);
+        //SDL_FreeSurface(surface);
         return 0;
     }
 
@@ -131,8 +174,7 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
     //    *texth=surface->h;
     // create one texture name
 
-    // tell opengl to use the generated texture name
-    glBindTexture(GL_TEXTURE_2D, textureid);
+
 
 
     // this indented block can be normalized and shared between next fn and this one
@@ -141,31 +183,190 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
         //shader currently set at 2048
         int hwh = widthHeight / 2;
 
+
+    // SDL_CreateRGBSurface(<#Uint32 flags#>, <#int width#>, <#int height#>, <#int depth#>, <#Uint32 Rmask#>, <#Uint32 Gmask#>, <#Uint32 Bmask#>, <#Uint32 Amask#>)
         SDL_Surface* newSurface = SDL_CreateRGBSurface(0, widthHeight, widthHeight, surface->format->BitsPerPixel,
-                                                       surface->format->Amask,
                                                        surface->format->Rmask,
                                                        surface->format->Gmask,
-                                                       surface->format->Bmask);
+                                                       surface->format->Bmask,
+                                                       surface->format->Amask);
 
-        int hsw = (surface->w * 0.5);
-        int hsh = (surface->h * 0.5);
+
+
+
+
+    //SDL_SetSurfacePalette(newSurface, surface->format->palette);
+
+
+    //SDL_CreateRGBSurfaceWithFormat(<#Uint32 flags#>, <#int width#>, <#int height#>, <#int depth#>, <#Uint32 format#>)
+
+    //SDL_ConvertSurface
+
+        float hswf = (surface->w * 0.5);
+        float hshf = (surface->h * 0.5);
+        int hsw = SDL_floorf(hswf);
+        int hsh = SDL_floorf(hshf);
 //        int x = *xp;
 //        int y = *yp;
 
+    //SDL_Log("pincking xy %i %i hsw %i hsh %i", *x, *y, hsw, hsh);
+
         // boundaries for x,y position
-        if(*x > hsw) *x= hsw;
-        else if(*x < -hsw) *x= -hsw - 1;
-        if(*y > hsh) *y= hsh;
-        else if(*y < -hsh) *y= -hsh - 1;
+        if(*x >= hsw) *x= hsw - 1;
+        else if(*x < -hsw) *x= -SDL_ceilf(hswf);//-hsw;// - 1;
+        if(*y >= hsh) *y= hsh - 1;
+        else if(*y < -hsh) *y= -SDL_ceilf(hshf);//-hsh;// - 1;
+
 //
 //    xp = &x;
 //    yp = &y;
 
         SDL_Rect rect;
-        rect.x = 0.0f;
-        rect.y = 0.0f;
-        rect.w = widthHeight;
-        rect.h = widthHeight;
+
+
+        if( contained_in_texture_id > 0 ){
+            // also second surface to process... todo move to helper function???
+            // we will default to strecth
+            SDL_Surface* new_contain_in_surface = SDL_CreateRGBSurface(0, widthHeight, widthHeight, surface->format->BitsPerPixel,
+                                                           surface->format->Rmask,
+                                                           surface->format->Gmask,
+                                                           surface->format->Bmask,
+                                                           surface->format->Amask);
+
+
+//            SDL_Rect srcRect;
+//            srcRect.x = -*x;
+//            srcRect.y = -*y;
+//            srcRect.w = surface->w;
+//            srcRect.h = surface->h;
+
+            rect.x = 0.0f;
+            rect.y = 0.0f;
+            rect.w = widthHeight;//*2;
+            rect.h = widthHeight;//*2;
+
+
+            // if we have an optional BG color.... for use with cp_bg.png red
+            if( backgroundColor!=nullptr ){
+                SDL_FillRect(new_contain_in_surface, &rect, SDL_MapRGBA(newSurface->format, backgroundColor->r, backgroundColor->g, backgroundColor->b, 255) );
+            }
+
+            
+
+            //  rect.x += *x;
+            //  rect.y += *y;
+
+
+            float ratio = float(surface->w) / surface->h;  //ratio
+            if( surface->w > surface->h ){
+                rect.h = widthHeight / ratio;
+                rect.y += (widthHeight - rect.h) * 0.5;
+
+                //srcRect.w = widthHeight;
+
+            }else{
+                rect.w = widthHeight * ratio;
+                rect.x += (widthHeight - rect.w) * 0.5;
+
+                //srcRect.h = widthHeight;
+            }
+
+            //todo scale these
+            // todo moving these to become defunct, move it in vert shader //maths
+//            float xsc = (float(rect.w) / surface->w);
+//            float ysc = (float(rect.h) / surface->h);
+//            rect.x += *x * xsc;
+//            rect.y += *y * ysc;// * ysc;
+
+
+            //rect.h += *y * ysc;
+            
+            //int didBlit = SDL_BlitSurface(surface,NULL/* src rect entire surface*/,new_contain_in_surface,&rect);
+            //int didBlit = SDL_SoftStretch(surface,NULL/* src rect entire surface*/,new_contain_in_surface,&rect);
+            int didBlit = SDL_BlitScaled(surface,NULL/* NULL src rect entire surface*/,new_contain_in_surface,&rect);
+            
+
+            if( didBlit != 0 ){
+                SDL_Log("Blit contain in problem");
+                //SDL_Log(SDL_GetError());
+                //return 0;
+            }
+
+            // end block
+            // tell opengl to use the generated texture name
+            glBindTexture(GL_TEXTURE_2D, contained_in_texture_id);
+
+//new_contain_in_surface->form
+ //           SDL_PixelFormat
+
+            /*typedef struct SDL_PixelFormat
+             {
+             Uint32 format;
+             SDL_Palette *palette;
+             Uint8 BitsPerPixel;
+             Uint8 BytesPerPixel;
+             Uint8 padding[2];
+             Uint32 Rmask;
+             Uint32 Gmask;
+             Uint32 Bmask;
+             Uint32 Amask;
+             Uint8 Rloss;
+             Uint8 Gloss;
+             Uint8 Bloss;
+             Uint8 Aloss;
+             Uint8 Rshift;
+             Uint8 Gshift;
+             Uint8 Bshift;
+             Uint8 Ashift;
+             int refcount;
+             struct SDL_PixelFormat *next;
+             } SDL_PixelFormat;
+             */
+
+           // SDL_ConvertSurfaceFormat(<#SDL_Surface *src#>, <#Uint32 pixel_format#>, <#Uint32 flags#>)
+
+            // this reads from the sdl surface and puts it into an opengl texture
+            //glTexImage2D(GL_TEXTURE_2D, 0, mode, newSurface->w, newSurface->h, 0, mode,    GL_UNSIGNED_BYTE, newSurface->pixels);
+            glTexImage2D(GL_TEXTURE_2D, 0, mode, widthHeight, widthHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, new_contain_in_surface->pixels);
+
+            //SDL_Log("w:%d h:%d BytesPerPixel:%d textureId:%d ", newSurface->w, newSurface->h, newSurface->format->BytesPerPixel, textureid);
+
+            // these affect how this texture is drawn later on... but mostly teh shader picks how pixly it gets
+            glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);//GL_NEAREST
+            glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+
+//
+//                glGenerateMipmap(GL_TEXTURE_2D);
+//                glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+//                glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            // just experimenting...
+            //    debugGLerror();
+            //    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+            //    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+            //    //glEnable(GL_TEXTURE_2D);
+            //    debugGLerror();
+//                glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)(GL_REPEAT) );
+//                glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)(GL_REPEAT) );
+            //    debugGLerror();
+            //    glGenerateMipmap(GL_TEXTURE_2D);
+            //    debugGLerror();
+
+//            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)( GL_MIRRORED_REPEAT ) );
+//            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)( GL_MIRRORED_REPEAT ) );
+
+            //glGenerateMipmap(GL_TEXTURE_2D);
+
+            SDL_Log("new_contain_in Texture Load Debug --->:");
+            debugGLerror();
+
+            SDL_FreeSurface(new_contain_in_surface); // free temp surface
+
+        }
+
+//        rect.x = 0.0f;
+//        rect.y = 0.0f;
+
 
         //        // centering image in wh space
         //        // we will try to use same calcuation for both < or > or == really
@@ -175,6 +376,17 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
         rect.x += *x;
         rect.y += *y;
 
+
+        // if we have an optional BG color.... for use with cp_bg.png red
+        if( backgroundColor!=nullptr ){
+            rect.w = surface->w;
+            rect.h = surface->h;
+            SDL_FillRect(newSurface, &rect, SDL_MapRGBA(newSurface->format, backgroundColor->r, backgroundColor->g, backgroundColor->b, 255) );
+        }
+
+        rect.w = widthHeight;
+        rect.h = widthHeight;
+
         int didBlit = SDL_BlitSurface(surface,
                                       NULL, // src rect entire surface
                                       newSurface,
@@ -182,7 +394,7 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
         if( didBlit != 0 ){
             SDL_Log("Blit problem");
-            SDL_Log(SDL_GetError());
+            //SDL_Log(SDL_GetError());
             return 0;
         }
 
@@ -204,40 +416,38 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
             // this is an indexed color image not true color
             //https://wiki.libsdl.org/SDL_PixelFormat
 
-
-
-
-
-
             //TODO - try indexed color img!
             selectedColor=newSurface->format->palette->colors[pix];
             printf("Pixel Color-> Red: %d, Green: %d, Blue: %d. Index: %d\n",
                    selectedColor.r, selectedColor.g, selectedColor.b, pix);
         }else{
 
-            /* Get Red component */
-            temp = pix & newSurface->format->Rmask;  /* Isolate red component */
-            temp = temp >> newSurface->format->Rshift; /* Shift it down to 8-bit */
-            temp = temp << newSurface->format->Rloss;  /* Expand to a full 8-bit number */
-            red = (Uint8)temp;
 
-            /* Get Green component */
-            temp = pix & newSurface->format->Gmask;  /* Isolate green component */
-            temp = temp >> newSurface->format->Gshift; /* Shift it down to 8-bit */
-            temp = temp << newSurface->format->Gloss;  /* Expand to a full 8-bit number */
-            green = (Uint8)temp;
+//            /* Get Red component */
+//            temp = pix & newSurface->format->Rmask;  /* Isolate red component */
+//            temp = temp >> newSurface->format->Rshift; /* Shift it down to 8-bit */
+//            temp = temp << newSurface->format->Rloss;  /* Expand to a full 8-bit number */
+//            red = (Uint8)temp;
+//
+//            /* Get Green component */
+//            temp = pix & newSurface->format->Gmask;  /* Isolate green component */
+//            temp = temp >> newSurface->format->Gshift; /* Shift it down to 8-bit */
+//            temp = temp << newSurface->format->Gloss;  /* Expand to a full 8-bit number */
+//            green = (Uint8)temp;
+//
+//            /* Get Blue component */
+//            temp = pix & newSurface->format->Bmask;  /* Isolate blue component */
+//            temp = temp >> newSurface->format->Bshift; /* Shift it down to 8-bit */
+//            temp = temp << newSurface->format->Bloss;  /* Expand to a full 8-bit number */
+//            blue = (Uint8)temp;
+//
+//            /* Get Alpha component */
+//            temp = pix & newSurface->format->Amask;  /* Isolate alpha component */
+//            temp = temp >> newSurface->format->Ashift; /* Shift it down to 8-bit */
+//            temp = temp << newSurface->format->Aloss;  /* Expand to a full 8-bit number */
+//            alpha = (Uint8)temp;
 
-            /* Get Blue component */
-            temp = pix & newSurface->format->Bmask;  /* Isolate blue component */
-            temp = temp >> newSurface->format->Bshift; /* Shift it down to 8-bit */
-            temp = temp << newSurface->format->Bloss;  /* Expand to a full 8-bit number */
-            blue = (Uint8)temp;
-
-            /* Get Alpha component */
-            temp = pix & newSurface->format->Amask;  /* Isolate alpha component */
-            temp = temp >> newSurface->format->Ashift; /* Shift it down to 8-bit */
-            temp = temp << newSurface->format->Aloss;  /* Expand to a full 8-bit number */
-            alpha = (Uint8)temp;
+            SDL_GetRGBA(pix, newSurface->format, &red, &green, &blue, &alpha);
 
             selectedColor.r = red;
             selectedColor.g = green;
@@ -247,7 +457,10 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
         }
 
+
     // end block
+    // tell opengl to use the generated texture name
+    glBindTexture(GL_TEXTURE_2D, textureid);
 
     // this reads from the sdl surface and puts it into an opengl texture
     //glTexImage2D(GL_TEXTURE_2D, 0, mode, newSurface->w, newSurface->h, 0, mode,    GL_UNSIGNED_BYTE, newSurface->pixels);
@@ -255,9 +468,30 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
     //SDL_Log("w:%d h:%d BytesPerPixel:%d textureId:%d ", newSurface->w, newSurface->h, newSurface->format->BytesPerPixel, textureid);
 
+
+    /* TextureWrapMode
+     #define GL_REPEAT                                        0x2901
+     #define GL_CLAMP_TO_EDGE                                 0x812F
+     #define GL_MIRRORED_REPEAT                               0x8370
+     */
+    //    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)( GL_MIRRORED_REPEAT ) );
+    //    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)( GL_MIRRORED_REPEAT ) );
+//    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)( GL_CLAMP_TO_EDGE ) );
+//    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)( GL_CLAMP_TO_EDGE ) );
+
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)( GL_REPEAT ) );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)( GL_REPEAT ) );
+
+
+
     // these affect how this texture is drawn later on... but mostly teh shader picks how pixly it gets
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);//GL_NEAREST
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);//GL_LINEAR GL_NEAREST
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);// GL_NEAREST
+    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);// GL_NEAREST
+
+//    glGenerateMipmap(GL_TEXTURE_2D);
+//    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+//    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
     // just experimenting...
@@ -272,9 +506,8 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
     //    glGenerateMipmap(GL_TEXTURE_2D);
     //    debugGLerror();
 
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)( GL_MIRRORED_REPEAT ) );
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)( GL_MIRRORED_REPEAT ) );
-    
+
+
     //glGenerateMipmap(GL_TEXTURE_2D);
     
     SDL_Log("Texture Load Debug --->:");

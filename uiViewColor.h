@@ -12,13 +12,32 @@
 
 struct uiViewColor{
 
-    uiViewColor(uiObject* parentObj, Float_Rect boundaries){
+    uiViewColor(uiObject* parentObj, Float_Rect boundaries, bool topShadow){
 
         Ux* uxInstance = Ux::Singleton();
 
         uiObjectItself = new uiObject();
         uiObjectItself->setBoundaryRect(&boundaries);
 
+
+        if( topShadow ){
+
+            top_shadow = new uiObject();
+
+            top_shadow->setBoundaryRect( 0.0, -0.05, 1.0, 0.1);
+            top_shadow->hasBackground = true;
+            Ux::setColor(&top_shadow->backgroundColor,0, 0, 0, 128);
+            top_shadow->setRoundedCorners(0.5, 0.5, 0, 0);
+            uiObjectItself->addChild(top_shadow);
+
+            uiObject* top_shadow2 = new uiObject();
+            top_shadow2->setBoundaryRect( 0.0, 0.25, 1.0, 0.5);
+            top_shadow2->hasBackground = true;
+            Ux::setColor(&top_shadow2->backgroundColor,255, 255, 255, 128);
+            top_shadow2->setRoundedCorners(0.5, 0.5, 0, 0);
+            top_shadow->addChild(top_shadow2);
+
+        }
 
         hexValueText = new uiObject();
 
@@ -40,7 +59,7 @@ struct uiViewColor{
         uiObjectItself->addChild(hexValueText);
 
 
-        sprintf(resultText6char, "000000");
+        SDL_snprintf(resultText6char, 7,  "000000");
         uxInstance->printStringToUiObject(hexValueText, resultText6char, DO_NOT_RESIZE_NOW);
 
         // very odd not initializing these...
@@ -55,7 +74,8 @@ struct uiViewColor{
         Ux::setColor(&rgbRedText->backgroundColor, 32, 0, 0, 192);
         uiObjectItself->addChild(rgbRedText);
 
-        sprintf(resultText6char, "  R");
+        //sprintf(resultText6char, "  R");
+        SDL_snprintf(resultText6char, 7,  "  R");
         uxInstance->printStringToUiObject(rgbRedText, resultText6char, DO_NOT_RESIZE_NOW);
 
 
@@ -68,7 +88,8 @@ struct uiViewColor{
         rgbGreenText->hasBackground = true;
         Ux::setColor(&rgbGreenText->backgroundColor, 0, 32, 0, 192);
         uiObjectItself->addChild(rgbGreenText);
-        sprintf(resultText6char, "  G");
+        //sprintf(resultText6char, "  G");
+        SDL_snprintf(resultText6char, 7,  "  G");
         uxInstance->printStringToUiObject(rgbGreenText, resultText6char, DO_NOT_RESIZE_NOW);
 
 
@@ -81,11 +102,16 @@ struct uiViewColor{
         rgbBlueText->hasBackground = true;
         Ux::setColor(&rgbBlueText->backgroundColor, 0, 0, 32, 192);
         uiObjectItself->addChild(rgbBlueText);
-        sprintf(resultText6char, "  B");
+        //sprintf(resultText6char, "  B");
+        SDL_snprintf(resultText6char, 7,  "  B");
         uxInstance->printStringToUiObject(rgbBlueText, resultText6char, DO_NOT_RESIZE_NOW);
 
         parentObj->addChild(uiObjectItself);
+
+        alphaMulitiplier = 1.0;
     }
+
+    uiObject* top_shadow;
 
     uiObject* uiObjectItself; // no real inheritance here, this its the uiViewColor, I would use self->
     uiObject *hexValueText;
@@ -96,6 +122,7 @@ struct uiViewColor{
     char* resultText6char = (char*)SDL_malloc( 6 ); // seems that we should reuse this and not free it
 
     SDL_Color* last_color;
+    float alphaMulitiplier;
 
     void update(SDL_Color* color){
         //char* resultText6char; //leaking memory???
@@ -107,20 +134,28 @@ struct uiViewColor{
         //char* resultText6char = (char*)SDL_malloc( 6 ); // seems that we should reuse this and not free it
 
 
-        sprintf(resultText6char, "%02x%02x%02x", color->r, color->g, color->b);
+        ///
+//sprintf(resultText6char, "%02x%02x%02x", color->r, color->g, color->b);
+
+        SDL_snprintf(resultText6char, 7,  "%02x%02x%02x", color->r, color->g, color->b);
+
         Ux::setColor(&hexValueText->backgroundColor,color->r, color->g, color->b, 255);
         uxInstance->printStringToUiObject(hexValueText, resultText6char, DO_NOT_RESIZE_NOW);
 
-        sprintf(resultText6char, "%3d", color->r);
-        rgbRedText->backgroundColor.a = color->r;
+        //sprintf(resultText6char, "%3d", color->r);
+        SDL_snprintf(resultText6char, 7,  "%3d", color->r);
+
+        rgbRedText->backgroundColor.a = SDL_min(color->r * alphaMulitiplier, 255);
         uxInstance->printStringToUiObject(rgbRedText, resultText6char, DO_NOT_RESIZE_NOW);
 
-        sprintf(resultText6char, "%3d", color->g);
-        rgbGreenText->backgroundColor.a = color->g;
+        //sprintf(resultText6char, "%3d", color->g);
+        SDL_snprintf(resultText6char, 7,  "%3d", color->g);
+        rgbGreenText->backgroundColor.a = SDL_min(color->g * alphaMulitiplier, 255);
         uxInstance->printStringToUiObject(rgbGreenText, resultText6char, DO_NOT_RESIZE_NOW);
 
-        sprintf(resultText6char, "%3d", color->b);
-        rgbBlueText->backgroundColor.a = color->b;
+        //sprintf(resultText6char, "%3d", color->b);
+        SDL_snprintf(resultText6char, 7,  "%3d", color->b);
+        rgbBlueText->backgroundColor.a = SDL_min(color->b * alphaMulitiplier, 255);
         uxInstance->printStringToUiObject(rgbBlueText, resultText6char, DO_NOT_RESIZE_NOW);
 
 
