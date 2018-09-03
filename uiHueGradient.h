@@ -37,7 +37,7 @@ struct uiHueGradient{
             uiObject* rt = new uiObject();
             rt->hasBackground=true;
             Ux::setColor(&rt->backgroundColor, &manyColors[offset]);
-            rt->setInteractionCallback(interactionHueClicked);
+            rt->setInteractionCallback(interactionHueClicked); //setClickInteractionCallback
             rt->setBoundaryRect( counter * (width) , 0.0, width+0.01, 1.0);
             currentContainer->addChild(rt);
             offset+=12;

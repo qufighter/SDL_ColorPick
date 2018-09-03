@@ -34,8 +34,8 @@ public:
 
 	void screenshot(char* filename,int width, int height);
 	//void screenshot(char filename[160],int width, int height);
-	GLuint screenToTexture(int x, int y, int width, int height, GLuint targetTexture);
-	GLuint screenToTexture(int x, int y, int width, int height, GLuint bufferToRead, GLuint targetTexture);
+//    GLuint screenToTexture(int x, int y, int width, int height, GLuint targetTexture);
+//    GLuint screenToTexture(int x, int y, int width, int height, GLuint bufferToRead, GLuint targetTexture);
 
 	void debugDevILerror();
 

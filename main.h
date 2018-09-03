@@ -9,20 +9,56 @@
 #ifndef ___PROJECTNAME____main_h
 #define ___PROJECTNAME____main_h
 
+
 #define GL_GLEXT_PROTOTYPES 1
 #include "SDL.h"
-#include "SDL_opengl.h"
-#include "SDL_image.h"
 
-#if __IPHONEOS__
+
+
+//#elif defined(__MACOSX__) && defined(__LP64__)  /* this is deprecated in 10.12 sdk; favor gcc atomics. */
+
+#if defined(__MACOSX__) || defined(__WIN32__)
+#define COLORPICK_PLATFORM_DESKTOP 1
+#endif
+
+
+#ifdef __IPHONEOS__
+#include "SDL_opengl.h"
 #import <OpenGLES/ES3/gl.h>
 #import <OpenGLES/ES3/glext.h>
+#elif __ANDROID__
+
+#define GL_GLEXT_PROTOTYPES 1
+#define NO_SDL_GLEXT 1
+#include "SDL_opengl.h"  // oks
+
+//#include <GLES/gl.h>
+//#include <GLES/glext.h>
+//#include "EGL/egl.h"
+//#include "EGL/eglext.h"
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+//#include <GLES3/gl3.h>
+//#include <GLES3/gl3ext.h>
+//#include "SDL_opengl.h"
+//#include "SDL_opengles.h"
+
+//#include "SDL_opengles2.h"
+//#include "SDL_opengles2_gl2.h"
+//#include "SDL_opengles2_gl2ext.h"
+
+// this is so dumb...
+#define glGenVertexArrays glGenVertexArraysOES
+#define glDeleteVertexArrays glDeleteVertexArraysOES
+#define glBindVertexArray glBindVertexArrayOES
+
 #else
+#include "SDL_opengl.h"
 #include <OpenGL/gl.h>
 #include <OpenGL/gl3.h>
 #endif
 
-
+#include "SDL_image.h"
 // font rendering constants, ascii.png (continued)
 // THESE ARE CHAR DEFS.... NOT INT OFFSET DEFS
 //#define CHAR_LINEAR_SLOPE 133
@@ -39,6 +75,9 @@
 //#define CHAR_ROUNDED_RIGHT 142
 
 //okay here are the int defs... should be more reliable right?
+#define CHAR_APP_ICON 127
+#define CHAR_BACK_ICON 129
+
 #define CHAR_LINEAR_SLOPE 129
 #define CHAR_ASYMP_SLOPE 130
 #define CHAR_ARR_UP 131
@@ -52,6 +91,9 @@
 #define CHAR_ROUNDED_LEFT 137
 #define CHAR_ROUNDED_RIGHT 138
 
+#define CHAR_SORT_ORDERING 139
+
+// row 2
 #define CHAR_CLOSE_ICON 140
 #define CHAR_CHECKMARK_ICON 141
 #define CHAR_CANCEL_ICON 142
@@ -65,8 +107,9 @@
 #define CHAR_SAVE_ICON 147
 #define CHAR_GEAR_ICON 148
 
-#define CHAR_PLUSS 149
+#define CHAR_ZOOM_PLUSS 149
 #define CHAR_LIGHTENING_BOLT 150
+#define CHAR_OPEN_FILES 151
 
 // GLM include files
 #include "glm/glm.hpp"

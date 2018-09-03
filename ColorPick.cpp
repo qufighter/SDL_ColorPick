@@ -55,14 +55,46 @@ void OpenGLContext::destroyContext() {
 //        downkeys[k] = 1;
 //    }
 //}
-//void OpenGLContext::keyUp(int k){
+void OpenGLContext::keyUp(SDL_Keycode k){
 //    if( k > 0 && k < totalKeys ){
 //        kkeys[k] = 0;
 //        downkeys[k] = 0;
 //    }
-//}
+
+    SDL_Log("keyup %d", k);
+
+    switch(k){
+        case SDLK_UP:
+            colorPickState->mmovey=1;
+            break;
+        case SDLK_DOWN:
+            colorPickState->mmovey=-1;
+            break;
+        case SDLK_RIGHT:
+            colorPickState->mmovex=-1;
+            break;
+        case SDLK_LEFT:
+            colorPickState->mmovex=1;
+            break;
+        case SDLK_RETURN:
+        case SDLK_KP_ENTER:
+            generalUx->addCurrentToPickHistory();
+            break;
+    }
+
+    has_velocity=false;
+    renderShouldUpdate=true;
+
+}
 
 void OpenGLContext::chooseFile(void) {
+
+    //    OpenGLContext* ogg=OpenGLContext::Singleton();
+    //    ogg->loadNextTestImage();
+
+    loadNextTestImage(); // TODO maths remove this please
+
+//  this is where we should proivide a callback...... circular import references exist
     beginImageSelector();
 }
 
@@ -83,6 +115,9 @@ void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
     if( lastHue!=nullptr ) SDL_free(lastHue);
     lastHue = nullptr;
     SDL_Log("an image was selected !!!!");
+
+    if( myCoolSurface == NULL ) return;
+
     // free previous surface
     position_x = 0;
     position_y = 0;
@@ -97,9 +132,12 @@ void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
     // tada: also shrink image to be within some other texture.....
     //  then we can maintain magic when zoomed out...
 
+    // TODO store a duplicate of the last surface - so when we move to hue picker we can move back easily???
+
     updateColorPreview();
 
     renderShouldUpdate = true;
+    SDL_Log("really done loading new surface.... right?");
 }
 
 void OpenGLContext:: loadNextTestImage(){
@@ -107,13 +145,20 @@ void OpenGLContext:: loadNextTestImage(){
     if( lastHue!=nullptr ) SDL_free(lastHue);
     lastHue = nullptr;
     SDL_Log("an image was selected !!!!");
+
+    SDL_Surface *myCoolSurface = textures->LoadSurface(*testTexturesBuiltin->next());
+    if( myCoolSurface == NULL ) return;
+
     // free previous surface
     position_x = 0;
     position_y = 0;
     SDL_FreeSurface(fullPickImgSurface);
 
     // at least for ios we shold standardize this format now using textures->ConvertSurface
-    fullPickImgSurface = textures->ConvertSurface(textures->LoadSurface(*testTexturesBuiltin->next()));
+    fullPickImgSurface = textures->ConvertSurface(myCoolSurface);
+
+    if( fullPickImgSurface == NULL ) return;
+
     loadedImageMaxSize = SDL_max(fullPickImgSurface->clip_rect.w, fullPickImgSurface->clip_rect.h);
 
     textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
@@ -121,9 +166,13 @@ void OpenGLContext:: loadNextTestImage(){
     // tada: also shrink image to be within some other texture.....
     //  then we can maintain magic when zoomed out... (done?! textureId_default)
 
+    // TODO store a duplicate of the last surface - so when we move to hue picker we can move back easily???
+
     updateColorPreview();
 
     renderShouldUpdate = true;
+
+    SDL_Log("really done loading new surface.... right?");
 }
 
 void OpenGLContext:: pickerForHue(SDL_Color* color){
@@ -131,6 +180,8 @@ void OpenGLContext:: pickerForHue(SDL_Color* color){
     lastHue = new SDL_Color();
     Ux::setColor(lastHue, color);
     SDL_Log("we wish to get a picker for a color hue !!!!"); // TODO: second arg for selecting color???? position_y ??position_x
+
+    if( colorPickerFGSurfaceGradient == NULL ) return;
 
 //    position_x = 0;
 //    position_y = 0;
@@ -147,36 +198,25 @@ void OpenGLContext:: pickerForHue(SDL_Color* color){
     updateColorPreview();
 
     renderShouldUpdate = true;
+
+    SDL_Log("really done loading new surface.... right?");
+
 }
 
 void OpenGLContext::createUI(void) {
 
     generalUx = Ux::Singleton(); // new Ux();
     rootUiObject = generalUx->create(); // if all create function are 1off... no ret needed?
-    SDL_Log("test rect %d", rootUiObject->boundryRect.x);
 
-
-    //glm::vec4 myvec4 = glm::vec4(0.0f, 0.1f, -2.0f, 0.3f);
-
-
+    // we can now set this refernce from UX -> create
     generalUx->zoomSlider->setAnimationPercCallback(&OpenGLContext::setFishScalePerentage);
-
-
-//generalUx->movementArrows->uiObjectItself->setAnimationPercCallback(&OpenGLContext::setFishScalePerentage);
-
-//    uiObject childObj2 = uiObject();
-//    childObj2.hasForeground = true;
-//    childObj.addChild(childObj2);
-
-    // after ANY ui changes
-    //generalUx->updateRenderPositions();  /// but no longer needed here
 
 }
 
 void OpenGLContext::setupScene(void) {
 
     createUI();
-    setFishScale(0.0);
+    setFishScale(0.0, 1.0);
 
 
     textures = new Textures();
@@ -184,10 +224,14 @@ void OpenGLContext::setupScene(void) {
     // we may need to dynamify our shader paths too in case its in the bundle [[NSBundle mainBundle] pathForResource:@"Shader" ofType:@"vsh"];
 
     loadShaders();
+    debugGLerror("shaders completely loaded");
 
 
 
     createSquare();
+
+    debugGLerror("createSquare completely done");
+
 
     // todo - store texture paths and possibly resolve using [NSBundle mainBundle] pathForResource:@"256" ofType:@"png"]
 
@@ -206,10 +250,11 @@ void OpenGLContext::setupScene(void) {
     // todo: wrong number of items in list -> crash simulator
     Ux::uiList<const char*, Uint8>* textureList = new Ux::uiList<const char*, Uint8>(128);
     textureList->add("textures/4.png");
-    textureList->add("textures/simimage.png");
-
+   // textureList->add("textures/simimage_NOEXIST.png");
+    textureList->add("textures/ascii.png");
+textureList->add("textures/simimage.png");
  //   textureList->add("textures/p04_shape1.bmp");
-    textureList->add("textures/p10_shape1.bmp");
+ //   textureList->add("textures/p10_shape1.bmp");
     textureList->add("textures/p10_shape1_rotated.png");
 //    textureList->add("textures/p16_shape1.bmp");
 //    textureList->add("textures/p04_shape1.bmp");
@@ -324,14 +369,16 @@ void OpenGLContext::setupScene(void) {
     textureId_default = textures->GenerateTexture();
     textureId_pickImage = textures->GenerateTexture();
     textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
-    
+
+
+
     updateColorPreview();
 
-    SDL_Color c;
-    c.r=255;
-    c.g=255;
-    c.b=0;
-    pickerForHue(&c);
+//    SDL_Color c;
+//    c.r=255;
+//    c.g=255;
+//    c.b=0;
+//    pickerForHue(&c);
 
     textureId_fonts = textures->LoadTexture("textures/ascii.png");
 
@@ -350,7 +397,13 @@ void OpenGLContext::setupScene(void) {
 //    modelMatrix = glm::translate(modelMatrix, treepos + glm::vec3(0.0f, 0.0f, (float)i*bspace-bpos));
 //    modelMatrix = glm::scale(modelMatrix, treeScale * pineTreeBranchScales[i]);
 
+    debugGLerror("setupScene nearly done");
+
+
     glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
+
+    debugGLerror("setupScene completely done");
+
 
 }
 
@@ -358,11 +411,11 @@ void OpenGLContext::loadShaders(void){
     GLuint _glVaoID;// shaders wont validate on osx unless we bind a VAO: Validation Failed: No vertex array object bound.
     glGenVertexArrays(1, &_glVaoID );	glBindVertexArray( _glVaoID );
 
-#ifdef COLORPICK_PLATFORM_DESKTOP
-    shader_lit_detail = new Shader("shaders/Shader.vsh", "shaders/Shader.fsh");
-#else
+//#ifdef COLORPICK_PLATFORM_DESKTOP
+//    shader_lit_detail = new Shader("shaders/Shader.vsh", "shaders/Shader.fsh");
+//#else
     shader_lit_detail = new Shader("shaders/Shader.vsh", "shaders/ShaderGLES.fsh");
-#endif
+//#endif
 
     shader_ui_shader_default = new Shader("shaders/uiShader.vsh", "shaders/uiShader.fsh");
 
@@ -387,16 +440,25 @@ void OpenGLContext::reshapeWindow(int w, int h) {
 
     //widthHeightRatio = (windowWidth *1.0f) / windowHeight;
 
+
     glViewport(0, 0, windowWidth, windowHeight); // Set the viewport size to fill the window
 
 
     generalUx->updateStageDimension(windowWidth, windowHeight);
+
+    renderShouldUpdate = true;
+
+    //SDL_GL_MakeCurrent(sdlWindow, gl);
 }
 
 
-void  OpenGLContext::setFishScale(float modifierAmt){
+void  OpenGLContext::setFishScale(float modifierAmt, float scaler){
     // SDL_Log("%f", modifierAmt);
-    modifierAmt *= 40.0f;
+    modifierAmt *= scaler;
+
+    if( modifierAmt < -0.5 ){
+        modifierAmt=-0.5;
+    }
     //if( fabs(modifierAmt) < 0.0001) return;
     fishEyeScale *= 1.0f + modifierAmt;
     if( fishEyeScale > MAX_FISHEYE_ZOOM ){
@@ -465,6 +527,9 @@ float velocityMin = 0.0000001f;
 
 void OpenGLContext::renderScene(void) {
 
+    debugGLerror("renderScene begin");
+
+
     if( has_velocity ){
         colorPickState->mmovex = velocity_x;
         colorPickState->mmovey = velocity_y;
@@ -508,6 +573,7 @@ void OpenGLContext::renderScene(void) {
 
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClear(GL_COLOR_BUFFER_BIT);
+    debugGLerror("renderScene glClear");
 
     uniformLocations = shader_lit_detail->bind(); // Bind our shader
     cur_shader_id = shader_lit_detail->id();
@@ -555,6 +621,9 @@ void OpenGLContext::renderScene(void) {
     glUniform1i(uniformLocations->textureSampler2, 1);
     //glUniform1i(uniformLocations->textureSampler3, 3);
 
+    debugGLerror("renderScene glUniform done");
+
+
     glActiveTexture( GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_2D, textureId_pickImage);
 
@@ -565,24 +634,46 @@ void OpenGLContext::renderScene(void) {
     glBindTexture(GL_TEXTURE_2D,  textureId_fonts); // TODO -  well its bound now, wh y not leave this in the main loop for no reason?
 
 
+    debugGLerror("renderScene textuers bound");
+
+
     glDisable(GL_BLEND);
-    glBindVertexArray(rect_vaoID[0]); // Bind our Vertex Array Object
+
+    debugGLerror("renderScene glDisable(GL_BLEND");
+
+
+
+    glBindVertexArray(rect_vaoID[0]); // Bind our Vertex Array Object GL_INVALID_OPERATION (except android?)
+    debugGLerror("renderScene glBindVertexArray(rect_vaoID");
+//
+//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rect_triangleStripIndexBuffer); // its already bound ?
+//        debugGLerror("renderScene glBindBuffer(GL_ELEMENT_ARRAY_BUFFER");
+//
+
+
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
+    debugGLerror("renderScene our renderinng done");
 
 
     /* NEXT UP: RENDER UI */
     uniformLocations = shader_ui_shader_default->bind(); // Bind our shader
 
 
+    debugGLerror("renderScene ui shader bound");
 
 
     glUniform1i(uniformLocations->textureSampler, 0);
     //glUniform1i(uniformLocations->textureSampler2, 1);
    // glUniform1i(uniformLocations->textureSampler3, 1);
 
+    debugGLerror("renderScene ui texture uniform set");
+
+
     glActiveTexture( GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_2D,  textureId_fonts); // well its bound now, wh y not leave this in the main loop for no reason?
+
+    debugGLerror("renderScene ui textureId_fonts bound");
 
 
     // // Send our global light to the shader
@@ -590,11 +681,14 @@ void OpenGLContext::renderScene(void) {
     glEnable(GL_BLEND);  //this enables alpha blending, important for faux shader
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    debugGLerror("renderScene glEnable GL_BLEND");
 
 
     //glDrawArrays(GL_TRIANGLES, 0, 6);
 
+    debugGLerror("generalUx->renderObject begin");
     generalUx->renderObject(uniformLocations); // renders all obj
+    debugGLerror("generalUx->renderObject ending");
 
 }
 
@@ -618,8 +712,11 @@ void OpenGLContext::createSquare(void) {
     squareTriangleIndicies[3]=2;
 
     glGenBuffers(1, &rect_triangleStripIndexBuffer); // when using glDrawElements on a "core" context you can't store the indicies in ram
+    debugGLerror("new square - glGenBuffers");
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rect_triangleStripIndexBuffer);
+    debugGLerror("new square - glBindBuffer");
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(squareTriangleIndicies), squareTriangleIndicies, GL_STATIC_DRAW);
+    debugGLerror("new square - glBufferData");
 
     int n=-1;
     float sq_size = 0.725;

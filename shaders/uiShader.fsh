@@ -34,8 +34,8 @@ uniform vec4 ui_corner_radius;
 //uniform vec4 ui_corner_radius_x_tl_tr_br_bl;
 //uniform vec4 ui_corner_radius_y_tl_tr_br_bl;
 
-float fuzz = 0.025;
-float hfuzz =(fuzz * 0.5);
+const float fuzz = 0.025;
+const float hfuzz =(fuzz * 0.5);
 
 /*
 float dist(vec2 a, vec2 b){

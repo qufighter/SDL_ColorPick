@@ -151,7 +151,8 @@ static Ux* Singleton();
     static void interactionNoOp(uiObject *interactionObj, uiInteraction *delta);
     static void interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta);
     static void interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction *delta);
-    static void interactionTouchRelease(uiObject *interactionObj, uiInteraction *delta);
+    static void interactionFileBrowserTime(uiObject *interactionObj, uiInteraction *delta);
+    static void interactionAddHistory(uiObject *interactionObj, uiInteraction *delta);
     static void clickPalleteColor(uiObject *interactionObj, uiInteraction *delta);
     static void clickHistoryColor(uiObject *interactionObj, uiInteraction *delta);
     static void clickDeletePalleteColor(uiObject *interactionObj, uiInteraction *delta);
@@ -218,6 +219,10 @@ static Ux* Singleton();
 
         uiObject *bottomBar;
         uiObject *pickSourceBtn;
+        uiObject *addHistoryBtn;
+
+        uiObject *zoomSliderHolder;
+        uiObject *zoomSliderBg;
         uiObject *zoomSlider;
 
         uiViewColor *curerntColorPreview;

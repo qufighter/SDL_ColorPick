@@ -42,7 +42,7 @@ struct uiScrollController{
         //uxInstance->printCharToUiObject(scrollUp, '^', true);
         uxInstance->printCharToUiObject(scrollUp, CHAR_ARR_UP, true);
         scrollUp->setBoundaryRect( 0.0, 0.0, 1.0, SCROLLY_WIDTH);
-        scrollUp->setInteractionCallback(&this->interactionScrollUp);
+        scrollUp->setClickInteractionCallback(&this->interactionScrollUp);
         //scrollUp->hasBackground = true;
         //Ux::setColor(&scrollUp->backgroundColor, 255, 255, 255, 50);
         Ux::setColor(&scrollUp->foregroundColor, 255, 255, 255, 224);
@@ -51,7 +51,7 @@ struct uiScrollController{
         //uxInstance->printCharToUiObject(scrollDown, 'v', true);
         uxInstance->printCharToUiObject(scrollDown, CHAR_ARR_DN, true);
         scrollDown->setBoundaryRect( 0.0, 1.0 - SCROLLY_WIDTH, 1.0, SCROLLY_WIDTH);
-        scrollDown->setInteractionCallback(&this->interactionScrollDown);
+        scrollDown->setClickInteractionCallback(&this->interactionScrollDown);
         //scrollDown->hasBackground = true;
         //Ux::setColor(&scrollDown->backgroundColor, 255, 255, 255, 50);
         Ux::setColor(&scrollDown->foregroundColor, 255, 255, 255, 224);
@@ -492,7 +492,10 @@ struct uiScrollController{
             uiObjectItself->doesNotCollide = false;
         }
 
-        animConstrainToScrollableRegion(true);  // also... calls updateTotalScrollRows()
+        // if we are not animating....
+        if( !scrollChildContainer->isAnimating()  ){
+            animConstrainToScrollableRegion(true);  // also... calls updateTotalScrollRows()
+        }
     }
 
 
@@ -525,7 +528,7 @@ struct uiScrollController{
 
 
                     if( tileClicked != nullptr ){
-                        scrollTile->setInteractionCallback(tileClicked); // needs more
+                        scrollTile->setInteractionCallback(tileClicked); // needs more // cannot be setClickInteractionCallback though...
                         scrollTile->setInteraction(tileDragged);
 
                         scrollTile->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonHorozontalMovement);
@@ -540,7 +543,7 @@ struct uiScrollController{
 //                    uxInstance->printCharToUiObject(scrollTile, 'Z'-tileCounter, true);
 
                     //scrollTile->setRoundedCorners(0.1, 0.2, 0.3, 0.4);
-                    scrollTile->setRoundedCorners(0.1, 0.1, 0.1, 0.1);
+                   // scrollTile->setRoundedCorners(0.1, 0.1, 0.1, 0.1);
 
                     //scrollTile->setRoundedCorners(0.0, 0.2, 0.0, 0.0);
                     //scrollTile->setRoundedCorners(0.0, 0.0, 0.2, 0.0);

@@ -33,7 +33,7 @@ struct uiYesNoChoice{
         Ux::setColor(&yes->backgroundColor, 32, 0, 0, 128);
         Ux::setColor(&yes->foregroundColor, 255, 0, 0, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         uxInstance->printCharToUiObject(yes, CHAR_CHECKMARK_ICON, DO_NOT_RESIZE_NOW);
-        yes->setInteractionCallback(defaultOkFn);
+        yes->setClickInteractionCallback(defaultOkFn);
         yes->setRoundedCorners(0.5);
 
         no->hasBackground=true;
@@ -42,7 +42,7 @@ struct uiYesNoChoice{
         Ux::setColor(&no->foregroundColor, 255, 255, 255, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         uxInstance->printCharToUiObject(no, CHAR_CANCEL_ICON, DO_NOT_RESIZE_NOW);
         //no->rotate(180.0f);
-        no->setInteractionCallback(defaultCancelFn);
+        no->setClickInteractionCallback(defaultCancelFn);
         no->setRoundedCorners(0.5);
 
 
@@ -83,7 +83,7 @@ struct uiYesNoChoice{
         noClickedFn = p_noClickedFn;
         yesClickedFn = p_yesClickedFn;
 
-        //yes->setInteractionCallback(p_yesClickedFn); // probably changing this...
+        //yes->setClickInteractionCallback(p_yesClickedFn); // probably changing this...
 
         uiObjectItself->setAnimation( uxInstance->uxAnimations->slideDownFullHeight(uiObjectItself) );// returns uiAminChain*
 

@@ -42,7 +42,7 @@ struct uiNavArrows{
         //Ux::setColor(&up->backgroundColor, 32, 0, 0, 128);
         Ux::setColor(&up->foregroundColor, 255, 255, 255, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         uxInstance->printCharToUiObject(up, CHAR_ARR_RIGHT, DO_NOT_RESIZE_NOW);
-        up->setInteractionCallback(interactionDirectionalArrowClicked);
+        up->setClickInteractionCallback(interactionDirectionalArrowClicked);
         up->forceDelta = new uiInteraction();
         up->forceDelta->begin(0, -1.0);
         up->squarifyKeepHz();
@@ -54,7 +54,7 @@ struct uiNavArrows{
         Ux::setColor(&dn->foregroundColor, 255, 255, 255, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         uxInstance->printCharToUiObject(dn, CHAR_ARR_LEFT, DO_NOT_RESIZE_NOW);
         //dn->rotate(180.0f);
-        dn->setInteractionCallback(interactionDirectionalArrowClicked);
+        dn->setClickInteractionCallback(interactionDirectionalArrowClicked);
         dn->forceDelta = new uiInteraction();
         dn->forceDelta->begin(0, 1.0);
         dn->squarifyKeepHz();
@@ -66,7 +66,7 @@ struct uiNavArrows{
         Ux::setColor(&lf->foregroundColor, 255, 255, 255, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         uxInstance->printCharToUiObject(lf, CHAR_ARR_LEFT, DO_NOT_RESIZE_NOW);
         //lf->rotate(90.0f);
-        lf->setInteractionCallback(interactionDirectionalArrowClicked);
+        lf->setClickInteractionCallback(interactionDirectionalArrowClicked);
         lf->forceDelta = new uiInteraction();
         lf->forceDelta->begin(1.0, 0.0);
         lf->squarifyKeepHz();
@@ -78,7 +78,7 @@ struct uiNavArrows{
         Ux::setColor(&rt->foregroundColor, 255, 255, 255, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         uxInstance->printCharToUiObject(rt, CHAR_ARR_RIGHT, DO_NOT_RESIZE_NOW);
         //rt->rotate(-90.0f);
-        rt->setInteractionCallback(interactionDirectionalArrowClicked);
+        rt->setClickInteractionCallback(interactionDirectionalArrowClicked);
         rt->forceDelta = new uiInteraction();
         rt->forceDelta->begin(-1.0, 0.0);
         rt->squarifyKeepHz();

@@ -587,7 +587,6 @@ struct UxAnim
         myAnimChain->addAnim((new uiAnimation(uiObject))->moveTo(x, y)->setAnimationCallback(pAnimUpdateFn)->setGetBoundsFn(pGetBoundsFn) );
         pushAnimChain(myAnimChain);
         return myAnimChain;
-        
     }
 
     uiAminChain* bounce(Ux::uiObject *uiObject){

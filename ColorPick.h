@@ -26,7 +26,12 @@
 //
 //#include "ux-anim.h"
 
-#include "FileChooser.h" // platform specific include!  this is for ios
+#if __ANDROID__
+#include "Platform/Android/FileChooser.h" // platform specific include!  this is for ios (and osx...)
+#else
+#include "FileChooser.h" // platform specific include!  this is for ios (and osx...)
+#endif
+
 
 
 #define MIN_FISHEYE_ZOOM 0.1f
@@ -85,7 +90,7 @@ public:
     SDL_Color* lastHue;
 
 //    void keyDown(int key);
-//    void keyUp(int key);
+    void keyUp(SDL_Keycode key);
 //    int totalKeys = 1073742052;
 //    bool downkeys[1073742052]; // SDL tends to fire the keydown event more than once...
 //    bool kkeys[1073742052];	// use this to keep track of keys...hopefully keyboard doesn't have more than this! (it does!)
@@ -116,7 +121,7 @@ public:
     float fishEyeScalePct = fishEyeScale / MAX_FISHEYE_ZOOM;
     // do not set directly....
     
-    void setFishScale(float modifierAmt);
+    void setFishScale(float modifierAmt, float scaler);
     static void setFishScalePerentage(Ux::uiObject *interactionObj, float percent); // anAnimationPercentCallback
 
     void triggerVelocity(float x, float y);

@@ -111,15 +111,39 @@ Uint32 getpixel(SDL_Surface *surface, int x, int y)
 
 SDL_Surface* Textures::ConvertSurface(SDL_Surface *origSurface) {
 
+    if( origSurface == NULL ) return origSurface;
 
-//        Uint32 curFormat = SDL_MasksToPixelFormatEnum(origSurface->format->BitsPerPixel,
-//                                                                  origSurface->format->Rmask,
-//                                                                  origSurface->format->Gmask,
-//                                                                  origSurface->format->Bmask,
-//                                                                  origSurface->format->Amask);
-//
-//        SDL_Log("images pixel format name: %s", SDL_GetPixelFormatName(curFormat));
+    //        Uint32 curFormat = SDL_MasksToPixelFormatEnum(origSurface->format->BitsPerPixel,
+    //                                                                  origSurface->format->Rmask,
+    //                                                                  origSurface->format->Gmask,
+    //                                                                  origSurface->format->Bmask,
+    //                                                                  origSurface->format->Amask);
+    //
+    //        SDL_Log("images pixel format name: %s", SDL_GetPixelFormatName(curFormat));
     SDL_Log("images pixel format name: %s", SDL_GetPixelFormatName(origSurface->format->format));
+
+
+    SDL_Log("MASKS for image as follows %i %i %i %i",
+            origSurface->format->Rmask == 0x000000ff,
+            origSurface->format->Gmask == 0x000000ff,
+            origSurface->format->Bmask == 0x000000ff,
+            origSurface->format->Amask == 0x000000ff
+            );
+
+    if (origSurface->format->BytesPerPixel == 3){
+        // if we are android we really need to force 4bpp..
+
+        SDL_Surface *surface;
+        if (origSurface->format->Rmask == 0x000000ff){
+            surface = SDL_ConvertSurfaceFormat(origSurface, SDL_PIXELFORMAT_ABGR8888, 0); // android likes BGR
+        }else{
+            surface = SDL_ConvertSurfaceFormat(origSurface, SDL_PIXELFORMAT_ARGB8888, 0);
+        }
+        SDL_FreeSurface(origSurface);
+        return surface;
+    }
+
+
 
     return origSurface;
 //
@@ -154,21 +178,51 @@ SDL_Surface* Textures::ConvertSurface(SDL_Surface *origSurface) {
 }
 
 
-GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthHeight, int *x, int *y, GLuint& contained_in_texture_id, GLuint& textureid, SDL_Color* backgroundColor){
-    int mode;
 
-    //SDL_Surface *surface;
+SDL_bool ModeForSurface(SDL_Surface *surface, GLint* internalFormat, GLenum* format){
+    *format = GL_BGRA;
 
-    // work out what format to tell glTexImage2D to use... // Textures::ConvertSurface was called on this right?
-    if (surface->format->BytesPerPixel == 3  /*surface->format->format == SDL_PIXELFORMAT_RGB888*/ ) { // RGB 24bit
-        mode = GL_RGB;
-    } else if (surface->format->BytesPerPixel == 4 /*surface->format->format == SDL_PIXELFORMAT_ARGB8888 */) { // RGBA 32bit
-        mode = GL_RGBA;
+    SDL_Log("MASKS for image as follows %i %i %i %i",
+            surface->format->Rmask == 0x000000ff,
+            surface->format->Gmask == 0x000000ff,
+            surface->format->Bmask == 0x000000ff,
+            surface->format->Amask == 0x000000ff
+            );
+
+    if (surface->format->BytesPerPixel == 3  /*surface->format->format == SDL_PIXELFORMAT_RGB888 (not necessarily RGB order)*/ ) { // RGB 24bit
+        *internalFormat = GL_RGB; // always keep alpah
+
+        if (surface->format->Rmask == 0x000000ff){
+            *format = GL_RGB;
+        }
+    } else if (surface->format->BytesPerPixel == 4 /*surface->format->format == SDL_PIXELFORMAT_ARGB8888 (not necessarily ARGB order) */) { // RGBA 32bit
+        *internalFormat = GL_RGBA;
+
+        if (surface->format->Rmask == 0x000000ff){
+            *format = GL_RGBA;
+        }
     } else {
         SDL_Log("Possible ERROR or otherwise %d BytesPerPixel not supported", surface->format->BytesPerPixel);
         //SDL_FreeSurface(surface);
-        return 0;
+        return SDL_FALSE;
     }
+
+    return SDL_TRUE;
+}
+
+
+GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthHeight, int *x, int *y, GLuint& contained_in_texture_id, GLuint& textureid, SDL_Color* backgroundColor){
+    GLint mode;
+    GLenum surfaceFmt;
+
+
+    debugGLerror("LoadTextureSizedFromSdlSurface start - pre existing error");
+
+
+    //SDL_Surface *surface;
+
+    ModeForSurface(surface, &mode, &surfaceFmt);
+
 
     //    *textw=surface->w;
     //    *texth=surface->h;
@@ -225,6 +279,8 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
 
         if( contained_in_texture_id > 0 ){
+            SDL_Log("We are creating the contain in surface (yes even on android)");
+
             // also second surface to process... todo move to helper function???
             // we will default to strecth
             SDL_Surface* new_contain_in_surface = SDL_CreateRGBSurface(0, widthHeight, widthHeight, surface->format->BitsPerPixel,
@@ -245,6 +301,7 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
             rect.w = widthHeight;//*2;
             rect.h = widthHeight;//*2;
 
+            //SDL_Log("OUR SCALED BLIT RECT %i %i %i %i",rect.x,rect.y,rect.w,rect.h);
 
             // if we have an optional BG color.... for use with cp_bg.png red
             if( backgroundColor!=nullptr ){
@@ -280,7 +337,10 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
 
             //rect.h += *y * ysc;
-            
+
+            //SDL_Log("OUR SCALED BLIT RECT %i %i %i %i",rect.x,rect.y,rect.w,rect.h);
+
+
             //int didBlit = SDL_BlitSurface(surface,NULL/* src rect entire surface*/,new_contain_in_surface,&rect);
             //int didBlit = SDL_SoftStretch(surface,NULL/* src rect entire surface*/,new_contain_in_surface,&rect);
             int didBlit = SDL_BlitScaled(surface,NULL/* NULL src rect entire surface*/,new_contain_in_surface,&rect);
@@ -288,7 +348,7 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
             if( didBlit != 0 ){
                 SDL_Log("Blit contain in problem");
-                //SDL_Log(SDL_GetError());
+                SDL_Log("%s", SDL_GetError());
                 //return 0;
             }
 
@@ -327,7 +387,7 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
             // this reads from the sdl surface and puts it into an opengl texture
             //glTexImage2D(GL_TEXTURE_2D, 0, mode, newSurface->w, newSurface->h, 0, mode,    GL_UNSIGNED_BYTE, newSurface->pixels);
-            glTexImage2D(GL_TEXTURE_2D, 0, mode, widthHeight, widthHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, new_contain_in_surface->pixels);
+            glTexImage2D(GL_TEXTURE_2D, 0, mode, widthHeight, widthHeight, 0, surfaceFmt, GL_UNSIGNED_BYTE, new_contain_in_surface->pixels);
 
             //SDL_Log("w:%d h:%d BytesPerPixel:%d textureId:%d ", newSurface->w, newSurface->h, newSurface->format->BytesPerPixel, textureid);
 
@@ -357,8 +417,7 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
             //glGenerateMipmap(GL_TEXTURE_2D);
 
-            SDL_Log("new_contain_in Texture Load Debug --->:");
-            debugGLerror();
+            debugGLerror("new_contain_in Texture Load Debug --->:");
 
             SDL_FreeSurface(new_contain_in_surface); // free temp surface
 
@@ -394,13 +453,13 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
         if( didBlit != 0 ){
             SDL_Log("Blit problem");
-            //SDL_Log(SDL_GetError());
+            //SDL_Log("%s", SDL_GetError());
             return 0;
         }
 
 
         // getting pixels code should move from here
-        Uint32 temp;
+        //Uint32 temp;
         Uint8 red, green, blue, alpha;
 
         bool mustLock = SDL_MUSTLOCK( newSurface );
@@ -464,7 +523,7 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
     // this reads from the sdl surface and puts it into an opengl texture
     //glTexImage2D(GL_TEXTURE_2D, 0, mode, newSurface->w, newSurface->h, 0, mode,    GL_UNSIGNED_BYTE, newSurface->pixels);
-    glTexImage2D(GL_TEXTURE_2D, 0, mode, newSurface->w, newSurface->h, 0, GL_BGRA, GL_UNSIGNED_BYTE, newSurface->pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, mode, newSurface->w, newSurface->h, 0, surfaceFmt, GL_UNSIGNED_BYTE, newSurface->pixels);
 
     //SDL_Log("w:%d h:%d BytesPerPixel:%d textureId:%d ", newSurface->w, newSurface->h, newSurface->format->BytesPerPixel, textureid);
 
@@ -509,44 +568,100 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
 
     //glGenerateMipmap(GL_TEXTURE_2D);
-    
-    SDL_Log("Texture Load Debug --->:");
-    debugGLerror();
+
+    debugGLerror("Texture Load Debug --->:");
 
     SDL_FreeSurface(newSurface); // free temp surface
 
     return textureid;
 }
 
-// defunct ??
+///* Determine the corresponding GLES texture format params */
+//switch (texture->format)
+//{
+//    case SDL_PIXELFORMAT_ARGB8888:
+//    case SDL_PIXELFORMAT_ABGR8888:
+//    case SDL_PIXELFORMAT_RGB888:
+//    case SDL_PIXELFORMAT_BGR888:
+//        format = GL_RGBA;
+//        type = GL_UNSIGNED_BYTE;
+//        break;
+//    case SDL_PIXELFORMAT_IYUV:
+//    case SDL_PIXELFORMAT_YV12:
+//    case SDL_PIXELFORMAT_NV12:
+//    case SDL_PIXELFORMAT_NV21:
+//        format = GL_LUMINANCE;
+//        type = GL_UNSIGNED_BYTE;
+//        break;
+//#ifdef GL_TEXTURE_EXTERNAL_OES
+//    case SDL_PIXELFORMAT_EXTERNAL_OES:
+//        format = GL_NONE;
+//        type = GL_NONE;
+//        break;
+//#endif
+//    default:
+//        return SDL_SetError("Texture format not supported");
+//}
+
+//SDL_FORCE_INLINE SDL_bool
+//convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
+//               GLint* internalFormat, GLenum* format, GLenum* type)
+//{
+//    switch (pixel_format) {
+//        case SDL_PIXELFORMAT_ARGB8888:
+//            *internalFormat = GL_RGBA8;
+//            *format = GL_BGRA;
+//            *type = GL_UNSIGNED_INT_8_8_8_8_REV;
+//            break;
+//        case SDL_PIXELFORMAT_YV12:
+//        case SDL_PIXELFORMAT_IYUV:
+//        case SDL_PIXELFORMAT_NV12:
+//        case SDL_PIXELFORMAT_NV21:
+//            *internalFormat = GL_LUMINANCE;
+//            *format = GL_LUMINANCE;
+//            *type = GL_UNSIGNED_BYTE;
+//            break;
+//#ifdef __MACOSX__
+//        case SDL_PIXELFORMAT_UYVY:
+//            *internalFormat = GL_RGB8;
+//            *format = GL_YCBCR_422_APPLE;
+//            *type = GL_UNSIGNED_SHORT_8_8_APPLE;
+//            break;
+//#endif
+//        default:
+//            return SDL_FALSE;
+//    }
+//    return SDL_TRUE;
+//}
+
+
+// defunct ?? (used for ascii)
 GLuint Textures::LoadTextureFromSdlSurface(SDL_Surface *surface, GLuint& textureid){
-    int mode;
+    GLint mode;
+    GLenum surfaceFmt = GL_BGRA;
 
-    // work out what format to tell glTexImage2D to use...
-    if (surface->format->BytesPerPixel == 3) { // RGB 24bit
+    debugGLerror("LoadTextureFromSdlSurface start - pre existing error");
 
-        mode = GL_RGB;
+    SDL_Log("LoadTextureFromSdlSurface images pixel format name: %s", SDL_GetPixelFormatName(surface->format->format));
 
-    } else if (surface->format->BytesPerPixel == 4) { // RGBA 32bit
 
-        mode = GL_RGBA;
+    ModeForSurface(surface, &mode, &surfaceFmt);
 
-    } else {
-        SDL_Log("Possible ERROR or otherwise %d BytesPerPixel not supported", surface->format->BytesPerPixel);
-        SDL_FreeSurface(surface);
-        return 0;
-    }
 
-    //    *textw=surface->w;
-    //    *texth=surface->h;
     // create one texture name
     glGenTextures(1, &textureid);
-
+    debugGLerror("LoadTextureFromSdlSurface glGenTextures");
 
     // tell opengl to use the generated texture name
     glBindTexture(GL_TEXTURE_2D, textureid);
-    if( surface->w != surface->h ){
-        SDL_Log("WARNIGN Width height are not matched %d %d !!!!", surface->w, surface->h );
+
+    debugGLerror("LoadTextureFromSdlSurface glBindTexture");
+
+
+    //    *textw=surface->w;
+    //    *texth=surface->h;
+    if( surface->w != surface->h || surface->w > 2048 ){
+        SDL_Log("WARNIGN Width height are not matched %d %d making 2048 !!!!", surface->w, surface->h );
 
         int wh = max(surface->w, surface->h);
         wh = 2048; //2048 max ios (older device)
@@ -554,11 +669,10 @@ GLuint Textures::LoadTextureFromSdlSurface(SDL_Surface *surface, GLuint& texture
         int hwh = wh / 2;
 
         SDL_Surface* newSurface = SDL_CreateRGBSurface(0, wh, wh, surface->format->BitsPerPixel,
-                                                       surface->format->Amask,
                                                        surface->format->Rmask,
                                                        surface->format->Gmask,
-                                                       surface->format->Bmask);
-
+                                                       surface->format->Bmask,
+                                                       surface->format->Amask);
 
         SDL_Rect rect;
         rect.x = 0.0f;
@@ -572,24 +686,32 @@ GLuint Textures::LoadTextureFromSdlSurface(SDL_Surface *surface, GLuint& texture
             rect.y = hwh - (surface->h / 2);
 
 
-        int didBlit = SDL_BlitSurface(surface,
+        // SDL_BlitScaled ?SDL_BlitSurface
+        int didBlit = SDL_BlitScaled(surface,
                                       NULL, // src rect entire surface
                                       newSurface,
                                       &rect);
 
         if( didBlit != 0 ){
             SDL_Log("Blit problem");
-            SDL_Log(SDL_GetError());
+            SDL_Log("%s", SDL_GetError());
         }
 
-        SDL_FreeSurface(surface);
-        surface = newSurface;
+        //SDL_FreeSurface(surface);
+        //surface = newSurface;
+        glTexImage2D(GL_TEXTURE_2D, 0, mode, newSurface->w, newSurface->h, 0, surfaceFmt, GL_UNSIGNED_BYTE, newSurface->pixels);
+        debugGLerror("LoadTextureFromSdlSurface resized/shrunk texture glTexImage2D");
 
+
+        SDL_FreeSurface(newSurface);
+    }else{
+        glTexImage2D(GL_TEXTURE_2D, 0, mode, surface->w, surface->h, 0, surfaceFmt, GL_UNSIGNED_BYTE, surface->pixels);
+        debugGLerror("LoadTextureFromSdlSurface vanilla glTexImage2D");
     }
+
 
     // this reads from the sdl surface and puts it into an opengl texture
     //glTexImage2D(GL_TEXTURE_2D, 0, mode, surface->w, surface->h, 0, mode,    GL_UNSIGNED_BYTE, surface->pixels);
-    glTexImage2D(GL_TEXTURE_2D, 0, mode, surface->w, surface->h, 0, GL_BGRA, GL_UNSIGNED_BYTE, surface->pixels);
 
     //SDL_Log("w:%d h:%d BytesPerPixel:%d textureId:%d ", surface->w, surface->h, surface->format->BytesPerPixel, textureid);
 
@@ -612,15 +734,20 @@ GLuint Textures::LoadTextureFromSdlSurface(SDL_Surface *surface, GLuint& texture
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 
+    debugGLerror("LoadTextureFromSdlSurface GL_TEXTURE_MIN_FILTER GL_TEXTURE_MAG_FILTER");
 
 
     glGenerateMipmap(GL_TEXTURE_2D);
+    debugGLerror("LoadTextureFromSdlSurface glGenerateMipmap");
 
 //    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 //    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     //
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    debugGLerror("LoadTextureFromSdlSurface GL_LINEAR_MIPMAP_NEAREST");
+
 
     // just experimenting...
     //    debugGLerror();
@@ -637,16 +764,16 @@ GLuint Textures::LoadTextureFromSdlSurface(SDL_Surface *surface, GLuint& texture
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)( GL_REPEAT ) );
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)( GL_REPEAT ) );
 
+
     //glGenerateMipmap(GL_TEXTURE_2D);
 
-    SDL_Log("Texture Load Debug --->:");
-    debugGLerror();
+    debugGLerror("Texture Load Debug LoadTextureFromSdlSurface (surface/ascii/etc) --->:");
 
     return textureid;
 }
 
 GLuint Textures::LoadTexture(const char* filename, GLuint& textureid) {
-    SDL_Surface* surface = LoadSurface(filename);
+    SDL_Surface* surface = ConvertSurface(LoadSurface(filename));
     LoadTextureFromSdlSurface(surface, textureid);
     // clean up
     SDL_FreeSurface(surface);
@@ -654,7 +781,11 @@ GLuint Textures::LoadTexture(const char* filename, GLuint& textureid) {
 }
 
 SDL_Surface* Textures::LoadSurface(const char* filename) {
-    SDL_Surface *surface = IMG_Load(filename);
+
+    SDL_Surface *surface = IMG_Load(filename); // this probably does the below... in one line
+//    SDL_RWops* fileref = SDL_RWFromFile(filename, "r");
+//    SDL_Surface *surface = IMG_Load_RW(fileref, 0); // it can be done in two lines
+//    SDL_RWclose(fileref);
 
     if (!surface) {
         SDL_Log("Cannot find file %s", filename);
@@ -1024,50 +1155,50 @@ void Textures::dataToTgaFile(char filename[160],unsigned char *data,int x, int y
 //{
 //	lower left hand corner
 //}
-GLuint Textures::screenToTexture(int x, int y, int width, int height, GLuint targetTexture)
-{	
-	return screenToTexture(x, y, width, height, GL_BACK, targetTexture);
-	/*
-	long imageSize = width * height * 4;
-	unsigned char *data = new unsigned char[imageSize];
-	glReadPixels(x,y,width, height, GL_BGRA,GL_UNSIGNED_BYTE,data);
-	GLuint result = LoadTexture(data, width, height);
+//GLuint Textures::screenToTexture(int x, int y, int width, int height, GLuint targetTexture)
+//{
+//    return screenToTexture(x, y, width, height, GL_BACK, targetTexture);
+//    /*
+//    long imageSize = width * height * 4;
+//    unsigned char *data = new unsigned char[imageSize];
+//    glReadPixels(x,y,width, height, GL_BGRA,GL_UNSIGNED_BYTE,data);
+//    GLuint result = LoadTexture(data, width, height);
+//
+//    if(data){
+//        delete[] data;
+//        data=NULL;
+//    }
+//    return result;
+//*/
+//    //DebugMessage(("screenToTexture"));
+//    //debugGLerror();
+//
+//        /*void glTexImage2D(    GLenum      target,
+//     GLint      level,
+//     GLint      internalFormat,
+//     GLsizei      width,a
+//     GLsizei      height,
+//     GLint      border,
+//     GLenum      format,
+//     GLenum      type,
+//     const GLvoid *      data);*/
+//
+//
+//
+//
+//    //DebugMessage(("screenToTexture glReadPixels"));
+//    //debugGLerror();
+//
+////debug only
+////dataToTgaFile("textures/dynamictexture.tga", data, width,  height);
+//
+//
+//}
 
-	if(data){
-		delete[] data;
-		data=NULL;
-	}
-	return result;
-*/
-	//DebugMessage(("screenToTexture"));
-	//debugGLerror();
-	
-		/*void glTexImage2D(	GLenum  	target,
- 	GLint  	level,
- 	GLint  	internalFormat,
- 	GLsizei  	width,a
- 	GLsizei  	height,
- 	GLint  	border,
- 	GLenum  	format,
- 	GLenum  	type,
- 	const GLvoid *  	data);*/
-	
-
-
-
-	//DebugMessage(("screenToTexture glReadPixels"));
-	//debugGLerror();
-	
-//debug only
-//dataToTgaFile("textures/dynamictexture.tga", data, width,  height);
-
-
-}
-
-GLuint Textures::screenToTexture(int x, int y, int width, int height, GLuint bufferToRead, GLuint targetTexture){
-	glReadBuffer(bufferToRead);
-	glBindTexture(GL_TEXTURE_2D, targetTexture);
-	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, width, height, 0);
-	return targetTexture;
-}
+//GLuint Textures::screenToTexture(int x, int y, int width, int height, GLuint bufferToRead, GLuint targetTexture){
+//    glReadBuffer(bufferToRead);
+//    glBindTexture(GL_TEXTURE_2D, targetTexture);
+//    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, width, height, 0);
+//    return targetTexture;
+//}
 //glDeleteTextures( 1, &texture );

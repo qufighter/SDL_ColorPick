@@ -11,7 +11,7 @@
 
 
 void DebugStr(const char *c_str ) {
-    SDL_Log("%c", c_str);
+    SDL_Log("%s", c_str);
 }
 
 void debugGLerror(){
@@ -19,39 +19,42 @@ void debugGLerror(){
 }
 
 void debugGLerror(const char *c_str_label){
+#if defined(_DEBUG) || defined(DEBUG) || \
+(defined(__GNUC__) && !defined(__OPTIMIZE__))
     GLenum errorno = 1;
     while( errorno != GL_NO_ERROR && errorno ){
         errorno = glGetError();
         if( errorno != GL_NO_ERROR ){
-            SDL_Log("GL Error %d Labeled: %s", errorno, c_str_label);
+            //SDL_Log("GL Error %d Labeled: %s", errorno, c_str_label);
             switch(errorno){
                 case GL_INVALID_ENUM:
-                    SDL_Log("GL_INVALID_ENUM");
+                    SDL_Log("GL-Error GL_INVALID_ENUM %s", c_str_label);
                     break;
                 case GL_INVALID_VALUE:
-                    SDL_Log("GL_INVALID_VALUE");
+                    SDL_Log("GL-Error GL_INVALID_VALUE %s", c_str_label);
                     break;
                 case GL_INVALID_OPERATION:
-                    SDL_Log("GL_INVALID_OPERATION");
+                    SDL_Log("GL-Error GL_INVALID_OPERATION %s", c_str_label);
                     break;
                 case GL_INVALID_FRAMEBUFFER_OPERATION:
-                    SDL_Log("GL_INVALID_FRAMEBUFFER_OPERATION");
+                    SDL_Log("GL-Error GL_INVALID_FRAMEBUFFER_OPERATION %s", c_str_label);
                     break;
                 case GL_OUT_OF_MEMORY:
-                    SDL_Log("GL_OUT_OF_MEMORY");
+                    SDL_Log("GL-Error GL_OUT_OF_MEMORY %s", c_str_label);
                     break;
 //                case GL_STACK_UNDERFLOW:
-//                    SDL_Log("GL_STACK_UNDERFLOW");
+//                    SDL_Log("GL-Error GL_STACK_UNDERFLOW %s", c_str_label);
 //                    break;
 //                case GL_STACK_OVERFLOW:
-//                    SDL_Log("GL_STACK_OVERFLOW");
+//                    SDL_Log("GL-Error GL_STACK_OVERFLOW %s", c_str_label);
 //                    break;
                 default:
-                    SDL_Log("Open GL: Ohter error...");
+                    SDL_Log("GL-Error Open GL Error %d: Ohter error... %s", errorno, c_str_label);
                     break;
             }
         }
     }
+#endif
 }
 
 
@@ -91,43 +94,101 @@ render(SDL_Renderer *renderer) // DEFAULT demo using sdl render, delete me
     SDL_RenderPresent(renderer);
 }
 
-
-bool mousStateDown = false; // really should count fingers down possibly, finger event support multi touch, mosue events dont!
+int fileDropsAllowed = 0;
+int mousStateDown = 0; // really should count fingers down possibly, finger event support multi touch, mosue events dont!
 bool multiTouchMode = false;
 int EventFilter(void* userdata, SDL_Event* event){
     switch ( event->type ){
         case SDL_WINDOWEVENT:
         {
+
+//            SDL_WINDOWEVENT_NONE,           /**< Never used */
+//            SDL_WINDOWEVENT_SHOWN,          /**< Window has been shown */
+//            SDL_WINDOWEVENT_HIDDEN,         /**< Window has been hidden */
+//            SDL_WINDOWEVENT_EXPOSED,        /**< Window has been exposed and should be
+//                                             redrawn */
+//            SDL_WINDOWEVENT_MOVED,          /**< Window has been moved to data1, data2
+//                                             */
+//            SDL_WINDOWEVENT_RESIZED,        /**< Window has been resized to data1xdata2 */
+//            SDL_WINDOWEVENT_SIZE_CHANGED,   /**< The window size has changed, either as
+//                                             a result of an API call or through the
+//                                             system or user changing the window size. */
+//            SDL_WINDOWEVENT_MINIMIZED,      /**< Window has been minimized */
+//            SDL_WINDOWEVENT_MAXIMIZED,      /**< Window has been maximized */
+//            SDL_WINDOWEVENT_RESTORED,       /**< Window has been restored to normal size
+//                                             and position */
+//            SDL_WINDOWEVENT_ENTER,          /**< Window has gained mouse focus */
+//            SDL_WINDOWEVENT_LEAVE,          /**< Window has lost mouse focus */
+//            SDL_WINDOWEVENT_FOCUS_GAINED,   /**< Window has gained keyboard focus */
+//            SDL_WINDOWEVENT_FOCUS_LOST,     /**< Window has lost keyboard focus */
+//            SDL_WINDOWEVENT_CLOSE,          /**< The window manager requests that the window be closed */
+//            SDL_WINDOWEVENT_TAKE_FOCUS,     /**< Window is being offered a focus (should SetWindowInputFocus() on itself or a subwindow, or ignore) */
+//            SDL_WINDOWEVENT_HIT_TEST        /**< Window had a hit test that wasn't SDL_HITTEST_NORMAL. */
+
             switch( event->window.event ){
                 case SDL_WINDOWEVENT_RESIZED:
+                case SDL_WINDOWEVENT_SIZE_CHANGED:
+                    SDL_Log("\n SDL_WINDOWEVENT_RESIZED || SDL_WINDOWEVENT_SIZE_CHANGED");
+
                     //SDL_Log("RESIZED (lowdpi size wouldbe) %d %d", event->window.data1,event->window.data2);
                     ReshapeWindow();
                     return 0;
                 case SDL_WINDOWEVENT_MINIMIZED:
-                    break;
+                case SDL_WINDOWEVENT_HIDDEN:
+
+                    SDL_Log("\n SDL_WINDOWEVENT_MINIMIZED || SDL_WINDOWEVENT_HIDDEN");
+
+                    return 0;
+                case SDL_WINDOWEVENT_SHOWN:
+                case SDL_WINDOWEVENT_EXPOSED:
+                case SDL_WINDOWEVENT_RESTORED:
+
+                    SDL_Log("\n SDL_WINDOWEVENT_SHOWN || SDL_WINDOWEVENT_EXPOSED || SDL_WINDOWEVENT_RESTORED");
+
+                    return 0;
             }
+            return 0;
         }
+#ifdef COLORPICK_PLATFORM_DESKTOP
+        case SDL_MOUSEWHEEL:
+            SDL_Log("Hello Wheel!!");
+
+            openglContext->renderShouldUpdate = true;
+            openglContext->setFishScale(event->wheel.y, 0.10f);
+
+            return 0;
+#endif
         case SDL_MULTIGESTURE: // http://lazyfoo.net/tutorials/SDL/55_multitouch/index.php
-            // this event triggers on desktop when entering/leaving window!
             SDL_Log("Hello Gesture!!");
 
             openglContext->renderShouldUpdate = true;
-            openglContext->setFishScale(event->mgesture.dDist);
+            openglContext->setFishScale(event->mgesture.dDist, 40.0f);
+
+            // we'll still get a SDL_FINGERDOWN and fingerup for each finger...
 
             return 0;
 
 
+#ifndef COLORPICK_PLATFORM_DESKTOP
         case SDL_FINGERDOWN:
-            if( mousStateDown ){
+#else
+        case SDL_MOUSEBUTTONDOWN: // if platform desktop?  duplicate
+#endif
+            mousStateDown += 1;
+
+            //SDL_Log("finger count %i", event->tfinger.);
+            if( mousStateDown > 1 ){
                 //second touch....
                 SDL_Log("SDL_FINGERDOWN second touch");
-                mousStateDown = 0;
+                didInteract=false;
                 return 0;
             }
             openglContext->clearVelocity(); // stop any active panning
-            mousStateDown = 1;
+
             //SDL_SetRelativeMouseMode(SDL_TRUE);
             //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
+
+            // SDL_TouchFingerEvent event->tfinger
 
             int tx,ty;
             SDL_GetRelativeMouseState(&tx, &ty);
@@ -151,8 +212,12 @@ int EventFilter(void* userdata, SDL_Event* event){
 
 
             return 0;
+#ifndef COLORPICK_PLATFORM_DESKTOP
         case SDL_FINGERMOTION:
-            if( mousStateDown ){
+#else
+        case SDL_MOUSEMOTION:
+#endif
+            if( mousStateDown == 1 ){
 
                 if( !didInteract ){
 
@@ -169,10 +234,23 @@ int EventFilter(void* userdata, SDL_Event* event){
                         float factor = (0.05 - openglContext->fishEyeScalePct);
                         colorPickState->mmovex *= 1 + (80.0 * factor);
                         colorPickState->mmovey *= 1 + (80.0 * factor);
+                    }else if( openglContext->fishEyeScale > MAX_FISHEYE_ZOOM - 1.0){
+                        // todo some equivilent near other exterme end
+                        // where movements are scaled down?
+
+                        // SDL_TouchFingerEvent event->tfinger (will this be null on desktop SDL_MOUSEMOTION)
+
+                        float factor = (0.05 - openglContext->fishEyeScalePct);
+                        colorPickState->mmovex *= 1 + (0.5 * factor);
+                        colorPickState->mmovey *= 1 + (0.5 * factor);
+
+
+                        //the next idea is motion hints since accumulated motion will result in a movement
+                        // so we can hint how imminent the movement is
+                        // and perhaps.....
+
                     }
 
-                    // todo some equivilent near other exterme end
-                    // where movements are scaled down?
 
                     collected_x += colorPickState->mmovex;
                     collected_y += colorPickState->mmovey;
@@ -214,17 +292,24 @@ int EventFilter(void* userdata, SDL_Event* event){
 
             }
             return 0;
+#ifndef COLORPICK_PLATFORM_DESKTOP
         case SDL_FINGERUP: // http://lazyfoo.net/tutorials/SDL/54_touches/index.php
-            if( mousStateDown && collected_x == 0 && collected_y == 0 ){
-                // it was a single touch
-                SDL_Log("SDL_FINGERUP was reach - see if position did not change %d, %d",collected_x,collected_y );
+#else
+        case SDL_MOUSEBUTTONUP:
+#endif
 
+            if( didInteract ){
                 // we may be able to add this, but we need to track velocity better
                 SDL_GetMouseState(&tx, &ty);
                 SDL_Log("MOUSE xy %d %d", tx,ty);
                 openglContext->generalUx->currentInteraction.update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h,  (collected_x*ui_mmv_scale)/win_w, (collected_y*ui_mmv_scale)/win_h );
                 SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
                 SDL_Log("MOUSE xy delta %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
+            }
+
+            if( mousStateDown == 1 && collected_x == 0 && collected_y == 0 ){
+                // it was a single touch
+                SDL_Log("SDL_FINGERUP was reach - see if position did not change %d, %d",collected_x,collected_y );
 
 
                 // so if we already didInteract....
@@ -249,7 +334,10 @@ int EventFilter(void* userdata, SDL_Event* event){
 
 
                 if( ! didInteract ){
-                    openglContext->chooseFile(); // this breaks multigesture somehow
+                    // we have missed the UI and BG clicked oh now what
+
+                    // this breaks multigesture somehow
+
 
                     // this feature will move
 
@@ -263,19 +351,29 @@ int EventFilter(void* userdata, SDL_Event* event){
             }else{
                 openglContext->triggerVelocity(input_velocity_x, input_velocity_y);
             }
-            mousStateDown = 0;
-            didInteract = false;
+
+            if( mousStateDown == 1 ){
+
+                didInteract = false;
 
 
-            didInteract = openglContext->generalUx->interactionComplete(&openglContext->generalUx->currentInteraction); // MOUSEUP
+                didInteract = openglContext->generalUx->interactionComplete(&openglContext->generalUx->currentInteraction); // MOUSEUP
 
-            // at this point we culd really need to render an update
-            if( didInteract ){
-                SDL_Log("MARKED FOR UPDATE - WILL IT RENDER????");
-                openglContext->renderShouldUpdate=true;
-                // this seems to not guarantee render?!
+                // at this point we culd really need to render an update
+                if( didInteract ){
+                    SDL_Log("MARKED FOR UPDATE - WILL IT RENDER????");
+                    openglContext->renderShouldUpdate=true;
+                    // this seems to not guarantee render?!
+                }
+
             }
 
+            didInteract = false;
+            mousStateDown = 0; // because each finger being released will reach this block... we need to avoid the last finger from being treated as click still...
+//            mousStateDown -= 1;
+//            if( mousStateDown < 0 ){
+//                mousStateDown=0;
+//            }
 
             //SDL_SetRelativeMouseMode(SDL_FALSE); // bit unsure if this mouse stuff will work for touch
             //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
@@ -285,49 +383,67 @@ int EventFilter(void* userdata, SDL_Event* event){
             return 0;
 
         case SDL_KEYDOWN:
+            //SDL_Log("1keydown %d", event->key.keysym.sym);
             //openglContext->keyDown(event->key.keysym.sym);
             return 0;
         case SDL_KEYUP:
-            //SDL_Log("key %d", event->key.keysym.sym);
-            //openglContext->keyUp(event->key.keysym.sym);
+            openglContext->keyUp(event->key.keysym.sym);
+
+//            /* Keyboard events */
+//            SDL_KEYDOWN        = 0x300, /**< Key pressed */
+//            SDL_KEYUP,                  /**< Key released */
+//            SDL_TEXTEDITING,            /**< Keyboard text editing (composition) */
+//            SDL_TEXTINPUT,              /**< Keyboard text input */
+//            SDL_KEYMAPCHANGED,          /**< Keymap changed due to a system event such as an
+//                                         input language or keyboard layout change.
+
+
+//                                         SDL_HINT_RETURN_KEY_HIDES_IME                  */
+//SDL_StartTextInput
+//SDL_IsTextInputActive //Return whether or not Unicode text input events are enabled.
+//SDL_StopTextInput
+//SDL_SetTextInputRect //used as a hint for IME and on-screen keyboard placement
+//SDL_HasScreenKeyboardSupport
+//SDL_IsScreenKeyboardShown(SDL_Window *window);
+
             return 0;
 //        case SDL_MOUSEBUTTONDOWN:
-//        //    mousStateDown = 1;
+//        //    mousStateDown += 1;
 //            //SDL_SetRelativeMouseMode(SDL_TRUE);
 //            //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 //
 //            return 0;
 //        case SDL_MOUSEMOTION:
 //            // SDL_Log("Mouse Motion X,Y %d,%d", event->motion.xrel, event->motion.yrel);
-//            if( mousStateDown ){
+//            if( mousStateDown = 1 ){
 //                //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 //                //colorPickState->mmovex = event->motion.xrel;
 //                //colorPickState->mmovey = event->motion.yrel; // still like simplicity of these, not working well once SDL_SetRelativeMouseMode(SDL_TRUE), which captures hte cursor nicely and is OK in window mode....
 //            }
 //            return 0;
 //        case SDL_MOUSEBUTTONUP:
-//        //    mousStateDown = 0;
+//        //    mousStateDown -= 1;
 //            //SDL_SetRelativeMouseMode(SDL_FALSE);
 //            //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 //
 //            return 0;
 
-        case SDL_APP_LOWMEMORY:
+        case SDL_APP_LOWMEMORY:{
             SDL_Log("Memory Warning !!!!");
             /* You will get this when your app is paused and iOS wants more memory.
              Release as much memory as possible.
              */
             return 0;
-
-        case SDL_APP_TERMINATING:
+        }
+        case SDL_APP_TERMINATING:{
             /* Terminate the app.
              Shut everything down before returning from this function.
              */
            // openglContext->generalUx->writeOutState();
             SDL_Log("SDL_APP_TERMINATING !!!!");
             return 0;
-
-        case SDL_APP_WILLENTERBACKGROUND:
+        }
+        case SDL_APP_WILLENTERBACKGROUND:{
             /* Prepare your app to go into the background.  Stop loops, etc.
              This gets called when the user hits the home button, or gets a call.
              */
@@ -336,7 +452,8 @@ int EventFilter(void* userdata, SDL_Event* event){
             openglContext->generalUx->writeOutState();
             SDL_Log("SDL_APP_WILLENTERBACKGROUND !!!!");
             return 0;
-        case SDL_APP_DIDENTERBACKGROUND:
+        }
+        case SDL_APP_DIDENTERBACKGROUND:{
             /* This will get called if the user accepted whatever sent your app to the background.
              If the user got a phone call and canceled it, you'll instead get an SDL_APP_DIDENTERFOREGROUND event and restart your loops.
              When you get this, you have 5 seconds to save all your state or the app will be terminated.
@@ -344,20 +461,48 @@ int EventFilter(void* userdata, SDL_Event* event){
              */
             SDL_Log("SDL_APP_DIDENTERBACKGROUND !!!!");
             return 0;
-        case SDL_APP_WILLENTERFOREGROUND:
+        }
+        case SDL_APP_WILLENTERFOREGROUND:{
             /* This call happens when your app is coming back to the foreground.
              Restore all your state here.
              */
+            mousStateDown = 0; // zero finger counter
             openglContext->renderShouldUpdate = true;
             SDL_Log("SDL_APP_WILLENTERFOREGROUND !!!!");
             return 0;
-        case SDL_APP_DIDENTERFOREGROUND:
+        }
+        case SDL_APP_DIDENTERFOREGROUND:{
             /* Restart your loops here.
              Your app is interactive and getting CPU again.
              */
             SDL_Log("SDL_APP_DIDENTERFOREGROUND !!!!");
             return 0;
+        }
+        case SDL_DROPBEGIN:{
+            SDL_Log("SDL_DROPBEGIN !!!!");
+            fileDropsAllowed=1;
+            return 0;
+        }
+        case SDL_DROPCOMPLETE:{
+            SDL_Log("SDL_DROPCOMPLETE !!!!");
+            fileDropsAllowed=0;
+            return 0;
+        }
+        case SDL_DROPFILE:{
+            SDL_Log("SDL_DROPFILE !!!! %s", event->drop.file );
 
+            if( fileDropsAllowed > 0 ){
+                SDL_Log("Actually Loading: %s", event->drop.file );
+                SDL_Surface *myCoolSurface = openglContext->textures->LoadSurface(event->drop.file);
+                if( myCoolSurface != NULL ){ // todo something should really accept file path? openglContext->imageWasSelectedCb
+                    myCoolSurface = openglContext->textures->ConvertSurface(myCoolSurface);
+                    openglContext->imageWasSelectedCb(myCoolSurface);
+                }
+                fileDropsAllowed--;
+            }
+            SDL_free(event->drop.file);
+            return 0;
+        }
         default:
             SDL_Log("unrecognized event");
             break;
@@ -387,6 +532,7 @@ void ShowFrame(void*)
 
     openglContext->renderScene();
 
+    SDL_Log("RENDER SCENE COMPLETED... swapping buffers....");
 
 
     SDL_GL_SwapWindow(window); // move into render scene?
@@ -406,15 +552,15 @@ void ReshapeWindow(){
 
     SDL_GL_GetDrawableSize(window, &colorPickState->drawableWidth, &colorPickState->drawableHiehgt);
 
-    openglContext->reshapeWindow(colorPickState->drawableWidth, colorPickState->drawableHiehgt);
 
     SDL_Log("SDL_GL_GetDrawableSize %d %d %f", colorPickState->drawableWidth,colorPickState->drawableHiehgt, (colorPickState->drawableWidth+1.0f)/colorPickState->drawableHiehgt);
 
 
-    if( win_w < SCREEN_WIDTH ) {
+    if( win_w <= colorPickState->drawableWidth ) {
         // low dpi?
         ui_mmv_scale = 1.0;
     }else{
+        ui_mmv_scale = 2.0;
         // even if win_w == SCREEN_WIDTH
         //  not guaranteed to be hidpi !~!!! !
     }
@@ -438,7 +584,7 @@ void ReshapeWindow(){
     SDL_GetCurrentDisplayMode(displayIndex, &mode);
 
 
-    int modeIndex=0;
+    //int modeIndex=0;
     for( int modeIndex=0,totalModes=SDL_GetNumDisplayModes(displayIndex); modeIndex<totalModes; modeIndex++){
         SDL_GetDisplayMode(displayIndex, modeIndex, &mode);
 
@@ -468,6 +614,10 @@ void ReshapeWindow(){
             int(miScreen.w*ui_mmv_scale), int(miScreen.h*ui_mmv_scale));
 
     //if( )
+
+
+    openglContext->reshapeWindow(colorPickState->drawableWidth, colorPickState->drawableHiehgt);
+
 
 }
 
@@ -524,8 +674,12 @@ compatibility; this flag is ignored
     window =
         SDL_CreateWindow(NULL, 0, 0, win_w, win_h,
                          SDL_WINDOW_OPENGL
-                         | (TARGET_OS_SIMULATOR?0:SDL_WINDOW_ALLOW_HIGHDPI)
-                       //  | SDL_WINDOW_ALLOW_HIGHDPI
+#ifndef TARGET_OS_SIMULATOR
+#ifndef __ANDROID__
+                         | SDL_WINDOW_ALLOW_HIGHDPI
+#endif
+#endif
+                         //| SDL_WINDOW_ALLOW_HIGHDPI
                          | SDL_WINDOW_RESIZABLE
                          //| SDL_WINDOW_MAXIMIZED
                          //| SDL_WINDOW_BORDERLESS

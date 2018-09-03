@@ -8,7 +8,13 @@
 
 #include "ux.h"
 
-#include "FileChooser.h" // includes openglContext
+
+#if __ANDROID__
+#include "Platform/Android/FileChooser.h" // platform specific include!  this is for ios (and osx...)
+#else
+#include "FileChooser.h" // platform specific include!  this is for ios (and osx...)
+#endif
+// #include "FileChooser.h" // includes openglContext
 
 
 bool Ux::ms_bInstanceCreated = false;
@@ -68,6 +74,8 @@ Ux::Ux(void) {
 //    SDL_Log("Pref file path: %s", palletePath);
 //    SDL_Log("Pref file len: %i", SDL_strlen(palletePath));
 
+    SDL_free(preferencesPath);
+
 }
 
 void Ux::readInState(char* filepath, void* dest, int destMaxSize, int* readSize){
@@ -91,8 +99,9 @@ void Ux::readInState(char* filepath, void* dest, int destMaxSize, int* readSize)
         currentPosition++;
     }
 
+    SDL_RWclose(memref);
+    SDL_RWclose(fileref);
     *readSize = currentPosition;
-
 }
 
 void Ux::readInState(void){
@@ -233,66 +242,87 @@ Ux::uiObject* Ux::create(void){
     bottomBar = new uiObject();
     bottomBar->hasBackground = true;
     //bottomBar.setInteraction(&Ux::interactionHZ);
-    bottomBar->setBoundaryRect( 0.1, 0.7, 0.8, 0.2);
-    bottomBar->setBoundaryRect( 0.25, 0.75, 0.5, 0.15);
-
+//    bottomBar->setBoundaryRect( 0.1, 0.7, 0.8, 0.2);
+//    bottomBar->setBoundaryRect( 0.25, 0.75, 0.5, 0.15);
+    bottomBar->setBoundaryRect( 0.0, 0.75, 1.0, 0.15);
    // bottomBar->setBoundaryRect( 0.0, 0.7, 1.0, 0.2);
     //bottomBar->setBoundaryRect( 0.0, 0.7, 0.5, 0.2);
-
     Ux::setColor(&bottomBar->backgroundColor, 0, 0, 0, 198);
-
-
-    bottomBar->hasForeground = true;
-    //printCharToUiObject(bottomBar, '_', DO_NOT_RESIZE_NOW);
-    printCharToUiObject(bottomBar, CHAR_ASYMP_SLOPE, DO_NOT_RESIZE_NOW);
+    rootUiObject->addChild(bottomBar);
 
 
 
     pickSourceBtn = new uiObject();
     pickSourceBtn->hasForeground = true;
     pickSourceBtn->hasBackground = true;
-    pickSourceBtn->setInteractionCallback(&Ux::interactionTouchRelease);
-
-
-    //pickSourceBtn->setInteractionCallback(&Ux::addCurrentToPickHistory);
-
+    pickSourceBtn->setClickInteractionCallback(&Ux::interactionFileBrowserTime); // TODO rename me
     pickSourceBtn->setBoundaryRect( 0.8, 0, 0.2, 1);  /// TODO move size components into function to calculate on window rescale bonus points
     Ux::setColor(&pickSourceBtn->backgroundColor, 32, 0, 0, 128);
-    Ux::setColor(&pickSourceBtn->foregroundColor, 0, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-
+    Ux::setColor(&pickSourceBtn->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
     //printCharToUiObject(pickSourceBtn, '+', DO_NOT_RESIZE_NOW);
-    printCharToUiObject(pickSourceBtn, CHAR_CIRCLE_PLUSS, DO_NOT_RESIZE_NOW);
-
-    bottomBar->addChild(pickSourceBtn);
+    printCharToUiObject(pickSourceBtn, CHAR_OPEN_FILES, DO_NOT_RESIZE_NOW);
     pickSourceBtn->squarify();
-    pickSourceBtn->stack_right = true;
+
+
+
+
+    addHistoryBtn = new uiObject();
+    addHistoryBtn->hasForeground = true;
+    addHistoryBtn->hasBackground = true;
+    addHistoryBtn->setClickInteractionCallback(&Ux::interactionAddHistory); // TODO rename me
+    addHistoryBtn->setBoundaryRect( 0.8, 0, 0.2, 1);  /// TODO move size components into function to calculate on window rescale bonus points
+    Ux::setColor(&addHistoryBtn->backgroundColor, 32, 0, 0, 128);
+    Ux::setColor(&addHistoryBtn->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+    printCharToUiObject(addHistoryBtn, CHAR_CIRCLE_PLUSS, DO_NOT_RESIZE_NOW);
+    addHistoryBtn->squarify(); // "keep round"
+    addHistoryBtn->setRoundedCorners(0.5);
+
+
+
+    // stacked bottom bar elements...
+    bottomBar->addStackedRight(addHistoryBtn);
+    bottomBar->addStackedRight(pickSourceBtn);
+
+
+
+    zoomSliderHolder = new uiObject();
+    zoomSliderHolder->setBoundaryRect( 0.0, 0, 0.25, 1);
+    bottomBar->addChild(zoomSliderHolder);
+
+    zoomSliderBg = new uiObject();
+//    zoomSliderBg->hasForeground = true;
+  //  zoomSliderBg->hasBackground = true;
+   // Ux::setColor(&zoomSliderBg->backgroundColor, 0, 0, 0, 0);
+    Ux::setColor(&zoomSliderBg->foregroundColor, 128, 128, 128, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+    zoomSliderBg->setBoundaryRect( 0.05, 0, 0.88, 1);  /// TODO move size components into function to calculate on window rescale bonus points
+//    printCharToUiObject(zoomSliderBg, CHAR_VERTICAL_BAR, DO_NOT_RESIZE_NOW);
+    printCharToUiObject(zoomSliderBg, CHAR_ASYMP_SLOPE, DO_NOT_RESIZE_NOW);
+    zoomSliderHolder->addChild(zoomSliderBg);
+
+
 
 
 
     zoomSlider = new uiObject();
-    zoomSlider->hasForeground = true;
     zoomSlider->hasBackground = true;
-    Ux::setColor(&zoomSlider->backgroundColor, 32, 0, 0, 128);
-    Ux::setColor(&zoomSlider->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+    Ux::setColor(&zoomSlider->backgroundColor, 255, 255, 255, 255);
+    Ux::setColor(&zoomSlider->foregroundColor, 0, 0, 0, 1); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
     zoomSlider->setInteraction(&Ux::interactionHZ);//zoomSlider->canCollide = true;
-    
+    //zoomSlider->setBoundaryRect( 0.0, 0, 0.2, 1);  /// TODO move size components into function to calculate on window rescale bonus points
+    //zoomSlider->setMovementBoundaryRect( 0.0, 0, 0.5, 0.0);
     zoomSlider->setBoundaryRect( 0.0, 0, 0.2, 1);  /// TODO move size components into function to calculate on window rescale bonus points
-    zoomSlider->setMovementBoundaryRect( 0.0, 0, 0.5, 0.0);
-
-
+    zoomSlider->setMovementBoundaryRect( 0.0, 0, 1.0, 0.0);
     //printCharToUiObject(zoomSlider, '^', DO_NOT_RESIZE_NOW);
-    printCharToUiObject(zoomSlider, CHAR_VERTICAL_BAR, DO_NOT_RESIZE_NOW);
+    //printCharToUiObject(zoomSlider, CHAR_VERTICAL_BAR_POINTED, DO_NOT_RESIZE_NOW);
+    printCharToUiObject(zoomSlider, CHAR_ZOOM_PLUSS, DO_NOT_RESIZE_NOW);
+    zoomSlider->setRoundedCorners(0.5);
+    zoomSliderHolder->addChild(zoomSlider);
 
 
-    bottomBar->addChild(zoomSlider);
 
-
-
-    rootUiObject->addChild(bottomBar);
 
     huePicker = new uiHueGradient(rootUiObject, Float_Rect(0.0, 0.60, 1.0, 0.09), &Ux::hueClicked);
     huePicker->resize(Float_Rect(0.0, 0.7, 1.0, 0.05));
-    //    bottomBar->setBoundaryRect( 0.25, 0.75, 0.5, 0.15);
 
 
     historyPalleteHolder = new uiObject();
@@ -622,6 +652,7 @@ void Ux::printCharOffsetUiObject(uiObject* letter, int charOffset){
 //        letter->backgroundColor = letter->lastBackgroundColor;
 //    }
 
+    letter->hasForeground = true;
 
     int row = (int)(charOffset / text_stride);
     charOffset = charOffset % text_stride;
@@ -739,6 +770,24 @@ bool Ux::interactionUpdate(uiInteraction *delta){
 
 bool Ux::interactionComplete(uiInteraction *delta){
 
+    uiObject* origInteractionObj = interactionObject;
+    interactionObject = nullptr;
+    triggerInteraction(); // interaction obj might change!!!!
+
+    if( !interactionObject || origInteractionObj != interactionObject ){
+        if( !origInteractionObj || origInteractionObj->interactionCallbackTypeClick ){
+            return false; // if interaction type is click and we moved objects; or if we never had an origional click object
+        }else{
+            /// otherwise reset it
+            interactionObject = origInteractionObj;
+        }
+    }
+
+    // really we should consider storing 2 seperate callbacks - interaction complete is really quite different from click callback
+    // and in some cases we may need both....
+
+    // so in some cases, the interaction is complete even if the object changed!?!
+
     if( isInteracting && interactionObject->hasInteractionCb ){
         isInteracting = false;
         interactionObject->interactionCallback(interactionObject, delta);
@@ -838,6 +887,11 @@ void Ux::clickClearPallete(uiObject *interactionObj, uiInteraction *delta){
     myUxRef->palleteList->clear();
     myUxRef->updatePalleteScroller();
 
+
+    if( myUxRef->palleteSelectionColorPreview->uiObjectItself->is_being_viewed_state ) {
+        // viewing deleted color
+        myUxRef->interactionTogglePalletePreview(myUxRef->palleteSelectionColorPreview->uiObjectItself, delta);
+    }
 }
 
 void Ux::clickCancelClearPallete(uiObject *interactionObj, uiInteraction *delta){
@@ -1117,8 +1171,13 @@ void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // s
 //
 //}
 
+void Ux::interactionFileBrowserTime(uiObject *interactionObj, uiInteraction *delta){
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    ogg->chooseFile();
+}
+
 //static // RENAME ME
-void Ux::interactionTouchRelease(uiObject *interactionObj, uiInteraction *delta){
+void Ux::interactionAddHistory(uiObject *interactionObj, uiInteraction *delta){
 
 
     // check delta->dx for movement amount
@@ -1534,7 +1593,7 @@ void Ux::colorTileAddChildObjects(uiObject *historyTile, anInteractionFn removeC
         Ux::setColor(&removeButton->foregroundColor, 200, 0, 0, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
 
         removeButton->setInteraction(&Ux::interactionHorizontal);
-        removeButton->setInteractionCallback(removeClickedFn);
+        removeButton->setInteractionCallback(removeClickedFn); // cannot be setClickInteractionCallback
 
 
 
@@ -1544,6 +1603,8 @@ void Ux::colorTileAddChildObjects(uiObject *historyTile, anInteractionFn removeC
         printCharToUiObject(buttonIcon, CHAR_LIGHTENING_BOLT, DO_NOT_RESIZE_NOW);
         historyTile->addChild(buttonIcon);
         buttonIcon->hide();
+        buttonIcon->squarify();
+
 
 
     }
@@ -1604,8 +1665,6 @@ void Ux::addCurrentToPickHistory(){
 
     updatePickHistoryPreview();
 
-    OpenGLContext* ogg=OpenGLContext::Singleton();
-    ogg->loadNextTestImage();
 }
 
 

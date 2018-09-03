@@ -17,5 +17,6 @@
 
 
 void beginImageSelector();
+bool openURL(const std::string &url);
 
 #endif

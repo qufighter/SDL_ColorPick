@@ -9,10 +9,14 @@ using namespace std; // Include the standard namespace
 	then returns it as a string.
 */
 static string textFileRead(const char *fileName) {
-	string fileString = string(); // A string for storing the file contents
-	string line = string(); // A string for holding the current line
 
-	ifstream file(fileName); // Open an input stream with the selected file
+    // MAYBE use sdl functions for dealing with files?
+
+
+	string fileString = string(); // A string for storing the file contents
+//    string line = string(); // A string for holding the current line
+
+//    ifstream file(fileName); // Open an input stream with the selected file
 
 
     // IF its an FSH and we are on IOS we should prepend the amazing
@@ -22,20 +26,32 @@ static string textFileRead(const char *fileName) {
 #ifndef COLORPICK_PLATFORM_DESKTOP
     //if( SHD_TEXTURE_SIZE > 1024 ){
         // todo veerify platform really supports this size?
+
+//#ifdef __ANDROID__
+//    fileString.append("precision mediump float;\n");
+//#else
         fileString.append("precision highp float;\n");
+//#endif
+
     //}else{
      //   fileString.append("precision mediump float;\n");
     //}
 #endif
 
-	if (file.is_open()) { // If the file opened successfully
-		while (!file.eof()) { // While we are not at the end of the file
-			getline(file, line); // Get the current line
-		  	fileString.append(line); // Append the line to our file string
-			fileString.append("\n"); // Appand a new line character
-		}
-		file.close(); // Close the file
-	}
+//    if (file.is_open()) { // If the file opened successfully
+//        while (!file.eof()) { // While we are not at the end of the file
+//            getline(file, line); // Get the current line
+//              fileString.append(line); // Append the line to our file string
+//            fileString.append("\n"); // Appand a new line character
+//        }
+//        file.close(); // Close the file
+//    }
+
+    char* data = (char*)SDL_LoadFile(fileName, NULL);
+
+    fileString.append(data);
+
+    SDL_free(data);
 
     return fileString; // Return our string
 }
@@ -129,7 +145,9 @@ void Shader::reload() {
     
     string vsText = textFileRead(vsFile); // Read in the vertex shader
     string fsText = textFileRead(fsFile); // Read in the fragment shader
-    
+
+    //SDL_Log("SHADER FILE CONTENTS (first blob) %s", vsText.c_str());
+
 	const char *vertexText = vsText.c_str();
 	const char *fragmentText = fsText.c_str();
 
@@ -209,6 +227,10 @@ void Shader::reload() {
 
     uniformLocations->normalLightingMat = glGetAttribLocation(shader_id, "lightingMat");
 
+
+    // not exactly free ?
+    vsText.clear();
+    fsText.clear();
 }
 
 /**

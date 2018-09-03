@@ -162,6 +162,7 @@ struct uiObject
         doesNotCollide=false;
         hasInteraction=false;
         hasInteractionCb=false;
+        interactionCallbackTypeClick=false;
         //canMove=false;
         hasParentObject=false;
         parentObject=nullptr;
@@ -204,6 +205,7 @@ struct uiObject
         squarify_keep_hz=false;
         squarify_keep_vt=false;
         squarify_keep_contained=false;
+        
 
     }
     bool isDebugObject;
@@ -260,6 +262,7 @@ struct uiObject
     anInteractionFn interactionFn;
     //void (*interactionFn)(uiObject *interactionObj, uiInteraction *delta);
     bool hasInteractionCb;
+    bool interactionCallbackTypeClick;
     anInteractionFn interactionCallback;
 
     bool hasAnimCb;
@@ -392,6 +395,12 @@ struct uiObject
         interactionCallback = p_interactionCallback;
         hasInteractionCb = true;
     }
+
+    void setClickInteractionCallback( anInteractionFn p_interactionCallback ){
+        setInteractionCallback(p_interactionCallback);
+        interactionCallbackTypeClick = true;
+    }
+
     void setAnimationPercCallback( anAnimationPercentCallback p_animationPercentageCallback ){
         animationPercCallback = p_animationPercentageCallback;
         hasAnimCb = true;
@@ -460,6 +469,11 @@ struct uiObject
     bool squarify_keep_vt; // private
     bool squarify_keep_contained; // private
 
+
+    void addStackedRight(uiObject *c){
+        c->stack_right=true;
+        addChild(c);
+    }
 
     void addChild(uiObject *c){
         // so the child boundryRect, could be global space, or could be local space already....
@@ -861,7 +875,7 @@ struct uiObject
 
         }
 
-        return stackingOffset + renderRect.w;
+        return stackingOffset + (renderRect.w * 2.0);
     }
     
 
