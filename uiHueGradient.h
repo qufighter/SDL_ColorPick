@@ -37,13 +37,15 @@ struct uiHueGradient{
             uiObject* rt = new uiObject();
             rt->hasBackground=true;
             Ux::setColor(&rt->backgroundColor, &manyColors[offset]);
-            rt->setInteractionCallback(interactionHueClicked); //setClickInteractionCallback
+            //rt->setInteractionCallback(interactionHueClicked); //setClickInteractionCallback
             rt->setBoundaryRect( counter * (width) , 0.0, width+0.01, 1.0);
             currentContainer->addChild(rt);
             offset+=12;
             counter++;
         }
 
+        uiObjectItself->setInteraction(interactionHueBgClicked);
+        uiObjectItself->setInteractionCallback(interactionHueBgClicked);
 
         //uiObjectItself->setInteractionCallback(Ux::interactionNoOp);
         parentObj->addChild(uiObjectItself);
@@ -57,12 +59,23 @@ struct uiHueGradient{
     int totalColors = 1530;
     SDL_Color manyColors[1530];// *totalColorsPer * 6
 
-    static void interactionHueClicked(uiObject *interactionObj, uiInteraction *delta){
-       // Ux* uxInstance = Ux::Singleton();
+    static void interactionHueBgClicked(uiObject *interactionObj, uiInteraction *delta){
         uiHueGradient* self = ((uiHueGradient*)interactionObj->myUiController);
-
-        self->tileClicked(interactionObj, delta);
+        float percent = (delta->px - interactionObj->collisionRect.x) * (1.0/interactionObj->collisionRect.w); // it is arguable delta aleady "know" this?
+        if( percent < 0 ) percent = 0;
+        else if( percent > 1 ) percent = 1;
+        SDL_Log("HUE PCT %f", percent);
+        int clrOffset =  SDL_floorf(self->totalColors * percent);
+        Ux* uxInstance = Ux::Singleton();
+        uxInstance->hueClicked(&self->manyColors[clrOffset]);
     }
+
+//    static void interactionHueClicked(uiObject *interactionObj, uiInteraction *delta){
+//       // Ux* uxInstance = Ux::Singleton();
+//        uiHueGradient* self = ((uiHueGradient*)interactionObj->myUiController);
+//
+//        self->tileClicked(interactionObj, delta);
+//    }
 
     void resize(Float_Rect boundaries){
 

@@ -12,3 +12,4 @@ file open dialogue
 # platform specific
 
 resources into android bundle...
+android file chooser

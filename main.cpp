@@ -675,9 +675,7 @@ compatibility; this flag is ignored
         SDL_CreateWindow(NULL, 0, 0, win_w, win_h,
                          SDL_WINDOW_OPENGL
 #ifndef TARGET_OS_SIMULATOR
-#ifndef __ANDROID__
                          | SDL_WINDOW_ALLOW_HIGHDPI
-#endif
 #endif
                          //| SDL_WINDOW_ALLOW_HIGHDPI
                          | SDL_WINDOW_RESIZABLE

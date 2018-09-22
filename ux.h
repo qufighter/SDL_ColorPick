@@ -163,11 +163,13 @@ static Ux* Singleton();
     static void clickCancelClearPallete(uiObject *interactionObj, uiInteraction *delta);
     static void removePalleteColor(uiObject *interactionObj, uiInteraction *delta);
     static void removeHistoryColor(uiObject *interactionObj, uiInteraction *delta);
+    static void clickZoomSliderBg(uiObject *interactionObj, uiInteraction *delta);
     static void interactionHZ(uiObject *interactionObj, uiInteraction *delta);
     static void interactionSliderVT(uiObject *interactionObj, uiInteraction *delta);
     static void interactionHorizontal(uiObject *interactionObj, uiInteraction *delta);
     static void interactionVert(uiObject *interactionObj, uiInteraction *delta);
     static void hueClicked(uiObject *interactionObj, uiInteraction *delta);
+    static void hueClicked(SDL_Color* c);
     static void interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteraction *delta);
     static bool bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *delta);
     static bool bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiInteraction *delta); // return true always, unless the interaction should be dropped and not bubble for some reason....

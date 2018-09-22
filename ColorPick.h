@@ -27,7 +27,7 @@
 //#include "ux-anim.h"
 
 #if __ANDROID__
-#include "Platform/Android/FileChooser.h" // platform specific include!  this is for ios (and osx...)
+#include "Platform/Android/FileChooser.h" // platform specific include!
 #else
 #include "FileChooser.h" // platform specific include!  this is for ios (and osx...)
 #endif
@@ -153,7 +153,7 @@ private:
     bool has_velocity = false;
     float velocity_x =0;
     float velocity_y =0;
-    float pan_friction = 0.8;
+    float pan_friction = 0.9;
 
 
 

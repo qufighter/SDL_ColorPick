@@ -10,7 +10,7 @@
 
 
 #if __ANDROID__
-#include "Platform/Android/FileChooser.h" // platform specific include!  this is for ios (and osx...)
+#include "Platform/Android/FileChooser.h" // platform specific include!
 #else
 #include "FileChooser.h" // platform specific include!  this is for ios (and osx...)
 #endif
@@ -297,6 +297,7 @@ Ux::uiObject* Ux::create(void){
     zoomSliderBg->setBoundaryRect( 0.05, 0, 0.88, 1);  /// TODO move size components into function to calculate on window rescale bonus points
 //    printCharToUiObject(zoomSliderBg, CHAR_VERTICAL_BAR, DO_NOT_RESIZE_NOW);
     printCharToUiObject(zoomSliderBg, CHAR_ASYMP_SLOPE, DO_NOT_RESIZE_NOW);
+    zoomSliderHolder->setInteraction(clickZoomSliderBg);
     zoomSliderHolder->addChild(zoomSliderBg);
 
 
@@ -1189,10 +1190,16 @@ void Ux::interactionAddHistory(uiObject *interactionObj, uiInteraction *delta){
 
 }
 
+// possibly unused now...
 void Ux::hueClicked(uiObject *interactionObj, uiInteraction *delta){
-    OpenGLContext* ogg=OpenGLContext::Singleton();
-    ogg->pickerForHue(&interactionObj->backgroundColor);
+    hueClicked(&interactionObj->backgroundColor);
 }
+
+void Ux::hueClicked(SDL_Color* c){
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    ogg->pickerForHue(c);
+}
+
 
 void Ux::interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteraction *delta){
     //SDL_Log("directionalllly");
@@ -1286,6 +1293,16 @@ void Ux::interactionSliderVT(uiObject *interactionObj, uiInteraction *delta){
 
     Ux* myUxRef = Ux::Singleton();
     myUxRef->updateRenderPosition(interactionObj);
+}
+
+void Ux::clickZoomSliderBg(uiObject *interactionObj, uiInteraction *delta){
+    float percent = (delta->px - interactionObj->collisionRect.x) * (1.0/interactionObj->collisionRect.w); // it is arguable delta aleady "know" this?
+    if( percent < 0 ) percent = 0;
+    else if( percent > 1 ) percent = 1;
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    ogg->setFishScalePerentage(interactionObj, percent);
+    Ux* myUxRef = Ux::Singleton();
+    myUxRef->zoomSlider->updateAnimationPercent(percent, 0.0);
 }
 
 //static // this seems like interactionSliderHZ ? // must have move boundary rect....

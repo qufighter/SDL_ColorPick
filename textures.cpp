@@ -421,7 +421,9 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
             SDL_FreeSurface(new_contain_in_surface); // free temp surface
 
-        }
+
+            //return textureid;
+        }//end new_contain_in_surface
 
 //        rect.x = 0.0f;
 //        rect.y = 0.0f;

@@ -365,9 +365,8 @@ textureList->add("textures/simimage.png");
 
 
 
-
-    textureId_default = textures->GenerateTexture();
     textureId_pickImage = textures->GenerateTexture();
+    textureId_default = textures->GenerateTexture();
     textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
 
 
@@ -531,15 +530,15 @@ void OpenGLContext::renderScene(void) {
 
 
     if( has_velocity ){
-        colorPickState->mmovex = velocity_x;
-        colorPickState->mmovey = velocity_y;
+        colorPickState->mmovex = SDL_floorf(velocity_x);
+        colorPickState->mmovey = SDL_floorf(velocity_y);
 
         velocity_x *= pan_friction;
         velocity_y *= pan_friction;
         // set movex and movey accordingly
         if( fabs(velocity_y) < 0.01 && fabs(velocity_x) < 0.01 ){
-            has_velocity = false;
-            renderShouldUpdate=false;
+            has_velocity = false; // never reached
+            //renderShouldUpdate=false;
         }
     }
 
@@ -565,6 +564,7 @@ void OpenGLContext::renderScene(void) {
 
     }else{
         renderShouldUpdate=false;
+        has_velocity = false;
     }
     // then re-crop our source texture properly
 
