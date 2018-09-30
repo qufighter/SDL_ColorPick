@@ -1,7 +1,0 @@
-#ifndef __OSXONLYOPENGL_HEADER__
-#define __OSXONLYOPENGL_HEADER__
-
-
-
-
-#endif// __OSXONLYOPENGL_HEADER__
