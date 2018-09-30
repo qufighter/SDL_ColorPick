@@ -48,6 +48,15 @@ typedef enum { BUTTON_CLEAR_PALLETE, BUTTON_SAVE_PALLETE, PALLETE_EXTRA_BUTTONS_
 //static bool is_monitoring=false;  // THIS IS A DEBUGING VARIABLE!
 
 
+typedef enum : uint8_t {
+    NO_TEXT,
+    LTR,
+    RTL,
+    BTT,
+    TTB
+} TEXT_DIR_ENUM;
+
+
 typedef struct Float_Point
 {
     Float_Point(){
@@ -170,6 +179,7 @@ static Ux* Singleton();
     static void interactionVert(uiObject *interactionObj, uiInteraction *delta);
     static void hueClicked(uiObject *interactionObj, uiInteraction *delta);
     static void hueClicked(SDL_Color* c);
+    static void pickerForHuePercentage(float percent);
     static void interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteraction *delta);
     static bool bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *delta);
     static bool bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiInteraction *delta); // return true always, unless the interaction should be dropped and not bubble for some reason....
@@ -220,6 +230,7 @@ static Ux* Singleton();
     // if we have 1off create functions, we will need to store a bunch of references to the "important" objects
 
         uiObject *bottomBar;
+        uiObject *bottomBarRightStack;
         uiObject *pickSourceBtn;
         uiObject *addHistoryBtn;
 

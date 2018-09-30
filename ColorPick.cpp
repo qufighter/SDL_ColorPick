@@ -29,6 +29,12 @@ OpenGLContext::OpenGLContext(void) {
     lastHue=nullptr;
     position_x = 0;
     position_y = 0;
+
+    pixelInteraction.friction=4.3;
+}
+
+SDL_Window* OpenGLContext::getSdlWindow(){
+    return sdlWindow;
 }
 
 bool OpenGLContext::createContext(SDL_Window *PsdlWindow) {
@@ -252,6 +258,7 @@ void OpenGLContext::setupScene(void) {
     textureList->add("textures/4.png");
    // textureList->add("textures/simimage_NOEXIST.png");
     textureList->add("textures/ascii.png");
+    textureList->add("textures/anim.gif");  // TODO: broken on android...
 textureList->add("textures/simimage.png");
  //   textureList->add("textures/p04_shape1.bmp");
  //   textureList->add("textures/p10_shape1.bmp");
@@ -274,7 +281,6 @@ textureList->add("textures/simimage.png");
     textureList->add("textures/unnamed.jpg");
     textureList->add("textures/DSC04958.JPG");
     textureList->add("textures/IMG_0172.jpg");
-    textureList->add("textures/anim.gif");
     testTexturesBuiltin = new Ux::uiListLoopingIterator<Ux::uiList<const char*, Uint8>, const char*>(textureList);
 
     //fullPickImgSurface = textures->LoadSurface("textures/4.png");
@@ -505,8 +511,11 @@ void OpenGLContext::setFishScalePerentage(Ux::uiObject *interactionObj, float pe
 //}
 
 void OpenGLContext::triggerVelocity(float x, float y){
-    velocity_x = x;
+    velocity_x = x; // maybe remove in favor of using pixelInteraction
     velocity_y = y;
+
+    accumulated_velocity_y=0;
+    accumulated_velocity_x=0;
     has_velocity = true;
 }
 void OpenGLContext::clearVelocity(){
@@ -522,22 +531,41 @@ void OpenGLContext::clearVelocity(){
  Next up we are going to clear our COLOR, DEPTH and STENCIL buffers to avoid overlapping of renders.
  Any of your other rendering code will go here. Finally we are going to swap buffers.
  */
-float velocityMin = 0.0000001f;
+#define VELOCITY_MIN 0.0000001f
 
 void OpenGLContext::renderScene(void) {
 
     debugGLerror("renderScene begin");
+    //SDL_Log("renderScene begin");
 
 
     if( has_velocity ){
-        colorPickState->mmovex = SDL_floorf(velocity_x);
-        colorPickState->mmovey = SDL_floorf(velocity_y);
 
-        velocity_x *= pan_friction;
-        velocity_y *= pan_friction;
+        accumulated_velocity_y += pixelInteraction.vy;
+        accumulated_velocity_x += pixelInteraction.vx;
+        pixelInteraction.update();
+
+        // we now take any full integer amounts visible in the accumulated velocity....
+        /// todo does this work good for negative numbers?? ANSWER : no  X: -1.267014 -2 Y: -0.894823 -1 -- it always rounds towards negative even for negativess
+//        int acu_v_y_int = SDL_floorf(accumulated_velocity_y);
+//        int acu_v_x_int = SDL_floorf(accumulated_velocity_x);
+        /// todo does this work good for negative numbers?? ANSWER : yes  X: -9.183308 -9 Y: -5.968337 -5    X: -9.247559 -9 Y: -6.010095 -6
+        int acu_v_y_int = (int)(accumulated_velocity_y);
+        int acu_v_x_int = (int)(accumulated_velocity_x);
+        SDL_Log("Velocity is: %f %f", pixelInteraction.vx, pixelInteraction.vy);
+        //SDL_Log("Velocity is: X: %f %i Y: %f %i", accumulated_velocity_x, acu_v_x_int, accumulated_velocity_y, acu_v_y_int);
+        colorPickState->mmovex = acu_v_x_int;
+        colorPickState->mmovey = acu_v_y_int;
+        accumulated_velocity_x -= acu_v_x_int; // subtract the velocity we "already" applied, remainder will continue to be tracked and might still apply...
+        accumulated_velocity_y -= acu_v_y_int;
+
+//        colorPickState->mmovex = SDL_floorf(velocity_x);
+//        colorPickState->mmovey = SDL_floorf(velocity_y);
+//        velocity_x *= pan_friction; // cleanup?
+//        velocity_y *= pan_friction;
         // set movex and movey accordingly
-        if( fabs(velocity_y) < 0.01 && fabs(velocity_x) < 0.01 ){
-            has_velocity = false; // never reached
+        if( fabs(pixelInteraction.vy) < VELOCITY_MIN && fabs(pixelInteraction.vx) < VELOCITY_MIN ){
+            has_velocity = false; // never reached ????
             //renderShouldUpdate=false;
         }
     }
@@ -556,15 +584,24 @@ void OpenGLContext::renderScene(void) {
         // can also just omit when zoomed. - excep when u can see it... so near edges it does not work // fishEyeScale < 3.0f ? textureId_default : textureNone
         //textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
 
+
         textures->LoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
+
+        if( has_velocity && position_x_was == position_x && position_y_was == position_y ){
+            // we have velocity but we are not moving (reached corner) save some battery...  we could let it try to go a few frames maybe.... for accumulator sake...
+            has_velocity=false;
+        }
+
+        position_x_was = position_x;
+        position_y_was = position_y;
 
 // lets figure out how to maintain this position into the shader for the full image texture...
 
         updateColorPreview();
 
-    }else{
+    }else if( !has_velocity ){
         renderShouldUpdate=false;
-        has_velocity = false;
+        //has_velocity = false;
     }
     // then re-crop our source texture properly
 

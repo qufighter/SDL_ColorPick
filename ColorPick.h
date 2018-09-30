@@ -85,6 +85,8 @@ public:
     void renderScene(void); // Render scene (display method from previous OpenGL tutorials)
     void chooseFile(void);
 
+    SDL_Window* getSdlWindow(void);
+
     SDL_Surface *fullPickImgSurface;
     SDL_Surface *colorPickerFGSurfaceGradient;
     SDL_Color* lastHue;
@@ -111,6 +113,8 @@ public:
     Textures *textures;
 
     Ux *generalUx;
+
+    uiInteraction pixelInteraction;
 
     // probably should not be public but easier this way!
     int mmovex, mmovey; /// needs to be ux accessible singleton.......
@@ -144,6 +148,9 @@ private:
     int halfTextureSize = textureSize * 0.5;
     int position_x = 0;
     int position_y = 0;
+    int position_x_was = 0;
+    int position_y_was = 0;
+
     int loadedImageMaxSize = 0;
 
     Ux::uiObject* rootUiObject; // there is a root ui object
@@ -155,7 +162,8 @@ private:
     float velocity_y =0;
     float pan_friction = 0.9;
 
-
+    float accumulated_velocity_x =0;
+    float accumulated_velocity_y =0;
 
     int windowWidth; // Store the width of our window  - this is a dupe of var in color pick state!?
     int windowHeight; // Store the height of our window

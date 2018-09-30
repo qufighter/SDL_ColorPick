@@ -141,7 +141,15 @@ SDL_Surface* Textures::ConvertSurface(SDL_Surface *origSurface) {
         }
         SDL_FreeSurface(origSurface);
         return surface;
+    }else if (origSurface->format->BytesPerPixel == 1){ // gif may be 1bpp... (observed on android)
+        SDL_Surface *surface;
+        surface = SDL_ConvertSurfaceFormat(origSurface, SDL_PIXELFORMAT_ARGB8888, 0);
+        SDL_FreeSurface(origSurface);
+        return surface;
     }
+
+
+
 
 
 
@@ -203,6 +211,7 @@ SDL_bool ModeForSurface(SDL_Surface *surface, GLint* internalFormat, GLenum* for
         }
     } else {
         SDL_Log("Possible ERROR or otherwise %d BytesPerPixel not supported", surface->format->BytesPerPixel);
+
         //SDL_FreeSurface(surface);
         return SDL_FALSE;
     }
@@ -395,6 +404,8 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
             glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);//GL_NEAREST
             glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 
+            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)( GL_CLAMP_TO_EDGE ) );
+            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)( GL_CLAMP_TO_EDGE ) );
 //
 //                glGenerateMipmap(GL_TEXTURE_2D);
 //                glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
@@ -455,8 +466,8 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
         if( didBlit != 0 ){
             SDL_Log("Blit problem");
-            //SDL_Log("%s", SDL_GetError());
-            return 0;
+            SDL_Log("%s", SDL_GetError());
+            //return 0;
         }
 
 

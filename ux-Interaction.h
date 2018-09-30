@@ -20,8 +20,10 @@ struct uiInteraction
         dy=0;
         //        mvx=0;
         //        mvy=0;
+        friction = 1.3;  // really inverse friction?? higher values for less friction?
     }
     void begin(float x, float y){
+
         px=x; // previous
         py=y;
         ix=x; // initial
@@ -36,13 +38,18 @@ struct uiInteraction
         //        mvx=0;
         //        mvy=0;
     }
-    void update(float x, float y, float pdx, float pdy){ // todo pass delta and relative
+    bool isZeroed(){
+        return px == ix && py == iy;
+    }
+    void done(float x, float y){ // optional bool performFinalUpdate ?
+        // last update...
+        //this->update(x, y, 0, 0); // tell me why update on mouse up....  they dont wanna move anymore
+        rx =0;
+        ry =0; // reset these so we can keep calling update?  not always needed... plus sometimes rx and ry are needed!
+    }
+    void update(float x, float y){ // todo pass delta and relative
         // maybe we should scale the coordinates to screen here instead....
         // TODO pass time in?
-
-        int thisUpdate = SDL_GetTicks();
-        int elapsed = thisUpdate - lastUpdate;
-        if( elapsed < 1 ) elapsed = 1;
 
         rx = x - px;
         ry = y - py;
@@ -50,9 +57,24 @@ struct uiInteraction
         px=x;
         py=y;
 
+        dx = px - ix;
+        dy = py - iy; // when this is greater than 0 we have moved down
+
+        this->update();
+
+    }
+    void update(){ // update without movement.... or after movement applied
+        int thisUpdate = SDL_GetTicks();
+        int elapsed = thisUpdate - lastUpdate;
+        if( elapsed < 1 ) elapsed = 1;
+
         // decay per millisecond... 1.0/1000 = .001 decelleration rate per second
         // except now 0.5/1000 = 0.0005
-        float decay = (1.3 / elapsed); // and then apply the last velocity diff, which may be zero...
+        // 1.3 / 1000 =  0.0013
+        float decay = (friction / elapsed); // and then apply the last velocity diff, which may be zero...
+        if( decay > 1.0 ){
+            decay = 0.99999999;
+        }
         vx = (vx * decay) + (decay * rx);
         vy = (vy * decay) + (decay * ry);
         //        vx = (vx + rx) * decay;// + (decay * rx);
@@ -60,11 +82,11 @@ struct uiInteraction
 
         //SDL_Log("Velocity is: %f %f", vx, vy);
 
-        dx = px - ix;
-        dy = py - iy; // when this is greater than 0 we have moved down
+        // velocity should be measured per unit time?
 
         lastUpdate=thisUpdate;
     }
+
     void fixX(Float_Rect r, Float_Rect p){
         float min = r.x;
         if( px < min ){
@@ -113,6 +135,7 @@ struct uiInteraction
     float vx; // velocity
     float vy;
 
+    float friction;
     //screenpixels: Float_Point
 
 

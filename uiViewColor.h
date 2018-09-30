@@ -124,6 +124,14 @@ struct uiViewColor{
     SDL_Color* last_color;
     float alphaMulitiplier;
 
+    void resize(Float_Rect boundaries){
+
+        uiObjectItself->setBoundaryRect(&boundaries);
+
+        //hexValueText->setChildNodeDirection(TEXT_DIR_ENUM::TTB, false); // see TEXT_DIR_ENUM
+
+    }
+
     void update(SDL_Color* color){
         //char* resultText6char; //leaking memory???
         Ux* uxInstance = Ux::Singleton();

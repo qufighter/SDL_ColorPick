@@ -177,7 +177,6 @@ struct uiObject
         childListIndex = 0;
         Ux::setColor(&foregroundColor, 255, 255, 255, 255);
 
-        containText=false;
         doesInFactRender=true;
         doesRenderChildObjects=true;
         isInBounds=true;
@@ -205,8 +204,9 @@ struct uiObject
         squarify_keep_hz=false;
         squarify_keep_vt=false;
         squarify_keep_contained=false;
-        
 
+        containText=false;
+        textDirection=TEXT_DIR_ENUM::NO_TEXT; // this is really child node direction... we can print the child nodes in some pre-defined ways
     }
     bool isDebugObject;
     bool isRoot;
@@ -218,7 +218,8 @@ struct uiObject
     bool doesInFactRender; // child objects still will be rendered, some objects are just containers and need not render anything
     bool doesRenderChildObjects;
     bool isInBounds; // equivilent to needs render
-    bool containText;
+    bool containText; // this is merely a font rendering setting.... not containsText, which is textDirection==TEXT_DIR_ENUM::NO_TEXT
+    uint8_t textDirection;
     bool testChildCollisionIgnoreBounds = false;
 
     bool is_being_viewed_state = false; // some object interactions need to track the state of the toggle into/outof view
@@ -288,8 +289,28 @@ struct uiObject
         Ux::setRect(&origBoundryRect, x, y, w, h);
     }
 
+    void setBoundaryRectForAnimState(float x, float y, float w, float h, float xH, float yH, float wH, float hH){
+        if( is_being_viewed_state ){
+            Ux::setRect(&boundryRect, x, y, w, h);
+        }else{
+            Ux::setRect(&boundryRect, xH, yH, wH, hH);
+        }
+        Ux::setRect(&origBoundryRect, x, y, w, h);
+    }
+
     void resetPosition(){
         Ux::setRect(&boundryRect, &origBoundryRect); // consider alternative interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) );
+    }
+
+    void setChildNodeDirection(uint8_t textDir){ // see TEXT_DIR_ENUM
+        setChildNodeDirection(textDir, false);
+    }
+
+    void setChildNodeDirection(uint8_t textDir, bool containChildNodes){
+        containText = containChildNodes;
+        textDirection = textDir;
+        // it is arguable we shoudl auto organize the child nodes right now (rather than during update)
+        organizeChildNodesBasedOnTextDir();
     }
 
     void hide(){
@@ -878,8 +899,70 @@ struct uiObject
         return stackingOffset + (renderRect.w * 2.0);
     }
     
+    void organizeChildNodesBasedOnTextDir(){
 
-    
+        int ctr=0;
+        int i=0;
+        int charOffset = 0;
+        //char * i;
+        uiObject* letter;
+
+
+        int len=getChildCount();
+
+        float letterWidth = 1.0 / len; // for containText mode
+
+//        printObj->doesNotCollide = true;
+//        printObj->doesInFactRender = printObj->containText; // the container is never the size to render.. unless contains text?!
+
+
+        if( containText == true ){
+            if( textDirection == TEXT_DIR_ENUM::LTR ){
+                for( ctr=0,i=0; i<len; i++,ctr++ ){ // TODO dupicate counters....
+                    letter = childList[i];
+                    letter->setBoundaryRect( (i*letterWidth), 0.0, letterWidth, 1.0 );
+                }
+            }else if( textDirection == TEXT_DIR_ENUM::RTL ){
+                for( ctr=0,i=len-1; i>-1; i--,ctr++ ){
+                    letter = childList[ctr];
+                    letter->setBoundaryRect( (i*letterWidth), 0.0, letterWidth, 1.0 );
+                }
+            }else if( textDirection == TEXT_DIR_ENUM::TTB ){
+                for( ctr=0,i=0; i<len; i++,ctr++ ){ // TODO dupicate counters....
+                    letter = childList[i];
+                    letter->setBoundaryRect( 0.0, (i*letterWidth), 1.0, letterWidth );
+                }
+            }else if( textDirection == TEXT_DIR_ENUM::BTT ){
+                for( ctr=0,i=len-1; i>-1; i--,ctr++ ){
+                    letter = childList[ctr];
+                    letter->setBoundaryRect( 0.0, (i*letterWidth), 1.0, letterWidth );
+                }
+            }
+        }else{
+            if( textDirection == TEXT_DIR_ENUM::LTR ){
+                for( ctr=0,i=0; i<len; i++,ctr++ ){ // TODO dupicate counters....
+                    letter = childList[i];
+                    letter->setBoundaryRect( (i*1.0), 0.0, 1.0, 1.0);
+                }
+            }else if( textDirection == TEXT_DIR_ENUM::RTL ){
+                for( ctr=0,i=len-1; i>-1; i--,ctr++ ){
+                    letter = childList[ctr];
+                    letter->setBoundaryRect( (i*1.0), 0.0, 1.0, 1.0);
+                }
+            }else if( textDirection == TEXT_DIR_ENUM::TTB ){
+                for( ctr=0,i=0; i<len; i++,ctr++ ){ // TODO dupicate counters....
+                    letter = childList[i];
+                    letter->setBoundaryRect( 0.0, (i*1.0), 1.0, 1.0);
+                }
+            }else if( textDirection == TEXT_DIR_ENUM::BTT ){
+                for( ctr=0,i=len-1; i>-1; i--,ctr++ ){
+                    letter = childList[ctr];
+                    letter->setBoundaryRect( 0.0, (i*1.0), 1.0, 1.0); // arguable this should render bottom up... it is still top down from first char position with reversed text
+                }
+            }
+        }
+    }
+
 };
 
 

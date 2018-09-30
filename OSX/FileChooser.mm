@@ -6,6 +6,9 @@
 //
 //
 
+//ARE YOU GETTNG ODD ERARORS / FAILUERS BUILDING / LINKING ??? IF SO DELETE ANDROID VERSIO OF ATHIS FIL FROM PROJECT
+
+
 #import "FileChooser.h"
 #import <Cocoa/Cocoa.h>
 //#import <Foundation/Foundation.h>
@@ -15,7 +18,34 @@
 
 void beginImageSelector()
 {
-    //[myFc selectPhoto];
+
+    NSOpenPanel* openDlg = [NSOpenPanel openPanel];
+
+    [openDlg setCanChooseFiles:YES];
+    [openDlg setCanChooseDirectories:NO];
+
+//    [openDlg setPrompt:@"Select an Image"];
+//    [openDlg setTitle: @"Choose an image to pick colors from"];
+    if ( [openDlg runModal] == NSOKButton )
+    {
+        NSArray* files = [openDlg URLs];
+        for( int i = 0; i < [files count]; i++ )
+        {
+            NSString* fileName = [[files objectAtIndex:i] path];
+            NSLog(@"file: %@", fileName);
+
+            openglContext->imageWasSelectedCb(openglContext->textures->LoadSurface([fileName cStringUsingEncoding:NSUTF8StringEncoding]));
+
+            //SDL_ShowWindow(window);
+            SDL_RaiseWindow(openglContext->getSdlWindow());
+            
+            // OUR mAIN window did not regain focus!!!
+            break; // one image supported....
+        }
+    }else{
+        SDL_RaiseWindow(openglContext->getSdlWindow());
+    }
+
 }
 
 bool openURL(const std::string &url)
@@ -23,6 +53,8 @@ bool openURL(const std::string &url)
     bool success = false;
 
     [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@(url.c_str())]];
+
+
 
 //    @autoreleasepool
 //    {

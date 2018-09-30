@@ -59,15 +59,63 @@ struct uiHueGradient{
     int totalColors = 1530;
     SDL_Color manyColors[1530];// *totalColorsPer * 6
 
+    float lastPickPercent = 0.0f;
+    bool lockPickerEvent = false;
     static void interactionHueBgClicked(uiObject *interactionObj, uiInteraction *delta){
         uiHueGradient* self = ((uiHueGradient*)interactionObj->myUiController);
         float percent = (delta->px - interactionObj->collisionRect.x) * (1.0/interactionObj->collisionRect.w); // it is arguable delta aleady "know" this?
         if( percent < 0 ) percent = 0;
         else if( percent > 1 ) percent = 1;
         SDL_Log("HUE PCT %f", percent);
-        int clrOffset =  SDL_floorf(self->totalColors * percent);
+
+
+        self->lastPickPercent = percent;
+        //int clrOffset =  SDL_floorf(self->totalColors * percent); g
         Ux* uxInstance = Ux::Singleton();
-        uxInstance->hueClicked(&self->manyColors[clrOffset]);
+        
+        //uxInstance->hueClicked(self->colorForPercent(percent));
+
+        // instead of updating it right now as the above would do.... since it is intense
+
+        if( self->lockPickerEvent ) return;
+        self->lockPickerEvent = true; // hmm seems like we still need to use a timer if we really want to debounce it...
+        SDL_AddTimer(250, my_callbackfunc, self);
+    }
+
+    static Uint32 my_callbackfunc(Uint32 interval, void* parm){
+
+        Ux* uxInstance = Ux::Singleton();
+        uiHueGradient* self = uxInstance->huePicker;
+//        if( self->lockPickerEvent ) return 0;
+
+
+        SDL_Event event;
+        SDL_UserEvent userevent;
+        userevent.type = SDL_USEREVENT;
+        userevent.code = 1;
+        userevent.data1 = (void*)&pickerForPercentV;
+        userevent.data2 = &self->lastPickPercent; // &percent; // waste arg
+        event.type = SDL_USEREVENT;
+        event.user = userevent;
+        SDL_PushEvent(&event);
+
+        return 0;
+        //return interval;
+    }
+
+
+    static void pickerForPercentV(float* percent){ // don't use the arg... its out of date!
+        Ux* uxInstance = Ux::Singleton();
+        uiHueGradient* self = uxInstance->huePicker;
+        uxInstance->hueClicked(self->colorForPercent(self->lastPickPercent));
+//        uxInstance->pickerForHuePercentage(*percent);
+        self->lockPickerEvent = false;
+    }
+
+
+    SDL_Color* colorForPercent(float percent){
+        int clrOffset =  SDL_floorf(this->totalColors * percent);
+        return &this->manyColors[clrOffset];
     }
 
 //    static void interactionHueClicked(uiObject *interactionObj, uiInteraction *delta){

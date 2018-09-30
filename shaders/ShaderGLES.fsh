@@ -303,7 +303,9 @@ void main()
             }else{
                 ocolor=texture2D(texture2, backgroundTexCoord);
             }
-            ocolor*=0.8;
+//            float desat = (ocolor.r + ocolor.g + ocolor.b) / 3.0;
+//            ocolor.r=desat, ocolor.g=desat, ocolor.b=desat;
+            //ocolor*=0.8;
             bcolor=ocolor;
         }
         gl_FragColor = bcolor;
@@ -317,7 +319,9 @@ void main()
         }else{
             ocolor=texture2D(texture2, backgroundTexCoord);
         }
-        ocolor*=0.8;
+//        float desat = (ocolor.r + ocolor.g + ocolor.b) / 3.0;
+//        ocolor.r=desat, ocolor.g=desat, ocolor.b=desat;
+        //ocolor*=0.8;
 
         //vec4 bcolor=texture2D(texture2,  pixelPosition); //maths
         //gl_FragColor=bcolor;

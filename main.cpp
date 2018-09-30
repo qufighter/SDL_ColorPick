@@ -94,6 +94,8 @@ render(SDL_Renderer *renderer) // DEFAULT demo using sdl render, delete me
     SDL_RenderPresent(renderer);
 }
 
+typedef void (*voidvoidp)(void *someParam);
+
 int fileDropsAllowed = 0;
 int mousStateDown = 0; // really should count fingers down possibly, finger event support multi touch, mosue events dont!
 bool multiTouchMode = false;
@@ -191,24 +193,20 @@ int EventFilter(void* userdata, SDL_Event* event){
             // SDL_TouchFingerEvent event->tfinger
 
             int tx,ty;
-            SDL_GetRelativeMouseState(&tx, &ty);
-            collected_x =0;
-            collected_y =0;
-            input_velocity_x = 0;
-            input_velocity_y = 0;
+            //SDL_GetRelativeMouseState(&tx, &ty);
+
 
             SDL_Log("SDL_FINGERDOWN");
 
-
-
-
             SDL_GetMouseState(&tx, &ty);
             SDL_Log("MOUSE xy %d %d", tx,ty);
+            openglContext->pixelInteraction.begin(tx, ty);
             openglContext->generalUx->currentInteraction.begin( (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h );
             SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
 
             didInteract = openglContext->generalUx->triggerInteraction();
 
+            openglContext->renderShouldUpdate = true; // android??
 
 
             return 0;
@@ -222,45 +220,69 @@ int EventFilter(void* userdata, SDL_Event* event){
                 if( !didInteract ){
 
 
+                    //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 
-                    SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 
+#if __ANDROID__
+                    bool wasZero = openglContext->pixelInteraction.isZeroed();  // on android this event won't fire right away - in fact it takes quite a LOT of movement to reach SDL_FINGERMOTION here....
+#endif
+
+
+                    SDL_GetMouseState(&tx, &ty);
+                    SDL_Log("MOUSE xy %d %d", tx,ty);
+                    openglContext->pixelInteraction.update(tx, ty);
+#if __ANDROID__
+
+                    if( wasZero ){
+                        if( openglContext->pixelInteraction.rx > 1.0 ){
+                            openglContext->pixelInteraction.rx = 1.0;
+                        }else if( openglContext->pixelInteraction.rx < -1.0 ){
+                            openglContext->pixelInteraction.rx = -1.0;
+                        }
+                        if( openglContext->pixelInteraction.ry > 1.0 ){
+                            openglContext->pixelInteraction.ry = 1.0;
+                        }else if( openglContext->pixelInteraction.ry < -1.0 ){
+                            openglContext->pixelInteraction.ry = -1.0;
+                        }
+                    }
+#endif
+
+
+
+
+                    //SDL_Log("Velocity is: %f %f", openglContext->pixelInteraction.vx, openglContext->pixelInteraction.vy);
+
+                    colorPickState->mmovex = openglContext->pixelInteraction.rx;
+                    colorPickState->mmovey = openglContext->pixelInteraction.ry;
 
                     // velocity has a multiplier the closer
                     //OpenGLContext->fishEyeScalePct is to zero
                     // below 0.1
                     //
                     if( openglContext->fishEyeScalePct < 0.05 ){
+                        // to move faster when zoomed out (sensible)
                         float factor = (0.05 - openglContext->fishEyeScalePct);
                         colorPickState->mmovex *= 1 + (80.0 * factor);
                         colorPickState->mmovey *= 1 + (80.0 * factor);
                     }else if( openglContext->fishEyeScale > MAX_FISHEYE_ZOOM - 1.0){
-                        // todo some equivilent near other exterme end
-                        // where movements are scaled down?
-
-                        // SDL_TouchFingerEvent event->tfinger (will this be null on desktop SDL_MOUSEMOTION)
-
-                        float factor = (0.05 - openglContext->fishEyeScalePct);
-                        colorPickState->mmovex *= 1 + (0.5 * factor);
-                        colorPickState->mmovey *= 1 + (0.5 * factor);
-
-
-                        //the next idea is motion hints since accumulated motion will result in a movement
-                        // so we can hint how imminent the movement is
-                        // and perhaps.....
+//                        // to move slower when zoomed in ( this works VERY poorly.... )  we should move this logic and continue to accumulate movements
+//                        // todo some equivilent near other exterme end
+//                        // where movements are scaled down?
+//
+//                        // SDL_TouchFingerEvent event->tfinger (will this be null on desktop SDL_MOUSEMOTION)
+//
+//                        float factor = (0.05 - openglContext->fishEyeScalePct);
+//                        colorPickState->mmovex *= 1 + (0.5 * factor);
+//                        colorPickState->mmovey *= 1 + (0.5 * factor);
+//
+//
+//                        //the next idea is motion hints since accumulated motion will result in a movement
+//                        // so we can hint how imminent the movement is
+//                        // and perhaps.....
 
                     }
 
 
-                    collected_x += colorPickState->mmovex;
-                    collected_y += colorPickState->mmovey;
-
-   //TODO                 // there is a FLAW here - start dragging in one direction, then change direction AND release before reachign the origin point... it will fly in teh wrong direction
-                    // this is because the collected_x is really just dx (difference from origin) and not true measure of velocity
-                    // take a loook at uiInteraction........
-
-                    input_velocity_x +=collected_x*0.1; //TIMING
-                    input_velocity_y +=collected_y*0.1;
 
                     SDL_Log("MOUSE xy %d %d", colorPickState->mmovex,colorPickState->mmovey);
                     openglContext->renderShouldUpdate = true;
@@ -269,14 +291,11 @@ int EventFilter(void* userdata, SDL_Event* event){
                 //colorPickState->mmovex = event->motion.xrel;
                 //colorPickState->mmovey = event->motion.yrel;
 
-//                    SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
-//                    collected_x += colorPickState->mmovex;
-//                    collected_y += colorPickState->mmovey;
 
 
                     SDL_GetMouseState(&tx, &ty);
                     SDL_Log("MOUSE xy %d %d", tx,ty);
-                    openglContext->generalUx->currentInteraction.update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h,  (collected_x*ui_mmv_scale)/win_w, (collected_y*ui_mmv_scale)/win_h );
+                    openglContext->generalUx->currentInteraction.update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h);
                     SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
                     SDL_Log("MOUSE xy delta %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
 
@@ -287,7 +306,6 @@ int EventFilter(void* userdata, SDL_Event* event){
 
                     openglContext->renderShouldUpdate = true; /// TODO interactionUpdate calls generalUx->updateRenderPositions() should cause the UI to update... for now we just redraw everything
 
-                    SDL_Log("MOUSE DELTA xy %d %d", collected_x,collected_y);
                 }
 
             }
@@ -302,14 +320,20 @@ int EventFilter(void* userdata, SDL_Event* event){
                 // we may be able to add this, but we need to track velocity better
                 SDL_GetMouseState(&tx, &ty);
                 SDL_Log("MOUSE xy %d %d", tx,ty);
-                openglContext->generalUx->currentInteraction.update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h,  (collected_x*ui_mmv_scale)/win_w, (collected_y*ui_mmv_scale)/win_h );
+                openglContext->generalUx->currentInteraction.update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h);
                 SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
                 SDL_Log("MOUSE xy delta %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
+            }else{
+
+                SDL_GetMouseState(&tx, &ty);
+                SDL_Log("MOUSE xy %d %d", tx,ty);
+                openglContext->pixelInteraction.done(tx, ty );
+
             }
 
-            if( mousStateDown == 1 && collected_x == 0 && collected_y == 0 ){
+            if( mousStateDown == 1 && openglContext->pixelInteraction.dx == 0 && openglContext->pixelInteraction.dy == 0 ){
                 // it was a single touch
-                SDL_Log("SDL_FINGERUP was reach - see if position did not change %d, %d",collected_x,collected_y );
+                SDL_Log("SDL_FINGERUP was reachd - position did not change" );
 
 
                 // so if we already didInteract....
@@ -349,7 +373,10 @@ int EventFilter(void* userdata, SDL_Event* event){
 
 
             }else{
-                openglContext->triggerVelocity(input_velocity_x, input_velocity_y);
+
+
+                openglContext->triggerVelocity(openglContext->pixelInteraction.vx, openglContext->pixelInteraction.vy);
+
             }
 
             if( mousStateDown == 1 ){
@@ -518,16 +545,11 @@ void ShowFrame(void*)
 //    openglContext->updateFrame(currentTime - lastTimerTime);
 
 
-
+    //SDL_Log("RENDER SCENE....");
 
     if( !openglContext->renderShouldUpdate && !openglContext->generalUx->uxAnimations->shouldUpdate ) return SDL_Delay(1);
 
     openglContext->generalUx->uxAnimations->shouldUpdate = false; // timer will keep reseetting this
-
-// TODO: TIMING!!!!
-
-    input_velocity_x *= 0.1;
-    input_velocity_y *= 0.1; // debatably we need to use timing, and always decrease these unless they are below the threshold
 
 
     openglContext->renderScene();
@@ -564,6 +586,8 @@ void ReshapeWindow(){
         // even if win_w == SCREEN_WIDTH
         //  not guaranteed to be hidpi !~!!! !
     }
+
+    colorPickState->ui_mmv_scale=ui_mmv_scale;
 
     // none of this experimental stuff really works:
     int displayIndex = SDL_GetWindowDisplayIndex(window);
@@ -703,9 +727,9 @@ compatibility; this flag is ignored
     SDL_Log("main -----------------------");
 
 
-
+#ifndef __ANDROID__
     SDL_AddEventWatch(EventFilter, nullptr); // second param is provided to filter which runs in different thread... void* userdata
-
+#endif
 
 
 
@@ -744,9 +768,40 @@ compatibility; this flag is ignored
                 case SDL_QUIT:
                     done = 1;
                     return 0;
+
+
+                case SDL_USEREVENT:  // maybe move all handing of these to , say main thread? (instead of coincidentally same thread on android)
+                {
+
+                    switch( event.user.code ){
+                        case 0:
+                        {
+                            SDL_Log("USER EVENT 0");
+#ifdef __ANDROID__
+                            getImagePathFromMainThread();
+#endif
+                            break;//return 0;
+                        }
+                        case 1:
+                        {
+                            SDL_Log("USER EVENT 1");
+                            void (*p) (void*) = (voidvoidp)event.user.data1;
+                            p(event.user.data2);
+                            // TODO instea
+                            //SDL_FlushEvent(SDL_USEREVENT);
+                            break;//return 0;
+                        }
+                    }
+
+                    break;//return 0;
+                }
             }
+#ifdef __ANDROID__
+            EventFilter(nullptr, &event);
+            // should we return teh reuslt of this??
+#endif
 
-
+            //break; // TODO instead of breakign out of the loop here, we should have really just handled the event above
         }
         //render(renderer);
 
