@@ -26,7 +26,7 @@ void beginImageSelector()
 
 //    [openDlg setPrompt:@"Select an Image"];
 //    [openDlg setTitle: @"Choose an image to pick colors from"];
-    if ( [openDlg runModal] == NSOKButton )
+    if ( [openDlg runModal] == NSOKButton ) // NSModalResponseOK
     {
         NSArray* files = [openDlg URLs];
         for( int i = 0; i < [files count]; i++ )

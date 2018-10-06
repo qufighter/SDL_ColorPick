@@ -47,8 +47,7 @@ typedef enum { BUTTON_CLEAR_PALLETE, BUTTON_SAVE_PALLETE, PALLETE_EXTRA_BUTTONS_
 
 //static bool is_monitoring=false;  // THIS IS A DEBUGING VARIABLE!
 
-
-typedef enum : uint8_t {
+typedef enum  {
     NO_TEXT,
     LTR,
     RTL,
@@ -221,6 +220,10 @@ static Ux* Singleton();
 
     float screenRatio = 1.0f;
     bool widescreen = false;
+
+    float clock_bar = 0.04; // clock bar height (ios etc)
+    float hue_picker = 0.05; // huePicker "height" (or width when widescreen)
+    float history_preview = 0.1; // historyPreview "height" (or width when widescreen)
 
     uiInteraction currentInteraction;
     uiObject *rootUiObject; // there is a root ui object

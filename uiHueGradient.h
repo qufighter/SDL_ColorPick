@@ -29,9 +29,9 @@ struct uiHueGradient{
         float width = 1.0 / 128;
 
         // 6 chunks of 0-255 rainbow
-        uiObject* currentContainer = new uiObject();
-        currentContainer->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
-        uiObjectItself->addChild(currentContainer); // add first so controller proagates
+//        uiObject* currentContainer = new uiObject();
+//        currentContainer->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+//        uiObjectItself->addChild(currentContainer); // add first so controller proagates
 
         while( offset < totalColors ){
             uiObject* rt = new uiObject();
@@ -39,7 +39,8 @@ struct uiHueGradient{
             Ux::setColor(&rt->backgroundColor, &manyColors[offset]);
             //rt->setInteractionCallback(interactionHueClicked); //setClickInteractionCallback
             rt->setBoundaryRect( counter * (width) , 0.0, width+0.01, 1.0);
-            currentContainer->addChild(rt);
+            //currentContainer->addChild(rt);
+            uiObjectItself->addChild(rt);
             offset+=12;
             counter++;
         }
@@ -63,7 +64,16 @@ struct uiHueGradient{
     bool lockPickerEvent = false;
     static void interactionHueBgClicked(uiObject *interactionObj, uiInteraction *delta){
         uiHueGradient* self = ((uiHueGradient*)interactionObj->myUiController);
-        float percent = (delta->px - interactionObj->collisionRect.x) * (1.0/interactionObj->collisionRect.w); // it is arguable delta aleady "know" this?
+        Ux* uxInstance = Ux::Singleton();
+        float percent;
+
+        if( uxInstance->screenRatio > 1.0 ){ // widescreen
+            percent = (delta->py - interactionObj->collisionRect.y) * (1.0/interactionObj->collisionRect.h); // it is arguable delta aleady "know" this?
+        }else{
+            percent = (delta->px - interactionObj->collisionRect.x) * (1.0/interactionObj->collisionRect.w); // it is arguable delta aleady "know" this?
+        }
+
+
         if( percent < 0 ) percent = 0;
         else if( percent > 1 ) percent = 1;
         SDL_Log("HUE PCT %f", percent);
@@ -71,8 +81,7 @@ struct uiHueGradient{
 
         self->lastPickPercent = percent;
         //int clrOffset =  SDL_floorf(self->totalColors * percent); g
-        Ux* uxInstance = Ux::Singleton();
-        
+
         //uxInstance->hueClicked(self->colorForPercent(percent));
 
         // instead of updating it right now as the above would do.... since it is intense
@@ -128,6 +137,14 @@ struct uiHueGradient{
     void resize(Float_Rect boundaries){
 
         uiObjectItself->setBoundaryRect(&boundaries);
+
+        Ux* uxInstance = Ux::Singleton();
+
+        if( uxInstance->screenRatio > 1.0 ){ // widescreen
+            uiObjectItself->setChildNodeDirection(TEXT_DIR_ENUM::TTB, true);
+        }else{
+            uiObjectItself->setChildNodeDirection(TEXT_DIR_ENUM::LTR, true);
+        }
 
         update();
     }

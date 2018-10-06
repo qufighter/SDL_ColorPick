@@ -40,6 +40,10 @@ Ux::~Ux(void) {
  Default constructor
  */
 Ux::Ux(void) {
+
+
+
+
     isInteracting = false;
     currentInteraction = uiInteraction();
 
@@ -77,6 +81,7 @@ Ux::Ux(void) {
 //    SDL_Log("Pref file len: %i", SDL_strlen(palletePath));
 
     SDL_free(preferencesPath);
+    
 
 }
 
@@ -201,10 +206,16 @@ void Ux::updateStageDimension(float w, float h){
 
 void Ux::resizeUiElements(void){
 
+    // move to constructor?
+#ifdef COLORPICK_PLATFORM_DESKTOP
+    //    clock_bar=0.0f;
+#endif
+
     //historyPreview->updateRenderPosition();
     // what about elements that have auto sizing properties??? like>  square,
 
     float temp=0.0;
+    float temp1=0.0;
 
     // watch out for ux components whose update functions will ->updateRenderPosition();
     // all these function should provide means to bypass the update
@@ -213,9 +224,60 @@ void Ux::resizeUiElements(void){
     // optimization - our sizes don't change unless ratio does maybe??? or not...
 
     rootUiObject->setBoundaryRect( 0, 0, 1.0, 1.0);
+    // we try to indent here in a way that reflects hirearchy under rootUiObject, and attempt to do this in the order of lower (first added) elements first and those that render attop later...
+    if( widescreen ){
+
+        bottomBar->setBoundaryRect( 1.0-0.27777777777778+hue_picker, clock_bar, 0.27777777777778-hue_picker-history_preview, 1.0 - clock_bar);
+
+            zoomSliderHolder->setBoundaryRect( 0.0, 0.0, 1.0, 0.25);
+                zoomSliderBg->setBoundaryRect( 0.05, 0, 0.88, 1);
+                zoomSlider->setBoundaryRect( 0.0, 0, 0.2, 1);
+                zoomSlider->setMovementBoundaryRect( 0.0, 0, 1.0, 0.0);
+
+            temp = zoomSliderHolder->boundryRect.h;
+            temp1= 1.0/((float)bottomBarRightStack->getChildCount());
+            bottomBarRightStack->setBoundaryRect( 1.0-temp1, 1.0-temp,
+                    temp1, temp); // max size of single stacked right component?
+                pickSourceBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+                addHistoryBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+
+        huePicker->resize(Float_Rect(1.0-0.27777777777778, clock_bar, hue_picker, 1.0 - clock_bar ));
+
+        // depending on animation state rect is different....
+        historyPalleteHolder->setBoundaryRectForAnimState(
+            0.0, clock_bar,     1.0, 0.8, //visible and orig
+            0.0, clock_bar+1.0, 1.0, 0.8 ); // hidden
+
+            newHistoryFullsize->setBoundaryRect( 0.0, 0.0, 1.0, 0.6);
+            // historyScroller->resize()?
+
+            newHistoryPallete->setBoundaryRect( 0.0, 0.61, 1.0, 0.4);
+            // historyScroller->resize()?
+
+            // we shoudl resize it but it should be in a new container object... that simplifies the update
+            // or just palleteSelectionColorPreview->resize() ??
+            palleteSelectionColorPreview->uiObjectItself->setBoundaryRectForAnimState(
+              newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y - newHistoryPallete->boundryRect.h,
+              newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h, // vis and orig
+              newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y,
+              newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h // hidden
+            );
+
+
+        historyPreview->setBoundaryRect(1.0-history_preview, clock_bar, history_preview, 1.0 - clock_bar);
+            historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::BTT, true);
+
+        movementArrows->resize(Float_Rect(0.27777777777778, 0.27777777777778,
+            1.0 - 0.27777777777778 - 0.27777777777778, 1.0 - 0.27777777777778 - 0.27777777777778));
+
+        curerntColorPreview->resize(Float_Rect(0.0, clock_bar, 0.27777777777778, 1.0 - clock_bar));
+
+        defaultYesNoChoiceDialogue->resize(Float_Rect(0.0, -1.0, 1.0, 1.0));
+
+
+    }else{
+
         bottomBar->setBoundaryRect( 0.0, 0.75, 1.0, 0.15);
-
-
 
             zoomSliderHolder->setBoundaryRect( 0.0, 0, 0.25, 1);
                 zoomSliderBg->setBoundaryRect( 0.05, 0, 0.88, 1);
@@ -227,12 +289,12 @@ void Ux::resizeUiElements(void){
                 pickSourceBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
                 addHistoryBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
 
-        huePicker->resize(Float_Rect(0.0, 0.7, 1.0, 0.05));
+        huePicker->resize(Float_Rect(0.0, 0.7, 1.0, hue_picker));
 
         // depending on animation state rect is different....
-        historyPalleteHolder->setBoundaryRectForAnimState(  0.0, 0.04,     1.0, 0.8, //visible and orig
-                                                            0.0, 0.04+1.0, 1.0, 0.8 ); // hidden
-
+        historyPalleteHolder->setBoundaryRectForAnimState(
+            0.0, clock_bar,     1.0, 0.8, //visible and orig
+            0.0, clock_bar+1.0, 1.0, 0.8 ); // hidden
 
             newHistoryFullsize->setBoundaryRect( 0.0, 0.0, 1.0, 0.6);
             // historyScroller->resize()?
@@ -240,38 +302,26 @@ void Ux::resizeUiElements(void){
             newHistoryPallete->setBoundaryRect( 0.0, 0.61, 1.0, 0.4);
             // historyScroller->resize()?
 
-
             // or just palleteSelectionColorPreview->resize() ??
             palleteSelectionColorPreview->uiObjectItself->setBoundaryRectForAnimState(
-                                                                  newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y - newHistoryPallete->boundryRect.h,
-                                                                  newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h, // vis and orig
-                                                                  newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y,
-                                                                  newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h // hidden
-                                                                  );
+              newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y - newHistoryPallete->boundryRect.h,
+              newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h, // vis and orig
+              newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y,
+              newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h // hidden
+            );
 
 
-        historyPreview->setBoundaryRect(0.0, 0.9, 1.0, 0.1);
+        historyPreview->setBoundaryRect(0.0, 1.0-history_preview, 1.0, history_preview);
+            historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::RTL, true);
 
-        // Print RTL?
-            int ctr = SIX_ACROSS;
-            int child_idx = 0;
-            while( --ctr >= 0 ){
-                uiObject * colora = historyPreview->getChildOrNullPtr(child_idx++);
-                if( colora != nullptr ){
-                    colora->setBoundaryRect( ctr * SIX_ACROSS_RATIO, 0.0, SIX_ACROSS_RATIO, 1.0 );
-                }
-            }
-
-
-        movementArrows->resize(Float_Rect(0.0, 0.04 + 0.27777777777778, 1.0, 0.38));
-        curerntColorPreview->resize(Float_Rect(0.0, 0.04, 1.0, 0.27777777777778));
-
+        movementArrows->resize(Float_Rect(0.0, clock_bar + 0.27777777777778, 1.0, 0.38));
+        curerntColorPreview->resize(Float_Rect(0.0, clock_bar, 1.0, 0.27777777777778));
 
         defaultYesNoChoiceDialogue->resize(Float_Rect(0.0, -1.0, 1.0, 1.0));
 
+    }
 
     rootUiObject->updateRenderPosition();
-
     // our "create" caller also updates scrollers at this time??
 }
 
@@ -339,6 +389,7 @@ Ux::uiObject* Ux::create(void){
 
     bottomBarRightStack = new uiObject();
     bottomBarRightStack->testChildCollisionIgnoreBounds = true; // need to check clicks on child objects.......
+
 //    bottomBarRightStack->hasBackground = true;
 //    Ux::setColor(&bottomBarRightStack->backgroundColor, 255, 0, 0, 128);
 
@@ -382,7 +433,7 @@ Ux::uiObject* Ux::create(void){
 
 
     huePicker = new uiHueGradient(rootUiObject, Float_Rect(0.0, 0.60, 1.0, 0.09), &Ux::hueClicked);
-    huePicker->resize(Float_Rect(0.0, 0.7, 1.0, 0.05));
+    huePicker->resize(Float_Rect(0.0, 0.7, 1.0, hue_picker));
 
 
     historyPalleteHolder = new uiObject();
@@ -457,8 +508,6 @@ Ux::uiObject* Ux::create(void){
         //colora->hasForeground = true;
         //printCharToUiObject(colora, 'F'-ctr, DO_NOT_RESIZE_NOW);
 
-
-
         historyPreview->addChild(colora);
     }
 
@@ -478,9 +527,9 @@ Ux::uiObject* Ux::create(void){
     rootUiObject->addChild(historyPreview);
 
 
-    movementArrows = new uiNavArrows(rootUiObject, Float_Rect(0.0, 0.04 + 0.27777777777778, 1.0, 0.38), &Ux::interactionDirectionalArrowClicked);
+    movementArrows = new uiNavArrows(rootUiObject, Float_Rect(0.0, clock_bar + 0.27777777777778, 1.0, 0.38), &Ux::interactionDirectionalArrowClicked);
 
-    curerntColorPreview = new uiViewColor(rootUiObject, Float_Rect(0.0, 0.04, 1.0, 0.27777777777778), false);
+    curerntColorPreview = new uiViewColor(rootUiObject, Float_Rect(0.0, clock_bar, 1.0, 0.27777777777778), false);
 
 
 

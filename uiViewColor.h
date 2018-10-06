@@ -130,6 +130,31 @@ struct uiViewColor{
 
         //hexValueText->setChildNodeDirection(TEXT_DIR_ENUM::TTB, false); // see TEXT_DIR_ENUM
 
+        Ux* uxInstance = Ux::Singleton();
+
+        float hex_size=0.6;
+        float rgb_size=0.4;
+
+        if( uxInstance->screenRatio > 1.0 ){ // widescreen
+            hex_size=0.3;
+            rgb_size=(1.0-hex_size) / 3.0; // letter width for 3 char...
+            //NEW rule size the container for the letter size of first letter
+            hexValueText->setBoundaryRect( 0.0, 0.0, hex_size, 0.16666666666667);
+            hexValueText->setChildNodeDirection(TEXT_DIR_ENUM::TTB, false);
+
+            rgbRedText->setBoundaryRect( hex_size,0.0, rgb_size, 0.333333333333333);
+            rgbGreenText->setBoundaryRect( hex_size, 0.33333333333333, rgb_size, 0.333333333333333);  //maths
+            rgbBlueText->setBoundaryRect( hex_size, 0.66666666666666, rgb_size, 0.333333333333333);
+        }else{
+            //NEW rule size the container for the letter size of first letter
+            hexValueText->setBoundaryRect( 0.0, 0.0, 0.16666666666667, hex_size);
+            hexValueText->setChildNodeDirection(TEXT_DIR_ENUM::LTR, false);
+
+            rgbRedText->setBoundaryRect( 0.0, hex_size, 0.11111111111111, rgb_size);
+            rgbGreenText->setBoundaryRect( 0.33333333333333, hex_size, 0.11111111111111, rgb_size);
+            rgbBlueText->setBoundaryRect( 0.66666666666666, hex_size, 0.11111111111111, rgb_size);
+        }
+
     }
 
     void update(SDL_Color* color){
