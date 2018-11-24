@@ -120,7 +120,7 @@ void main()
     if( ui_crop.b != 0.0 || ui_crop.a != 0.0 ){
 
         // rotate will move these coords completely so you won't be able to rely on this to detect if the corner has left when rotation is occuring.
-        // it is probably better off to do nothing wrt crop when rotating than this approach to it... we could still crop in the FSH but not cheap
+        // it is probably better off to do nothing wrt crop when rotating than this approach to it... we could still crop in the FSH but not cheap (unless we use depth buffer????)
         // so what field in modelMatrix is our rotation?
 
         //    float crop_positionx=ui_crop.r;

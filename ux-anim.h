@@ -589,17 +589,6 @@ struct UxAnim
         return myAnimChain;
     }
 
-    uiAminChain* bounce(Ux::uiObject *uiObject){
-
-        uiAminChain* myAnimChain = new uiAminChain();
-        myAnimChain->addAnim((new uiAnimation(uiObject))->initialMoveVelocity(0, -0.01) );
-        myAnimChain->addAnim((new uiAnimation(uiObject))->initialMoveVelocity(0,  0.01) );
-        myAnimChain->addAnim((new uiAnimation(uiObject))->resetPosition()->immediately()  );
-
-        pushAnimChain(myAnimChain);
-        return myAnimChain;
-
-    }
 
     uiAminChain* resetPosition(Ux::uiObject *uiObject){ /* slideUpIn */ /* reset position */
         uiAminChain* myAnimChain = new uiAminChain();
@@ -688,7 +677,37 @@ struct UxAnim
 //        return myAnimChain;
 //    }
 
-    uiAminChain* rvbounce(Ux::uiObject *uiObject){
+    uiAminChain* emphasizedBounce(Ux::uiObject *uiObject, float ivx, float ivy){
+        uiAminChain* myAnimChain = new uiAminChain();
+        myAnimChain->addAnim((new uiAnimation(uiObject))->initialMoveVelocity(ivx, ivy) );
+        myAnimChain->addAnim((new uiAnimation(uiObject))->initialMoveVelocity(-ivx, -ivy) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->resetPosition() );
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
+
+    uiAminChain* softBounce(Ux::uiObject *uiObject, float ivx, float ivy){
+        uiAminChain* myAnimChain = new uiAminChain();
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialMoveVelocity(ivx, ivy) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->resetPosition() );
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
+
+
+
+    uiAminChain* bounce(Ux::uiObject *uiObject){ // orig emphasizedBounce
+
+        uiAminChain* myAnimChain = new uiAminChain();
+        myAnimChain->addAnim((new uiAnimation(uiObject))->initialMoveVelocity(0, -0.01) );
+        myAnimChain->addAnim((new uiAnimation(uiObject))->initialMoveVelocity(0,  0.01) );
+        myAnimChain->addAnim((new uiAnimation(uiObject))->resetPosition()->immediately()  );
+
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+
+    }
+    uiAminChain* rvbounce(Ux::uiObject *uiObject){ // orig soft bounce
 
         uiAminChain* myAnimChain = new uiAminChain();
         //->addAnim( (new uiAnimation(uiObject))->moveRelative(-0.1667, 0) );

@@ -61,8 +61,8 @@ GLuint Textures::GenerateTexture(){
 //    return textureid;
 //}
 
-GLuint Textures::LoadTextureSized(SDL_Surface *surface, GLuint& contained_in_texture_id, GLuint& textureid, int size, int *x, int *y, SDL_Color* backgroundColor) {
-    LoadTextureSizedFromSdlSurface( surface, size, x, y, contained_in_texture_id, textureid, backgroundColor);
+GLuint Textures::LoadTextureSized(SDL_Surface *surface, GLuint& contained_in_texture_id, GLuint& textureid, int size, int *x, int *y) {
+    LoadTextureSizedFromSdlSurface( surface, size, x, y, contained_in_texture_id, textureid);
     return textureid;
 }
 
@@ -80,6 +80,8 @@ GLuint Textures::LoadTexture(const char* filename) {
 
 Uint32 getpixel(SDL_Surface *surface, int x, int y)
 {
+
+
     int bpp = surface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to retrieve */
     Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
@@ -110,8 +112,82 @@ Uint32 getpixel(SDL_Surface *surface, int x, int y)
 }
 
 SDL_Surface* Textures::ConvertSurface(SDL_Surface *origSurface) {
+    return ConvertSurface(origSurface, nullptr);
+}
+
+SDL_Surface* Textures::ConvertSurface(SDL_Surface *origSurface, SDL_Color* backgroundColor) {
 
     if( origSurface == NULL ) return origSurface;
+
+    SDL_Log("orig imgs pixel format name: %s", SDL_GetPixelFormatName(origSurface->format->format));
+
+    SDL_Log("orig MASKS for image as follows %i %i %i %i",
+            origSurface->format->Rmask == 0x000000ff,
+            origSurface->format->Gmask == 0x000000ff,
+            origSurface->format->Bmask == 0x000000ff,
+            origSurface->format->Amask == 0x000000ff
+            );
+
+    bool isProbablyAndroid = origSurface->format->Rmask == 0x000000ff;
+
+#if __ANDROID__
+    isProbablyAndroid = true;
+#endif
+
+
+    if( backgroundColor!=nullptr ){
+
+        //SDL_Surface *surface = SDL_DuplicateSurface(origSurface);
+
+//        SDL_Surface *surface = SDL_CreateRGBSurface(0, origSurface->w, origSurface->h, origSurface->format->BitsPerPixel,
+//                                                    origSurface->format->Rmask,
+//                                                    origSurface->format->Gmask,
+//                                                    origSurface->format->Bmask,
+//                                                    origSurface->format->Amask);
+
+        SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, origSurface->w, origSurface->h, origSurface->format->BitsPerPixel, isProbablyAndroid ? SDL_PIXELFORMAT_BGR888 : SDL_PIXELFORMAT_RGB888);
+
+
+        SDL_FillRect(surface, &surface->clip_rect, SDL_MapRGB(surface->format, backgroundColor->r, backgroundColor->g, backgroundColor->b) );
+
+        //int didBlit = SDL_BlitScaled(origSurface,NULL/* NULL src rect entire surface*/,surface,&surface->clip_rect);
+
+
+        //SDL_SetSurfaceBlendMode(origSurface, SDL_BLENDMODE_BLEND );
+
+        int didBlit = SDL_BlitSurface(origSurface,
+                                      NULL, // src rect entire surface
+                                      surface,
+                                      &surface->clip_rect);
+
+        SDL_Surface *surface2 = SDL_CreateRGBSurfaceWithFormat(0, origSurface->w, origSurface->h, origSurface->format->BitsPerPixel, isProbablyAndroid ? SDL_PIXELFORMAT_ABGR8888 : SDL_PIXELFORMAT_ARGB8888);
+
+        SDL_BlitSurface(surface,
+                        NULL, // src rect entire surface
+                        surface2,
+                        &surface->clip_rect);
+
+        SDL_FreeSurface(surface);
+
+        surface = SDL_CreateRGBSurfaceWithFormat(0, origSurface->w, origSurface->h, origSurface->format->BitsPerPixel, isProbablyAndroid ? SDL_PIXELFORMAT_BGR888 : SDL_PIXELFORMAT_RGB888);
+        SDL_BlitSurface(surface2,
+                        NULL, // src rect entire surface
+                        surface,
+                        &surface->clip_rect);
+
+        SDL_FreeSurface(surface2);
+
+//        int didBlit = SDL_LowerBlit(origSurface,
+//                                      &surface->clip_rect,
+//                                      surface,
+//                                      &surface->clip_rect);
+
+        SDL_FreeSurface(origSurface);
+        origSurface = surface;
+
+    }
+
+
 
     //        Uint32 curFormat = SDL_MasksToPixelFormatEnum(origSurface->format->BitsPerPixel,
     //                                                                  origSurface->format->Rmask,
@@ -130,23 +206,26 @@ SDL_Surface* Textures::ConvertSurface(SDL_Surface *origSurface) {
             origSurface->format->Amask == 0x000000ff
             );
 
+    SDL_Log("images bpp: %i", origSurface->format->BytesPerPixel );
+
+    // if we are android we really need to force 4bpp.. other plat at least 3bpp
+
+
     if (origSurface->format->BytesPerPixel == 3){
-        // if we are android we really need to force 4bpp..
 
         SDL_Surface *surface;
-        if (origSurface->format->Rmask == 0x000000ff){
-            surface = SDL_ConvertSurfaceFormat(origSurface, SDL_PIXELFORMAT_ABGR8888, 0); // android likes BGR
-        }else{
-            surface = SDL_ConvertSurfaceFormat(origSurface, SDL_PIXELFORMAT_ARGB8888, 0);
-        }
+        surface = SDL_ConvertSurfaceFormat(origSurface, isProbablyAndroid ? SDL_PIXELFORMAT_ABGR8888 : SDL_PIXELFORMAT_RGB888, 0);
         SDL_FreeSurface(origSurface);
         return surface;
     }else if (origSurface->format->BytesPerPixel == 1){ // gif may be 1bpp... (observed on android)
         SDL_Surface *surface;
-        surface = SDL_ConvertSurfaceFormat(origSurface, SDL_PIXELFORMAT_ARGB8888, 0);
+        surface = SDL_ConvertSurfaceFormat(origSurface, isProbablyAndroid ? SDL_PIXELFORMAT_ABGR8888 : SDL_PIXELFORMAT_RGB888, 0);
         SDL_FreeSurface(origSurface);
         return surface;
     }
+
+
+
 
 
 
@@ -190,6 +269,12 @@ SDL_Surface* Textures::ConvertSurface(SDL_Surface *origSurface) {
 SDL_bool ModeForSurface(SDL_Surface *surface, GLint* internalFormat, GLenum* format){
     *format = GL_BGRA;
 
+    bool isProbablyAndroid = surface->format->Rmask == 0x000000ff;
+
+#if __ANDROID__
+    isProbablyAndroid = true;
+#endif
+
     SDL_Log("MASKS for image as follows %i %i %i %i",
             surface->format->Rmask == 0x000000ff,
             surface->format->Gmask == 0x000000ff,
@@ -200,13 +285,13 @@ SDL_bool ModeForSurface(SDL_Surface *surface, GLint* internalFormat, GLenum* for
     if (surface->format->BytesPerPixel == 3  /*surface->format->format == SDL_PIXELFORMAT_RGB888 (not necessarily RGB order)*/ ) { // RGB 24bit
         *internalFormat = GL_RGB; // always keep alpah
 
-        if (surface->format->Rmask == 0x000000ff){
+        if (isProbablyAndroid){
             *format = GL_RGB;
         }
     } else if (surface->format->BytesPerPixel == 4 /*surface->format->format == SDL_PIXELFORMAT_ARGB8888 (not necessarily ARGB order) */) { // RGBA 32bit
         *internalFormat = GL_RGBA;
 
-        if (surface->format->Rmask == 0x000000ff){
+        if (isProbablyAndroid){
             *format = GL_RGBA;
         }
     } else {
@@ -220,10 +305,9 @@ SDL_bool ModeForSurface(SDL_Surface *surface, GLint* internalFormat, GLenum* for
 }
 
 
-GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthHeight, int *x, int *y, GLuint& contained_in_texture_id, GLuint& textureid, SDL_Color* backgroundColor){
+GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthHeight, int *x, int *y, GLuint& contained_in_texture_id, GLuint& textureid){
     GLint mode;
     GLenum surfaceFmt;
-
 
     debugGLerror("LoadTextureSizedFromSdlSurface start - pre existing error");
 
@@ -311,11 +395,6 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
             rect.h = widthHeight;//*2;
 
             //SDL_Log("OUR SCALED BLIT RECT %i %i %i %i",rect.x,rect.y,rect.w,rect.h);
-
-            // if we have an optional BG color.... for use with cp_bg.png red
-            if( backgroundColor!=nullptr ){
-                SDL_FillRect(new_contain_in_surface, &rect, SDL_MapRGBA(newSurface->format, backgroundColor->r, backgroundColor->g, backgroundColor->b, 255) );
-            }
 
             
 
@@ -449,13 +528,6 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
         rect.y += *y;
 
 
-        // if we have an optional BG color.... for use with cp_bg.png red
-        if( backgroundColor!=nullptr ){
-            rect.w = surface->w;
-            rect.h = surface->h;
-            SDL_FillRect(newSurface, &rect, SDL_MapRGBA(newSurface->format, backgroundColor->r, backgroundColor->g, backgroundColor->b, 255) );
-        }
-
         rect.w = widthHeight;
         rect.h = widthHeight;
 
@@ -464,6 +536,7 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
                                       newSurface,
                                       &rect);
 
+    
         if( didBlit != 0 ){
             SDL_Log("Blit problem");
             SDL_Log("%s", SDL_GetError());
@@ -471,63 +544,9 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
         }
 
 
-        // getting pixels code should move from here
-        //Uint32 temp;
-        Uint8 red, green, blue, alpha;
+// get the pixels!!!
+    colorFromSurface(newSurface, hwh-1, hwh-1, &selectedColor);
 
-        bool mustLock = SDL_MUSTLOCK( newSurface );
-        if(  mustLock ){
-            SDL_LockSurface( newSurface );
-        }
-        Uint32 pix = getpixel(newSurface, hwh-1, hwh-1);
-        if( mustLock ){
-            SDL_UnlockSurface( newSurface );
-        }
-
-        if( newSurface->format->Rmask == 0 && newSurface->format->Gmask == 0 && newSurface->format->Bmask == 0){
-            // this is an indexed color image not true color
-            //https://wiki.libsdl.org/SDL_PixelFormat
-
-            //TODO - try indexed color img!
-            selectedColor=newSurface->format->palette->colors[pix];
-            printf("Pixel Color-> Red: %d, Green: %d, Blue: %d. Index: %d\n",
-                   selectedColor.r, selectedColor.g, selectedColor.b, pix);
-        }else{
-
-
-//            /* Get Red component */
-//            temp = pix & newSurface->format->Rmask;  /* Isolate red component */
-//            temp = temp >> newSurface->format->Rshift; /* Shift it down to 8-bit */
-//            temp = temp << newSurface->format->Rloss;  /* Expand to a full 8-bit number */
-//            red = (Uint8)temp;
-//
-//            /* Get Green component */
-//            temp = pix & newSurface->format->Gmask;  /* Isolate green component */
-//            temp = temp >> newSurface->format->Gshift; /* Shift it down to 8-bit */
-//            temp = temp << newSurface->format->Gloss;  /* Expand to a full 8-bit number */
-//            green = (Uint8)temp;
-//
-//            /* Get Blue component */
-//            temp = pix & newSurface->format->Bmask;  /* Isolate blue component */
-//            temp = temp >> newSurface->format->Bshift; /* Shift it down to 8-bit */
-//            temp = temp << newSurface->format->Bloss;  /* Expand to a full 8-bit number */
-//            blue = (Uint8)temp;
-//
-//            /* Get Alpha component */
-//            temp = pix & newSurface->format->Amask;  /* Isolate alpha component */
-//            temp = temp >> newSurface->format->Ashift; /* Shift it down to 8-bit */
-//            temp = temp << newSurface->format->Aloss;  /* Expand to a full 8-bit number */
-//            alpha = (Uint8)temp;
-
-            SDL_GetRGBA(pix, newSurface->format, &red, &green, &blue, &alpha);
-
-            selectedColor.r = red;
-            selectedColor.g = green;
-            selectedColor.b = blue;
-            selectedColor.a = alpha;
-            printf("Pixel Color -> R: %d,  G: %d,  B: %d,  A: %d\n", red, green, blue, alpha);
-
-        }
 
 
     // end block
@@ -587,6 +606,395 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
     SDL_FreeSurface(newSurface); // free temp surface
 
     return textureid;
+}
+
+// too many args..
+bool Textures::searchSurfaceForColor(SDL_Surface *newSurface, SDL_Color* seekClr, int x, int y, int* outx, int* outy){
+
+    // the HSL picker uses this...
+    // and we should come up with a better meandering search algo here... since each step will get closer/further and convergence is possible
+    /// it could almost be learning algo...
+
+    int hwh = SDL_min(newSurface->w, newSurface->h) / 2;
+    hwh-=1;
+
+    colorFromSurface(newSurface, hwh -x , hwh -y , &tmpColor);
+
+    // passes, maybe we need this enabled in debug mode?
+    // SDL_assert(selectedColor.r == tmpColor.r && selectedColor.r == tmpColor.r && selectedColor.r == tmpColor.r);
+
+    //evaluate distance
+
+    glm::vec3 current;
+    glm::vec3 dest = glm::vec3(seekClr->r, seekClr->g, seekClr->b);
+    float dist;
+    float lastDist, bestDist;
+
+
+    // test?
+    current = glm::vec3(tmpColor.r, tmpColor.g, tmpColor.b);
+    lastDist = glm::distance(dest,current);
+    bestDist = lastDist;
+    SDL_Log("starting distance is %f", lastDist);
+
+
+    //glm::fastDistance(<#const detail::tvec4<valType> &x#>, <#const detail::tvec4<valType> &y#>)
+
+    int bestx = x;
+    int besty = y;
+
+    int dir_x = 0;
+    int dir_y = 0;
+    int next_dir_x=0;
+    int next_dir_y=0;
+    int counter=0;
+
+
+    int sideLen = 1;
+    int sideCtr = 0;
+    int loopCtr = 0;
+
+    bool inBounds = false;
+
+    float upDist;
+    float dnDist;
+    float lfDist;
+    float rtDist;
+    // sideLength = 1
+
+    while( counter < 100 ){
+        counter++;
+
+        inBounds = colorFromSurface(newSurface, hwh -x , hwh -(y - 1), &tmpColor);
+        if( inBounds ){
+            current = glm::vec3(tmpColor.r, tmpColor.g, tmpColor.b);
+            upDist = glm::distance(dest,current);
+        }else{
+            upDist = 999999999.0;
+        }
+        inBounds = colorFromSurface(newSurface, hwh -x , hwh -(y + 1), &tmpColor);
+        if( inBounds ){
+            current = glm::vec3(tmpColor.r, tmpColor.g, tmpColor.b);
+            dnDist = glm::distance(dest,current);
+        }else{
+            dnDist = 999999999.0;
+        }
+        inBounds = colorFromSurface(newSurface, hwh -(x - 1), hwh -y, &tmpColor);
+        if( inBounds ){
+            current = glm::vec3(tmpColor.r, tmpColor.g, tmpColor.b);
+            lfDist = glm::distance(dest,current);
+        }else{
+            lfDist = 999999999.0;
+        }
+        inBounds = colorFromSurface(newSurface, hwh -(x + 1), hwh -y, &tmpColor);
+        if( inBounds ){
+            current = glm::vec3(tmpColor.r, tmpColor.g, tmpColor.b);
+            rtDist = glm::distance(dest,current);
+        }else{
+            rtDist = 999999999.0;
+        }
+
+        // 2 fn, bestDir and dirDist
+
+        float min_ud = SDL_min(upDist, dnDist);
+        float min_lr = SDL_min(lfDist, rtDist);
+        float min_dis =SDL_min(min_ud, min_lr);
+
+        if( min_dis == upDist ){
+            y-=1;
+            next_dir_x = 0;
+            next_dir_y = -1;
+        }else if(min_dis == dnDist ){
+            y+=1;
+            next_dir_x = 0;
+            next_dir_y = 1;
+        }else if(min_dis == lfDist ){
+            x-=1;
+            next_dir_x = -1;
+            next_dir_y = 0;
+        }else if(min_dis == rtDist ){
+            x+=1;
+            next_dir_x = 1;
+            next_dir_y = 0;
+        }
+
+        dist = min_dis;
+
+        SDL_Log(" closest this round %f ?", dist);
+
+        if( dist < bestDist ){
+            SDL_Log(" and it is better than %f ?", bestDist);
+            bestx = x;
+            besty = y;
+            bestDist = dist;
+        }
+
+        if( dist == 0.0 ){
+            SDL_Log("Looks like we found it!");
+            SDL_Log(" ----------- A BEST MATCH WAS FOUND!!! ------------ ");
+            *outx = bestx;
+            *outy = besty;
+            return true;
+        }
+
+        if( next_dir_x == dir_x * -1 && next_dir_y == dir_y * -1 ){
+            SDL_Log(" ----------- LOOKS LIKE REVERSI... lets abort the looping... ------------ ");
+            // in some cases a better match CAN be found if we look further or chagne the rules bout which direction we move when the distance is the same...
+
+
+            loopCtr++;
+            if( loopCtr > 5 ){
+                break;
+            }
+        }
+
+        dir_x = next_dir_x;
+        dir_y = next_dir_y;
+
+    }
+
+    if( bestx != *outx || besty != *outy ){
+        SDL_Log(" ----------- A BETTER (closer) MATCH WAS FOUND!!! ------------ ");
+        *outx = bestx;
+        *outy = besty;
+        return true;
+
+    }
+
+    return false;
+    int distanceToMove = 1;
+    int directionsLooped = 0;
+    while(counter < 100){ // max moves
+
+        y+= dir_y;
+        x+= dir_x;
+
+        colorFromSurface(newSurface, hwh -x , hwh -y , &tmpColor);
+
+        current = glm::vec3(tmpColor.r, tmpColor.g, tmpColor.b);
+
+        dist = glm::fastDistance(dest,current);
+
+        SDL_Log("distance is %f", dist);
+
+        if( dist < bestDist ){
+            SDL_Log(" and it is better than %f ?", bestDist);
+            bestx = x;
+            besty = y;
+            bestDist = dist;
+        }
+
+        if( dist == 0.0 ){
+            SDL_Log("Looks like we found it!");
+            SDL_Log(" ----------- A BETTER MATCH WAS FOUND!!! ------------ ");
+            *outx = bestx;
+            *outy = besty;
+            return true;
+        }
+
+        if( dist <= lastDist ){
+            // getting closer (keep going?)
+
+        }else{
+            // getting further
+            // first undo our last move....
+            y-= dir_y;
+            x-= dir_x;
+
+            if( dir_y == distanceToMove ){
+                if( dir_x == 0 ){
+                    dir_x = distanceToMove;
+                }else if( dir_x == distanceToMove ){
+                    dir_x = -distanceToMove;
+                }else{
+                    dir_y = 0;
+                }
+            }
+
+            if( dir_x == -distanceToMove ){
+                if( dir_y == 0 ){
+                    dir_y = distanceToMove;
+                }else if( dir_y == distanceToMove ){
+                    dir_y = -distanceToMove;
+                }else{
+                    dir_x = 0;
+                }
+            }
+
+            if( dir_y == -distanceToMove ){
+                if( dir_x == 0 ){
+                    dir_x = -distanceToMove;
+                }else if( dir_x == -distanceToMove ){
+                    dir_x = distanceToMove;
+                }else{
+                    dir_y = 0;
+                }
+            }
+
+            if( dir_x == distanceToMove ){
+                if( dir_y == 0 ){
+                    dir_y = -distanceToMove;
+                }else if( dir_y == -distanceToMove ){
+                    dir_y = distanceToMove;
+                }else{
+                    dir_x = 0;
+                    distanceToMove+=2;
+                }
+            }
+        }
+
+        lastDist = dist;
+        counter++;
+
+    }
+
+
+    if( bestx != *outx || besty != *outy ){
+        SDL_Log(" ----------- A BETTER (closer) MATCH WAS FOUND!!! ------------ ");
+        *outx = bestx;
+        *outy = besty;
+        return true;
+
+    }
+
+
+    // impossible goal:
+    //SDL_assert(seekClr->r == tmpColor.r && seekClr->r == tmpColor.r && seekClr->r == tmpColor.r);
+
+    return false;
+
+
+    int searchArea = 50; // TODO experiment with LARGE serach area to uncover bugs....
+    int halfSearchArea = searchArea * 0.5;
+
+    int searchRows = searchArea;
+    int serachCols = searchArea;
+
+    x -= halfSearchArea;
+    y -= halfSearchArea;
+
+
+    if( x < 0 ){
+        serachCols -= -x;
+        x = 0;
+    }
+
+    if( y < 0 ){
+        searchRows -= -y;
+        y = 0;
+    }
+
+    if( x + serachCols > newSurface->w ){
+        serachCols -= (x + serachCols) - newSurface->w;
+    }
+
+    if( y + searchRows > newSurface->h ){
+        searchRows -= (y + searchRows) - newSurface->h;
+    }
+
+    serachCols = x+serachCols;
+    searchRows = y+searchRows;
+
+    int bestRow = 0;
+    int bestCol = 0;
+
+    SDL_Log("ABOUT TO BEGIN LOOKING.... x:%i y:%i", x, y);
+
+
+    for( int row = x; row < serachCols; x++ ){
+        for( int col = y; col < searchRows; x++ ){
+
+            SDL_Log("LOOKING");
+            colorFromSurface(newSurface, row, col, &tmpColor);
+
+            if( seekClr->r == tmpColor.r && seekClr->r == tmpColor.r && seekClr->r == tmpColor.r ){
+                SDL_Log(" ----------- A BETTER MATCH WAS FOUND!!! ------------ ");
+                *outx = row;
+                *outy = col;
+                return true;
+            }
+
+
+        }
+    }
+
+
+    return false;// we didn't move anything...
+}
+
+
+bool Textures::colorFromSurface(SDL_Surface *newSurface, int x, int y, SDL_Color* outColor){
+
+    // getting pixels code should move from here
+    //Uint32 temp;
+    Uint8 red, green, blue, alpha;
+
+    if( x < 0 || y < 0 || x > newSurface->w || y > newSurface->h ){
+        SDL_Log("ERROR/WARNING: Getting OOB pixel");
+        return false;
+    }
+
+    bool mustLock = SDL_MUSTLOCK( newSurface );
+    if(  mustLock ){
+        SDL_LockSurface( newSurface );
+    }
+    Uint32 pix = getpixel(newSurface, x, y);
+    if( mustLock ){
+        SDL_UnlockSurface( newSurface );
+    }
+
+    if( newSurface->format->Rmask == 0 && newSurface->format->Gmask == 0 && newSurface->format->Bmask == 0){
+        // this is an indexed color image not true color
+        //https://wiki.libsdl.org/SDL_PixelFormat
+
+        //TODO - try indexed color img!
+        //outColor=&newSurface->format->palette->colors[pix];
+
+        outColor->r = newSurface->format->palette->colors[pix].r;
+        outColor->g = newSurface->format->palette->colors[pix].g;
+        outColor->b = newSurface->format->palette->colors[pix].b;
+        outColor->a = newSurface->format->palette->colors[pix].a;
+
+        SDL_Log("Pixel Color-> Red: %d, Green: %d, Blue: %d. Index: %d\n",
+               outColor->r, outColor->g, outColor->b, pix);
+    }else{
+
+
+        //            /* Get Red component */
+        //            temp = pix & newSurface->format->Rmask;  /* Isolate red component */
+        //            temp = temp >> newSurface->format->Rshift; /* Shift it down to 8-bit */
+        //            temp = temp << newSurface->format->Rloss;  /* Expand to a full 8-bit number */
+        //            red = (Uint8)temp;
+        //
+        //            /* Get Green component */
+        //            temp = pix & newSurface->format->Gmask;  /* Isolate green component */
+        //            temp = temp >> newSurface->format->Gshift; /* Shift it down to 8-bit */
+        //            temp = temp << newSurface->format->Gloss;  /* Expand to a full 8-bit number */
+        //            green = (Uint8)temp;
+        //
+        //            /* Get Blue component */
+        //            temp = pix & newSurface->format->Bmask;  /* Isolate blue component */
+        //            temp = temp >> newSurface->format->Bshift; /* Shift it down to 8-bit */
+        //            temp = temp << newSurface->format->Bloss;  /* Expand to a full 8-bit number */
+        //            blue = (Uint8)temp;
+        //
+        //            /* Get Alpha component */
+        //            temp = pix & newSurface->format->Amask;  /* Isolate alpha component */
+        //            temp = temp >> newSurface->format->Ashift; /* Shift it down to 8-bit */
+        //            temp = temp << newSurface->format->Aloss;  /* Expand to a full 8-bit number */
+        //            alpha = (Uint8)temp;
+
+        SDL_GetRGBA(pix, newSurface->format, &red, &green, &blue, &alpha);
+
+        outColor->r = red;
+        outColor->g = green;
+        outColor->b = blue;
+        outColor->a = alpha;
+        SDL_Log("Pixel Color -> R: %d,  G: %d,  B: %d,  A: %d\n", red, green, blue, alpha);
+
+    }
+
+    return true; // guess the pixel is valid!  cool....
 }
 
 ///* Determine the corresponding GLES texture format params */

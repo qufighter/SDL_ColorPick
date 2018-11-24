@@ -28,6 +28,8 @@ public:
     int windowWidth; // this is size of window in screen coorindates (not pixels
     int windowHeight;
 
+    bool appInForeground;
+
 private:
 
 protected:

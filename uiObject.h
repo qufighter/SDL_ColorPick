@@ -52,6 +52,7 @@ static void setRect(Float_Rect * rect, Float_Rect * rect2){
     rect->h = rect2->h;
 }
 
+
 static void containRectWithin(Float_Rect * rect, Float_Rect * co /*container*/){
     // modifies rect
     if( co->x > rect->x ){
@@ -136,6 +137,54 @@ struct uiScrollController;
 struct uiObject;
 
 
+// thjis is probably a bad idea
+//static void containRectWithinObjects(Float_Rect * rect,  uiObject* startObj, uiObject* endParentObj){
+//
+//        // asserrt startObj != endParentObj
+//
+//    uiObject* curObj = startObj;
+//    uiObject* parentObj = curObj->parentObject;
+//
+//    float scale_applicator_y = 1.0;
+//    float scale_applicator_x = 1.0;
+//
+//    while( parentObj != endParentObj ){
+//
+//        // when parentObj has an OOB render rect (negative position and or exceeding 1.0 when account for position)
+//        // we will in that condition adjust rect accordingly (equal oposite) and continue
+//
+//        scale_applicator_y /= curObj->renderRect.h / parentObj->renderRect.h;
+//
+//        if( curObj->renderRect.y < 0.0 ){
+//            //rect->y += -parentObj->renderRect.y;
+//            // parent leaves its parent obj
+//            // what size of its parent object is parentObj (maths)
+//
+//
+//           // rect->y += -parentObj->renderRect.y
+////
+////            parentObj->renderRect.h
+////
+////            curObj->renderRect.h; // this is our height percentage
+//
+//
+//
+//        }
+//
+//
+//            // this method containRectWithin is really teh wrong treatment for this... we really only care to exclude negative values or values that exceeede the container rect height
+////        containRectWithin(rect, &curObj->renderRect);
+//
+//        curObj = parentObj;
+//        uiObject* parentObj = curObj->parentObject;
+//    }
+//
+//    // so we should once more contain in the current object now...
+//    //containRectWithin(rect, &curObj->renderRect);
+//
+//}
+
+
 // typedef used scross all these! possibly move to ux.h if we can move hte fwd decl too
 typedef void (*animationUpdateCallbackFn)(uiAnimation* self, Float_Rect *newBoundaryRect);
 typedef void (*animationCallbackFn)(uiAnimation* self);
@@ -173,6 +222,7 @@ struct uiObject
         useCropParentOrig=false;
         calculateCropParentOrig=false;
         is_being_viewed_state=false;
+        default_viewed_state = true;
         hasMovementBoundary=false;
         childListIndex = 0;
         Ux::setColor(&foregroundColor, 255, 255, 255, 255);
@@ -197,8 +247,7 @@ struct uiObject
         isCentered=false;
 
         is_circular = false;
-        stack_right = false;
-        stack_left = false;
+        noStacking();
 
         squarify_enabled=false;
         squarify_keep_hz=false;
@@ -223,6 +272,7 @@ struct uiObject
     bool testChildCollisionIgnoreBounds = false;
 
     bool is_being_viewed_state = false; // some object interactions need to track the state of the toggle into/outof view
+    bool default_viewed_state = true; // by default this object is either vis or hid, origBoundaryRect is which?
 
     bool hasBackground;
 
@@ -246,8 +296,9 @@ struct uiObject
      */
 
     Float_Rect renderRect; /* private */
-    Float_Rect origRenderRect; /* private */
     Float_Rect collisionRect; /* private */
+    Float_Rect origRenderRect; /* private */ // really only u used for non standard crop parent object (or is it used at all now ? //maths
+    Float_Rect computedCropRenderRect; /* private */
 
     bool is_circular;
 
@@ -274,6 +325,11 @@ struct uiObject
     anInteractionAllowedFn shouldCeaseInteractionChecker;
     //void (*interactionCallback)(uiObject *interactionObj); // once an interaction is complete, a reference to the object may be used to determine all sorts of thigns
 
+    void setDefaultHidden(){
+        default_viewed_state = false;
+        is_being_viewed_state = false;
+    }
+
     void setModeWhereChildCanCollideAndOwnBoundsIgnored(){
         testChildCollisionIgnoreBounds = true;
         canCollide = false;
@@ -295,7 +351,11 @@ struct uiObject
         }else{
             Ux::setRect(&boundryRect, xH, yH, wH, hH);
         }
-        Ux::setRect(&origBoundryRect, x, y, w, h);
+        if( default_viewed_state ){
+            Ux::setRect(&origBoundryRect, x, y, w, h);
+        }else{
+            Ux::setRect(&origBoundryRect, xH, yH, wH, hH);
+        }
     }
 
     void resetPosition(){
@@ -311,6 +371,16 @@ struct uiObject
         textDirection = textDir;
         // it is arguable we shoudl auto organize the child nodes right now (rather than during update)
         organizeChildNodesBasedOnTextDir();
+    }
+
+    void hideAndNoInteraction(){
+        hide();
+        doesNotCollide = true;
+    }
+
+    void showAndAllowInteraction(){
+        show();
+        doesNotCollide = false;
     }
 
     void hide(){
@@ -491,9 +561,40 @@ struct uiObject
     bool squarify_keep_contained; // private
 
 
-    void addStackedRight(uiObject *c){
-        c->stack_right=true;
+    void addChildStackedRight(uiObject *c){
+        c->stackRight();
         addChild(c);
+    }
+
+    void noStacking(){
+        stack_right=false;
+        stack_bottom=false;
+        stack_left=false;
+    }
+
+    void stackRight(){
+        noStacking();
+        stack_right=true;
+    }
+
+    void stackBottom(){
+        noStacking();
+        stack_bottom=true;
+    }
+
+    void addBottomChild(uiObject *c){
+        if( this->childListIndex < this->childListMax - 1 ){
+            //SDL_Log("Before %i", this->childListIndex);
+            // shift all child obj by one
+            if( this->childListIndex > 0 ){
+                SDL_memmove(&childList[1], childList, sizeof(uiObject*) * this->childListIndex);
+            }
+            this->childListIndex++;
+            _addChildAtIndex(0, c);
+            //SDL_Log("After %i", this->childListIndex);
+        }else{
+            SDL_Log("ERROR::: Max Child UI Objects %d Exceeded !!!!!!!! addBottomChild", childListMax);
+        }
     }
 
     void addChild(uiObject *c){
@@ -502,42 +603,37 @@ struct uiObject
         //childUiObjects.push_back(c);
 
 
-
-        // so if we dynamically alloc some random child ui objects and they are
-        // added to a X/ Y that is outside of boundary rect we wont' know now
-        // but when we compute position of child objects perhasp they can exceed parent
-     //  bounds and throw up the data to the parent about the sscroll rect and in this
-  //  case make some nifty barz to click and drag like old school scrolling shouuld work
-   //     then invert it for teh background drag for now until we find a way to compute the
-    //        step size for a true pixel within teh bounds
-
-        // so each time we recompute the boundary rect and the child object has completed recomputing positions that exceed 1.0 x/y ........
-
-        // the computation would only apply when objects change positions on the screen
-
-
-
         if( this->childListIndex < this->childListMax - 1 ){
-            this->childList[this->childListIndex++] = c;
-            this->hasChildren=true;
-            c->parentObject = this; // neat?
-            c->hasParentObject =true;
-            if( this->myScrollController != nullptr ){
-                c->myScrollController = this->myScrollController;
-            }
-            if( this->myUiController != nullptr ){
-                c->myUiController = this->myUiController;
-            }
-
-            if( this->hasCropParent && !c->hasCropParent ){
-                c->setCropParent(this->cropParentObject);
-            }
+            _addChildAtIndex(this->childListIndex++, c);
 
         }else{
             SDL_Log("ERROR::: Max Child UI Objects %d Exceeded !!!!!!!!", childListMax);
         }
     }
 
+    void _addChildAtIndex(int indexToUse, uiObject *c){
+        // internal - unsafe to call function
+        //if( this->childListIndex < this->childListMax - 1 ){
+        this->childList[indexToUse] = c;
+        this->hasChildren=true;
+        c->parentObject = this; // neat?
+        c->hasParentObject =true;
+        if( this->myScrollController != nullptr ){
+            c->myScrollController = this->myScrollController;
+        }
+        if( this->myUiController != nullptr ){
+            c->myUiController = this->myUiController;
+        }
+
+        if( this->hasCropParent && !c->hasCropParent ){
+            c->setCropParent(this->cropParentObject);
+        }
+//        }else{
+//            SDL_Log("ERROR::: Max Child UI Objects %d Exceeded !!!!!!!!", childListMax);
+//        }
+    }
+
+    // the crop is the origional position of teh crop parent, not the current position...
     void setCropModeOrigPosition(){
         this->useCropParentOrig=true;
         if( this->hasCropParent ){
@@ -599,7 +695,14 @@ struct uiObject
         return this;
     }
 
+    uiObject* identity(){ // reset matrix
+        this->matrix = glm::mat4(1.0f);
+        return this;
+    }
+
+
     bool stack_right;
+    bool stack_bottom;
     bool stack_left;
 
     bool hasParentObject;
@@ -731,14 +834,91 @@ struct uiObject
             origRenderRect.x = (parentRenderRect.x + scaleRectForRenderX(&origBoundryRect, &parentRenderRect)) ;
             origRenderRect.y = (parentRenderRect.y + scaleRectForRenderY(&origBoundryRect, &parentRenderRect)) ;
 
-
-            if( hasCropParent ){
-                //                Float_Rect tempRect;//leak?
-                //                setRect(&tempRect, &origBoundryRect);
-                //                containRectWithin(&tempRect, &cropParentObject->renderRect);
-                containRenderRectWithinRender(&origRenderRect, &cropParentObject->renderRect);
-            }
+            // maths above might be unused?
+//
+//            if( hasCropParent ){
+//
+//                if( cropParentObject->hasCropParent ){
+//
+//
+//                    //containRenderRectWithinRender(&origRenderRect, &cropParentObject->renderRect);
+//                }
+//
+//
+//                //                Float_Rect tempRect;//leak?
+//                //                setRect(&tempRect, &origBoundryRect);
+//                //                containRectWithin(&tempRect, &cropParentObject->renderRect);
+//               //containRenderRectWithinRender(&origRenderRect, &cropParentObject->renderRect);
+//            }
         }
+
+//        if( useCropParentOrig && hasCropParent ){
+//            // this means we are child of a tile, probably and we should really crop 2x
+//
+//            /// maybe we can just use depth buffer for this ****
+//            if( cropParentObject->hasCropParent ){
+//                // its exclusively cropParentObject->useCropParentOrig
+//
+//                uiObject* scrollerItself = cropParentObject->cropParentObject; // aka parent crop parent
+//                uiObject* tileItself = cropParentObject; // aka nearest crop parent
+//                Float_Rect rect; //
+//                Float_Rect prect; //
+//
+//
+//                setRect(&rect, &tileItself->origBoundryRect);
+//
+//
+//                setRect(&prect, &tileItself->parentObject->collisionRect); // we need to compute origional collision rect??
+//                containRectWithin(&prect, &cropParentObject->cropParentObject->collisionRect);
+//
+//                if( prect.y != tileItself->parentObject->collisionRect.y ){
+//                    SDL_Log("Some strange string here so we can debug it");
+//                }
+//
+//                //containRectWithin(&rect, &tileItself->boundryRect); // maybe we could use something like this... but it has to take 2 uiObjects instead, and walk whatever tree exists between them... containing rects within along hte way... doable probably
+//
+//                // containRectWithinObjects(&rect, &startObject, &parentObject)
+////                containRectWithinObjects(&rect, tileItself, scrollerItself);
+//
+//                // contain containRectWithinObjects,a nd really within scrollerItself->boundryRect ultimately while examining each object...
+//
+//                // so use parent of scroller?? or.... this is not so trival is it??
+////
+////                computedCropRenderRect.w = parentRenderRect.w * origBoundryRect.w;
+////                computedCropRenderRect.h = parentRenderRect.h * origBoundryRect.h;
+////                computedCropRenderRect.x = (parentRenderRect.x + scaleRectForRenderX(&origBoundryRect, &parentRenderRect)) ;
+////                computedCropRenderRect.y = (parentRenderRect.y + scaleRectForRenderY(&origBoundryRect, &parentRenderRect)) ;
+//
+//
+//
+//
+//                // maths? deep reference chain, use var
+//                computedCropRenderRect.w = tileItself->parentObject->renderRect.w * rect.w;
+//                computedCropRenderRect.h = tileItself->parentObject->renderRect.h * rect.h;
+//                computedCropRenderRect.x = (tileItself->parentObject->renderRect.x + scaleRectForRenderX(&rect, &tileItself->parentObject->renderRect)) ;
+//                computedCropRenderRect.y = (tileItself->parentObject->renderRect.y + scaleRectForRenderY(&rect, &tileItself->parentObject->renderRect)) ;
+//                // aka  cropParentObject->origRenderRect
+//
+//                 // vs cropParentObject->cropParentObject->renderRect
+//
+//// better off looking at the crop parent's render rect that we are.... but thats tough.... collision rect is easy-ish
+//
+//
+//
+//                if( prect.y != tileItself->parentObject->collisionRect.y ){
+//                    SDL_Log("Some strange string here so we can debug it");
+//                }
+//
+//
+//
+//
+//                // we can presumably use tileItself->origBoundryRect and tileItself->parentObject->renderRect
+//                // (the FIRST of which will be rect, and has been properly sized to be the tileItself->origBoundryRect resized so that it does not extend beyond scrollerItself->boundryRect
+//
+//            }
+//
+//
+//        }
 
         //    collisionRect.x = renderRect.x;
         //    collisionRect.y = renderRect.y;
@@ -883,8 +1063,6 @@ struct uiObject
     float applyStacking(Float_Rect* parentRenderRect, float stackingOffset){
 
         if( stack_right ){
-
-
             float newPosition = parentRenderRect->x + parentRenderRect->w - renderRect.w - stackingOffset;
 
             float displacement = newPosition - renderRect.x;
@@ -892,11 +1070,22 @@ struct uiObject
 
             collisionRect.x  += (displacement * 0.5);
 
-        }else if(stack_left){
+            return stackingOffset + (renderRect.w * 2.0);
+        }
+
+        if(stack_bottom){
+            float newPosition = parentRenderRect->y + parentRenderRect->h - renderRect.h - stackingOffset;
+
+            float displacement = newPosition - renderRect.y;
+            renderRect.y += displacement;
+
+            collisionRect.y  += (displacement * 0.5);
+
+            return stackingOffset + (renderRect.h * 2.0);
 
         }
 
-        return stackingOffset + (renderRect.w * 2.0);
+        return 0.0;
     }
     
     void organizeChildNodesBasedOnTextDir(){
@@ -940,7 +1129,7 @@ struct uiObject
             }
         }else{
             if( textDirection == TEXT_DIR_ENUM::LTR ){
-                for( ctr=0,i=0; i<len; i++,ctr++ ){ // TODO dupicate counters....
+                for( ctr=0,i=0; i<len; i++,ctr++ ){ // TODO dupicate counters.... maths
                     letter = childList[i];
                     letter->setBoundaryRect( (i*1.0), 0.0, 1.0, 1.0);
                 }
@@ -950,7 +1139,7 @@ struct uiObject
                     letter->setBoundaryRect( (i*1.0), 0.0, 1.0, 1.0);
                 }
             }else if( textDirection == TEXT_DIR_ENUM::TTB ){
-                for( ctr=0,i=0; i<len; i++,ctr++ ){ // TODO dupicate counters....
+                for( ctr=0,i=0; i<len; i++,ctr++ ){ // TODO dupicate counters.... maths
                     letter = childList[i];
                     letter->setBoundaryRect( 0.0, (i*1.0), 1.0, 1.0);
                 }

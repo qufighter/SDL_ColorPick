@@ -476,6 +476,8 @@ int EventFilter(void* userdata, SDL_Event* event){
              */
             openglContext->renderShouldUpdate = false;
 
+            colorPickState->appInForeground = false;
+
             openglContext->generalUx->writeOutState();
             SDL_Log("SDL_APP_WILLENTERBACKGROUND !!!!");
             return 0;
@@ -494,7 +496,9 @@ int EventFilter(void* userdata, SDL_Event* event){
              Restore all your state here.
              */
             mousStateDown = 0; // zero finger counter
+            colorPickState->appInForeground = true;
             openglContext->renderShouldUpdate = true;
+
             SDL_Log("SDL_APP_WILLENTERFOREGROUND !!!!");
             return 0;
         }
@@ -502,6 +506,7 @@ int EventFilter(void* userdata, SDL_Event* event){
             /* Restart your loops here.
              Your app is interactive and getting CPU again.
              */
+            colorPickState->appInForeground = true;
             SDL_Log("SDL_APP_DIDENTERFOREGROUND !!!!");
             return 0;
         }

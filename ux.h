@@ -55,6 +55,12 @@ typedef enum  {
     TTB
 } TEXT_DIR_ENUM;
 
+typedef enum  {
+    TOP,
+    RIGHT,
+    BOTTOM,
+    LEFT
+} SQUARE_EDGE_ENUM;
 
 typedef struct Float_Point
 {
@@ -87,7 +93,55 @@ typedef struct Float_Rect
     float w, h;
 } Float_Rect;
 
+typedef struct HSV_Color
+{
+    Uint16 h; // max 360...
+    Uint8 s;
+    Uint8 v;
 
+    HSV_Color(){
+        h=0;s=0;v=0;
+    }
+
+    float diffc(float c, float v, float diff){
+        return (v - c) / 6.0 / diff + 1.0 / 2.0;
+    }
+
+    void fromColor(SDL_Color* clr){
+        float rr, gg, bb; // type?
+        float r = clr->r / 255.0;
+        float g = clr->g / 255.0;
+        float b = clr->b / 255.0;
+        float f_h = 0.0, f_s;
+        float f_v = SDL_max(SDL_max(r, g), b);
+        float diff = f_v - SDL_min(SDL_min(r, g), b);
+        if (diff == 0.0) {
+            f_h = f_s = 0.0;
+        } else {
+            f_s = diff / f_v;
+            rr = diffc(r, f_v, diff);
+            gg = diffc(g, f_v, diff);
+            bb = diffc(b, f_v, diff);
+            if (r == f_v) {
+                f_h = bb - gg;
+            }else if (g == f_v) {
+                f_h = (1.0 / 3.0) + rr - bb;
+            }else if (b == f_v) {
+                f_h = (2.0 / 3.0) + gg - rr;
+            }
+            if (f_h < 0.0) {
+                f_h += 1.0;
+            }else if (f_h > 1.0) {
+                f_h -= 1.0;
+            }
+        }
+
+        h = f_h * 360.0;
+        s = f_s * 100.0;
+        v = f_v * 100.0;
+    }
+
+} HSV_Color;
 
 #include "ux-Interaction.h"
 
@@ -100,6 +154,7 @@ static Ux* Singleton();
 #include "uiList.h" // referrs to Ux:: which referrs to uiObject...
 
 #include "uiObject.h" // referrs to Ux:: which referrs to uiObject...
+#include "uiEdgeShadow.h"
 #include "uiScrollController.h"
 #include "uiViewColor.h"
 //#include "uiRoundedRectangle.h"
@@ -144,6 +199,7 @@ static Ux* Singleton();
     void printCharToUiObject(uiObject* letter, char character, bool resizeText);
     void printCharToUiObject(uiObject* letter, int character, bool resizeText);
     void printCharOffsetUiObject(uiObject* letter, int charOffset);
+    void hideHistoryPalleteIfShowing();
 
     bool objectCollides(float x, float y);
     bool objectCollides(uiObject* testObj, float x, float y);
@@ -160,6 +216,7 @@ static Ux* Singleton();
     static void interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta);
     static void interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction *delta);
     static void interactionFileBrowserTime(uiObject *interactionObj, uiInteraction *delta);
+    static void interactionReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta);
     static void interactionAddHistory(uiObject *interactionObj, uiInteraction *delta);
     static void clickPalleteColor(uiObject *interactionObj, uiInteraction *delta);
     static void clickHistoryColor(uiObject *interactionObj, uiInteraction *delta);
@@ -176,8 +233,10 @@ static Ux* Singleton();
     static void interactionSliderVT(uiObject *interactionObj, uiInteraction *delta);
     static void interactionHorizontal(uiObject *interactionObj, uiInteraction *delta);
     static void interactionVert(uiObject *interactionObj, uiInteraction *delta);
+
     static void hueClicked(uiObject *interactionObj, uiInteraction *delta);
     static void hueClicked(SDL_Color* c);
+    static void hueClickedPickerHsv(SDL_Color* c);
     static void pickerForHuePercentage(float percent);
     static void interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteraction *delta);
     static bool bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *delta);
@@ -209,7 +268,7 @@ static Ux* Singleton();
     // palleteMax CANNOT exceede the size of Uint16 now, which is about 65536
     // palleteMax CANNOT exceede the size of Uint8 now, which is about 256
     //Uint8 palleteColorsIndex[COLOR_INDEX_MAX]; // we do not search the array
-    //Uint8* palleteColorsIndex = (Uint8*)SDL_malloc( COLOR_INDEX_MAX ); // totally equivilent to above
+    //Uint8* palleteColorsIndex = (Uint8*)SDL_malloc( sizeof(Uint8) * COLOR_INDEX_MAX ); // totally equivilent to above
 
     void colorTileAddChildObjects(uiObject *historyTile, anInteractionFn removeClickedFn);
     void updateColorValueDisplay(SDL_Color* color);
@@ -237,20 +296,30 @@ static Ux* Singleton();
         uiObject *pickSourceBtn;
         uiObject *addHistoryBtn;
 
+        uiObject *returnToLastImgBtn;
+
+
         uiObject *zoomSliderHolder;
         uiObject *zoomSliderBg;
         uiObject *zoomSlider;
 
         uiViewColor *curerntColorPreview;
         uiViewColor *palleteSelectionColorPreview;
+        uiObject *palleteSelectionPreviewHolder; // to contain the animation
 
         uiYesNoChoice* defaultYesNoChoiceDialogue;
+        uiObject* defaultYesNoChoiceHolder;
         uiHueGradient* huePicker;
         uiNavArrows* movementArrows;
+
+        uiEdgeShadow* historyPalleteHolderTlEdgeShadow;
+        uiEdgeShadow* historyPalleteHolderBrEdgeShadow;
 
         uiObject *historyPalleteHolder;
         uiScrollController *historyScroller;
         uiScrollController *palleteScroller;
+        uiEdgeShadow* palleteScrollerEdgeShadow;
+
         uiObject *newHistoryFullsize;
         uiObject *newHistoryPallete;
 
@@ -268,6 +337,7 @@ static Ux* Singleton();
 
 
     SDL_Color* currentlyPickedColor;
+    HSV_Color* lastHue;
 
     char* historyPath;
     char* palletePath;

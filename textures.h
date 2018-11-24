@@ -21,14 +21,18 @@ public:
 
     SDL_Surface* LoadSurface(const char* filename);
 
-    GLuint LoadTextureSized(SDL_Surface *surface, GLuint& contained_in_texture_id, GLuint& textureid_centered_on, int size, int *x, int *y, SDL_Color* backgroundColor);
-    GLuint LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthHeight, int *x, int *y, GLuint& contained_in_texture_id, GLuint& textureid_centered_on, SDL_Color* backgroundColor);
+    GLuint LoadTextureSized(SDL_Surface *surface, GLuint& contained_in_texture_id, GLuint& textureid_centered_on, int size, int *x, int *y);
+    GLuint LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthHeight, int *x, int *y, GLuint& contained_in_texture_id, GLuint& textureid_centered_on);
+    SDL_Surface* ConvertSurface(SDL_Surface *origSurface, SDL_Color* backgroundColor);
     SDL_Surface* ConvertSurface(SDL_Surface *origSurface);
 
     GLuint LoadTexture(const char* filename, GLuint& textureid);
 	GLuint LoadTexture(const char* filename);
 	//GLuint LoadTexture(char* filename);
 	GLuint LoadTexture(unsigned char *data, int width, int height);
+
+    bool searchSurfaceForColor(SDL_Surface *newSurface, SDL_Color* seekClr, int x, int y, int* outx, int* outy);
+    bool colorFromSurface(SDL_Surface *newSurface, int x, int y, SDL_Color* outColor);
 
     void replaceTexture(GLuint textureid);
 
@@ -40,6 +44,7 @@ public:
 	void debugDevILerror();
 
     SDL_Color selectedColor;
+    SDL_Color tmpColor;
 
 
 private:

@@ -60,7 +60,7 @@ struct uiList
 
     void setSize(int pmaxSize){
         maxSize=pmaxSize;
-        listItself = (genType*)SDL_malloc( maxSize );
+        listItself = (genType*)SDL_malloc( sizeof(genType) * maxSize );
     }
 
     void clear(){
@@ -82,7 +82,7 @@ struct uiList
         // index is used to guarante unique entries (though not enforced by add) and locate entries
         _indexSize=size;
         indexOffsetGen=pindexOffsetGen;
-        indexItself = (indexType*)SDL_malloc( _indexSize );
+        indexItself = (indexType*)SDL_malloc( sizeof(indexType) * _indexSize );
         _indexed=true;
         clearIndex();
         // todo: we could loop and update the index.... but it is empty right now
@@ -232,7 +232,7 @@ struct uiList
     }
 
     //Uint8 palleteColorsIndex[COLOR_INDEX_MAX]; // we do not search the array
-    //Uint8* palleteColorsIndex = (Uint8*)SDL_malloc( COLOR_INDEX_MAX ); // totally equivilent to above
+    //Uint8* palleteColorsIndex = (Uint8*)SDL_malloc( sizeof(Uint8) * COLOR_INDEX_MAX ); // totally equivilent to above
 
 //
 //    GLM_STATIC_ASSERT(

@@ -29,9 +29,27 @@ struct uiHueGradient{
         float width = 1.0 / 128;
 
         // 6 chunks of 0-255 rainbow
-//        uiObject* currentContainer = new uiObject();
-//        currentContainer->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
-//        uiObjectItself->addChild(currentContainer); // add first so controller proagates
+        hueGradientHolder = new uiObject();
+        hueGradientHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+        uiObjectItself->addChild(hueGradientHolder); // add first so controller proagates
+
+
+        huePositionMarker = new uiObject();
+        //huePositionMarker->setBoundaryRect(0.0, 0.0, 0.1, 1.0);// whatever we size here does  not matter
+        huePositionMarker->doesInFactRender = false;
+        huePositionMarker->doesRenderChildObjects = false;
+        hideHueSlider();
+        uiObjectItself->addChild(huePositionMarker);
+
+        uiObject* markerTop = new uiObject();
+        //markerTop->setBoundaryRect(0.0, 0.0, 1.0, 0.25);// whatever we size here does  not matter
+        //uxInstance->printCharToUiObject(markerTop, CHAR_ARR_DN, DO_NOT_RESIZE_NOW);
+        huePositionMarker->addChild(markerTop);
+
+        uiObject* markerBtm = new uiObject();
+        //markerBtm->setBoundaryRect(0.0, 1.0-0.25, 1.0, 0.25);// whatever we size here does  not matter
+        //uxInstance->printCharToUiObject(markerBtm, CHAR_ARR_UP, DO_NOT_RESIZE_NOW);
+        huePositionMarker->addChild(markerBtm);
 
         while( offset < totalColors ){
             uiObject* rt = new uiObject();
@@ -39,8 +57,8 @@ struct uiHueGradient{
             Ux::setColor(&rt->backgroundColor, &manyColors[offset]);
             //rt->setInteractionCallback(interactionHueClicked); //setClickInteractionCallback
             rt->setBoundaryRect( counter * (width) , 0.0, width+0.01, 1.0);
-            //currentContainer->addChild(rt);
-            uiObjectItself->addChild(rt);
+            hueGradientHolder->addChild(rt);
+            //uiObjectItself->addChild(rt);
             offset+=12;
             counter++;
         }
@@ -56,6 +74,9 @@ struct uiHueGradient{
     anInteractionFn tileClicked=nullptr;
 
     uiObject* uiObjectItself; // no real inheritance here, this its the uiSqware, I would use self->
+    uiObject* hueGradientHolder;
+    uiObject* huePositionMarker;
+    bool hueSliderVisible;
 
     int totalColors = 1530;
     SDL_Color manyColors[1530];// *totalColorsPer * 6
@@ -67,7 +88,7 @@ struct uiHueGradient{
         Ux* uxInstance = Ux::Singleton();
         float percent;
 
-        if( uxInstance->screenRatio > 1.0 ){ // widescreen
+        if( uxInstance->widescreen ){
             percent = (delta->py - interactionObj->collisionRect.y) * (1.0/interactionObj->collisionRect.h); // it is arguable delta aleady "know" this?
         }else{
             percent = (delta->px - interactionObj->collisionRect.x) * (1.0/interactionObj->collisionRect.w); // it is arguable delta aleady "know" this?
@@ -86,9 +107,13 @@ struct uiHueGradient{
 
         // instead of updating it right now as the above would do.... since it is intense
 
+#ifndef __IPHONEOS__
         if( self->lockPickerEvent ) return;
         self->lockPickerEvent = true; // hmm seems like we still need to use a timer if we really want to debounce it...
         SDL_AddTimer(250, my_callbackfunc, self);
+#else
+        pickerForPercentV(&percent);
+#endif
     }
 
     static Uint32 my_callbackfunc(Uint32 interval, void* parm){
@@ -117,13 +142,17 @@ struct uiHueGradient{
         Ux* uxInstance = Ux::Singleton();
         uiHueGradient* self = uxInstance->huePicker;
         uxInstance->hueClicked(self->colorForPercent(self->lastPickPercent));
+
+        self->showHueSlider();
+
 //        uxInstance->pickerForHuePercentage(*percent);
         self->lockPickerEvent = false;
     }
 
 
     SDL_Color* colorForPercent(float percent){
-        int clrOffset =  SDL_floorf(this->totalColors * percent);
+        lastPickPercent = percent;
+        int clrOffset =  SDL_floorf((this->totalColors-1) * percent);
         return &this->manyColors[clrOffset];
     }
 
@@ -134,16 +163,62 @@ struct uiHueGradient{
 //        self->tileClicked(interactionObj, delta);
 //    }
 
+    void showHueSlider(){
+        hueSliderVisible = true;
+        huePositionMarker->doesRenderChildObjects = true;
+        repositionHueSlider(lastPickPercent, false);
+    }
+
+    void hideHueSlider(){
+        hueSliderVisible = true;
+        huePositionMarker->doesRenderChildObjects = false;
+    }
+
+    void repositionHueSlider(float percent, float skipUpdate){
+        Ux* uxInstance = Ux::Singleton();
+        if( uxInstance->widescreen ){ // widescreen
+            huePositionMarker->boundryRect.y = percent - (huePositionMarker->boundryRect.h * 0.5);
+        }else{
+            huePositionMarker->boundryRect.x = percent - (huePositionMarker->boundryRect.w * 0.5);
+        }
+        if( !skipUpdate ) huePositionMarker->updateRenderPosition();
+    }
+
     void resize(Float_Rect boundaries){
 
         uiObjectItself->setBoundaryRect(&boundaries);
 
         Ux* uxInstance = Ux::Singleton();
 
-        if( uxInstance->screenRatio > 1.0 ){ // widescreen
-            uiObjectItself->setChildNodeDirection(TEXT_DIR_ENUM::TTB, true);
+        uiObject* markerTop = huePositionMarker->childList[0];
+        uiObject* markerBtm = huePositionMarker->childList[1];
+
+        float markerHeight=0.55;
+        float markerOutset=0.25;
+        float hueMarkerWidth = 0.08;
+
+        if( uxInstance->widescreen ){ // widescreen
+            markerHeight=0.45;
+            hueGradientHolder->setChildNodeDirection(TEXT_DIR_ENUM::TTB, true);
+            huePositionMarker->setBoundaryRect(-markerOutset, 0.0, 1.0+markerOutset+markerOutset, hueMarkerWidth);
+            markerTop->setBoundaryRect(0.0, 0.0, markerHeight, 1.0);
+            markerBtm->setBoundaryRect(1.0-markerHeight, 0.0, markerHeight, 1.0);
+
+            uxInstance->printCharToUiObject(markerTop, CHAR_ARR_RIGHT, DO_NOT_RESIZE_NOW);
+            uxInstance->printCharToUiObject(markerBtm, CHAR_ARR_LEFT, DO_NOT_RESIZE_NOW);
+
         }else{
-            uiObjectItself->setChildNodeDirection(TEXT_DIR_ENUM::LTR, true);
+            hueGradientHolder->setChildNodeDirection(TEXT_DIR_ENUM::LTR, true);
+            huePositionMarker->setBoundaryRect(0.0, -markerOutset, hueMarkerWidth, 1.0+markerOutset+markerOutset);
+            markerTop->setBoundaryRect(0.0, 0.0, 1.0, markerHeight);
+            markerBtm->setBoundaryRect(0.0, 1.0-markerHeight, 1.0, markerHeight);
+
+            uxInstance->printCharToUiObject(markerTop, CHAR_ARR_DN, DO_NOT_RESIZE_NOW);
+            uxInstance->printCharToUiObject(markerBtm, CHAR_ARR_UP, DO_NOT_RESIZE_NOW);
+        }
+
+        if( hueSliderVisible ){
+            repositionHueSlider(lastPickPercent, true);
         }
 
         update();

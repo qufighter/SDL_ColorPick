@@ -76,7 +76,7 @@
 
 //okay here are the int defs... should be more reliable right?
 #define CHAR_APP_ICON 127
-#define CHAR_BACK_ICON 129
+#define CHAR_BACK_ICON 128
 
 #define CHAR_LINEAR_SLOPE 129
 #define CHAR_ASYMP_SLOPE 130

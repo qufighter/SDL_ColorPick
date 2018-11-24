@@ -182,13 +182,26 @@ struct uiScrollController{
     }
 
     static bool testIfObjectCanInteract(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
-                                                                                // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
+        Ux* uxInstance = Ux::Singleton();
+                                                               // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
         uiScrollController* self = interactionObj->myScrollController;
-        if( !self->allowUp && delta->dy > 0 ){ // possibly allowAllowUp or much better configurability of what edge of scrolling might yield the scroll event to another object....
-            Ux* uxInstance = Ux::Singleton();
-            return uxInstance->bubbleCurrentInteraction(); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
-        }
 
+        if( uxInstance->widescreen ){
+           // SDL_Log("00))))0000000000000000000000000x y:%f x:%f",fabs(delta->dy), delta->dx);
+
+            if( fabs(delta->dy) < 0.01f && delta->dx > 0.04f ){
+                //SDL_Log("00))))0000000000000000000000000x y:%f x:%f  OK...",fabs(delta->dy), delta->dx);
+
+                //Ux* uxInstance = Ux::Singleton();
+                return uxInstance->bubbleCurrentInteraction();
+            }
+
+        }else{
+            if( !self->allowUp && delta->dy > 0 ){ // possibly allowAllowUp or much better configurability of what edge of scrolling might yield the scroll event to another object....
+                //Ux* uxInstance = Ux::Singleton();
+                return uxInstance->bubbleCurrentInteraction(); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
+            }
+        }
         // this does not work for some reason! possibly known
 //        if( !self->allowDown && delta->dy < 0 ){ // possibly allowAllowUp or much better configurability of what edge of scrolling might yield the scroll event to another object....
 //            Ux* uxInstance = Ux::Singleton();
@@ -549,7 +562,7 @@ struct uiScrollController{
                     //scrollTile->setRoundedCorners(0.0, 0.0, 0.2, 0.0);
                     //scrollTile->setRoundedCorners(0.0, 0.0, 0.0, 0.4);
 
-                    scrollTile->setCropParent(uiObjectItself); // maybe only needed on first and last 2 rows....
+                    scrollTile->setCropParent(uiObjectItself); // maybe only needed on first and last 2 rows.... //maths2
                 }
                 
                 scrollTile->setBoundaryRect( ctr * tileWidth, rowCtr * tileHeight, tileWidth, tileHeight );

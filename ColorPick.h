@@ -78,6 +78,7 @@ public:
     SDL_Window *sdlWindow;
     bool createContext(SDL_Window *sdlWindow); // Creation of our OpenGL 3.x context
     void destroyContext();
+    void prepareForHuePickerMode(void);
     void createUI(void);
     void setupScene(void); // All scene information can be setup here
     void reshapeWindow(int w, int h); // Method to get our window width and height on resize
@@ -89,7 +90,12 @@ public:
 
     SDL_Surface *fullPickImgSurface;
     SDL_Surface *colorPickerFGSurfaceGradient;
+    SDL_Surface *lastTrueFullPickImgSurface;
     SDL_Color* lastHue;
+
+    bool last_mode_hue_picker;
+    int last_mode_position_x = 0; // this is non hue picker mode...
+    int last_mode_position_y = 0;
 
 //    void keyDown(int key);
     void keyUp(SDL_Keycode key);
@@ -133,7 +139,9 @@ public:
 
     //typedef void (*imageSelectedCallback)(const char *); // < its this type
     void imageWasSelectedCb(SDL_Surface *myCoolSurface);
+    bool restoreLastSurface();
     void loadNextTestImage();
+    void pickerForHue(HSV_Color* color, SDL_Color* desired_color);
     void pickerForHue(SDL_Color* color);
     void updateColorPreview(void);
 
@@ -158,8 +166,7 @@ private:
     Ux::uiListLoopingIterator<Ux::uiList<const char*, Uint8>, const char*>* testTexturesBuiltin;
 
     bool has_velocity = false;
-    float velocity_x =0;
-    float velocity_y =0;
+
     float pan_friction = 0.9;
 
     float accumulated_velocity_x =0;

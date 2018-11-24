@@ -98,7 +98,9 @@ static Uint32 my_test_if_image_selected(Uint32 interval, void* parm){
 
     //UxAnim* self = (UxAnim*)parm; // param was nullptr
 
-
+    if( !colorPickState->appInForeground ) { // we tried this but we can't pick an image... not quite sure why yet... compare logs?
+        return 0; // app is in background, kill the timer...
+    }
 
     return interval;
 }

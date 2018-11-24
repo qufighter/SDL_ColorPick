@@ -29,6 +29,8 @@ OpenGLContext::OpenGLContext(void) {
     lastHue=nullptr;
     position_x = 0;
     position_y = 0;
+    last_mode_hue_picker = false;
+    lastTrueFullPickImgSurface=nullptr;
 
     pixelInteraction.friction=4.3;
 }
@@ -107,13 +109,23 @@ void OpenGLContext::chooseFile(void) {
 void OpenGLContext::updateColorPreview(void){
     //glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
 
-//    glClearColor(textures->selectedColor.r / 255.0f,
-//                 textures->selectedColor.g / 255.0f,
-//                 textures->selectedColor.b / 255.0f,
-//                 textures->selectedColor.a / 255.0f); // IF WE DONT DO THIS WE WONT HAVE THE REFERENCES UP NEXT!
+    glClearColor(textures->selectedColor.r / 255.0f,
+                 textures->selectedColor.g / 255.0f,
+                 textures->selectedColor.b / 255.0f,
+                 textures->selectedColor.a / 255.0f);
 
     generalUx->updateColorValueDisplay(&textures->selectedColor);
 
+}
+
+bool OpenGLContext:: restoreLastSurface(){
+    if( lastTrueFullPickImgSurface!= nullptr ){
+        imageWasSelectedCb(lastTrueFullPickImgSurface);
+        return true;
+    }else{
+        SDL_Log("Error - there is no image for this!");
+    }
+    return false;
 }
 
 void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
@@ -129,11 +141,26 @@ void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
     position_y = 0;
     SDL_FreeSurface(fullPickImgSurface);
 
+    if( lastTrueFullPickImgSurface != nullptr ){
+        // this is a tricky call - if the surface is different we should free it now.... otherwise the arg to this is free'd later
+        if( lastTrueFullPickImgSurface != myCoolSurface ){
+            SDL_FreeSurface(lastTrueFullPickImgSurface);
+        }else{
+            // we are restoring, so lets also restore position
+            position_x = last_mode_position_x;
+            position_y = last_mode_position_y;
+        }
+        lastTrueFullPickImgSurface = nullptr;
+    }
+    last_mode_hue_picker = false;
+    generalUx->returnToLastImgBtn->hideAndNoInteraction();
+    generalUx->huePicker->hideHueSlider();
+
     // at least for ios we shold standardize this format now
     fullPickImgSurface = textures->ConvertSurface(myCoolSurface);
     loadedImageMaxSize = SDL_max(fullPickImgSurface->clip_rect.w, fullPickImgSurface->clip_rect.h);
 
-    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
+    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y);
 
     // tada: also shrink image to be within some other texture.....
     //  then we can maintain magic when zoomed out...
@@ -159,6 +186,13 @@ void OpenGLContext:: loadNextTestImage(){
     position_x = 0;
     position_y = 0;
     SDL_FreeSurface(fullPickImgSurface);
+    if( lastTrueFullPickImgSurface != nullptr ){
+        SDL_FreeSurface(lastTrueFullPickImgSurface);
+        lastTrueFullPickImgSurface = nullptr;
+    }
+    last_mode_hue_picker = false;
+    generalUx->returnToLastImgBtn->hideAndNoInteraction();
+    generalUx->huePicker->hideHueSlider();
 
     // at least for ios we shold standardize this format now using textures->ConvertSurface
     fullPickImgSurface = textures->ConvertSurface(myCoolSurface);
@@ -167,7 +201,7 @@ void OpenGLContext:: loadNextTestImage(){
 
     loadedImageMaxSize = SDL_max(fullPickImgSurface->clip_rect.w, fullPickImgSurface->clip_rect.h);
 
-    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
+    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y);
 
     // tada: also shrink image to be within some other texture.....
     //  then we can maintain magic when zoomed out... (done?! textureId_default)
@@ -181,6 +215,51 @@ void OpenGLContext:: loadNextTestImage(){
     SDL_Log("really done loading new surface.... right?");
 }
 
+void OpenGLContext:: pickerForHue(HSV_Color* color, SDL_Color* desired_color){
+
+    prepareForHuePickerMode();
+
+    int cp_x=(((color->s)/100.0)*255.0);
+    int cp_y=(((100.0-color->v)/100.0)*255.0);
+
+    SDL_Log("current position x/y %i/%i <--- computed", cp_x, cp_y );
+
+    int ix = position_x; // used for logging debug only....
+    int iy = position_y;
+
+    position_x = (-cp_x) + 127;
+    position_y = (-cp_y) + 127;
+
+    SDL_Log("moved by x/y %i/%i <--- computed", ix-position_x, iy-position_y );
+
+
+    pickerForHue(generalUx->huePicker->colorForPercent(1.0-(color->h/360.0)));
+    //    position_x = 0;
+    //    position_y = 0;
+
+
+    if( textures->searchSurfaceForColor(fullPickImgSurface, desired_color, position_x, position_y, &position_x, &position_y) ){
+
+            // this is a little overkill we just need to move the position....
+            //pickerForHue(generalUx->huePicker->colorForPercent(1.0-(color->h/360.0)));
+            textures->LoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y);
+            updateColorPreview();
+            renderShouldUpdate = true;
+
+        SDL_Log(" - - -  zeroing in attempt 2 now ------ - - - - ");
+        if( textures->searchSurfaceForColor(fullPickImgSurface, desired_color, position_x, position_y, &position_x, &position_y) ){
+
+            // this is a little overkill we just need to move the position....
+            //pickerForHue(generalUx->huePicker->colorForPercent(1.0-(color->h/360.0)));
+            textures->LoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y);
+            updateColorPreview();
+            renderShouldUpdate = true;
+
+        }
+
+    }
+}
+
 void OpenGLContext:: pickerForHue(SDL_Color* color){
 
     lastHue = new SDL_Color();
@@ -192,14 +271,27 @@ void OpenGLContext:: pickerForHue(SDL_Color* color){
 //    position_x = 0;
 //    position_y = 0;
 
+
+    prepareForHuePickerMode(); // this is no-op if we are already in mode
+
+    // show the button to return now....
+    generalUx->returnToLastImgBtn->showAndAllowInteraction();
+    generalUx->huePicker->showHueSlider();
+
+
+    SDL_Log("current position x/y %i/%i", position_x, position_y );
+
     SDL_FreeSurface(fullPickImgSurface);// free previous surface
 
 
+
+
     // at least for ios we shold standardize this format now using textures->ConvertSurface
-    fullPickImgSurface = textures->ConvertSurface(SDL_DuplicateSurface(colorPickerFGSurfaceGradient));
+    fullPickImgSurface = textures->ConvertSurface(SDL_DuplicateSurface(colorPickerFGSurfaceGradient), lastHue);
     loadedImageMaxSize = SDL_max(fullPickImgSurface->clip_rect.w, fullPickImgSurface->clip_rect.h);
 
-    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
+
+    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y); // todo we could remove this backgroundColor arg now maybe?
 
     updateColorPreview();
 
@@ -207,6 +299,32 @@ void OpenGLContext:: pickerForHue(SDL_Color* color){
 
     SDL_Log("really done loading new surface.... right?");
 
+}
+
+void OpenGLContext::prepareForHuePickerMode(void) {
+    if( !last_mode_hue_picker ){
+
+        last_mode_position_x = position_x;
+        last_mode_position_y = position_y;
+
+        SDL_Log("current position was x/y %i/%i fisheye: %f ", position_x, position_y, fishEyeScalePct );
+
+        // in general if we were NOT picking hue before, certain x/y should be avoided... since it is confusing to be greeted with a solid black screen
+        // also possibly certain zoom should be avoided.....
+        // if last_mode_hue_picker though - the rules enforced here should be skipped (except maybe zoom?)
+        if( position_x > 0 ){
+            position_x = 0;
+        }
+        if( position_y < 0 ){
+            position_y = 0;
+        }
+        if( fishEyeScalePct > 0.1 ){
+            setFishScalePerentage(nullptr, 0.1);
+        }
+
+        lastTrueFullPickImgSurface = SDL_DuplicateSurface(fullPickImgSurface);
+        last_mode_hue_picker = true;
+    }
 }
 
 void OpenGLContext::createUI(void) {
@@ -307,6 +425,57 @@ textureList->add("textures/simimage.png");
 
 
 
+    // slower attempt....
+//
+//
+//    SDL_Rect rect;
+//    rect.w = 1;
+//    rect.h = 1;
+//    SDL_Color rowc;
+//    SDL_Color colc;
+//    SDL_Color c;
+//
+//    for( int row =0; row<colorPickerFGSurfaceGradient->h; row++ ){
+//        rect.y = row + 0.0f;
+//        for( int col =0; col<colorPickerFGSurfaceGradient->w; col++ ){
+//            rect.x = col + 0.0f;
+//
+//            int whiteLevel = 255-row;
+//            int blackLevel = 255-col;
+//
+//            //int result =
+//
+//            rowc.r=whiteLevel;
+//            rowc.g=whiteLevel;
+//            rowc.b=whiteLevel;
+//            rowc.a=row;
+//
+//
+//            colc.r=blackLevel;
+//            colc.g=blackLevel;
+//            colc.b=blackLevel;
+//            colc.a=blackLevel;
+//
+////            c.r= SDL_min(rowc.r, colc.r);
+////            c.g= SDL_min(rowc.g, colc.g);
+////            c.b= SDL_min(rowc.b, colc.b);
+//            c.a= SDL_max(rowc.a, colc.a);
+//
+//            c.r= SDL_min(rowc.r, colc.r);
+//            c.g= SDL_min(rowc.g, colc.g);
+//            c.b= SDL_min(rowc.b, colc.b);
+////            c.a= SDL_max(rowc.a, colc.a);
+//
+//            // c.a= SDL_max((rowc.a + colc.a) * 0.5, SDL_max(rowc.a, colc.a));
+//
+//            SDL_FillRect(colorPickerFGSurfaceGradient, &rect, SDL_MapRGBA(colorPickerFGSurfaceGradient->format, c.r, c.g, c.b, c.a) );
+//
+////            SDL_FillRect(colorPickerFGSurfaceGradient, &rect, SDL_MapRGBA(colorPickerFGSurfaceGradient->format, rowc.r, rowc.g, rowc.b, rowc.a) );
+////            SDL_FillRect(colorPickerFGSurfaceGradient, &rect, SDL_MapRGBA(colorPickerFGSurfaceGradient->format, colc.r, colc.g, colc.b, colc.a) );
+//        }
+//    }
+//
+
 
 // move this?!
 // // we will try to automagically generate cp_bg.png - this failed since we are avoiding going pixel by piel and SDL_ComposeCustomBlendMode doesn't work with surfaces
@@ -371,9 +540,11 @@ textureList->add("textures/simimage.png");
 
 
 
+
+
     textureId_pickImage = textures->GenerateTexture();
     textureId_default = textures->GenerateTexture();
-    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
+    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y);
 
 
 
@@ -482,6 +653,7 @@ void  OpenGLContext::setFishScale(float modifierAmt, float scaler){
 
 //static for use as UI:: callback
 void OpenGLContext::setFishScalePerentage(Ux::uiObject *interactionObj, float percent){
+    // interactionObj will be nullptr sometimes FYI
     SDL_Log("MMV PERC SLIDER %f %%", (percent));
     // from static function we must get instance
 
@@ -511,8 +683,6 @@ void OpenGLContext::setFishScalePerentage(Ux::uiObject *interactionObj, float pe
 //}
 
 void OpenGLContext::triggerVelocity(float x, float y){
-    velocity_x = x; // maybe remove in favor of using pixelInteraction
-    velocity_y = y;
 
     accumulated_velocity_y=0;
     accumulated_velocity_x=0;
@@ -559,10 +729,6 @@ void OpenGLContext::renderScene(void) {
         accumulated_velocity_x -= acu_v_x_int; // subtract the velocity we "already" applied, remainder will continue to be tracked and might still apply...
         accumulated_velocity_y -= acu_v_y_int;
 
-//        colorPickState->mmovex = SDL_floorf(velocity_x);
-//        colorPickState->mmovey = SDL_floorf(velocity_y);
-//        velocity_x *= pan_friction; // cleanup?
-//        velocity_y *= pan_friction;
         // set movex and movey accordingly
         if( fabs(pixelInteraction.vy) < VELOCITY_MIN && fabs(pixelInteraction.vx) < VELOCITY_MIN ){
             has_velocity = false; // never reached ????
@@ -577,6 +743,8 @@ void OpenGLContext::renderScene(void) {
         position_y += colorPickState->mmovey;
         colorPickState->mmovey=0;
 
+        generalUx->hideHistoryPalleteIfShowing(); // panning background...
+
         //SDL_Log("position before %d %d" , position_x, position_y);
 
         // pass a reference to the posiiton - then use that, rather than above
@@ -585,7 +753,7 @@ void OpenGLContext::renderScene(void) {
         //textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
 
 
-        textures->LoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
+        textures->LoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y);
 
         if( has_velocity && position_x_was == position_x && position_y_was == position_y ){
             // we have velocity but we are not moving (reached corner) save some battery...  we could let it try to go a few frames maybe.... for accumulator sake...
@@ -757,7 +925,7 @@ void OpenGLContext::createSquare(void) {
 
     int n=-1;
     float sq_size = 0.725;
-    sq_size = 0.985;
+    //sq_size = 0.985;
     //sq_size = 0.998;
     sq_size = 1.0;
 

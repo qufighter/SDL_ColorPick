@@ -6,7 +6,7 @@
 struct uiYesNoChoice{
 
 
-    uiYesNoChoice(uiObject* parentObj, Float_Rect boundaries){
+    uiYesNoChoice(uiObject* parentObj, Float_Rect boundaries, bool animateContainerInstead){
 
 
         Ux* uxInstance = Ux::Singleton(); // some useful helper?
@@ -59,11 +59,21 @@ struct uiYesNoChoice{
 
         parentObj->addChild(uiObjectItself);
 
+        if( animateContainerInstead ){
+            uiObjToAnimate = parentObj;
+        }else{
+            uiObjToAnimate = uiObjectItself;
+        }
+
+        yesClickedFn = nullptr;
+        noClickedFn = nullptr;
+
         resize(boundaries);
     }
 
     //anInteractionFn tileClicked=nullptr;
 
+    uiObject* uiObjToAnimate; // defaults to uiObjectItself....
     uiObject* uiObjectItself; // no real inheritance here, this its the uiSqware, I would use self->
     uiObject *yes;
     uiObject *no;
@@ -85,18 +95,18 @@ struct uiYesNoChoice{
 
         //yes->setClickInteractionCallback(p_yesClickedFn); // probably changing this...
 
-        uiObjectItself->setAnimation( uxInstance->uxAnimations->slideDownFullHeight(uiObjectItself) );// returns uiAminChain*
+        uiObjToAnimate->setAnimation( uxInstance->uxAnimations->slideDownFullHeight(uiObjToAnimate) );// returns uiAminChain*
 
-        uiObjectItself->is_being_viewed_state = true;
+        uiObjToAnimate->is_being_viewed_state = true;
 
     }
 
     void hide(){
         Ux* uxInstance = Ux::Singleton();
 
-        uiObjectItself->setAnimation( uxInstance->uxAnimations->slideUp(uiObjectItself) );// returns uiAminChain*
+        uiObjToAnimate->setAnimation( uxInstance->uxAnimations->slideUp(uiObjToAnimate) );// returns uiAminChain*
 
-        uiObjectItself->is_being_viewed_state = false;
+        uiObjToAnimate->is_being_viewed_state = false;
 
     }
 
@@ -105,7 +115,7 @@ struct uiYesNoChoice{
         //Ux* uxInstance = Ux::Singleton();
         uiYesNoChoice* self = ((uiYesNoChoice*)interactionObj->myUiController);
 
-        if( self->uiObjectItself->isAnimating() ){
+        if( self->uiObjToAnimate->isAnimating() ){
             // yes is too easy to click right now by accident, we are not done animating in.... this should be based on which choice is dangerous, default yes
 
             /// this is worth 50 points easily though... and can cancel the dialogue?!!

@@ -22,21 +22,12 @@ struct uiViewColor{
 
         if( topShadow ){
 
-            top_shadow = new uiObject();
+            myEdgeShadow = new uiEdgeShadow(uiObjectItself, SQUARE_EDGE_ENUM::TOP, 0.0 );
+            myEdgeShadow->addHighlight();
 
-            top_shadow->setBoundaryRect( 0.0, -0.05, 1.0, 0.1);
-            top_shadow->hasBackground = true;
-            Ux::setColor(&top_shadow->backgroundColor,0, 0, 0, 128);
-            top_shadow->setRoundedCorners(0.5, 0.5, 0, 0);
-            uiObjectItself->addChild(top_shadow);
-
-            uiObject* top_shadow2 = new uiObject();
-            top_shadow2->setBoundaryRect( 0.0, 0.25, 1.0, 0.5);
-            top_shadow2->hasBackground = true;
-            Ux::setColor(&top_shadow2->backgroundColor,255, 255, 255, 128);
-            top_shadow2->setRoundedCorners(0.5, 0.5, 0, 0);
-            top_shadow->addChild(top_shadow2);
-
+        }else{
+            hueBtn = nullptr;
+            myEdgeShadow = nullptr;
         }
 
         hexValueText = new uiObject();
@@ -106,12 +97,27 @@ struct uiViewColor{
         SDL_snprintf(resultText6char, 7,  "  B");
         uxInstance->printStringToUiObject(rgbBlueText, resultText6char, DO_NOT_RESIZE_NOW);
 
+
+        if( topShadow ){
+            hueBtn = new uiObject();
+            hueBtn->setBoundaryRect( 0.5-0.125, 0.5, 0.25, 0.25);
+            Ux::setColor(&hueBtn->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+            uxInstance->printCharToUiObject(hueBtn, CHAR_APP_ICON, DO_NOT_RESIZE_NOW);
+            hueBtn->squarifyKeepVt();
+            hueBtn->setInteractionCallback(&pickFromHueClicked);
+            uiObjectItself->addChild(hueBtn);
+            hueBtn->myUiController = this;
+        }else{
+            hueBtn = nullptr;
+        }
+
+
         parentObj->addChild(uiObjectItself);
 
         alphaMulitiplier = 1.0;
     }
 
-    uiObject* top_shadow;
+    uiEdgeShadow* myEdgeShadow;
 
     uiObject* uiObjectItself; // no real inheritance here, this its the uiViewColor, I would use self->
     uiObject *hexValueText;
@@ -119,23 +125,31 @@ struct uiViewColor{
     uiObject *rgbGreenText;
     uiObject *rgbBlueText;
 
-    char* resultText6char = (char*)SDL_malloc( 6 ); // seems that we should reuse this and not free it
+    uiObject *hueBtn;
 
-    SDL_Color* last_color;
+
+    char* resultText6char = (char*)SDL_malloc( sizeof(char) * 6 ); // seems that we should reuse this and not free it
+
+    SDL_Color last_color;
     float alphaMulitiplier;
+
+    static void pickFromHueClicked(uiObject *interactionObj, uiInteraction *delta){
+        Ux* uxInstance = Ux::Singleton();
+        uiViewColor* self = ((uiViewColor*)interactionObj->myUiController);
+        // uxInstance->hueClicked(self->last_color);
+        uxInstance->hueClickedPickerHsv(&self->last_color);
+    }
 
     void resize(Float_Rect boundaries){
 
         uiObjectItself->setBoundaryRect(&boundaries);
-
         //hexValueText->setChildNodeDirection(TEXT_DIR_ENUM::TTB, false); // see TEXT_DIR_ENUM
-
         Ux* uxInstance = Ux::Singleton();
 
         float hex_size=0.6;
         float rgb_size=0.4;
 
-        if( uxInstance->screenRatio > 1.0 ){ // widescreen
+        if( uxInstance->widescreen ){
             hex_size=0.3;
             rgb_size=(1.0-hex_size) / 3.0; // letter width for 3 char...
             //NEW rule size the container for the letter size of first letter
@@ -143,8 +157,19 @@ struct uiViewColor{
             hexValueText->setChildNodeDirection(TEXT_DIR_ENUM::TTB, false);
 
             rgbRedText->setBoundaryRect( hex_size,0.0, rgb_size, 0.333333333333333);
-            rgbGreenText->setBoundaryRect( hex_size, 0.33333333333333, rgb_size, 0.333333333333333);  //maths
+            rgbGreenText->setBoundaryRect( hex_size, 0.33333333333333, rgb_size, 0.333333333333333);
             rgbBlueText->setBoundaryRect( hex_size, 0.66666666666666, rgb_size, 0.333333333333333);
+
+
+            if( myEdgeShadow != nullptr ){
+                myEdgeShadow->resize(SQUARE_EDGE_ENUM::LEFT);
+            }
+
+            if( hueBtn != nullptr ){
+                float h = 0.15;
+                float hh = h * 0.5;
+                hueBtn->setBoundaryRect(hex_size-hh, 0.5-hh, h, h);
+            }
         }else{
             //NEW rule size the container for the letter size of first letter
             hexValueText->setBoundaryRect( 0.0, 0.0, 0.16666666666667, hex_size);
@@ -153,22 +178,29 @@ struct uiViewColor{
             rgbRedText->setBoundaryRect( 0.0, hex_size, 0.11111111111111, rgb_size);
             rgbGreenText->setBoundaryRect( 0.33333333333333, hex_size, 0.11111111111111, rgb_size);
             rgbBlueText->setBoundaryRect( 0.66666666666666, hex_size, 0.11111111111111, rgb_size);
-        }
 
+            if( myEdgeShadow != nullptr ){
+                myEdgeShadow->resize(SQUARE_EDGE_ENUM::TOP);
+            }
+
+            if( hueBtn != nullptr ){
+                float h = 0.25;
+                float hh = h * 0.5;
+                hueBtn->setBoundaryRect( 0.5-hh, hex_size-0.05-hh, h, h);
+            }
+        }
     }
 
     void update(SDL_Color* color){
         //char* resultText6char; //leaking memory???
         Ux* uxInstance = Ux::Singleton();
 
+        setColor(&last_color, color);
+        //last_color = color;
 
-        last_color = color;
-
-        //char* resultText6char = (char*)SDL_malloc( 6 ); // seems that we should reuse this and not free it
-
-
-        ///
-//sprintf(resultText6char, "%02x%02x%02x", color->r, color->g, color->b);
+        //char* resultText6char = (char*)SDL_malloc( sizeof(char) * 6 ); // seems that we should reuse this and not free it
+        //
+        //sprintf(resultText6char, "%02x%02x%02x", color->r, color->g, color->b);
 
         SDL_snprintf(resultText6char, 7,  "%02x%02x%02x", color->r, color->g, color->b);
 
