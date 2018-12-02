@@ -43,7 +43,6 @@ Ux::Ux(void) {
 
     lastHue = new HSV_Color();
 
-
     isInteracting = false;
     currentInteraction = uiInteraction();
 
@@ -225,11 +224,13 @@ void Ux::resizeUiElements(void){
 
     // optimization - our sizes don't change unless ratio does maybe??? or not...
 
+    float ws_clock=0.0;
+
     rootUiObject->setBoundaryRect( 0, 0, 1.0, 1.0);
     // we try to indent here in a way that reflects hirearchy under rootUiObject, and attempt to do this in the order of lower (first added) elements first and those that render attop later...
     if( widescreen ){
 
-        bottomBar->setBoundaryRect( 1.0-0.27777777777778+hue_picker, clock_bar, 0.27777777777778-hue_picker-history_preview, 1.0 - clock_bar);
+        bottomBar->setBoundaryRect( 1.0-0.27777777777778+hue_picker, ws_clock, 0.27777777777778-hue_picker-history_preview, 1.0 - ws_clock);
 
             zoomSliderHolder->setBoundaryRect( 0.0, 0.0, 1.0, 0.25);
                 zoomSliderBg->setBoundaryRect( 0.05, 0, 0.88, 1);
@@ -245,18 +246,18 @@ void Ux::resizeUiElements(void){
                 pickSourceBtn->stackBottom();
                 addHistoryBtn->stackBottom();
 
-        huePicker->resize(Float_Rect(1.0-0.27777777777778, clock_bar, hue_picker, 1.0 - clock_bar ));
-        returnToLastImgBtn->setBoundaryRect( 1.0-0.27777777777778 - 0.1, clock_bar, 0.1, 0.1 * screenRatio);
+        huePicker->resize(Float_Rect(1.0-0.27777777777778, ws_clock, hue_picker, 1.0 - ws_clock ));
+        returnToLastImgBtn->setBoundaryRect( 1.0-0.27777777777778 - 0.1, ws_clock, 0.1, 0.1 * screenRatio);
         returnToLastImgBtn->setRoundedCorners(0.5, 0.0, 0.5, 0.5);
 
-        historyPreview->setBoundaryRect(1.0-history_preview, clock_bar, history_preview, 1.0 - clock_bar);
+        historyPreview->setBoundaryRect(1.0-history_preview, ws_clock, history_preview, 1.0 - ws_clock);
         historyPreview->setInteraction(&Ux::interactionHorizontal);
             historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::BTT, true);
 
         // depending on animation state rect is different....
         historyPalleteHolder->setBoundaryRectForAnimState(
-            0.0, clock_bar, 1.0, 1.0 - clock_bar, //visible and orig
-            1.0, clock_bar, 1.0, 1.0 - clock_bar ); // hidden
+            0.025, ws_clock, 0.95, 1.0 - ws_clock, //visible and orig
+            1.0, ws_clock, 0.9, 1.0 - ws_clock ); // hidden
         historyPalleteHolderTlEdgeShadow->resize(SQUARE_EDGE_ENUM::LEFT);
         historyPalleteHolderBrEdgeShadow->resize(SQUARE_EDGE_ENUM::RIGHT);
 
@@ -292,7 +293,7 @@ void Ux::resizeUiElements(void){
         movementArrows->resize(Float_Rect(0.27777777777778, temp,
             1.0 - 0.27777777777778 - 0.27777777777778, 1.0 - temp - temp));
 
-        curerntColorPreview->resize(Float_Rect(0.0, clock_bar, 0.27777777777778, 1.0 - clock_bar));
+        curerntColorPreview->resize(Float_Rect(0.0, ws_clock, 0.27777777777778, 1.0 - ws_clock));
 
         defaultYesNoChoiceHolder->setBoundaryRectForAnimState(0.0, 0.0, 1.0, 1.0, // vis
                                                               0.0, -1.0, 1.0, 1.0); // hid
@@ -369,9 +370,50 @@ void Ux::resizeUiElements(void){
 
     }
 
+    updatePalleteScroller();
+
     rootUiObject->updateRenderPosition();
     // our "create" caller also updates scrollers at this time??
 }
+
+void Ux::updatePalleteScroller(){
+    int palleteIconsTotal = getPalleteTotalCount();
+    if( widescreen ){
+        if( palleteIconsTotal > 5 ){
+            palleteScroller->resizeTililngEngine(2, 4);
+        }else if( palleteIconsTotal > 4 ){
+            palleteScroller->resizeTililngEngine(2, 3);
+        }else if( palleteIconsTotal > 3 ){
+            palleteScroller->resizeTililngEngine(1, 4);
+        }else if( palleteIconsTotal > 2 ){
+            palleteScroller->resizeTililngEngine(1, 3);
+        }else if( palleteIconsTotal > 1 ){
+            palleteScroller->resizeTililngEngine(1, 2);
+        }else{
+            palleteScroller->resizeTililngEngine(1, 1);
+        }
+    }else{
+        //resize pallete scroller as we add more selections....
+        if( palleteIconsTotal > 5 ){
+            palleteScroller->resizeTililngEngine(4, 2);
+        }else if( palleteIconsTotal > 4 ){
+            palleteScroller->resizeTililngEngine(3, 2);
+        }else if( palleteIconsTotal > 3 ){
+            palleteScroller->resizeTililngEngine(4, 1);
+        }else if( palleteIconsTotal > 2 ){
+            palleteScroller->resizeTililngEngine(3, 1);
+        }else if( palleteIconsTotal > 1 ){
+            palleteScroller->resizeTililngEngine(2, 1);
+        }else{
+            palleteScroller->resizeTililngEngine(1, 1);
+        }
+    }
+
+    if( historyPalleteHolder->isInBounds ){
+        palleteScroller->updateTiles(); // calls updateUiObjectFromPallete for each tile
+    }
+}
+
 
 int Ux::indexForColor(SDL_Color* c){ // warn if your index components return zero its all zeroes
     return (c->r+1) * (c->g+1) * (c->b+1);
@@ -386,6 +428,8 @@ Ux::uiObject* Ux::create(void){
     palleteList = new uiList<SDL_Color, Uint8>(palleteMax);
     palleteList->index(COLOR_INDEX_MAX, indexForColor);
 
+    pickHistoryListState = new uiList<ColorListState, Uint8>(pickHistoryMax);
+    palleteListState = new uiList<ColorListState, Uint8>(palleteMax);
 
     uxAnimations = new UxAnim();
 
@@ -403,8 +447,16 @@ Ux::uiObject* Ux::create(void){
     // make this color the selected color ! ! ! ! !! ^ ^ ^
 
 
-    huePicker = new uiHueGradient(rootUiObject, Float_Rect(0.0, 0.60, 1.0, 0.09), &Ux::hueClicked);
-    huePicker->resize(Float_Rect(0.0, 0.7, 1.0, hue_picker));
+
+    returnToLastImgBtn = new uiObject();
+    returnToLastImgBtn->hasForeground = true;
+    returnToLastImgBtn->hasBackground = true;
+    Ux::setColor(&returnToLastImgBtn->backgroundColor, 0, 0, 0, 50);
+    returnToLastImgBtn->setRoundedCorners(0.5);
+    printCharToUiObject(returnToLastImgBtn, CHAR_BACK_ICON, DO_NOT_RESIZE_NOW);
+    returnToLastImgBtn->setClickInteractionCallback(&Ux::interactionReturnToPreviousSurface); // TODO rename me
+    rootUiObject->addChild(returnToLastImgBtn);
+    returnToLastImgBtn->hideAndNoInteraction(); // initially hidden....
 
 
     bottomBar = new uiObject();
@@ -412,6 +464,8 @@ Ux::uiObject* Ux::create(void){
     Ux::setColor(&bottomBar->backgroundColor, 0, 0, 0, 198);
     rootUiObject->addChild(bottomBar);
 
+    huePicker = new uiHueGradient(rootUiObject, Float_Rect(0.0, 0.60, 1.0, 0.09), &Ux::hueClicked);
+    huePicker->resize(Float_Rect(0.0, 0.7, 1.0, hue_picker));
 
 
     pickSourceBtn = new uiObject();
@@ -500,6 +554,7 @@ Ux::uiObject* Ux::create(void){
     historyScroller = new uiScrollController();
                                    // 3  2
     historyScroller->initTilingEngine(6, 6, &Ux::updateUiObjectFromHistory, &Ux::getHistoryTotalCount, &Ux::clickHistoryColor, &Ux::interactionHorizontal);
+    historyScroller->recievedFocus = &Ux::historyReceivedFocus;
 
     newHistoryFullsize = historyScroller->uiObjectItself;
 
@@ -578,15 +633,7 @@ Ux::uiObject* Ux::create(void){
     rootUiObject->addChild(historyPreview);
 
 
-    returnToLastImgBtn = new uiObject();
-    returnToLastImgBtn->hasForeground = true;
-    returnToLastImgBtn->hasBackground = true;
-    Ux::setColor(&returnToLastImgBtn->backgroundColor, 0, 0, 0, 50);
-    returnToLastImgBtn->setRoundedCorners(0.5);
-    printCharToUiObject(returnToLastImgBtn, CHAR_BACK_ICON, DO_NOT_RESIZE_NOW);
-    returnToLastImgBtn->setClickInteractionCallback(&Ux::interactionReturnToPreviousSurface); // TODO rename me
-    rootUiObject->addChild(returnToLastImgBtn);
-    returnToLastImgBtn->hideAndNoInteraction(); // initially hidden....
+
 
     movementArrows = new uiNavArrows(rootUiObject, Float_Rect(0.0, clock_bar + 0.27777777777778, 1.0, 0.38), &Ux::interactionDirectionalArrowClicked);
 
@@ -857,7 +904,15 @@ void Ux::printCharOffsetUiObject(uiObject* letter, int charOffset){
 
 bool Ux::triggerInteraction(void){ // mouseup, mouse didn't move
 
-    return objectCollides(currentInteraction.px, currentInteraction.py);
+    bool hasInteraction = objectCollides(currentInteraction.px, currentInteraction.py);
+
+    //interactionObject  currentInteraction
+    if( hasInteraction ){
+        if( interactionObject->interactionBeginCallback != nullptr ){
+            interactionObject->interactionBeginCallback(interactionObject, &currentInteraction);
+        }
+    }
+    return hasInteraction;
 }
 
 bool Ux::objectCollides(float x, float  y){
@@ -887,7 +942,7 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
                 // quite arguable we can return here, continuing to seek interaction on child objects may produce odd effects
                 interactionObject = renderObj;
 
-                SDL_Log("WE DID FIND ANOTHER MATCH");
+                //SDL_Log("WE DID FIND ANOTHER MATCH");
 
                 isInteracting = true;
                     // I will argue we want the deepest interaction to tell us if it can be activated currently....
@@ -996,7 +1051,8 @@ void Ux::interactionHistoryEnteredView(uiObject *interactionObj){
     // no movement total
     Ux* self = Ux::Singleton();
     //self->historyScroller->allowUp = true;
-    self->updatePickHistoryPreview();
+    self->updatePickHistoryPreview();  /// this is too much update right?
+    self->palleteScroller->updateTiles();
 }
 
 //static
@@ -1227,8 +1283,8 @@ void Ux::interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta
 
     if( self->historyPalleteHolder->is_being_viewed_state ) {
         if( self->widescreen ){
-            //self->historyPalleteHolder->setAnimation( self->uxAnimations->slideRight(self->historyPalleteHolder) ); // returns uiAminChain*
-            self->historyPalleteHolder->setAnimation( self->uxAnimations->slideRightFullWidth(self->historyPalleteHolder) ); // returns uiAminChain*
+            self->historyPalleteHolder->setAnimation( self->uxAnimations->slideRight(self->historyPalleteHolder) ); // returns uiAminChain*
+            //self->historyPalleteHolder->setAnimation( self->uxAnimations->slideRightFullWidth(self->historyPalleteHolder) ); // returns uiAminChain*
         }else{
             self->historyPalleteHolder->setAnimation( self->uxAnimations->slideDown(self->historyPalleteHolder) ); // returns uiAminChain*
         }
@@ -1236,6 +1292,7 @@ void Ux::interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta
     }else{
         self->historyPalleteHolder->isInBounds = true; // nice hack
         self->updatePickHistoryPreview();
+        self->palleteScroller->updateTiles();
         self->historyPalleteHolder->setAnimation( self->uxAnimations->resetPosition(self->historyPalleteHolder) ); // returns uiAminChain*
         self->historyPalleteHolder->is_being_viewed_state = true;
         //self->historyScroller->allowUp = true;
@@ -1246,7 +1303,7 @@ void Ux::removeHistoryColor(uiObject *interactionObj, uiInteraction *delta){
     Ux* myUxRef = Ux::Singleton();
 
     int offset = interactionObj->myIntegerIndex;
-    interactionObj->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // reset out of view
+    interactionObj->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // reset  (close x ? ) out of view for next obj to use this tile...
     if( offset < 0 ) return;
 
     myUxRef->pickHistoryList->remove(offset);
@@ -1294,12 +1351,22 @@ void Ux::clickCancelClearHistory(uiObject *interactionObj, uiInteraction *delta)
 
 }
 
+void Ux::historyReceivedFocus(uiObject *interactionObj, uiInteraction *delta){
+    Ux* myUxRef = Ux::Singleton();
+    // hide pallete preview if possible...
+    if( myUxRef->palleteSelectionPreviewHolder->is_being_viewed_state ){
+        myUxRef->interactionTogglePalletePreview(myUxRef->palleteSelectionPreviewHolder, delta);
+    }
+}
+
 void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // see also updateUiObjectFromHistory
 
     // check delta->dx for movement amount
     // no movement total
 
     //SDL_Log("clickHistoryColor --------------------- %i", interactionObj->myIntegerIndex);
+
+    historyReceivedFocus(interactionObj, delta);
 
 
     if( !interactionObj->doesInFactRender ){
@@ -1852,13 +1919,16 @@ void Ux::colorTileAddChildObjects(uiObject *historyTile, anInteractionFn removeC
         removeButtonHolder->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // ofset to right 1.0
         removeButton->setBoundaryRect( 0.0, 0.0, 1.0, 1.0);
 
-        removeButton->setCropParentRecursive(historyTile); // must set before adding child...
-        removeButton->setCropModeOrigPosition();
+//        removeButton->setCropParentRecursive(historyTile); // must set before adding child...
+//        removeButton->setCropModeOrigPosition();
+
+        removeButtonHolder->setCropParentRecursive(historyTile); // must set before adding child...
+//        removeButtonHolder->setCropModeOrigPosition();
+
 
         removeButtonHolder->addChild(removeButton);
 
-        removeButtonHolder->setCropParentRecursive(historyTile); // must set before adding child...
-        removeButtonHolder->setCropModeOrigPosition();
+//
 
         historyTile->addChild(removeButtonHolder);
 
@@ -1866,6 +1936,7 @@ void Ux::colorTileAddChildObjects(uiObject *historyTile, anInteractionFn removeC
         printCharToUiObject(removeButton, CHAR_CLOSE_ICON, DO_NOT_RESIZE_NOW);
         removeButton->hasForeground = true;
         removeButtonHolder->hasBackground = true;
+
 
         removeButton->squarify();
         //removeButton->isDebugObject=true;
@@ -1946,6 +2017,12 @@ void Ux::addCurrentToPickHistory(){
 
     updatePickHistoryPreview();
 
+    if( historyPalleteHolder->isInBounds ){
+        historyScroller->scrollToItemByIndex(0);
+    }else{
+        historyScroller->scrolly = 0;
+    }
+
 }
 
 
@@ -2018,30 +2095,6 @@ void Ux::updatePickHistoryPreview(){
 
 
 
-void Ux::updatePalleteScroller(){
-
-    int palleteIconsTotal = getPalleteTotalCount();
-
-    //resize pallete scroller as we add more selections....
-    if( palleteIconsTotal > 5 ){
-        palleteScroller->resizeTililngEngine(4, 2);
-    }else if( palleteIconsTotal > 4 ){
-        palleteScroller->resizeTililngEngine(3, 2);
-    }else if( palleteIconsTotal > 3 ){
-        palleteScroller->resizeTililngEngine(4, 1);
-    }else if( palleteIconsTotal > 2 ){
-        palleteScroller->resizeTililngEngine(3, 1);
-    }else if( palleteIconsTotal > 1 ){
-        palleteScroller->resizeTililngEngine(2, 1);
-    }else{
-        palleteScroller->resizeTililngEngine(1, 1);
-    }
-
-
-    //if( myUxRef->historyPalleteHolder->isInBounds ){
-    palleteScroller->updateTiles(); // calls updateUiObjectFromPallete for each tile
-    //}
-}
 
 //bool Ux::updateAnimations(float elapsedMs){
 //
@@ -2141,27 +2194,48 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 //            }
 
 
-            if( renderObj->useCropParentOrig ){
-                glUniform4f(uniformLocations->ui_crop,
-                            renderObj->cropParentObject->origRenderRect.x,
-                            -renderObj->cropParentObject->origRenderRect.y,
-                            renderObj->cropParentObject->origRenderRect.w,
-                            renderObj->cropParentObject->origRenderRect.h);
 
-//                    glUniform4f(uniformLocations->ui_crop,
-//                                renderObj->computedCropRenderRect.x,
-//                                -renderObj->computedCropRenderRect.y,
-//                                renderObj->computedCropRenderRect.w,
-//                                renderObj->computedCropRenderRect.h);
 
+            if( renderObj->cropParentObject->hasCropParent ){
+
+
+                glUniform4f(uniformLocations->ui_crop2,
+                            renderObj->cropParentObject->cropParentObject->renderRect.x,
+                            -renderObj->cropParentObject->cropParentObject->renderRect.y,
+                            renderObj->cropParentObject->cropParentObject->renderRect.w,
+                            renderObj->cropParentObject->cropParentObject->renderRect.h);
 
             }else{
-                glUniform4f(uniformLocations->ui_crop,
-                            renderObj->cropParentObject->renderRect.x,
-                            -renderObj->cropParentObject->renderRect.y,
-                            renderObj->cropParentObject->renderRect.w,
-                            renderObj->cropParentObject->renderRect.h);
+                glUniform4f(uniformLocations->ui_crop2,
+                            0,
+                            0,
+                            /*disabled*/0,//1,
+                            /*disabled*/0);//1); // 0,0,1,1  is screen crop, but we can skip this logic in vsh
+
+
+
             }
+
+//            if( renderObj->useCropParentOrig ){  // REMOVE unused <----
+//                glUniform4f(uniformLocations->ui_crop2,
+//                            renderObj->cropParentObject->origRenderRect.x,
+//                            -renderObj->cropParentObject->origRenderRect.y,
+//                            renderObj->cropParentObject->origRenderRect.w,
+//                            renderObj->cropParentObject->origRenderRect.h);
+//
+//                //                    glUniform4f(uniformLocations->ui_crop,
+//                //                                renderObj->computedCropRenderRect.x,
+//                //                                -renderObj->computedCropRenderRect.y,
+//                //                                renderObj->computedCropRenderRect.w,
+//                //                                renderObj->computedCropRenderRect.h);
+//
+//            }else{}
+
+            glUniform4f(uniformLocations->ui_crop,
+                        renderObj->cropParentObject->renderRect.x,
+                        -renderObj->cropParentObject->renderRect.y,
+                        renderObj->cropParentObject->renderRect.w,
+                        renderObj->cropParentObject->renderRect.h);
 
 
         }else{

@@ -223,6 +223,7 @@ static Ux* Singleton();
     static void clickDeletePalleteColor(uiObject *interactionObj, uiInteraction *delta);
     static void clickDeleteHistoryColor(uiObject *interactionObj, uiInteraction *delta);
     static void clickClearHistory(uiObject *interactionObj, uiInteraction *delta);
+    static void historyReceivedFocus(uiObject *interactionObj, uiInteraction *delta);
     static void clickClearPallete(uiObject *interactionObj, uiInteraction *delta);
     static void clickCancelClearHistory(uiObject *interactionObj, uiInteraction *delta);
     static void clickCancelClearPallete(uiObject *interactionObj, uiInteraction *delta);
@@ -246,6 +247,7 @@ static Ux* Singleton();
 
 
     uiList<SDL_Color, Uint8>* pickHistoryList; // WARN - do not enable index if using Uint8 - max Uint8 is far less than pickHistoryMax
+    uiList<ColorListState, Uint8>* pickHistoryListState;
 
     //int pickHistoryIndex = 0;
     //int lastPickHistoryIndex = -1;
@@ -256,6 +258,7 @@ static Ux* Singleton();
     static int getHistoryTotalCount();
 
     uiList<SDL_Color, Uint8>* palleteList;
+    uiList<ColorListState, Uint8>* palleteListState;
 
     //int palleteIndex = 0;
     //int lastPalleteIndex = -1;

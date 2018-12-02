@@ -146,6 +146,7 @@ int EventFilter(void* userdata, SDL_Event* event){
                 case SDL_WINDOWEVENT_RESTORED:
 
                     SDL_Log("\n SDL_WINDOWEVENT_SHOWN || SDL_WINDOWEVENT_EXPOSED || SDL_WINDOWEVENT_RESTORED");
+                    openglContext->renderShouldUpdate = true;
 
                     return 0;
             }
@@ -565,6 +566,21 @@ void ShowFrame(void*)
     SDL_GL_SwapWindow(window); // move into render scene?
 }
 
+static Uint32 my_reshape_callbackfunc(Uint32 interval, void* parm){
+
+    SDL_Event event;
+    SDL_UserEvent userevent;
+    userevent.type = SDL_USEREVENT;
+    userevent.code = USER_EVENT_ENUM::VIEW_RECENTLY_ROTATED;
+//    userevent.data1 = (void*)&pickerForPercentV;
+//    userevent.data2 = &self->lastPickPercent; // &percent; // waste arg
+    event.type = SDL_USEREVENT;
+    event.user = userevent;
+    SDL_PushEvent(&event);
+    return 0; // end timer
+    //return interval;
+}
+
 
 void ReshapeWindow(){
     // just in case we didn't get hi-dpi from SDL_WINDOW_ALLOW_HIGHDPI we can see what size we actually got here
@@ -647,6 +663,10 @@ void ReshapeWindow(){
 
     openglContext->reshapeWindow(colorPickState->drawableWidth, colorPickState->drawableHiehgt);
 
+#ifdef __ANDROID__
+    // after rotation, the viewport pespective matrix seems to undergo a delayed update (since we are using default)
+    SDL_AddTimer(250, my_reshape_callbackfunc, nullptr);
+#endif
 
 }
 
@@ -777,23 +797,28 @@ compatibility; this flag is ignored
 
                 case SDL_USEREVENT:  // maybe move all handing of these to , say main thread? (instead of coincidentally same thread on android)
                 {
-
                     switch( event.user.code ){
-                        case 0:
+                        case USER_EVENT_ENUM::IMAGE_SELECTOR_READY:
                         {
-                            SDL_Log("USER EVENT 0");
+                            SDL_Log("USER EVENT 0 - get picked image on android");
 #ifdef __ANDROID__
                             getImagePathFromMainThread();
 #endif
                             break;//return 0;
                         }
-                        case 1:
+                        case USER_EVENT_ENUM::NEW_HUE_CHOSEN:
                         {
-                            SDL_Log("USER EVENT 1");
+                            SDL_Log("USER EVENT 1 - new hue gradient bg color");
                             void (*p) (void*) = (voidvoidp)event.user.data1;
                             p(event.user.data2);
                             // TODO instea
                             //SDL_FlushEvent(SDL_USEREVENT);
+                            break;//return 0;
+                        }
+                        case USER_EVENT_ENUM::VIEW_RECENTLY_ROTATED:
+                        {
+                            SDL_Log("USER EVENT 2 - rotation delayted update");
+                            openglContext->renderShouldUpdate = true;
                             break;//return 0;
                         }
                     }

@@ -85,8 +85,9 @@ static Uint32 my_test_if_image_selected(Uint32 interval, void* parm){
      into the queue, and causes our callback to be called again at the
      same interval: */
 
+    
     userevent.type = SDL_USEREVENT;
-    userevent.code = 0;
+    userevent.code = USER_EVENT_ENUM::IMAGE_SELECTOR_READY;
     userevent.data1 = NULL;
     userevent.data2 = NULL;
 

@@ -16,7 +16,7 @@ struct uiHueGradient{
 
         tileClicked = tileClickedFn;
 
-        Ux* uxInstance = Ux::Singleton(); // some useful helper?
+        //Ux* uxInstance = Ux::Singleton(); // some useful helper?
 
         uiObjectItself = new uiObject();
 
@@ -126,14 +126,14 @@ struct uiHueGradient{
         SDL_Event event;
         SDL_UserEvent userevent;
         userevent.type = SDL_USEREVENT;
-        userevent.code = 1;
+        userevent.code = USER_EVENT_ENUM::NEW_HUE_CHOSEN;
         userevent.data1 = (void*)&pickerForPercentV;
         userevent.data2 = &self->lastPickPercent; // &percent; // waste arg
         event.type = SDL_USEREVENT;
         event.user = userevent;
         SDL_PushEvent(&event);
 
-        return 0;
+        return 0; // end timer
         //return interval;
     }
 

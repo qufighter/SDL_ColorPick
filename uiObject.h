@@ -38,6 +38,9 @@ static bool screenCollisionRadial(float x1, float y1, Float_Rect * collisionRect
     return false;
 }
 
+// ux member...
+static Float_Rect unitRect;
+
 static void setRect(Float_Rect * rect, float x, float y, float w, float h){
     rect->x = x;
     rect->y = y;
@@ -90,6 +93,24 @@ static float scaleRectForRenderX(Float_Rect * rect, Float_Rect * prect){
 static float scaleRectForRenderY(Float_Rect * rect, Float_Rect * prect){
     return ((( (rect->y+  (rect->h * 0.5) ) * 2.0) - 1.0) ) * prect->h;
 }
+
+typedef struct ColorListState
+{
+    ColorListState(){
+        is_delete_state = false;
+    }
+    bool is_delete_state = false;
+} ColorListState;
+
+
+typedef struct ColorList // cannot really use this since we do not persist ths to disk
+{
+    ColorList(){
+        is_delete_state = false;
+    }
+    SDL_Color color;
+    bool is_delete_state;
+} ColorList;
 
 
 static bool setColorNotifyOfChange(SDL_Color * color, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
@@ -197,7 +218,6 @@ typedef void (*anAnimationPercentCallback)(uiObject *interactionObj, float animP
 typedef void (*aStateChangeFn)(uiObject *interactionObj);
 
 
-
 // move to own file, but requires the above....
 
 struct uiObject
@@ -238,6 +258,7 @@ struct uiObject
 
         boundaryEntreredCallback=nullptr;
         shouldCeaseInteractionChecker=nullptr;
+        interactionBeginCallback=nullptr;
         myScrollController=nullptr; // not genric enough... remove it
         myUiController = nullptr;
         myIntegerIndex = -1;
@@ -295,10 +316,12 @@ struct uiObject
      blend mode ??
      */
 
+//    Float_Rect croppedBoundryRect; /* private */
+//    Float_Rect croppedOrigBoundryRect; /* private */
     Float_Rect renderRect; /* private */
     Float_Rect collisionRect; /* private */
-    Float_Rect origRenderRect; /* private */ // really only u used for non standard crop parent object (or is it used at all now ? //maths
-    Float_Rect computedCropRenderRect; /* private */
+//    Float_Rect origRenderRect; /* private */ // really only u used for non standard crop parent object (or is it used at all now ? //maths
+//    Float_Rect computedCropRenderRect; /* private */
 
     bool is_circular;
 
@@ -316,6 +339,8 @@ struct uiObject
     bool hasInteractionCb;
     bool interactionCallbackTypeClick;
     anInteractionFn interactionCallback;
+
+    anInteractionFn interactionBeginCallback; // effectively mousedown
 
     bool hasAnimCb;
     anAnimationPercentCallback animationPercCallback;
@@ -371,6 +396,10 @@ struct uiObject
         textDirection = textDir;
         // it is arguable we shoudl auto organize the child nodes right now (rather than during update)
         organizeChildNodesBasedOnTextDir();
+    }
+
+    void allowInteraction(){
+        doesNotCollide = false;
     }
 
     void hideAndNoInteraction(){
@@ -474,6 +503,10 @@ struct uiObject
     // todo what if we do not want to bubble to parent object or better yet, on different condiiton, do not bubble at all but simply change state (toggle)
     // or really just handle this in interactionCallback? which we will do for delete x
 
+    void setInteractionBegin( anInteractionFn p_interactionBegin ){
+        this->canCollide = true; // so for click functions we are just setting this automatically nnow!
+        interactionBeginCallback = p_interactionBegin;
+    }
 
     void setInteraction( anInteractionFn p_interactionFn ){
         this->canCollide = true; // so for click functions we are just setting this automatically nnow!
@@ -794,6 +827,13 @@ struct uiObject
         renderRect.h = parentRenderRect.h * boundryRect.h;
 
 
+        //
+//        setRect(&croppedBoundryRect, &boundryRect);
+//        containRectWithin(&croppedBoundryRect, new Float_Rect()); // leaking memory
+//
+//        setRect(&croppedOrigBoundryRect, &origBoundryRect);
+//        containRectWithin(&croppedOrigBoundryRect, new Float_Rect());
+
 
         //glm::mat4 uiMatrix = glm::mat4(1.0f);
 
@@ -828,29 +868,34 @@ struct uiObject
 
         // these are needed on some objects only in certain edge cases..............
         // assuming we don't animate size, this is a bit of hack to reduce maths
-        if( calculateCropParentOrig ){
-            origRenderRect.w = parentRenderRect.w * origBoundryRect.w;
-            origRenderRect.h = parentRenderRect.h * origBoundryRect.h;
-            origRenderRect.x = (parentRenderRect.x + scaleRectForRenderX(&origBoundryRect, &parentRenderRect)) ;
-            origRenderRect.y = (parentRenderRect.y + scaleRectForRenderY(&origBoundryRect, &parentRenderRect)) ;
-
-            // maths above might be unused?
+//        if( calculateCropParentOrig ){
+//            origRenderRect.w = parentRenderRect.w * origBoundryRect.w;
+//            origRenderRect.h = parentRenderRect.h * origBoundryRect.h;
+//            origRenderRect.x = (parentRenderRect.x + scaleRectForRenderX(&origBoundryRect, &parentRenderRect)) ;
+//            origRenderRect.y = (parentRenderRect.y + scaleRectForRenderY(&origBoundryRect, &parentRenderRect)) ;
 //
-//            if( hasCropParent ){
+////            origRenderRect.w = parentRenderRect.w * croppedOrigBoundryRect.w;
+////            origRenderRect.h = parentRenderRect.h * croppedOrigBoundryRect.h;
+////            origRenderRect.x = (parentRenderRect.x + scaleRectForRenderX(&croppedOrigBoundryRect, &parentRenderRect)) ;
+////            origRenderRect.y = (parentRenderRect.y + scaleRectForRenderY(&croppedOrigBoundryRect, &parentRenderRect)) ;
 //
-//                if( cropParentObject->hasCropParent ){
-//
-//
-//                    //containRenderRectWithinRender(&origRenderRect, &cropParentObject->renderRect);
-//                }
-//
-//
-//                //                Float_Rect tempRect;//leak?
-//                //                setRect(&tempRect, &origBoundryRect);
-//                //                containRectWithin(&tempRect, &cropParentObject->renderRect);
-//               //containRenderRectWithinRender(&origRenderRect, &cropParentObject->renderRect);
-//            }
-        }
+//            // maths above might be unused?
+////
+////            if( hasCropParent ){
+////
+////                if( cropParentObject->hasCropParent ){
+////
+////
+////                    //containRenderRectWithinRender(&origRenderRect, &cropParentObject->renderRect);
+////                }
+////
+////
+////                //                Float_Rect tempRect;//leak?
+////                //                setRect(&tempRect, &origBoundryRect);
+////                //                containRectWithin(&tempRect, &cropParentObject->renderRect);
+////               //containRenderRectWithinRender(&origRenderRect, &cropParentObject->renderRect);
+////            }
+//        }
 
 //        if( useCropParentOrig && hasCropParent ){
 //            // this means we are child of a tile, probably and we should really crop 2x
@@ -1092,7 +1137,7 @@ struct uiObject
 
         int ctr=0;
         int i=0;
-        int charOffset = 0;
+        //int charOffset = 0;
         //char * i;
         uiObject* letter;
 

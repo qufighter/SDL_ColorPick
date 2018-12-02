@@ -57,6 +57,7 @@ struct DirectionalScan
 //        SDL_Log("const char ize %i", sizeof(Uint16));
 //        SDL_Log("const char ize %i", sizeof(float *));
 //        SDL_Log("const char ize %i", sizeof(bool *));
+//        SDL_Log("const char ize %i", sizeof(bool));
 //        SDL_Log("pint ize %i", sizeof(dimensonalType));
 //SDL_Log("DirectionalElement ize %i", sizeof(DirectionalElement));
 //        SDL_Log("bool ize %i", sizeof(bool));

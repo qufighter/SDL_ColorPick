@@ -208,6 +208,7 @@ void Shader::reload() {
     uniformLocations->ui_foreground_color = glGetUniformLocation(shader_id, "ui_foreground_color");
     uniformLocations->texture_crop = glGetUniformLocation(shader_id, "texture_crop");
     uniformLocations->ui_crop = glGetUniformLocation(shader_id, "ui_crop");
+    uniformLocations->ui_crop2 = glGetUniformLocation(shader_id, "ui_crop2");
     uniformLocations->ui_corner_radius = glGetUniformLocation(shader_id, "ui_corner_radius");
 
     uniformLocations->modelMatrixLocation = glGetUniformLocation(shader_id, "modelMatrix");

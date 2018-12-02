@@ -135,6 +135,12 @@ void ShowFrame(void*);
 
 typedef enum { SHADER_POSITION, SHADER_COLOR, SHADER_TEXTURE, SHADER_NORMAL } SHADER_BIND_LOCATIONS;
 
+typedef enum  {
+    IMAGE_SELECTOR_READY,
+    NEW_HUE_CHOSEN,
+    VIEW_RECENTLY_ROTATED
+} USER_EVENT_ENUM; // these may not be supported as of now on IOS ... ??
+
 /// these are hi-dpi sizes
 #ifdef COLORPICK_PLATFORM_DESKTOP
 #define SCREEN_WIDTH 320

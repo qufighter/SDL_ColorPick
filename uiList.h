@@ -82,6 +82,11 @@ struct uiList
         // index is used to guarante unique entries (though not enforced by add) and locate entries
         _indexSize=size;
         indexOffsetGen=pindexOffsetGen;
+
+            // sizeof(indexType) = Uint8 = 1byte = max ~255 --- should be greater than maxSize otherwise the index won't work right...
+        // each value in the index must map back to a value in maxSize
+        //SDL_Log("Indexing teh list now %i %i %i", sizeof(indexType), _indexSize, maxSize );
+
         indexItself = (indexType*)SDL_malloc( sizeof(indexType) * _indexSize );
         _indexed=true;
         clearIndex();

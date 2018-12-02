@@ -134,14 +134,22 @@ struct uiScrollController{
     int childObjectsPerRow; // this is suppose to help the tiling engine for the scroll container
     int rowsToShow;
     int childObjectsOffset=0;
-    int totalChildObjects; // this is for the tiling engine to understand the total items we may represent in the limited squares we allocate
+    int totalObjects; // this is for the tiling engine to understand the total items we may represent in the limited squares we allocate
     int totalScrollRows; // is zero when no scrolling possible
+    int childObjectsToRender=0; // in case we allocated extra...
     float minimumScrollY;
 
     updateTileFunction getTile=nullptr;
     getTotalFunction getTotal=nullptr;
     anInteractionFn tileClicked=nullptr;
     anInteractionFn tileDragged=nullptr;
+    anInteractionFn recievedFocus=nullptr;
+
+    void weGotFocus(uiObject *interactionObj, uiInteraction *delta){
+        if( recievedFocus != nullptr ){
+            recievedFocus(interactionObj, delta);
+        }
+    }
 
     void initTilingEngine(int itemsPerRow, int rows, updateTileFunction getTileCb, getTotalFunction getTotalCb, anInteractionFn tileClickedFn, anInteractionFn tileDraggedFn){
         getTile = getTileCb;
@@ -217,6 +225,7 @@ struct uiScrollController{
         //self->scrolly += 0.1; // TODO ANIMATE!
         //self->reflowTiles();
         //self->animConstrainToScrollableRegion();
+        self->weGotFocus(interactionObj, delta);
     }
 
     static void interactionScrollDown(uiObject *interactionObj, uiInteraction *delta){
@@ -225,6 +234,7 @@ struct uiScrollController{
         //        self->scrolly -= 0.1; // TODO ANIMATE!
         //        self->reflowTiles();
         //        self->animConstrainToScrollableRegion();
+        self->weGotFocus(interactionObj, delta);
     }
 
     static void interactionDragReleased(uiObject *interactionObj, uiInteraction *delta){
@@ -251,6 +261,8 @@ struct uiScrollController{
         float percent = (delta->py - interactionObj->collisionRect.y) * (1.0/interactionObj->collisionRect.h);
         self->scrolly = percent * self->minimumScrollY;
         self->reflowTiles(/*updateScrollyThumb=*/true);
+
+        self->weGotFocus(interactionObj, delta);
     }
 
     static void interactionScrollDragVert(uiObject *interactionObj, uiInteraction *delta){
@@ -263,6 +275,8 @@ struct uiScrollController{
         self->reflowTiles();
         self->allowDown = true;
         self->allowUp = true;
+
+        self->weGotFocus(interactionObj, delta);
     }
 
     //static for use as UI:: anAnimationPercentCallback callback
@@ -272,6 +286,9 @@ struct uiScrollController{
         self->updateTotalScrollRows();
         self->scrolly = percent * self->minimumScrollY;
         self->reflowTiles(/*updateScrollyThumb=*/false); // we do not need to updateScrollProgIndicator though !!!!!
+
+        Ux* uxInstance = Ux::Singleton();
+        self->weGotFocus(interactionObj, &uxInstance->currentInteraction);
     }
 
     // this is an instance of animationUpdateCallbackFn
@@ -295,9 +312,9 @@ struct uiScrollController{
     }
 
     void updateTotalScrollRows(){
-        totalChildObjects = getTotal();
+        totalObjects = getTotal();
 
-        totalScrollRows = (int(ceil(totalChildObjects / (float)childObjectsPerRow))) - rowsToShow;
+        totalScrollRows = (int(ceil(totalObjects / (float)childObjectsPerRow))) - rowsToShow;
         if( totalScrollRows < 1 ){
             totalScrollRows = 0; // sometimes no scrolling necessary, if fewer rows than scrollable
         }
@@ -335,7 +352,7 @@ struct uiScrollController{
             this->scrollChildContainer->setAnimation( uxInstance->uxAnimations->moveTo(this->scrollChildContainer,0.0,minimumScrollY, scrollAnimationUpdaterCb, scrollAnimationGetBoundsFn) );
 
 
-            if( totalChildObjects > 0 ){
+            if( totalObjects > 0 ){
                 allowUp = true;
             }else{
                 allowUp = false;
@@ -348,7 +365,7 @@ struct uiScrollController{
         }
 
 
-//        if( totalChildObjects > 0 ){
+//        if( totalObjects > 0 ){
 //            allowUp = true;
 //            allowDown = true;
 //        }else{
@@ -477,7 +494,7 @@ struct uiScrollController{
         int offset = getTileOffsetFromScroll();
 
         bool result;
-        for( int x=0,l=scrollChildContainer->childListIndex; x<l; x++ ){
+        for( int x=0,l=childObjectsToRender; x<l; x++ ){
             result = getTile(scrollChildContainer->childList[x], offset++); // see updateUiObjectFromHistory
             //if( !result) break; // no point continuing to update them?  there is a point if they have been rendered previously
         }
@@ -499,7 +516,7 @@ struct uiScrollController{
 
         }
 
-        if( totalChildObjects < 1 ){
+        if( totalObjects < 1 ){
              uiObjectItself->doesNotCollide = true;
         }else{
             uiObjectItself->doesNotCollide = false;
@@ -526,11 +543,12 @@ struct uiScrollController{
         int rowsTotal = rowsToShow + 1; // we allocate an extra row for scrolling
         int rowCtr = -1;
         int tileCounter = 0;
+        uiObject *scrollTile;
+
         while( ++rowCtr < rowsTotal ){
 
             int ctr = childObjectsPerRow; // tileRightToLeft
             while( --ctr >= 0 ){
-                uiObject *scrollTile;
 
                 if( tileCounter < scrollChildContainer->childListIndex ){
                     scrollTile = scrollChildContainer->childList[tileCounter];
@@ -538,7 +556,6 @@ struct uiScrollController{
                     scrollTile = new uiObject();
                     scrollTile->hasBackground = true;
                     Ux::setColor(&scrollTile->backgroundColor, 255, 0, 32, 0); // invisible
-
 
                     if( tileClicked != nullptr ){
                         scrollTile->setInteractionCallback(tileClicked); // needs more // cannot be setClickInteractionCallback though...
@@ -566,13 +583,29 @@ struct uiScrollController{
                 }
                 
                 scrollTile->setBoundaryRect( ctr * tileWidth, rowCtr * tileHeight, tileWidth, tileHeight );
-                
+
+                scrollTile->allowInteraction();
+
                 // any pending animation needs to reset to this new position now.... hmmm....
                 
                 tileCounter++;
             }
         }
-        
+
+        childObjectsToRender = SDL_min(tileCounter, scrollChildContainer->childListIndex);
+
+        while( tileCounter < scrollChildContainer->childListIndex ){
+
+            SDL_Log("we are hiding extra tiles...");
+
+            // there are MORE tiles allocated than we currently need...
+            // we can hide them
+            scrollTile = scrollChildContainer->childList[tileCounter];
+            scrollTile->hideAndNoInteraction();
+
+            tileCounter++;
+        }
+
 
         // we monitor the first tile now
 //        if( !is_monitoring ){

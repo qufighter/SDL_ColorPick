@@ -29,6 +29,7 @@ uniform vec4 ui_scale;
 uniform vec4 ui_position;
 uniform vec4 texture_crop;  // this means the texture position really.
 uniform vec4 ui_crop;
+uniform vec4 ui_crop2;
 
 //uniform vec3 in_Position;
 
@@ -40,25 +41,29 @@ void main()
     OrigTexCoordOut = TexCoordIn;
 
 
-    float x=texture_crop.r;
-    float y=texture_crop.g;
-    float w = texture_crop.b;
-    float h = texture_crop.a;
+    float ui_texture_x=texture_crop.r;
+    float ui_texture_y=texture_crop.g;
+
+    float ui_texture_xscale = texture_crop.b;
+    float ui_texture_yscale = texture_crop.a;
+
+    float ui_texture_xscaler = 1.0/ui_texture_xscale;
+    float ui_texture_yscaler = 1.0/ui_texture_yscale;
+
+
+//    float w = texture_crop.b;
+//    float h = texture_crop.a;
 
 //    x=0.08333333333333*2.0;
 //    y=0.3;
 //    w=0.08333333333333;
 //    h=0.1;
 
-    float xscale = 1.0/w;
-    float yscale = 1.0/h;
 
- //   TexCoordOut = vec2( (TexCoordIn.s * xscale) - (x * w),   (TexCoordIn.t * yscale) - (y * h));
 
 
     //TexCoordOut = TexCoordIn / 12.0;
 
-    TexCoordOut = vec2( TexCoordIn.s / xscale + x,   TexCoordIn.t / yscale + y);
 
     //TexCoordOut = vec2( TexCoordIn.s / 12.0,   TexCoordIn.t / 10.0);
 
@@ -133,12 +138,24 @@ void main()
 
         vec4 cropParentPosition = (position * crop_scale) + crop_position;
 
+        bool hasSecondCropParent = false;
+        vec4 cropParentPosition2;
+        if( ui_crop2.b != 0.0 || ui_crop2.a != 0.0 ){
+            vec4 crop_position2=vec4(ui_crop2.r, ui_crop2.g, 0.0, 0.0);
+            vec4 crop_scale2=vec4(ui_crop2.b, ui_crop2.a, 1.0, 1.0);
+            cropParentPosition2 = (position * crop_scale2) + crop_position2;
+            hasSecondCropParent = true;
+        }
 
         if( position.y < 0.0 ){ // "bottom" left or right corner of sq (unless rotated)
 
 
             float lostY = 0.0;
             float lostX = 0.0;
+
+            if( hasSecondCropParent && cropParentPosition.y < cropParentPosition2.y ){
+                cropParentPosition.y = cropParentPosition2.y;
+            }
 
             if( objPosition.y < cropParentPosition.y ){
                 lostY = cropParentPosition.y - objPosition.y;
@@ -148,10 +165,10 @@ void main()
             if( position.x  < 0.0 ){ // left
 
 
-//                if( objPosition.x < cropParentPosition.x ){
-//                    lostX = cropParentPosition.x - objPosition.x;
-//                    objPosition.x = cropParentPosition.x;
-//                }
+                if( objPosition.x < cropParentPosition.x ){
+                    lostX = cropParentPosition.x - objPosition.x;
+                    objPosition.x = cropParentPosition.x;
+                }
 
             }else{ // right
 
@@ -165,11 +182,12 @@ void main()
             }
 
             // now we move our texure coord, which is for btm right/left
-            TexCoordOut.y -= (lostY / 2.0);
+            ui_texture_y -= ui_texture_yscale * (lostY / ui_scale.y) * 0.5;
 
             // sorry but these units may be random and need calculation... we can compare ui_scale with crop_scale to possibly compute these values
             //^ the above likely only works because all fonts are scaled down
 
+            // this modifies rounding corners somehow? needs work
             OrigTexCoordOut.y -= (lostY * 4.0); // thiso only works for certain size elemtns
 
             /*there are more conditions to check here but tiling engine wraps and does not produce these edge conditions*/
@@ -178,6 +196,10 @@ void main()
 
             float lostY = 0.0;
             float lostX = 0.0;
+
+            if( hasSecondCropParent && cropParentPosition.y > cropParentPosition2.y ){
+                cropParentPosition.y = cropParentPosition2.y;
+            }
 
             // oob top coord
             if( objPosition.y > cropParentPosition.y ){
@@ -188,12 +210,16 @@ void main()
             if( position.x  < 0.0 ){ // left
 
 
-//                if( objPosition.x < cropParentPosition.x ){
-//                    lostX = cropParentPosition.x - objPosition.x;
-//                    objPosition.x = cropParentPosition.x;
-//                }
+                if( objPosition.x < cropParentPosition.x ){
+                    lostX = cropParentPosition.x - objPosition.x;
+                    objPosition.x = cropParentPosition.x;
+                }
 
             }else{ // right
+
+////                if( hasSecondCropParent ){//} && cropParentPosition.x > cropParentPosition2.x ){
+//                    cropParentPosition.x = cropParentPosition2.x;
+////                }
 
                 if( objPosition.x > cropParentPosition.x ){
                     lostX = objPosition.x - cropParentPosition.x;
@@ -201,9 +227,21 @@ void main()
                 }
 
             }
+//
+            // ref todo dlete :
+//            float ui_texture_x=texture_crop.r;
+//            float ui_texture_y=texture_crop.g;
+//            float ui_texture_xscale = 1.0/texture_crop.b;
+//            float ui_texture_yscale = 1.0/texture_crop.a;
 
-            TexCoordOut.y += (lostY / 2.0);
 
+                // position of textre will almost certainly have to be a function of scale
+            //TexCoordOut.y += (lostY / 2.0);
+            ui_texture_y += ui_texture_yscale * (lostY / ui_scale.y) * 0.5;
+           // ui_texture_yscale *=  1.0 / lostY;
+         //   ui_texture_yscale -= lostY;
+
+            // this modifies rounding corners somehow? needs work
             OrigTexCoordOut.y += (lostY * 4.0);
 
 
@@ -217,6 +255,8 @@ void main()
         }
 
     }
+
+    TexCoordOut = vec2( TexCoordIn.s / ui_texture_xscaler + ui_texture_x,   TexCoordIn.t / ui_texture_yscaler + ui_texture_y);
 
     gl_Position=objPosition;
 //

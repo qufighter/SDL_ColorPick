@@ -573,7 +573,7 @@ struct UxAnim
         }
 
         lastTimerTime = SDL_GetTicks();
-        SDL_bool wasRunning = SDL_RemoveTimer(my_timer_id);
+        /*SDL_bool wasRunning = */SDL_RemoveTimer(my_timer_id);
         my_timer_id = SDL_AddTimer(30, my_callbackfunc, this);
         // todo return uiAminChain* myAnimChain... so our create functions can be one line! (hurray?)
     }
@@ -601,7 +601,7 @@ struct UxAnim
     uiAminChain* slideLeft(Ux::uiObject *uiObject){ /* slideDownOut */
         uiAminChain* myAnimChain = new uiAminChain();
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
-        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(-1.0, 0.0) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(-1.0, uiObject->origBoundryRect.y) );
         pushAnimChain(myAnimChain);
         return myAnimChain;
     }
@@ -609,7 +609,7 @@ struct UxAnim
     uiAminChain* slideRight(Ux::uiObject *uiObject){ /* slideDownOut */
         uiAminChain* myAnimChain = new uiAminChain();
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
-        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(1.0, 0.0) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(1.0, uiObject->origBoundryRect.y) );
         pushAnimChain(myAnimChain);
         return myAnimChain;
     }
@@ -617,7 +617,7 @@ struct UxAnim
     uiAminChain* slideDown(Ux::uiObject *uiObject){ /* slideDownOut */
         uiAminChain* myAnimChain = new uiAminChain();
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
-        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(0, 1.0) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(uiObject->origBoundryRect.x, 1.0) );
         pushAnimChain(myAnimChain);
         return myAnimChain;
     }
@@ -625,7 +625,7 @@ struct UxAnim
     uiAminChain* slideUp(Ux::uiObject *uiObject){ /* slideDownOut */
         uiAminChain* myAnimChain = new uiAminChain();
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->moveRelative(0, 0.5) );
-        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(0, -1.0) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->moveTo(uiObject->origBoundryRect.x, -1.0) );
         pushAnimChain(myAnimChain);
         return myAnimChain;
     }
