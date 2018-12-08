@@ -25,6 +25,9 @@ struct uiViewColor{
             myEdgeShadow = new uiEdgeShadow(uiObjectItself, SQUARE_EDGE_ENUM::TOP, 0.0 );
             myEdgeShadow->addHighlight();
 
+            myBottomEdgeShadow = new uiEdgeShadow(uiObjectItself, SQUARE_EDGE_ENUM::BOTTOM, 0.08 );
+            //myBottomEdgeShadow->addHighlight();
+
         }else{
             hueBtn = nullptr;
             myEdgeShadow = nullptr;
@@ -118,6 +121,8 @@ struct uiViewColor{
     }
 
     uiEdgeShadow* myEdgeShadow;
+    uiEdgeShadow* myBottomEdgeShadow;
+
 
     uiObject* uiObjectItself; // no real inheritance here, this its the uiViewColor, I would use self->
     uiObject *hexValueText;
@@ -163,6 +168,7 @@ struct uiViewColor{
 
             if( myEdgeShadow != nullptr ){
                 myEdgeShadow->resize(SQUARE_EDGE_ENUM::LEFT);
+                myBottomEdgeShadow->resize(SQUARE_EDGE_ENUM::RIGHT);
             }
 
             if( hueBtn != nullptr ){
@@ -181,6 +187,7 @@ struct uiViewColor{
 
             if( myEdgeShadow != nullptr ){
                 myEdgeShadow->resize(SQUARE_EDGE_ENUM::TOP);
+                myBottomEdgeShadow->resize(SQUARE_EDGE_ENUM::BOTTOM);
             }
 
             if( hueBtn != nullptr ){
@@ -192,7 +199,7 @@ struct uiViewColor{
     }
 
     void update(SDL_Color* color){
-        //char* resultText6char; //leaking memory???
+
         Ux* uxInstance = Ux::Singleton();
 
         setColor(&last_color, color);

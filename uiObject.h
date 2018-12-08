@@ -320,7 +320,7 @@ struct uiObject
 //    Float_Rect croppedOrigBoundryRect; /* private */
     Float_Rect renderRect; /* private */
     Float_Rect collisionRect; /* private */
-//    Float_Rect origRenderRect; /* private */ // really only u used for non standard crop parent object (or is it used at all now ? //maths
+    Float_Rect origRenderRect; /* private */ // really only u used for non standard crop parent object
 //    Float_Rect computedCropRenderRect; /* private */
 
     bool is_circular;
@@ -868,34 +868,33 @@ struct uiObject
 
         // these are needed on some objects only in certain edge cases..............
         // assuming we don't animate size, this is a bit of hack to reduce maths
-//        if( calculateCropParentOrig ){
-//            origRenderRect.w = parentRenderRect.w * origBoundryRect.w;
-//            origRenderRect.h = parentRenderRect.h * origBoundryRect.h;
-//            origRenderRect.x = (parentRenderRect.x + scaleRectForRenderX(&origBoundryRect, &parentRenderRect)) ;
-//            origRenderRect.y = (parentRenderRect.y + scaleRectForRenderY(&origBoundryRect, &parentRenderRect)) ;
+        if( calculateCropParentOrig ){
+            origRenderRect.w = parentRenderRect.w * origBoundryRect.w;
+            origRenderRect.h = parentRenderRect.h * origBoundryRect.h;
+            origRenderRect.x = (parentRenderRect.x + scaleRectForRenderX(&origBoundryRect, &parentRenderRect)) ;
+            origRenderRect.y = (parentRenderRect.y + scaleRectForRenderY(&origBoundryRect, &parentRenderRect)) ;
+
+//            origRenderRect.w = parentRenderRect.w * croppedOrigBoundryRect.w;
+//            origRenderRect.h = parentRenderRect.h * croppedOrigBoundryRect.h;
+//            origRenderRect.x = (parentRenderRect.x + scaleRectForRenderX(&croppedOrigBoundryRect, &parentRenderRect)) ;
+//            origRenderRect.y = (parentRenderRect.y + scaleRectForRenderY(&croppedOrigBoundryRect, &parentRenderRect)) ;
+
 //
-////            origRenderRect.w = parentRenderRect.w * croppedOrigBoundryRect.w;
-////            origRenderRect.h = parentRenderRect.h * croppedOrigBoundryRect.h;
-////            origRenderRect.x = (parentRenderRect.x + scaleRectForRenderX(&croppedOrigBoundryRect, &parentRenderRect)) ;
-////            origRenderRect.y = (parentRenderRect.y + scaleRectForRenderY(&croppedOrigBoundryRect, &parentRenderRect)) ;
+//            if( hasCropParent ){
 //
-//            // maths above might be unused?
-////
-////            if( hasCropParent ){
-////
-////                if( cropParentObject->hasCropParent ){
-////
-////
-////                    //containRenderRectWithinRender(&origRenderRect, &cropParentObject->renderRect);
-////                }
-////
-////
-////                //                Float_Rect tempRect;//leak?
-////                //                setRect(&tempRect, &origBoundryRect);
-////                //                containRectWithin(&tempRect, &cropParentObject->renderRect);
-////               //containRenderRectWithinRender(&origRenderRect, &cropParentObject->renderRect);
-////            }
-//        }
+//                if( cropParentObject->hasCropParent ){
+//
+//
+//                    //containRenderRectWithinRender(&origRenderRect, &cropParentObject->renderRect);
+//                }
+//
+//
+//                //                Float_Rect tempRect;//leak?
+//                //                setRect(&tempRect, &origBoundryRect);
+//                //                containRectWithin(&tempRect, &cropParentObject->renderRect);
+//               //containRenderRectWithinRender(&origRenderRect, &cropParentObject->renderRect);
+//            }
+        }
 
 //        if( useCropParentOrig && hasCropParent ){
 //            // this means we are child of a tile, probably and we should really crop 2x
@@ -937,7 +936,6 @@ struct uiObject
 //
 //
 //
-//                // maths? deep reference chain, use var
 //                computedCropRenderRect.w = tileItself->parentObject->renderRect.w * rect.w;
 //                computedCropRenderRect.h = tileItself->parentObject->renderRect.h * rect.h;
 //                computedCropRenderRect.x = (tileItself->parentObject->renderRect.x + scaleRectForRenderX(&rect, &tileItself->parentObject->renderRect)) ;
@@ -972,7 +970,7 @@ struct uiObject
         collisionRect.x = (parentCollisionRect.x + (boundryRect.x * parentRenderRect.w));
         collisionRect.y = (parentCollisionRect.y + (boundryRect.y * parentRenderRect.h));
 
-        //todo optimize use aboev caluclation ??  // maths
+        //todo optimize use aboev caluclation ??
         //    collisionRect.w = parentCollisionRect.w * boundryRect.w;
         //    collisionRect.h = parentCollisionRect.h * boundryRect.h;
         collisionRect.w = renderRect.w;
@@ -1152,7 +1150,7 @@ struct uiObject
 
         if( containText == true ){
             if( textDirection == TEXT_DIR_ENUM::LTR ){
-                for( ctr=0,i=0; i<len; i++,ctr++ ){ // TODO dupicate counters....
+                for( ctr=0,i=0; i<len; i++/*,ctr++*/ ){
                     letter = childList[i];
                     letter->setBoundaryRect( (i*letterWidth), 0.0, letterWidth, 1.0 );
                 }
@@ -1162,7 +1160,7 @@ struct uiObject
                     letter->setBoundaryRect( (i*letterWidth), 0.0, letterWidth, 1.0 );
                 }
             }else if( textDirection == TEXT_DIR_ENUM::TTB ){
-                for( ctr=0,i=0; i<len; i++,ctr++ ){ // TODO dupicate counters....
+                for( ctr=0,i=0; i<len; i++/*,ctr++*/ ){
                     letter = childList[i];
                     letter->setBoundaryRect( 0.0, (i*letterWidth), 1.0, letterWidth );
                 }
@@ -1174,7 +1172,7 @@ struct uiObject
             }
         }else{
             if( textDirection == TEXT_DIR_ENUM::LTR ){
-                for( ctr=0,i=0; i<len; i++,ctr++ ){ // TODO dupicate counters.... maths
+                for( ctr=0,i=0; i<len; i++/*,ctr++*/ ){
                     letter = childList[i];
                     letter->setBoundaryRect( (i*1.0), 0.0, 1.0, 1.0);
                 }
@@ -1184,7 +1182,7 @@ struct uiObject
                     letter->setBoundaryRect( (i*1.0), 0.0, 1.0, 1.0);
                 }
             }else if( textDirection == TEXT_DIR_ENUM::TTB ){
-                for( ctr=0,i=0; i<len; i++,ctr++ ){ // TODO dupicate counters.... maths
+                for( ctr=0,i=0; i<len; i++/*,ctr++*/ ){
                     letter = childList[i];
                     letter->setBoundaryRect( 0.0, (i*1.0), 1.0, 1.0);
                 }

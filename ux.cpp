@@ -428,8 +428,8 @@ Ux::uiObject* Ux::create(void){
     palleteList = new uiList<SDL_Color, Uint8>(palleteMax);
     palleteList->index(COLOR_INDEX_MAX, indexForColor);
 
-    pickHistoryListState = new uiList<ColorListState, Uint8>(pickHistoryMax);
-    palleteListState = new uiList<ColorListState, Uint8>(palleteMax);
+    //pickHistoryListState = new uiList<ColorListState, Uint8>(pickHistoryMax);
+    //palleteListState = new uiList<ColorListState, Uint8>(palleteMax);
 
     uxAnimations = new UxAnim();
 
@@ -452,7 +452,7 @@ Ux::uiObject* Ux::create(void){
     returnToLastImgBtn->hasForeground = true;
     returnToLastImgBtn->hasBackground = true;
     Ux::setColor(&returnToLastImgBtn->backgroundColor, 0, 0, 0, 50);
-    returnToLastImgBtn->setRoundedCorners(0.5);
+    returnToLastImgBtn->setRoundedCorners(0.5); // collision check will be "circular"
     printCharToUiObject(returnToLastImgBtn, CHAR_BACK_ICON, DO_NOT_RESIZE_NOW);
     returnToLastImgBtn->setClickInteractionCallback(&Ux::interactionReturnToPreviousSurface); // TODO rename me
     rootUiObject->addChild(returnToLastImgBtn);
@@ -699,7 +699,7 @@ Ux::uiObject* Ux::create(void){
     // lets give palleteSelectionColorPreview a background
     palleteSelectionColorPreview->uiObjectItself->hasBackground = true;
     Ux::setColor(&palleteSelectionColorPreview->uiObjectItself->backgroundColor, 0, 0, 0, 255);
-    palleteSelectionColorPreview->alphaMulitiplier = 4;
+    palleteSelectionColorPreview->alphaMulitiplier = 255; //always solid bg
 
     //palleteSelectionColorPreview->uiObjectItself->setCropParentRecursive(historyPalleteHolder);
 
@@ -901,18 +901,22 @@ void Ux::printCharOffsetUiObject(uiObject* letter, int charOffset){
                 text_xStep,              text_yStep);
 }
 
-
-bool Ux::triggerInteraction(void){ // mouseup, mouse didn't move
+bool Ux::triggerInteraction(bool isStart){ // mouseup, mouse didn't move
 
     bool hasInteraction = objectCollides(currentInteraction.px, currentInteraction.py);
 
     //interactionObject  currentInteraction
-    if( hasInteraction ){
+    if( hasInteraction && isStart ){
         if( interactionObject->interactionBeginCallback != nullptr ){
             interactionObject->interactionBeginCallback(interactionObject, &currentInteraction);
         }
     }
     return hasInteraction;
+}
+
+// by default, its the start of interaction when this is called...
+bool Ux::triggerInteraction(void){ // mouseup, mouse didn't move
+    return triggerInteraction(true);
 }
 
 bool Ux::objectCollides(float x, float  y){
@@ -1019,7 +1023,7 @@ bool Ux::interactionComplete(uiInteraction *delta){
 
     uiObject* origInteractionObj = interactionObject;
     interactionObject = nullptr;
-    triggerInteraction(); // interaction obj might change!!!!
+    triggerInteraction(false); // interaction obj might change!!!!
 
     if( !interactionObject || origInteractionObj != interactionObject ){
         if( !origInteractionObj || origInteractionObj->interactionCallbackTypeClick ){
@@ -1919,11 +1923,12 @@ void Ux::colorTileAddChildObjects(uiObject *historyTile, anInteractionFn removeC
         removeButtonHolder->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // ofset to right 1.0
         removeButton->setBoundaryRect( 0.0, 0.0, 1.0, 1.0);
 
-//        removeButton->setCropParentRecursive(historyTile); // must set before adding child...
-//        removeButton->setCropModeOrigPosition();
+//        removeButton->setCropParentRecursive(historyTile); // must set before adding child...  not strictly needed unless performing the next opperation below .. or actually this line is dupe since the child is not yet added?
+        removeButton->setCropModeOrigPosition(); // influences the rendering of the X while we bounce (duplicate detected)
 
         removeButtonHolder->setCropParentRecursive(historyTile); // must set before adding child...
-//        removeButtonHolder->setCropModeOrigPosition();
+        removeButtonHolder->setCropModeOrigPosition(); // influences the rendering of the background color while we bounce (duplicate detected)
+
 
 
         removeButtonHolder->addChild(removeButton);
@@ -1973,7 +1978,8 @@ void Ux::updateColorValueDisplay(SDL_Color* color){
 
     curerntColorPreview->update(color);
 
-    currentlyPickedColor = color; // maybe really leaking memory ?
+    //currentlyPickedColor = color; // maybe we should copy it instead?
+    setColor(currentlyPickedColor, color);
     //addCurrentToPickHistory();
 }
 
@@ -2057,7 +2063,6 @@ void Ux::updatePickHistoryPreview(){
             Ux::setColor(&colora->backgroundColor, clr->r, clr->g, clr->b, 255);
 
 
-            //char* resultText; //leaking memory???
 
             // call itoa 10 times and we will suddenly loose a few UI elements....
            // SDL_itoa(histIndex, resultText, 10);
@@ -2211,25 +2216,15 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
                             0,
                             /*disabled*/0,//1,
                             /*disabled*/0);//1); // 0,0,1,1  is screen crop, but we can skip this logic in vsh
-
-
-
             }
 
-//            if( renderObj->useCropParentOrig ){  // REMOVE unused <----
-//                glUniform4f(uniformLocations->ui_crop2,
-//                            renderObj->cropParentObject->origRenderRect.x,
-//                            -renderObj->cropParentObject->origRenderRect.y,
-//                            renderObj->cropParentObject->origRenderRect.w,
-//                            renderObj->cropParentObject->origRenderRect.h);
-//
-//                //                    glUniform4f(uniformLocations->ui_crop,
-//                //                                renderObj->computedCropRenderRect.x,
-//                //                                -renderObj->computedCropRenderRect.y,
-//                //                                renderObj->computedCropRenderRect.w,
-//                //                                renderObj->computedCropRenderRect.h);
-//
-//            }else{}
+            if( renderObj->useCropParentOrig ){
+                glUniform4f(uniformLocations->ui_crop,
+                            renderObj->cropParentObject->origRenderRect.x,
+                            -renderObj->cropParentObject->origRenderRect.y,
+                            renderObj->cropParentObject->origRenderRect.w,
+                            renderObj->cropParentObject->origRenderRect.h);
+            }else{
 
             glUniform4f(uniformLocations->ui_crop,
                         renderObj->cropParentObject->renderRect.x,
@@ -2237,7 +2232,7 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
                         renderObj->cropParentObject->renderRect.w,
                         renderObj->cropParentObject->renderRect.h);
 
-
+            }
         }else{
             // also note maybe this should only apply for the first and last 2 rows of tiles (optmimization) see allocateChildTiles and uiShader.vsh
             glUniform4f(uniformLocations->ui_crop,
@@ -2264,7 +2259,7 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 
         if( renderObj->hasBackground ){
             glUniform4f(uniformLocations->ui_color,
-                        renderObj->backgroundColor.r/255.0, // maths can be avoided
+                        renderObj->backgroundColor.r/255.0, // maths can be avoided (or moved to shader?)
                         renderObj->backgroundColor.g/255.0,
                         renderObj->backgroundColor.b/255.0,
                         renderObj->backgroundColor.a/255.0

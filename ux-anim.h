@@ -48,9 +48,12 @@ struct uiAnimation
     bool scale_velocity_set;
     bool rotate_velocity_set;
     bool move_velocity_set;
+    bool dest_matrix_set;
+    glm::mat4 initial_matrix;
+    glm::mat4 dest_matrix;
     int moveSteps; // could be dynamic per unit time
-    float moveProgress;
-    int moveDurationMs;
+    float durationProgress;
+    int durationMs;  // not used when impulse (initial velocity) is used... then duration is left to friction...
     float totalMoves;
     float moveScaleFactor;
     float px;
@@ -68,9 +71,12 @@ struct uiAnimation
         animationReachedCallbackFn = nullptr;
         is_move=false;
         is_reset=false;
+        dest_matrix_set=false;
         scale_velocity_set=false;
         rotate_velocity_set=false;
         move_velocity_set=false;
+        durationProgress = 0;
+        durationMs=1000;
     }
 
     uiAnimation* setFriction(float ifriction){
@@ -111,8 +117,8 @@ struct uiAnimation
         py = iy;
         is_move = true;
         moveSteps = 1;
-        moveProgress = 0;
-        moveDurationMs = 1000;
+//        durationProgress = 0;
+//        durationMs = 1000;
 //        totalMoves = moveSteps;
 //        moveScaleFactor = -30.0; // 0 is linear scale, but also "disabled" ....  but this says "how many moves"
 
@@ -135,8 +141,17 @@ struct uiAnimation
         return moveTo(myUiObject->origBoundryRect.x, myUiObject->origBoundryRect.y);
     }
 
+    uiAnimation* resetMatrix(){
+        is_reset = true;
+        dest_matrix_set = true;
+        dest_matrix = glm::mat4(1.0f);
+        durationMs = 500;
+//        return moveTo(myUiObject->origBoundryRect.x, myUiObject->origBoundryRect.y);
+        return this;
+    }
+
     uiAnimation* immediately(){
-        moveDurationMs = 0;
+        durationMs = 0;
         return this;
     }
 
@@ -171,7 +186,7 @@ struct uiAnimation
 
     // this is animationGetRectFn
     static Float_Rect* defaultUiObjectGetBoundsFn(uiAnimation* self){
-        return new Float_Rect(self->myUiObject->boundryRect); // why are we copying the rect? its leaking hte memory?
+        return new Float_Rect(self->myUiObject->boundryRect); // why are we copying the rect? its leaking hte memory?  (well the rect is in fact modified so we had better copy it?)  try freeing it right after its returned... you will find SDL_free(newBoundaryRect);, so the scrollAnimationUpdaterCb always handles freeing this, so its not !
     }
 
     // this is animationUpdateCallbackFn
@@ -179,6 +194,12 @@ struct uiAnimation
         Ux::setRect(&self->myUiObject->boundryRect, newBoundaryRect->x, newBoundaryRect->y, newBoundaryRect->w, newBoundaryRect->h);
         SDL_free(newBoundaryRect);
         self->myUiObject->updateRenderPosition(); // this is occuring in the animation timeout thread.... if threaded
+    }
+
+    void start(){
+        //this is called at the beginnign of this animation a single time, by the chain or above
+        // its used to capture starting points for this animation, if they are arbitrary (dependent on previous animations)
+        initial_matrix = glm::mat4(myUiObject->matrix); // do we need to copy this?/ probably....
     }
 
     bool update(Uint32 elapsedMs){ // todo pass delta and relative
@@ -204,8 +225,8 @@ struct uiAnimation
 // so ease out being deafult we can still probably define ways to scale for ease in or linear
 // and manipulate progressBar accordinly?
 
-            moveProgress += elapsedMs;
-            float progressBar = moveProgress / moveDurationMs;
+            durationProgress += elapsedMs;
+            float progressBar = durationProgress / durationMs;
             if( progressBar > 1.0 ) progressBar = 1.0;
 //            float remainignPct = 1.0 - progressBar;
 //            float progressScaling = ((progressBar * 2.0 ) - 1.0);
@@ -240,7 +261,7 @@ struct uiAnimation
             if( vx < threshold && vx > negThreshold ){ vx  = 0; ani_done_count++; }
             if( vy < threshold && vy > negThreshold ){ vy  = 0; ani_done_count++; }
             if( ani_done_count == 2 ){
-                moveProgress = moveDurationMs + 1;
+                durationProgress = durationMs + 1;
                 newBounds->y = py;
                 newBounds->x = px;
             }else{
@@ -250,7 +271,7 @@ struct uiAnimation
 
             myAnimationCallbackFn(this, newBounds);
 
-            if( moveProgress > moveDurationMs ){
+            if( durationProgress > durationMs ){
                 // we are totally done animating...., tell the chain to drop us
                 return true; // done bool
             }
@@ -300,9 +321,31 @@ struct uiAnimation
             required_done_count+=2;
         }
 
+        if( dest_matrix_set ){
+
+            durationProgress += elapsedMs;
+            float progressBar = durationProgress / durationMs;
+
+            if( progressBar >= 1.0 ){
+                progressBar = 1.0;
+                ani_done_count++;
+                SDL_Log("Mat reset done");
+            }
+
+            // we perform a "linear" reset here for starters...
+            glm::mat4 diffMatrix = dest_matrix - initial_matrix;
+
+            myUiObject->matrix = initial_matrix + (diffMatrix * progressBar);
+
+//            initial_matrix = glm::mat4(myUiObject->matrix);
+//            dest_matrix
+
+            required_done_count+=1;
+        }
+
         if( scale_velocity_set ){
 
-            myUiObject->matrix = glm::scale(myUiObject->matrix, glm::vec3(1.0-(svx * elapsedMs),1.0-(svy * elapsedMs),1.0));;
+            myUiObject->matrix = glm::scale(myUiObject->matrix, glm::vec3(1.0-(svx * elapsedMs),1.0-(svy * elapsedMs),1.0));
 
             svx -= (friction_factor * svx) * elapsedMs;
             svy -= (friction_factor * svy) * elapsedMs;
@@ -353,6 +396,10 @@ struct uiAminChain
     int animListMaxLen = 5; //derp
     uiAnimation* animList[5]; //  each chain can hold 5 animiations in queue
 
+    void startEventForCurrentAnim(){
+        this->animList[animListCurrent]->start();
+    }
+
     bool update(Uint32 elapsedMs){
 
         if( this->invalidateChain ){
@@ -361,7 +408,7 @@ struct uiAminChain
             return true; // chain completed
         }
 
-        if( animListCurrent < animListIndex ){
+        if( 0 < animListIndex ){ // means we have animations in the chain
 
             result_done = this->animList[animListCurrent]->update(elapsedMs);
             if( result_done ){
@@ -369,8 +416,11 @@ struct uiAminChain
                 SDL_free(this->animList[animListCurrent]); // GARBAGE COLLECTION ?! (we may mark an animation to not auto delete in the future, for reusing it)
 
                 animListCurrent++;
-                if( animListCurrent >= animListMaxLen ){
+                if( animListCurrent >= animListIndex ){
+                //if( animListCurrent >= animListMaxLen ){ // hmmm previously itw ould always go to 5..
                     return true; // chain completed
+                }else{
+                    startEventForCurrentAnim();
                 }
             }
 
@@ -568,6 +618,9 @@ struct UxAnim
 
         if( animChainIndex < animChainsMax - 1 ){
             animChains[animChainIndex++] = myAnimChain;
+            if( myAnimChain->animListIndex > 0 && myAnimChain->animListCurrent < myAnimChain->animListIndex ){
+               myAnimChain->startEventForCurrentAnim();
+            }
         }else{
             SDL_Log("ERROR::: Max Animation Chains %d Exceeded !!!!!!!!", animChainsMax);
         }
@@ -695,7 +748,6 @@ struct UxAnim
     }
 
 
-
     uiAminChain* bounce(Ux::uiObject *uiObject){ // orig emphasizedBounce
 
         uiAminChain* myAnimChain = new uiAminChain();
@@ -732,6 +784,23 @@ struct UxAnim
         return myAnimChain;
     }
 
+
+    uiAminChain* spin(Ux::uiObject *uiObject){ // orig soft bounce
+        uiAminChain* myAnimChain = new uiAminChain();
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialRotationVelocity(5) );
+        //myAnimChain->addAnim( (new uiAnimation(uiObject))->resetPosition() );
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
+
+    uiAminChain* scale(Ux::uiObject *uiObject){ // orig soft bounce
+        uiAminChain* myAnimChain = new uiAminChain();
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialScaleVelocity(-0.005, -0.005) );
+        //myAnimChain->addAnim( (new uiAnimation(uiObject))->resetPosition() );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->resetMatrix() );
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
 
 };
 

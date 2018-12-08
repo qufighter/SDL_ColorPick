@@ -205,6 +205,7 @@ static Ux* Singleton();
     bool objectCollides(uiObject* testObj, float x, float y);
 
     bool triggerInteraction(); // mouseup, mouse didn't move
+    bool triggerInteraction(bool isStart); // mouseup, mouse didn't move
 
 
     bool bubbleCurrentInteraction();
@@ -247,7 +248,7 @@ static Ux* Singleton();
 
 
     uiList<SDL_Color, Uint8>* pickHistoryList; // WARN - do not enable index if using Uint8 - max Uint8 is far less than pickHistoryMax
-    uiList<ColorListState, Uint8>* pickHistoryListState;
+    //uiList<ColorListState, Uint8>* pickHistoryListState;
 
     //int pickHistoryIndex = 0;
     //int lastPickHistoryIndex = -1;
@@ -258,7 +259,7 @@ static Ux* Singleton();
     static int getHistoryTotalCount();
 
     uiList<SDL_Color, Uint8>* palleteList;
-    uiList<ColorListState, Uint8>* palleteListState;
+    //uiList<ColorListState, Uint8>* palleteListState;
 
     //int palleteIndex = 0;
     //int lastPalleteIndex = -1;

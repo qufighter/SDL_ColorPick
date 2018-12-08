@@ -84,7 +84,7 @@ struct DirectionalScan
 
         coordinateIndex = (dimensonalType*)SDL_malloc( sizeof(dimensonalType)*_total_size );
         bitmap = (bool*)SDL_malloc( sizeof(dimensonalType)*_total_size );
-        distances = (float*)SDL_malloc( sizeof(dimensonalType)*_total_size );
+        distances = (float*)SDL_malloc( sizeof(dimensonalType)*_total_size ); // we really do not need this anymore?!
 
         for( int y=_startIndex; y<_endIndex; y++ ){
             for( int x=_startIndex; x<_endIndex; x++ ){
@@ -104,7 +104,7 @@ struct DirectionalScan
 
                 coordinateIndex[myIndex] = *myItem;
                 bitmap[myIndex] = false; // do we really need bitmap??/ maybe we can just use nullptr...
-                distances[myIndex] = SDL_sqrtf((x*x) + (y*y));
+                distances[myIndex] = distance;
 
                 //SDL_Log("Distance %2i is: %f" , myIndex, distances[myIndex]);
 

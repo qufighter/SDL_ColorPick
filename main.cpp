@@ -335,13 +335,14 @@ int EventFilter(void* userdata, SDL_Event* event){
             if( mousStateDown == 1 && openglContext->pixelInteraction.dx == 0 && openglContext->pixelInteraction.dy == 0 ){
                 // it was a single touch
                 SDL_Log("SDL_FINGERUP was reachd - position did not change" );
-
+                SDL_Log("MOUSE xy delta %f %f", openglContext->pixelInteraction.dx, openglContext->pixelInteraction.dy );
 
                 // so if we already didInteract....
             // calling triggerInteraction again might change our interaction object....
                 // which could be good or mediocure if we are currently doing a drag and drop
                 // but in this case we don't want to overwrite our interaction if we already have one
 
+                // I do not think this following code is needed....
                 if( !didInteract ){ // didInteract really means didInteractWithUi and when we are, we leave the collected_x and collected_y zero at this time....
                     didInteract = openglContext->generalUx->triggerInteraction();
                 }
@@ -703,6 +704,10 @@ compatibility; this flag is ignored
      if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0) {
      
      */
+//
+    SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
+    SDL_SetHint(SDL_HINT_MAC_BACKGROUND_APP, "0");  // as far as I can tell.... this only makes the window not re-enter the background once focused - and also becomes incapable of entering the forground (no menu bar)
+
 
     /* initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER) < 0) {
@@ -716,7 +721,6 @@ compatibility; this flag is ignored
 
 //    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
 //    SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
-
 
 
     /* create window and renderer */
@@ -736,7 +740,7 @@ compatibility; this flag is ignored
         return 1;
     }
 
-    //SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
+    //
     //SDL_HINT_IDLE_TIMER_DISABLED
     SDL_EnableScreenSaver();
 

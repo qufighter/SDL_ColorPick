@@ -34,7 +34,7 @@ int
 main(int argc, char *argv[])
 {
 
-    SDL_Log("Hello world");
+    SDL_Log("Hello directional scan world");
 
     DirectionalScan<SDL_Point, glm::vec3>* myDirectionalScan = new DirectionalScan<SDL_Point, glm::vec3>(2);
 
@@ -260,6 +260,9 @@ this is basically our 4x4 grid...
      * * 2 * *
 
      distances are float distances from center
+     this (or above) is perhaps redundant, we just use the helper function for these seemingly
+     but this tests coordinateSpace which is not hte same as distances
+     however the above tests should probably be removed as redundant from the test and program code
      */
 
 
@@ -328,5 +331,13 @@ this is basically our 4x4 grid...
         return 1;
     }
 
-    SDL_Log("All tests passed.");
+    // all above tests might fail if we sort durign init... unless we copy to a sorted coordinateIndex
+    // computing vectors is good because we can rule them out and whole sets of destinations
+    // however at best each coordinateIndex may merely belong to a vector that is eitehr still under examination
+    // or already ruled out
+    // its is the list of vectors that are ruled out that we'll need to reset - the search space is the same
+
+
+    SDL_free(myDirectionalScan);
+    SDL_Log("All directional scan tests passed.");
 }
