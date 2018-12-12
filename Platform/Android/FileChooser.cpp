@@ -11,7 +11,7 @@
 
 #ifdef __ANDROID__
 #include <jni.h>
-#import "FileChooser.h"
+#import "AndroidFileChooser.h"
 
 
 //com_vidsbee_colorpicksdl

@@ -1,11 +1,25 @@
 #include "textures.h"  
 #include "ColorPick.h"
 
+bool Textures::ms_bInstanceCreated = false;
+Textures* Textures::pInstance = NULL;
+
+Textures* Textures::Singleton() {
+    if(!ms_bInstanceCreated){
+        pInstance = new Textures();
+        ms_bInstanceCreated=true;
+    }
+    return pInstance;
+}
+
 /**
 Default constructor
 */
 Textures::Textures(void) {
-	
+
+
+    directionalScan = new DirectionalScan<SDL_Point, glm::vec3>(25, &Textures::vectorIsComponent);
+
 }
 /**
 Destructor
@@ -73,10 +87,6 @@ GLuint Textures::LoadTexture(const char* filename) {
     return textureid;
 
 }
-
-//#define USE_DEVIL
-#define USE_SDL_TEXTURES
-#ifdef USE_SDL_TEXTURES
 
 Uint32 getpixel(SDL_Surface *surface, int x, int y)
 {
@@ -383,6 +393,10 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
                                                            surface->format->Amask);
 
 
+            //when creating new 2048 from image... I have observed non black background, but picked color for background.... seems wrong...  (should we explicity SDL_FillRect black ??)
+            SDL_FillRect(new_contain_in_surface, &new_contain_in_surface->clip_rect, SDL_MapRGB(new_contain_in_surface->format, 0, 0, 0) );
+
+
 //            SDL_Rect srcRect;
 //            srcRect.x = -*x;
 //            srcRect.y = -*y;
@@ -608,15 +622,54 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
     return textureid;
 }
 
+glm::vec3 Textures::getVec3ColorForPoint(SDL_Point point){
+    Textures* self = Textures::Singleton();
+    bool inBounds = colorFromSurface(self->scanSurface, self->scanOrigin.x + point.x, self->scanOrigin.y + point.y, &self->tmpColor);
+    if( !inBounds ){
+        return glm::vec3(99999.0, 99999.0, 99999.0);
+    }
+    return glm::vec3(self->tmpColor.r, self->tmpColor.g, self->tmpColor.b);
+}
+
 // too many args..
 bool Textures::searchSurfaceForColor(SDL_Surface *newSurface, SDL_Color* seekClr, int x, int y, int* outx, int* outy){
 
-    // the HSL picker uses this...
-    // and we should come up with a better meandering search algo here... since each step will get closer/further and convergence is possible
-    /// it could almost be learning algo...
+    // todo call
+    // SDL_Point result = myDirectionalScan->getOffsetForBestMatch(dest, &getDistanceForVec3s, &getItemForPointTest2);
+    // originx = hwh - x;
+    // originy = hwh - y;
+    // SDL_Point origin; // use this for our lookup function
+    // whatever SDL_Point result we get out... we can just add it to x,y and return those (outx, outy)
+    // FINALLY - evaluate how this fn is called, it can probably just be a void*... otherwise return true if hte point is non zero,zero
+    /*
+         *outx = x + result.x;
+         *outy = y + result.y;
+    */
 
+    //  directionalScan = new DirectionalScan<SDL_Point, glm::vec3>(25, &Textures::vectorIsComponent);
+    //searchSurfaceForColor
     int hwh = SDL_min(newSurface->w, newSurface->h) / 2;
     hwh-=1;
+    glm::vec3 dest = glm::vec3(seekClr->r, seekClr->g, seekClr->b);
+    scanOrigin.x = hwh - x;
+    scanOrigin.y = hwh - y;
+    scanSurface = newSurface;
+    SDL_Point result = directionalScan->getOffsetForBestMatch(dest, &Textures::getDistanceForVec3s, &Textures::getVec3ColorForPoint);
+
+    *outx = x - result.x;
+    *outy = y - result.y;
+
+    if( result.x != 0 || result.y != 0 ){
+        return true;
+    }
+    return false;
+
+
+    // the HSL picker uses this...
+    // and we should come up with a better meandering search algo here... since each step will get closer/further and convergence is possible
+    // it could almost be learning algo...
+
+
 
     colorFromSurface(newSurface, hwh -x , hwh -y , &tmpColor);
 
@@ -626,7 +679,6 @@ bool Textures::searchSurfaceForColor(SDL_Surface *newSurface, SDL_Color* seekClr
     //evaluate distance
 
     glm::vec3 current;
-    glm::vec3 dest = glm::vec3(seekClr->r, seekClr->g, seekClr->b);
     float dist;
     float lastDist, bestDist;
 
@@ -1216,138 +1268,6 @@ SDL_Surface* Textures::LoadSurface(const char* filename) {
     return surface;
 }
 
-#elif USE_DEVIL
-GLuint Textures::LoadTexture(const char* filename, GLuint& textureid) {
-	int wrap = 1;
-// verify length of filename is acceptable
-	/*const size_t newsize = 200;
-	wchar_t wcstring[newsize];
-	wsprintf(wcstring, L"%S", filename);*/
-	const wchar_t * wfilename = reinterpret_cast<const wchar_t *>(filename);
-	
-	ILuint ImgId = 0;
-	ilGenImages(1, &ImgId);
-	ilBindImage(ImgId);
-	int rslt = ilLoadImage(wfilename);
-	if( rslt < 1 ){
-		DebugMessage("Problem Loading Texture:");
-		DebugMessage(filename);
-		debugDevILerror();
-		return 0;
-	}
-	/*
-	debugDevILerror();
-	int width = ilGetInteger(IL_IMAGE_WIDTH);
-	int height = ilGetInteger(IL_IMAGE_HEIGHT);
-	debugDevILerror();
-	int bitspp = ilGetInteger(IL_IMAGE_BITS_PER_PIXEL);
-	int bytesspp = ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL);
-	int imformat = ilGetInteger(IL_IMAGE_FORMAT);
-	debugDevILerror();
-	*/
-
-	//BYTE* pixmap = new BYTE[width * height * bytesspp];
-	//ilCopyPixels(0, 0, 0, width, height, 1, IL_RGBA, IL_UNSIGNED_BYTE, pixmap);
-	//BYTE* data = ilGetData();
-
-//	debugDevILerror();
-//	glGenTextures(1, &texture_id);
-//	glBindTexture(GL_TEXTURE_2D, texture_id);
-
-//	DebugMessage(("HELLO---"));
-	//if(treeTexture.type ==GL_RGBA)DebugMessage(("HELLO"));
-	//glTexImage2D(GL_TEXTURE_2D, 0, treeTexture.bpp / 8, treeTexture.width, treeTexture.height, 0, treeTexture.type, GL_UNSIGNED_BYTE, treeTexture.imageData);
-//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-
-	debugGLerror();
-	texture_id = ilutGLBindTexImage();
-	debugGLerror();
-	debugDevILerror();
-
-//rslt = ilSave(IL_TGA,TEXT("monkey.tga"));
-
-	ilBindImage(0);
-	ilDeleteImage(ImgId);
-	//if(data) SDL_free(data);
-
-/*
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-	//glEnable(GL_TEXTURE_2D);
-	debugGLerror();
-	W( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)(wrap ? GL_REPEAT : GL_CLAMP) );
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)(wrap ? GL_REPEAT : GL_CLAMP) );
-
-	glGenerateMipmap(GL_TEXTURE_2D);
-	
-	debugGLerror();
-	
-		//glDrawPixels(treeTexture.width, treeTexture.height,treeTexture.type, GL_UNSIGNED_BYTE,treeTexture.imageData);
-
-	*/
-/*
-	ILuint ImageName; // The image name to return.
-    ilGenImages(1, &ImageName); // Grab a new image name.
-	ilBindImage(ImageName); 
-
-	ilLoadImage(wcstring);
-	texture_id = ilutGLBindTexImage();
-
-	//ILubyte* data = ilGetData();
-
-	ilDeleteImages(1, &ImageName);
-*/
-	
-/*
-	int rslt=texture_id = ilutGLLoadImage(wcstring);
-
-	if( rslt < 1 ){
-		DebugMessage("Problem Loading Texture:");
-		DebugMessage(filename);
-		return 0;
-	}
-*/
-	return texture_id;
-}
-#else
-//http://www.3dcodingtutorial.com/Textures/Loading-Textures.html
-GLuint Textures::LoadTexture(char * filename, GLuint& textureid) {
-	Texture treeTexture;
-	int wrap = 1;
-	if(LoadTGA(&treeTexture, filename)){
-		glGenTextures(1, &texture_id);
-		glBindTexture(GL_TEXTURE_2D, texture_id);
-
-
-		debugGLerror();
-		DebugMessage(("HELLO---"));
-		//if(treeTexture.type ==GL_RGBA)DebugMessage(("HELLO"));
-		//glTexImage2D(GL_TEXTURE_2D, 0, treeTexture.bpp / 8, treeTexture.width, treeTexture.height, 0, treeTexture.type, GL_UNSIGNED_BYTE, treeTexture.imageData);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, treeTexture.width, treeTexture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, treeTexture.imageData);
-
-
-		debugGLerror();
-
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-		//glEnable(GL_TEXTURE_2D);
-		debugGLerror();
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)(wrap ? GL_REPEAT : GL_CLAMP) );
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)(wrap ? GL_REPEAT : GL_CLAMP) );
-
-		glGenerateMipmap(GL_TEXTURE_2D);
-		debugGLerror();
-		//glDrawPixels(treeTexture.width, treeTexture.height,treeTexture.type, GL_UNSIGNED_BYTE,treeTexture.imageData);
-
-
-		if (treeTexture.imageData) 
-			SDL_free(treeTexture.imageData);
-	}else return 0;
-
-	return texture_id;
-}
-#endif
 
 GLuint Textures::LoadTexture(unsigned char *data, int width, int height) {
 	GLuint texture_id;
@@ -1448,7 +1368,6 @@ GLuint Textures::LoadTexture(const char * filename) {
 }*/
 
 
-#ifdef USE_SDL_TEXTURES
 void Textures::screenshot(char* filename,int x, int y)//width height
 {
     /*
@@ -1503,51 +1422,6 @@ void Textures::screenshot(char* filename,int x, int y)//width height
     delete [] pixels2;
 
 }
-#elif USE_DEVIL
-void Textures::screenshot(char* filename,int x, int y)//width height
-{
-    
-	ILuint ImgId = 0;
-	ilGenImages(1, &ImgId);
-	ilBindImage(ImgId);
-
-// verify length of filename is acceptable
-/*	const size_t newsize = 200;
-	wchar_t wcstring[newsize];
-	wsprintf(wcstring, L"%S", filename);*/
-	wchar_t * wfilename = reinterpret_cast<wchar_t *>(filename);
-
-	int rslt = ilutGLScreen();
-	if(rslt < 1 ){
-		DebugMessage("Screenshot Take Error!");
-	}
-
-	rslt = ilSave(IL_PNG, wfilename);
-	if(rslt < 1 ){
-		DebugMessage("Screenshot Save Error!");
-	}
-	
-	debugGLerror();
-	debugDevILerror();
-}
-#else
-// addapted from http://www.flashbang.se/archives/155
-void Textures::screenshot(char filename[160],int x, int y)//width height
-{
-    
-    SDL_Log("screenshot %d %d", x, y);
-    
-	// get the image data
-	long imageSize = x * y * 4;
-	unsigned char *data = new unsigned char[imageSize];
-	glReadPixels(0,0,x,y, GL_BGRA,GL_UNSIGNED_BYTE,data);//useful for getting texture into CPU accessible memory, otherwise use glCopyTexImage2D 
-	dataToTgaFile(filename, data, x,  y);
-	if(data){
-		delete[] data;
-		data=NULL;
-	}
-}
-#endif
 
 void Textures::dataToTgaFile(char filename[160],unsigned char *data,int x, int y)//width height
 {

@@ -5,34 +5,9 @@ movement velocity platform diffences (android) (dupe)
 
 pallete swatch color -> huePicker for adjustment ( see cp_set_from_hsv )
      ^ above is basically "done" but further refinements would be good
+     
 sort pallete colors
     ^ (web interface? / later)
-
-
-recall delete states in scrollers (dont't keep just a list of SDL Color but keep uiState too... )
-  -> see ColorList
-  -> problems: 
-     -> readInState newHistoryList
-     -> writeOutState
-  -> solution - use a second list of bool or a second list of state objects (good idea - annoying to manage though)
-
-    pickHistoryListState = new uiList<ColorListState, Uint8>(pickHistoryMax);
-    palleteListState = new uiList<ColorListState, Uint8>(palleteMax);
-
--> solution2
-   transform the list after read and before write into a new list instead......
-
-    uiListIterator<uiList<SDL_Color, Uint8>, SDL_Color>* myIterator = myUxRef->palleteList->iterate();
-    SDL_Color *color = myIterator->next();
-    while(color != nullptr){
-        //SDL_Log("%i %i %i", color->r, color->g, color->b);
-        color = myIterator->next();
-    }
-    SDL_free(myIterator);
-    // except use ColorList struct and build a new list of SDL_Color for save, or reverse for load....
-
-
-make delete all more clear (pallete can mislead to think only one row delete?)  (maybe scroll the view to illustrate the effect?  although reset of scroll on cancel would be good..... or otherwise end anim at current position?)
 
 text selection and or copy ~~paste~~ ease (desktop, mobile)
 main thread animations for less jitter
@@ -40,6 +15,8 @@ main thread animations for less jitter
 disable builtin image list looping/defaulting when nothign opened... (dev cleanup)
 disable adding random history colors (dev cleanup)
 remove unused textures from bundle (dev cleanup?)
+
+add version string somewhere (do not let it look like an IP address!)  maybe this is plat specifc/bundle specific?
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -67,7 +44,28 @@ leak / leaking keyword (done 2019)
  
 cleanup shader code
 
-add version string somewhere (do not let it look like an IP address!)  maybe this is plat specifc/bundle specific?
+recall delete states in scrollers (dont't keep just a list of SDL Color but keep uiState too... )
+    -> see ColorList
+    -> problems: 
+    -> readInState newHistoryList
+    -> writeOutState
+    -> solution - use a second list of bool or a second list of state objects (good idea - annoying to manage though)
+
+    pickHistoryListState = new uiList<ColorListState, Uint8>(pickHistoryMax);
+    palleteListState = new uiList<ColorListState, Uint8>(palleteMax);
+
+  -> solution2
+  transform the list after read and before write into a new list instead......
+
+    uiListIterator<uiList<SDL_Color, Uint8>, SDL_Color>* myIterator = myUxRef->palleteList->iterate();
+    SDL_Color *color = myIterator->next();
+    while(color != nullptr){
+    //SDL_Log("%i %i %i", color->r, color->g, color->b);
+    color = myIterator->next();
+    }
+    SDL_free(myIterator);
+    // except use ColorList struct and build a new list of SDL_Color for save, or reverse for load....
+
 
 # platform specific todo
 
@@ -84,13 +82,12 @@ other keypress support (modal confirm enter, ...)
 click bg to dismiss any modal such as historyPalleteHolder, yesno?, etc
 clock bar hide (enabled now for dev)
 SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK < - do we want a right click menu?
-SDL_HINT_VIDEO_ALLOW_SCREENSAVER <- we should allow it
 handle when save of history data occurs (specifically desktop plat?)
     see SDL_APP_WILLENTERBACKGROUND < this is where we currently write state, works good on mobile clients where there is no fixed quit command...
     SDL_WINDOWEVENT_LEAVE,
     SDL_WINDOWEVENT_FOCUS_LOST, 
     SDL_WINDOWEVENT_CLOSE
-
+hold mouse down on scroll arrow, expect continuous scroll
 
 ### osx
 osx application bundle (see readme and  see   Use pbxbuild in the same directory as your .pbproj file)

@@ -10,7 +10,7 @@
 
 
 #if __ANDROID__
-#include "Platform/Android/FileChooser.h" // platform specific include!
+#include "Platform/Android/AndroidFileChooser.h" // platform specific include!
 #else
 #include "FileChooser.h" // platform specific include!  this is for ios (and osx...)
 #endif
@@ -298,6 +298,8 @@ void Ux::resizeUiElements(void){
         defaultYesNoChoiceHolder->setBoundaryRectForAnimState(0.0, 0.0, 1.0, 1.0, // vis
                                                               0.0, -1.0, 1.0, 1.0); // hid
 //        defaultYesNoChoiceDialogue->resize(Float_Rect(0.0, -1.0, 1.0, 1.0));
+        defaultYesNoChoiceDialogue->resize();
+
 
 
     }else{ // not widescreen
@@ -367,6 +369,7 @@ void Ux::resizeUiElements(void){
                                                               0.0, -1.0, 1.0, 1.0); // hid
 
 //        defaultYesNoChoiceDialogue->resize(Float_Rect(0.0, -1.0, 1.0, 1.0));
+        defaultYesNoChoiceDialogue->resize();
 
     }
 
@@ -1193,7 +1196,7 @@ void Ux::clickPalleteColor(uiObject *interactionObj, uiInteraction *delta){ // s
                 removeButton->setAnimation( myUxRef->uxAnimations->slideLeftFullWidth(removeButton) );
             }
 
-            myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::clickClearPallete, &Ux::clickCancelClearPallete);
+            myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::clickClearPallete, &Ux::clickCancelClearPallete, myUxRef->palleteList->total());
 
 
         }else if(interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_SAVE_PALLETE ){
@@ -1393,7 +1396,7 @@ void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // s
                 removeButton->setAnimation( myUxRef->uxAnimations->slideLeftFullWidth(removeButton) );
             }
 
-            myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::clickClearHistory, &Ux::clickCancelClearHistory);
+            myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::clickClearHistory, &Ux::clickCancelClearHistory, myUxRef->pickHistoryList->total());
         }
 
         return;

@@ -246,16 +246,16 @@ void OpenGLContext:: pickerForHue(HSV_Color* color, SDL_Color* desired_color){
             updateColorPreview();
             renderShouldUpdate = true;
 
-        SDL_Log(" - - -  zeroing in attempt 2 now ------ - - - - ");
-        if( textures->searchSurfaceForColor(fullPickImgSurface, desired_color, position_x, position_y, &position_x, &position_y) ){
-
-            // this is a little overkill we just need to move the position....
-            //pickerForHue(generalUx->huePicker->colorForPercent(1.0-(color->h/360.0)));
-            textures->LoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y);
-            updateColorPreview();
-            renderShouldUpdate = true;
-
-        }
+//        SDL_Log(" - - -  zeroing in attempt 2 now ------ - - - - ");
+//        if( textures->searchSurfaceForColor(fullPickImgSurface, desired_color, position_x, position_y, &position_x, &position_y) ){
+//
+//            // this is a little overkill we just need to move the position....
+//            //pickerForHue(generalUx->huePicker->colorForPercent(1.0-(color->h/360.0)));
+//            textures->LoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y);
+//            updateColorPreview();
+//            renderShouldUpdate = true;
+//
+//        }
 
     }
 }
@@ -343,7 +343,7 @@ void OpenGLContext::setupScene(void) {
     setFishScale(0.0, 1.0);
 
 
-    textures = new Textures();
+    textures = Textures::Singleton();
  //glEnable (GL_DEPTH_TEST);
     // we may need to dynamify our shader paths too in case its in the bundle [[NSBundle mainBundle] pathForResource:@"Shader" ofType:@"vsh"];
 
@@ -580,7 +580,6 @@ textureList->add("textures/simimage.png");
 
     debugGLerror("setupScene completely done");
 
-
 }
 
 void OpenGLContext::loadShaders(void){
@@ -798,9 +797,6 @@ void OpenGLContext::renderScene(void) {
  //   modelMatrix = glm::translate(modelMatrix, glm::vec3(0.2f, 0.0f, 0.0f));
 
 
-//    glEnable(GL_BLEND);  //this enables alpha blending, important for faux shader
-//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 
 
     glUniform1f(uniformLocations->fishScale, fishEyeScale);
@@ -835,9 +831,6 @@ void OpenGLContext::renderScene(void) {
     glActiveTexture( GL_TEXTURE0 + 1);
     glBindTexture(GL_TEXTURE_2D,  textureId_default);
 
-    glActiveTexture( GL_TEXTURE0 + 2);
-    glBindTexture(GL_TEXTURE_2D,  textureId_fonts); // TODO -  well its bound now, wh y not leave this in the main loop for no reason?
-
 
     debugGLerror("renderScene textuers bound");
 
@@ -847,9 +840,12 @@ void OpenGLContext::renderScene(void) {
     debugGLerror("renderScene glDisable(GL_BLEND");
 
 
-
+#ifdef __ANDROID__
+    // there is probably a better ifdef we can use for EGL OES or something like that... its not a "core" context ??? or just forgets we bound this??? not sure...
     glBindVertexArray(rect_vaoID[0]); // Bind our Vertex Array Object GL_INVALID_OPERATION (except android?)
     debugGLerror("renderScene glBindVertexArray(rect_vaoID");
+    /// maybe itz caused by SDL_GL_SwapWindow
+#endif
 //
 //        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rect_triangleStripIndexBuffer); // its already bound ?
 //        debugGLerror("renderScene glBindBuffer(GL_ELEMENT_ARRAY_BUFFER");
@@ -880,18 +876,11 @@ void OpenGLContext::renderScene(void) {
 
     debugGLerror("renderScene ui textureId_fonts bound");
 
-
-    // // Send our global light to the shader
-
-    glEnable(GL_BLEND);  //this enables alpha blending, important for faux shader
+    glEnable(GL_BLEND);  //this enables alpha blending
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     debugGLerror("renderScene glEnable GL_BLEND");
 
-
-    //glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    debugGLerror("generalUx->renderObject begin");
     generalUx->renderObject(uniformLocations); // renders all obj
     debugGLerror("generalUx->renderObject ending");
 

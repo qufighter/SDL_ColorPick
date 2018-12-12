@@ -63,9 +63,9 @@ struct uiScrollController{
         scrollVtDragHolder->setInteraction(&this->interactionDragBgClicked);
         scrollVtDragHolder->setInteractionCallback(&this->interactionDragReleased);
 
-        scrollVtDrag->hasForeground = true;
+        //scrollVtDrag->hasForeground = true;
         //uxInstance->printCharToUiObject(scrollVtDrag, '|', true);
-        uxInstance->printCharToUiObject(scrollVtDrag, CHAR_BARS, true);
+        //uxInstance->printCharToUiObject(scrollVtDrag, CHAR_BARS, true);
         scrollVtDrag->setBoundaryRect( 0.0, 0.0, 1.0, 0.23); // 0.23 is the height of the scrolly widget... make it dynamic :!
         //scrollVtDrag->setBoundaryRect( 0.0, SCROLLY_WIDTH, 1.0, 0.23); // 0.23 is the height of the scrolly widget... make it dynamic :!
         //scrollVtDrag->setMovementBoundaryRect( 0.0, SCROLLY_WIDTH, 0.0, 1.0 - SCROLLY_WIDTH - SCROLLY_WIDTH);
@@ -76,7 +76,7 @@ struct uiScrollController{
 
         scrollVtDrag->setInteractionCallback(&this->interactionDragReleased);
         scrollVtDrag->hasBackground = true;
-        Ux::setColor(&scrollVtDrag->backgroundColor, 255, 255, 255, 192);
+        Ux::setColor(&scrollVtDrag->backgroundColor, 255, 255, 255, 96);
 
         scrollVtDrag->matrix = glm::scale(scrollVtDrag->matrix, glm::vec3(0.7,1.0,1.0));
 

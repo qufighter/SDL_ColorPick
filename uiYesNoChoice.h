@@ -14,6 +14,8 @@ struct uiYesNoChoice{
         uiObjectItself = new uiObject();
         yes = new uiObject();
         no = new uiObject();
+        text = new uiObject();
+        text_holder = new uiObject();
 
         //
         //        uiObjectItself->addChild(round_tl);
@@ -25,6 +27,11 @@ struct uiYesNoChoice{
 
 
         //uiObjectItself->setInteractionCallback(tileClickedFn);
+
+
+        //deleteColorPreview = new uiViewColor(uiObjectItself, Float_Rect(0.0, 0.0, 1.0, 0.27777777777778), false);
+
+
 
 
 
@@ -44,6 +51,24 @@ struct uiYesNoChoice{
         //no->rotate(180.0f);
         no->setClickInteractionCallback(defaultCancelFn);
         no->setRoundedCorners(0.5);
+
+
+
+        yes->addChild(text_holder);
+        //text_holder->squarifyKeepHz();
+        //text_holder->squarify();
+//        text_holder->hasBackground=true;
+//        Ux::setColor(&text_holder->backgroundColor, 0, 255, 0, 128); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        text_holder->setBoundaryRect( 0.5, 1.0, 0.5, 0.5);
+
+        text->hasForeground=true;
+        Ux::setColor(&text->foregroundColor, 255, 0, 0, 255);
+        //text->containText=true;
+        uxInstance->printStringToUiObject(text, "x000000", DO_NOT_RESIZE_NOW);
+        text->setBoundaryRect( -3.5, 0, 1.0, 1.0); // on right
+
+
+        text_holder->addChild(text);
 
 
         yes->squarify();
@@ -68,23 +93,96 @@ struct uiYesNoChoice{
         yesClickedFn = nullptr;
         noClickedFn = nullptr;
 
-        resize(boundaries);
+        uiObjectItself->setBoundaryRect(&boundaries);
+
+
+        //maths
+        float w = 0.25;
+        float h = w;
+        float hh = h * 0.5;
+        float hw = w * 0.5;
+        float pad = 0.12;
+
+        //no->setBoundaryRect( 0.0+pad, 0.5-hh, w, h);
+        yes->setBoundaryRect( 1.0-w-pad, 0.5-hh, w, h); // on right
+
+        //text_holder->setBoundaryRect( 1.0-(hw)-pad, 0.125, w/2, h);
+
+
+        w = 0.35;
+        h = w;
+        hh = h * 0.5;
+        hw = w * 0.5;
+        pad = 0.12;
+
+        no->setBoundaryRect( 0.0+pad, 0.5-hh, w, h);
+        ///yes->setBoundaryRect( 1.0-w-pad, 0.5-hh, w, h); // on left
+
+        text_length = 2;
+
+        resize();
     }
 
     //anInteractionFn tileClicked=nullptr;
 
     uiObject* uiObjToAnimate; // defaults to uiObjectItself....
     uiObject* uiObjectItself; // no real inheritance here, this its the uiSqware, I would use self->
+    uiObject *text;
+    uiObject *text_holder;
     uiObject *yes;
     uiObject *no;
+
+    //uiViewColor* deleteColorPreview;
 
     anInteractionFn yesClickedFn;
     anInteractionFn noClickedFn;
 
+    float text_length;
+
     // GENERICS - GENRAL PURPOSE use for whatever
     uiObject *myTriggeringUiObject;
 
+    void display(uiObject *p_myTriggeringUiObject, anInteractionFn p_yesClickedFn, anInteractionFn p_noClickedFn, int numberToDelete){
+
+        if( numberToDelete > 1 ){
+            int maxLen = 5;
+            char* total_del = (char*)SDL_malloc( sizeof(char) * maxLen );
+            if( numberToDelete < 1000 ){
+                SDL_snprintf(total_del, maxLen, "x%i", numberToDelete);
+            }else{
+                SDL_snprintf(total_del, maxLen, "xAll");
+            }
+            display( p_myTriggeringUiObject,  p_yesClickedFn,  p_noClickedFn, total_del);
+
+            SDL_free(total_del);
+        }else{
+            display( p_myTriggeringUiObject,  p_yesClickedFn,  p_noClickedFn);
+        }
+    }
+
+    void display(uiObject *p_myTriggeringUiObject, anInteractionFn p_yesClickedFn, anInteractionFn p_noClickedFn, char* message){
+
+        display( p_myTriggeringUiObject,  p_yesClickedFn,  p_noClickedFn);
+        text_length = (float)SDL_strlen(message);
+        Ux* uxInstance = Ux::Singleton();
+        if( text_length <= 7 ){
+            uxInstance->printStringToUiObject(text, message, DO_NOT_RESIZE_NOW);
+            text->boundryRect.x =  text_length * -0.5;
+            text_holder->show();
+        }
+//        }else{
+//            uxInstance->printStringToUiObject(text, "xAll", DO_NOT_RESIZE_NOW);
+//            text_length = 4;
+//        }
+//        text->boundryRect.x =  text_length * -0.5;
+//        text_holder->show();
+
+        resize();
+    }
+
     void display(uiObject *p_myTriggeringUiObject, anInteractionFn p_yesClickedFn, anInteractionFn p_noClickedFn){
+
+        text_holder->hide();
 
         myTriggeringUiObject = p_myTriggeringUiObject;
 
@@ -159,27 +257,28 @@ struct uiYesNoChoice{
         self->hide();
     }
 
-    void resize(Float_Rect boundaries){
+    void resize(){
+        Ux* uxInstance = Ux::Singleton();
 
-        uiObjectItself->setBoundaryRect(&boundaries);
+        //uiObjectItself->setBoundaryRect(&boundaries);
 
-        float w = 0.25;
-        float h = w;
-        float hh = h * 0.5;
-        float hw = w * 0.5;
-        float pad = 0.12;
 
-        //no->setBoundaryRect( 0.0+pad, 0.5-hh, w, h);
-        yes->setBoundaryRect( 1.0-w-pad, 0.5-hh, w, h); // on right
 
-        w = 0.35;
-        h = w;
-        hh = h * 0.5;
-        hw = w * 0.5;
-        pad = 0.12;
 
-        no->setBoundaryRect( 0.0+pad, 0.5-hh, w, h);
-        ///yes->setBoundaryRect( 1.0-w-pad, 0.5-hh, w, h); // on right
+
+        if( uxInstance->widescreen ){
+            text_holder->setBoundaryRect( 0.5, 1.0, 0.5, 0.5);
+        }else{
+
+            float baseWidth = 1.53;
+            if( text_length < 3 ){
+                baseWidth=1.0;
+            }
+            text_holder->setBoundaryRect( 0.5, 1.0, baseWidth/text_length, baseWidth/text_length);
+        }
+
+
+
 
         update();
     }

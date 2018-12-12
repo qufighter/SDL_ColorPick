@@ -27,7 +27,7 @@
 //#include "ux-anim.h"
 
 #if __ANDROID__
-#include "Platform/Android/FileChooser.h" // platform specific include!
+#include "Platform/Android/AndroidFileChooser.h" // platform specific include!
 #else
 #include "FileChooser.h" // platform specific include!  this is for ios (and osx...)
 #endif

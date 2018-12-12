@@ -6,16 +6,18 @@
 //
 //
 
-// USED BY IOS(osx?) EXCLUSIVELY MOVE TO IOS FOLDER
-
+// USED BY ANDROID
+#ifdef __ANDROID__
 
 #ifndef ColorPick_iOS_SDL_FileChooser_h
 #define ColorPick_iOS_SDL_FileChooser_h
 
-#include "ColorPick.h"
+#include "../../ColorPick.h"
 
 
+void getImagePathFromMainThread();
 void beginImageSelector();
 bool openURL(const std::string &url);
 
+#endif
 #endif
