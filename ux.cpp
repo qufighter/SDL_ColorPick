@@ -466,6 +466,7 @@ Ux::uiObject* Ux::create(void){
     bottomBar->hasBackground = true;
     Ux::setColor(&bottomBar->backgroundColor, 0, 0, 0, 198);
     rootUiObject->addChild(bottomBar);
+    bottomBar->setInteractionCallback(Ux::interactionNoOp); // cannot click through this bar...
 
     huePicker = new uiHueGradient(rootUiObject, Float_Rect(0.0, 0.60, 1.0, 0.09), &Ux::hueClicked);
     huePicker->resize(Float_Rect(0.0, 0.7, 1.0, hue_picker));
@@ -916,9 +917,15 @@ bool Ux::triggerInteraction(bool isStart){ // mouseup, mouse didn't move
 
     //interactionObject  currentInteraction
     if( hasInteraction && isStart ){
+        if( lastInteractionObject == interactionObject ){
+            // second click
+            currentInteraction.isSecondInteraction=true;
+        }
         if( interactionObject->interactionBeginCallback != nullptr ){
             interactionObject->interactionBeginCallback(interactionObject, &currentInteraction);
         }
+    }else{
+        lastInteractionObject = interactionObject;
     }
     return hasInteraction;
 }
@@ -953,6 +960,7 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
             // do something if a thing to do is defined for this collisino
             if( renderObj->hasInteraction || renderObj->hasInteractionCb ){
                 // quite arguable we can return here, continuing to seek interaction on child objects may produce odd effects
+
                 interactionObject = renderObj;
 
                 //SDL_Log("WE DID FIND ANOTHER MATCH");

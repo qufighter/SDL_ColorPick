@@ -8,13 +8,18 @@ pallete swatch color -> huePicker for adjustment ( see cp_set_from_hsv )
 sort pallete colors
     ^ (web interface? / later)
 
-text selection and or copy ~~paste~~ ease (desktop, mobile)
+text selection and or copy ~~paste~~ ease (desktop, mobile)             SDL_Log("Double touched color preview......");
+  ^ copy menu, modal-ish (any interaction shall call dismiss modals function)
+
+scoreboard
 
 disable builtin image list looping/defaulting when nothign opened... (dev cleanup)
 disable adding random history colors (dev cleanup)
 remove unused textures from bundle (dev cleanup?)
 
 add version string somewhere (do not let it look like an IP address!)  maybe this is plat specifc/bundle specific?
+
+1024w intro image paneling
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -80,7 +85,7 @@ esc key exit modals (desktop platforms)
 desktop scroll wheel in pallete (modal)
 other keypress support (modal confirm enter, ...)
 click bg to dismiss any modal such as historyPalleteHolder, yesno?, etc
-clock bar hide (enabled now for dev)
+clock bar hide (enabled now for dev) (dev cleanup) (seperate testing constant to trigger it?)
 SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK < - do we want a right click menu?
 handle when save of history data occurs (specifically desktop plat?)
     see SDL_APP_WILLENTERBACKGROUND < this is where we currently write state, works good on mobile clients where there is no fixed quit command...

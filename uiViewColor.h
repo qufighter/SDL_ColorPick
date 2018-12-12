@@ -46,6 +46,8 @@ struct uiViewColor{
         hexValueText->hasBackground = true;
         Ux::setColor(&hexValueText->backgroundColor,0, 0, 0, 0);
 
+        uiObjectItself->setInteractionCallback(&pickHexValueClicked);
+        uiObjectItself->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
 
         // perhaps properties on container are inherited by text
         // however container itself will no longer render?
@@ -137,6 +139,13 @@ struct uiViewColor{
 
     SDL_Color last_color;
     float alphaMulitiplier;
+
+    static void pickHexValueClicked(uiObject *interactionObj, uiInteraction *delta){
+        if( delta->isSecondInteraction ){
+
+            SDL_Log("Double touched color preview......");
+        }
+    }
 
     static void pickFromHueClicked(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();

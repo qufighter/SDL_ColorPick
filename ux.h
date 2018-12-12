@@ -337,6 +337,7 @@ static Ux* Singleton();
 
     bool isInteracting = false;
     uiObject* interactionObject; // if we are dragging or have clicked and object the refrence will be here
+    uiObject* lastInteractionObject; // to help detect double click
 
 
 

@@ -36,6 +36,7 @@ struct uiInteraction
         dy=0;
         vx=0; // velocity
         vy=0;
+        isSecondInteraction=false;
         lastUpdate=SDL_GetTicks();
         //        mvx=0;
         //        mvy=0;
@@ -142,6 +143,7 @@ struct uiInteraction
 
 
     int lastUpdate;
+    bool isSecondInteraction;
     //    int mvx;// unused ?
     //    int mvy;
 };
