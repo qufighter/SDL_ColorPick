@@ -802,6 +802,14 @@ compatibility; this flag is ignored
                 case SDL_USEREVENT:  // maybe move all handing of these to , say main thread? (instead of coincidentally same thread on android)
                 {
                     switch( event.user.code ){
+                        case USER_EVENT_ENUM::ANIMATE_MAIN_THREAD:
+                        {
+                            SDL_Log("USER EVENT 3 - ANIMATE_MAIN_THREAD");
+#ifdef MAIN_THREAD_ANIMATIONS
+                            openglContext->generalUx->uxAnimations->updateAnimationsMain(true);
+#endif
+                            break;//return 0;
+                        }
                         case USER_EVENT_ENUM::IMAGE_SELECTOR_READY:
                         {
                             SDL_Log("USER EVENT 0 - get picked image on android");

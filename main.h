@@ -138,7 +138,8 @@ typedef enum { SHADER_POSITION, SHADER_COLOR, SHADER_TEXTURE, SHADER_NORMAL } SH
 typedef enum  {
     IMAGE_SELECTOR_READY,
     NEW_HUE_CHOSEN,
-    VIEW_RECENTLY_ROTATED
+    VIEW_RECENTLY_ROTATED,
+    ANIMATE_MAIN_THREAD,
 } USER_EVENT_ENUM; // these may not be supported as of now on IOS ... ??
 
 /// these are hi-dpi sizes
@@ -150,6 +151,8 @@ typedef enum  {
 #define SCREEN_HEIGHT 960
 #endif
 
+
+//#define MAIN_THREAD_ANIMATIONS
 
 // static seems a bit redundant, no?
 static SDL_Window *window;

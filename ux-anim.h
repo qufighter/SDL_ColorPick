@@ -565,40 +565,47 @@ struct UxAnim
         return true;
     }
 
+    bool updateAnimationsMain(bool autoContinue){
+        currentTime = SDL_GetTicks();
+
+        result2_done = updateAnimations(currentTime - lastTimerTime);
+        // TODO check result !!!
+
+        lastTimerTime = currentTime;
+
+        if( autoContinue && !result2_done ){
+            my_timer_id = SDL_AddTimer(30, my_callbackfunc, this);
+        }
+
+        return result2_done;
+    }
 
     static Uint32 my_callbackfunc(Uint32 interval, void* parm){
 
         UxAnim* self = (UxAnim*)parm;
 
         SDL_Log("Our animition timere is firign loke mad"); // useful to see that animations DO stop...
-        self->currentTime = SDL_GetTicks();
 
-        self->result2_done = self->updateAnimations(self->currentTime - self->lastTimerTime);
-        // TODO check result !!!
-
-
-        self->lastTimerTime = self->currentTime;
-
-// TODO : I think using one thread may help provide better timing of the animations...... and may be generally safer!
-
-//        SDL_Event event;
-//        SDL_UserEvent userevent;
-        /* In this example, our callback pushes an SDL_USEREVENT event
-         into the queue, and causes our callback to be called again at the
-         same interval: */  // the idea of this is that we could process in the main thread by sending the event...
-
-//        userevent.type = SDL_USEREVENT;
-//        userevent.code = 0;
-//        userevent.data1 = NULL;
-//        userevent.data2 = NULL;
-//
-//        event.type = SDL_USEREVENT;
-//        event.user = userevent;
-//        SDL_PushEvent(&event);
-
-        if( self->result2_done ) return 0; // If the returned value from the callback is 0, the timer is canceled.  We already called SDL_RemoveTimer fyi
-
+#ifndef MAIN_THREAD_ANIMATIONS
+        bool isDone = self->updateAnimationsMain(false);
+        if( isDone ) return 0; // If the returned value from the callback is 0, the timer is canceled.  We already called SDL_RemoveTimer fyi
         return interval;
+#else
+        SDL_Event event;
+        SDL_UserEvent userevent;
+
+        userevent.type = SDL_USEREVENT;
+        userevent.code = USER_EVENT_ENUM::ANIMATE_MAIN_THREAD;
+        userevent.data1 = NULL;
+        userevent.data2 = NULL;
+
+        event.type = SDL_USEREVENT;
+        event.user = userevent;
+
+        SDL_PushEvent(&event);
+
+        return 0; // callback won't fire at same interval exactly... we cancel it here
+#endif
     }
 
     void pushAnimChain(uiAminChain* myAnimChain){
