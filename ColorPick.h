@@ -35,6 +35,9 @@
 
 
 #define MIN_FISHEYE_ZOOM 0.1f
+#define FISHEYE_SLOW_ZOOM_THRESHOLD 15.0f
+// you'd have to move 16.0 px to move 1px at FISHEYE_SLOW_ZOOM_MAX
+#define FISHEYE_SLOW_ZOOM_MAX 16.0
 #define MAX_FISHEYE_ZOOM 64.0f
 
 
@@ -134,6 +137,7 @@ public:
     void setFishScale(float modifierAmt, float scaler);
     static void setFishScalePerentage(Ux::uiObject *interactionObj, float percent); // anAnimationPercentCallback
 
+    void triggerMovement();
     void triggerVelocity(float x, float y);
     void clearVelocity();
 
@@ -171,6 +175,9 @@ private:
 
     float accumulated_velocity_x =0;
     float accumulated_velocity_y =0;
+    // CONSIDER using glm::vec2
+    float accumulated_movement_x =0;
+    float accumulated_movement_y =0;
 
     int windowWidth; // Store the width of our window  - this is a dupe of var in color pick state!?
     int windowHeight; // Store the height of our window

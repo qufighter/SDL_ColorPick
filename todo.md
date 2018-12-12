@@ -1,6 +1,5 @@
 #  todo
 
-movement speed for full zoom (moving logic out of main... using accumulator)
 movement velocity platform diffences (android) (dupe)
 
 pallete swatch color -> huePicker for adjustment ( see cp_set_from_hsv )
@@ -10,7 +9,6 @@ sort pallete colors
     ^ (web interface? / later)
 
 text selection and or copy ~~paste~~ ease (desktop, mobile)
-main thread animations for less jitter
 
 disable builtin image list looping/defaulting when nothign opened... (dev cleanup)
 disable adding random history colors (dev cleanup)
@@ -41,6 +39,8 @@ leak / leaking keyword (done 2019)
     ^  "maybe we should copy it instead "
     
  lookup trilinear or aniostropic filteirng 
+ 
+ main thread animations for less jitter see MAIN_THREAD_ANIMATIONS
  
 cleanup shader code
 

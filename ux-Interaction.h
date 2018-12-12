@@ -20,7 +20,9 @@ struct uiInteraction
         dy=0;
         //        mvx=0;
         //        mvy=0;
-        friction = 1.3;  // really inverse friction?? higher values for less friction?
+        friction = 1.3;  // really inverse friction. higher values for less friction.
+//        friction = 0.2;
+//        friction = 4.2;
     }
     void begin(float x, float y){
 

@@ -177,6 +177,8 @@ int EventFilter(void* userdata, SDL_Event* event){
 #else
         case SDL_MOUSEBUTTONDOWN: // if platform desktop?  duplicate
 #endif
+            SDL_Log("SDL_FINGERDOWN SDL_MOUSEBUTTONDOWN");
+
             mousStateDown += 1;
 
             //SDL_Log("finger count %i", event->tfinger.);
@@ -197,8 +199,6 @@ int EventFilter(void* userdata, SDL_Event* event){
             //SDL_GetRelativeMouseState(&tx, &ty);
 
 
-            SDL_Log("SDL_FINGERDOWN");
-
             SDL_GetMouseState(&tx, &ty);
             SDL_Log("MOUSE xy %d %d", tx,ty);
             openglContext->pixelInteraction.begin(tx, ty);
@@ -216,7 +216,9 @@ int EventFilter(void* userdata, SDL_Event* event){
 #else
         case SDL_MOUSEMOTION:
 #endif
+
             if( mousStateDown == 1 ){
+                SDL_Log("mousStateDown SDL_FINGERMOTION SDL_MOUSEMOTION");
 
                 if( !didInteract ){
 
@@ -249,44 +251,9 @@ int EventFilter(void* userdata, SDL_Event* event){
 #endif
 
 
+                    openglContext->triggerMovement();
 
 
-                    //SDL_Log("Velocity is: %f %f", openglContext->pixelInteraction.vx, openglContext->pixelInteraction.vy);
-
-                    colorPickState->mmovex = openglContext->pixelInteraction.rx;
-                    colorPickState->mmovey = openglContext->pixelInteraction.ry;
-
-                    // velocity has a multiplier the closer
-                    //OpenGLContext->fishEyeScalePct is to zero
-                    // below 0.1
-                    //
-                    if( openglContext->fishEyeScalePct < 0.05 ){
-                        // to move faster when zoomed out (sensible)
-                        float factor = (0.05 - openglContext->fishEyeScalePct);
-                        colorPickState->mmovex *= 1 + (80.0 * factor);
-                        colorPickState->mmovey *= 1 + (80.0 * factor);
-                    }else if( openglContext->fishEyeScale > MAX_FISHEYE_ZOOM - 1.0){
-//                        // to move slower when zoomed in ( this works VERY poorly.... )  we should move this logic and continue to accumulate movements
-//                        // todo some equivilent near other exterme end
-//                        // where movements are scaled down?
-//
-//                        // SDL_TouchFingerEvent event->tfinger (will this be null on desktop SDL_MOUSEMOTION)
-//
-//                        float factor = (0.05 - openglContext->fishEyeScalePct);
-//                        colorPickState->mmovex *= 1 + (0.5 * factor);
-//                        colorPickState->mmovey *= 1 + (0.5 * factor);
-//
-//
-//                        //the next idea is motion hints since accumulated motion will result in a movement
-//                        // so we can hint how imminent the movement is
-//                        // and perhaps.....
-
-                    }
-
-
-
-                    SDL_Log("MOUSE xy %d %d", colorPickState->mmovex,colorPickState->mmovey);
-                    openglContext->renderShouldUpdate = true;
 
                 }else{
                 //colorPickState->mmovex = event->motion.xrel;
@@ -316,6 +283,7 @@ int EventFilter(void* userdata, SDL_Event* event){
 #else
         case SDL_MOUSEBUTTONUP:
 #endif
+            SDL_Log("SDL_FINGERUP SDL_MOUSEBUTTONUP");
 
             if( didInteract ){
                 // we may be able to add this, but we need to track velocity better
@@ -407,7 +375,6 @@ int EventFilter(void* userdata, SDL_Event* event){
             //SDL_SetRelativeMouseMode(SDL_FALSE); // bit unsure if this mouse stuff will work for touch
             //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 
-            SDL_Log("SDL_FINGERUP");
 
             return 0;
 

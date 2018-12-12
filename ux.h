@@ -327,6 +327,7 @@ static Ux* Singleton();
         uiObject *newHistoryFullsize;
         uiObject *newHistoryPallete;
 
+        uiObject *historyPreviewHolder;
         uiObject *historyPreview;
         uiObject *historyFullsize;
 

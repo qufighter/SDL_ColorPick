@@ -32,7 +32,7 @@ OpenGLContext::OpenGLContext(void) {
     last_mode_hue_picker = false;
     lastTrueFullPickImgSurface=nullptr;
 
-    pixelInteraction.friction=4.3;
+    pixelInteraction.friction=1.3;
 }
 
 SDL_Window* OpenGLContext::getSdlWindow(){
@@ -681,6 +681,62 @@ void OpenGLContext::setFishScalePerentage(Ux::uiObject *interactionObj, float pe
 //    
 //}
 
+
+
+void OpenGLContext::triggerMovement(){
+
+    //SDL_Log("Velocity is: %f %f", openglContext->pixelInteraction.vx, openglContext->pixelInteraction.vy);
+
+    accumulated_movement_x += openglContext->pixelInteraction.rx;
+    accumulated_movement_y += openglContext->pixelInteraction.ry;
+
+//    colorPickState->mmovex = openglContext->pixelInteraction.rx;
+//    colorPickState->mmovey = openglContext->pixelInteraction.ry;
+
+    // velocity has a multiplier the closer
+    //OpenGLContext->fishEyeScalePct is to zero
+    // below 0.1
+    //
+    if( openglContext->fishEyeScalePct < 0.05 ){
+        // to move faster when zoomed out (sensible)
+        float factor = (0.05 - openglContext->fishEyeScalePct);
+        colorPickState->mmovex = accumulated_movement_x *( 1 + (80.0 * factor));
+        colorPickState->mmovey = accumulated_movement_y *( 1 + (80.0 * factor));
+
+        accumulated_movement_x=0;
+        accumulated_movement_y=0; // fully applied
+
+    }else if( openglContext->fishEyeScale > FISHEYE_SLOW_ZOOM_THRESHOLD){
+
+        float factor = ((openglContext->fishEyeScale - FISHEYE_SLOW_ZOOM_THRESHOLD) / (MAX_FISHEYE_ZOOM - FISHEYE_SLOW_ZOOM_THRESHOLD)) * FISHEYE_SLOW_ZOOM_MAX;
+        if( factor < 1 ) factor = 1.0; // basically negates the normal effects of this block to slow things when this is 1.0
+
+        //SDL_Log("max zoom time: current:%f max:%f threshold:%f range:%f computed factor: %f", openglContext->fishEyeScale, MAX_FISHEYE_ZOOM, FISHEYE_SLOW_ZOOM_THRESHOLD, FISHEYE_SLOW_ZOOM_MAX, factor);
+
+        int resultx = (int) accumulated_movement_x / factor;
+        int resulty = (int) accumulated_movement_y / factor;
+
+        colorPickState->mmovex = resultx;
+        colorPickState->mmovey = resulty;
+
+        accumulated_movement_x-=resultx * factor;
+        accumulated_movement_y-=resulty * factor; // at least partially applied, but also a good chance result x/y is 0
+
+
+    }else{
+        colorPickState->mmovex = accumulated_movement_x;
+        colorPickState->mmovey = accumulated_movement_y;
+        accumulated_movement_x=0;
+        accumulated_movement_y=0; // fully applied
+    }
+
+
+
+    SDL_Log("MOUSE xy %d %d", colorPickState->mmovex,colorPickState->mmovey);
+    openglContext->renderShouldUpdate = true;
+
+}
+
 void OpenGLContext::triggerVelocity(float x, float y){
 
     accumulated_velocity_y=0;
@@ -689,6 +745,8 @@ void OpenGLContext::triggerVelocity(float x, float y){
 }
 void OpenGLContext::clearVelocity(){
     has_velocity = false;
+    accumulated_movement_x = 0; // also called when beginning a new move
+    accumulated_movement_y = 0;
 }
 
 //void OpenGLContext::updateFrame(Uint32 elapsedMs) {
@@ -721,7 +779,7 @@ void OpenGLContext::renderScene(void) {
         /// todo does this work good for negative numbers?? ANSWER : yes  X: -9.183308 -9 Y: -5.968337 -5    X: -9.247559 -9 Y: -6.010095 -6
         int acu_v_y_int = (int)(accumulated_velocity_y);
         int acu_v_x_int = (int)(accumulated_velocity_x);
-        SDL_Log("Velocity is: %f %f", pixelInteraction.vx, pixelInteraction.vy);
+        SDL_Log("Pixel Velocity is: %f %f", pixelInteraction.vx, pixelInteraction.vy);
         //SDL_Log("Velocity is: X: %f %i Y: %f %i", accumulated_velocity_x, acu_v_x_int, accumulated_velocity_y, acu_v_y_int);
         colorPickState->mmovex = acu_v_x_int;
         colorPickState->mmovey = acu_v_y_int;

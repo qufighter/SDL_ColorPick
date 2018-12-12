@@ -250,8 +250,8 @@ void Ux::resizeUiElements(void){
         returnToLastImgBtn->setBoundaryRect( 1.0-0.27777777777778 - 0.1, ws_clock, 0.1, 0.1 * screenRatio);
         returnToLastImgBtn->setRoundedCorners(0.5, 0.0, 0.5, 0.5);
 
-        historyPreview->setBoundaryRect(1.0-history_preview, ws_clock, history_preview, 1.0 - ws_clock);
-        historyPreview->setInteraction(&Ux::interactionHorizontal);
+        historyPreviewHolder->setBoundaryRect(1.0-history_preview, ws_clock, history_preview, 1.0 - ws_clock);
+        historyPreviewHolder->setInteraction(&Ux::interactionHorizontal);
             historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::BTT, true);
 
         // depending on animation state rect is different....
@@ -322,8 +322,8 @@ void Ux::resizeUiElements(void){
         returnToLastImgBtn->setBoundaryRect( 0.0, 0.7 - 0.1, 0.1 / screenRatio, 0.1);
         returnToLastImgBtn->setRoundedCorners(0.5, 0.5, 0.5, 0.0);
 
-        historyPreview->setBoundaryRect(0.0, 1.0-history_preview, 1.0, history_preview);
-        historyPreview->setInteraction(&Ux::interactionVert);
+        historyPreviewHolder->setBoundaryRect(0.0, 1.0-history_preview, 1.0, history_preview);
+        historyPreviewHolder->setInteraction(&Ux::interactionVert);
             historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::RTL, true);
 
         // depending on animation state rect is different....
@@ -583,10 +583,15 @@ Ux::uiObject* Ux::create(void){
     historyPalleteHolderBrEdgeShadow = new uiEdgeShadow(historyPalleteHolder, SQUARE_EDGE_ENUM::BOTTOM, 0.03);
 
 
+    historyPreviewHolder = new uiObject();
+    historyPreviewHolder->hasBackground = true;
+    Ux::setColor(&historyPreviewHolder->backgroundColor, 0, 0, 0, 192);
+
+
     historyPreview = new uiObject();
     //historyPreview->hasForeground = true;
-    historyPreview->hasBackground = true;
-    Ux::setColor(&historyPreview->backgroundColor, 0, 0, 0, 192);
+//    historyPreview->hasBackground = true;
+//    Ux::setColor(&historyPreview->backgroundColor, 0, 0, 0, 192);
     //Ux::setColor(&historyPreview->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
     //historyPreview->doesInFactRender = false;
 
@@ -625,15 +630,16 @@ Ux::uiObject* Ux::create(void){
     //printCharToUiObject(historyPreview, '_', DO_NOT_RESIZE_NOW);
 
     //historyPreview->canCollide = true; // set by setInteractionCallback
-    historyPreview->setInteractionCallback(&Ux::interactionToggleHistory);
+    historyPreviewHolder->setInteractionCallback(&Ux::interactionToggleHistory);
 
-    historyPreview->setInteraction(&Ux::interactionVert);
-    historyPreview->interactionProxy = historyPalleteHolder; // when we drag the preview effect the fullsize sliding into view...
+    historyPreviewHolder->setInteraction(&Ux::interactionVert);
+    historyPreviewHolder->interactionProxy = historyPalleteHolder; // when we drag the preview effect the fullsize sliding into view...
 
     //printCharToUiObject(historyPreview, 'H', DO_NOT_RESIZE_NOW);
 
     //bottomBar->addChild(historyPreview);
-    rootUiObject->addChild(historyPreview);
+    historyPreviewHolder->addChild(historyPreview);
+    rootUiObject->addChild(historyPreviewHolder);
 
 
 
