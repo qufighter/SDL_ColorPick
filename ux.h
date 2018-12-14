@@ -245,9 +245,11 @@ static Ux* Singleton();
     static bool bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiInteraction *delta); // return true always, unless the interaction should be dropped and not bubble for some reason....
 
     static int indexForColor(SDL_Color* c);
+    static int indexForColor(ColorList* cli);
 
 
-    uiList<SDL_Color, Uint8>* pickHistoryList; // WARN - do not enable index if using Uint8 - max Uint8 is far less than pickHistoryMax
+    //uiList<SDL_Color, Uint8>* pickHistoryList; // WARN - do not enable index if using Uint8 - max Uint8 is far less than pickHistoryMax
+    uiList<ColorList, Uint8>* pickHistoryList; // WARN - do not enable index if using Uint8 - max Uint8 is far less than pickHistoryMax
     //uiList<ColorListState, Uint8>* pickHistoryListState;
 
     //int pickHistoryIndex = 0;
@@ -258,7 +260,8 @@ static Ux* Singleton();
     static bool updateUiObjectFromHistory(uiObject *historyTile, int offset);
     static int getHistoryTotalCount();
 
-    uiList<SDL_Color, Uint8>* palleteList;
+    //uiList<SDL_Color, Uint8>* palleteList;
+    uiList<ColorList, Uint8>* palleteList;
     //uiList<ColorListState, Uint8>* palleteListState;
 
     //int palleteIndex = 0;

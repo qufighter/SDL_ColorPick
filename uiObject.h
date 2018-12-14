@@ -94,18 +94,22 @@ static float scaleRectForRenderY(Float_Rect * rect, Float_Rect * prect){
     return ((( (rect->y+  (rect->h * 0.5) ) * 2.0) - 1.0) ) * prect->h;
 }
 
-typedef struct ColorListState
-{
-    ColorListState(){
-        is_delete_state = false;
-    }
-    bool is_delete_state = false;
-} ColorListState;
+//typedef struct ColorListState
+//{
+//    ColorListState(){
+//        is_delete_state = false;
+//    }
+//    bool is_delete_state = false;
+//} ColorListState;
 
 
 typedef struct ColorList // cannot really use this since we do not persist ths to disk
 {
     ColorList(){
+        is_delete_state = false;
+    }
+    ColorList(SDL_Color icolor){
+        color = icolor;
         is_delete_state = false;
     }
     SDL_Color color;

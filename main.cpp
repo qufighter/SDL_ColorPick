@@ -763,6 +763,7 @@ compatibility; this flag is ignored
             switch ( event.type ){
                 case SDL_QUIT:
                     done = 1;
+                    openglContext->generalUx->writeOutState();
                     return 0;
 
 
@@ -819,6 +820,7 @@ compatibility; this flag is ignored
 
 
     }
+
 
     /* shutdown SDL */
     openglContext->destroyContext();

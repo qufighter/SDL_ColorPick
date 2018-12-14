@@ -26,7 +26,8 @@ consider squarify on widescreen texts for hex/rgb?
 
 verify 2048 limit 
 
-see recall delete states in scrollers (fresh branch)
+see recall delete states in scrollers (fresh branch) -> nearly done here....
+
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -60,29 +61,6 @@ leak / leaking keyword (done 2019)
  
 cleanup shader code
 
-recall delete states in scrollers (dont't keep just a list of SDL Color but keep uiState too... )
-    -> see ColorList
-    -> problems: 
-    -> readInState newHistoryList
-    -> writeOutState
-    -> solution - use a second list of bool or a second list of state objects (good idea - annoying to manage though)
-
-    pickHistoryListState = new uiList<ColorListState, Uint8>(pickHistoryMax);
-    palleteListState = new uiList<ColorListState, Uint8>(palleteMax);
-
-  -> solution2
-  transform the list after read and before write into a new list instead......
-
-    uiListIterator<uiList<SDL_Color, Uint8>, SDL_Color>* myIterator = myUxRef->palleteList->iterate();
-    SDL_Color *color = myIterator->next();
-    while(color != nullptr){
-    //SDL_Log("%i %i %i", color->r, color->g, color->b);
-    color = myIterator->next();
-    }
-    SDL_free(myIterator);
-    // except use ColorList struct and build a new list of SDL_Color for save, or reverse for load....
-
-  consider using protocol buffers for the above though... then we can save all state, even delete states!
 
 perhaps one must swipe too far left to show delete button // swipe left (on desktop this is fine though)
 
@@ -92,7 +70,7 @@ perhaps one must swipe too far left to show delete button // swipe left (on desk
   > pallete upload referrer ???????? (maybe not unless it can be consumed) - or just after this is clicked? "generated using" - could be good
   > see SDL_ShowMessageBox > allocate buttons once....
 > check update policy 
-
+> hide scrolly arrows on touchy devices
 
 ## desktop any
 esc key exit modals (desktop platforms)
