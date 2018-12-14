@@ -1,6 +1,7 @@
 #  todo
 
 movement velocity platform diffences (android) (dupe)
+  ^ zoom based velocity application ?
 
 pallete swatch color -> huePicker for adjustment ( see cp_set_from_hsv )
      ^ above is basically "done" but further refinements would be good
@@ -26,6 +27,10 @@ osx/ios jpg rotation not respected (is this exif rotation???)
 scroll scroller part way OOB (dragging content) then right click or middle click without releasing lclick
 
 ##  can do
+
+feedback for toolbar buttons
+
+indicate back button when entering HSV viewer (possibly delayed indication or slow indication?)
 
 remove myScrollController just use myUiController instead of the 1off (not necessarily removable when child elements have different controllers)
 remove hasInteraction hasInteractionCb just use nullptr check... (meh)

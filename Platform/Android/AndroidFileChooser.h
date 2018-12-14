@@ -17,7 +17,7 @@
 
 void getImagePathFromMainThread();
 void beginImageSelector();
-bool openURL(const std::string &url);
+bool openURL(char* &url);
 
 #endif
 #endif

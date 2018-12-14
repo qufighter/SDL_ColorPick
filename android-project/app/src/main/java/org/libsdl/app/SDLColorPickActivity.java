@@ -26,6 +26,10 @@ public class SDLColorPickActivity extends SDLActivity {
 
     private static String lastResult = "";
 
+    public void openWebsiteUrl(String url){
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+    }
+
     public void beginImageSelector(){
 
         lastResult = "WAITING";

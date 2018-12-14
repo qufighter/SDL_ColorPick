@@ -175,13 +175,23 @@ void beginImageSelector()
 
 }
 
-bool openURL(const std::string &url)
+bool openURL(char* &url)
 {
     bool success = false;
 
+    JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+    jobject activity = (jobject)SDL_AndroidGetActivity();
+    jclass clazz(env->GetObjectClass(activity));
+    jmethodID method_id = env->GetMethodID(clazz, "openWebsiteUrl", "(Ljava/lang/String;)V");
 
+    jstring jstrUrl = env->NewStringUTF(url);
+    env->CallVoidMethod(activity, method_id, jstrUrl);
 
+    env->DeleteLocalRef(activity);
+    env->DeleteLocalRef(clazz);
+    env->DeleteLocalRef(jstrUrl);
 
+    success = true;
 
     return success;
 }
