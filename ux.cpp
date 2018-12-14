@@ -516,7 +516,8 @@ Ux::uiObject* Ux::create(void){
     Ux::setColor(&returnToLastImgBtn->backgroundColor, 0, 0, 0, 50);
     returnToLastImgBtn->setRoundedCorners(0.5); // collision check will be "circular"
     printCharToUiObject(returnToLastImgBtn, CHAR_BACK_ICON, DO_NOT_RESIZE_NOW);
-    returnToLastImgBtn->setClickInteractionCallback(&Ux::interactionReturnToPreviousSurface); // TODO rename me
+    returnToLastImgBtn->setInteractionBegin(&Ux::interactionBeginReturnToPreviousSurface);
+    returnToLastImgBtn->setClickInteractionCallback(&Ux::interactionReturnToPreviousSurface);
     rootUiObject->addChild(returnToLastImgBtn);
     returnToLastImgBtn->hideAndNoInteraction(); // initially hidden....
 
@@ -1570,6 +1571,12 @@ void Ux::interactionReturnToPreviousSurface(uiObject *interactionObj, uiInteract
     ogg->restoreLastSurface();
     myUxRef->returnToLastImgBtn->hideAndNoInteraction(); // this should have aleady occured, best be safe though, above does return false wehn we need to do this...
 }
+
+void Ux::interactionBeginReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta){
+    Ux* myUxRef = Ux::Singleton();
+    myUxRef->uxAnimations->scale_bounce(myUxRef->returnToLastImgBtn, 0.006);
+}
+
 
 void Ux::interactionFileBrowserTime(uiObject *interactionObj, uiInteraction *delta){
     Ux* myUxRef = Ux::Singleton();

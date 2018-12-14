@@ -26,9 +26,6 @@ consider squarify on widescreen texts for hex/rgb?
 
 verify 2048 limit 
 
-see recall delete states in scrollers (fresh branch) -> nearly done here....
-
-
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 scroll scroller part way OOB (dragging content) then right click or middle click without releasing lclick
@@ -37,7 +34,7 @@ scroll scroller part way OOB (dragging content) then right click or middle click
 
 dedupe history
 
-feedback for toolbar buttons
+3up pallete drag it down where it should crop - observe artifacts
 
 remove myScrollController just use myUiController instead of the 1off (not necessarily removable when child elements have different controllers)
 remove hasInteraction hasInteractionCb just use nullptr check... (meh)
@@ -47,7 +44,7 @@ close button for historyPalleteHolder ???
 
 ux feedback when nav arrow is pressed
   -see setInteractionBegin should work now....
-  ^ improve it further?!  uiAminChain* scale  -> really scaleBounce - and really we should reset it when interaction lost or complete... hmmm
+  ^ improve it further?!  uiAminChain* scale  -> really scaleBounce - and really we should reset it when interaction lost or complete... hmmm (meh?)
 
 ux refactor splitup files (for responsive?) meh
 

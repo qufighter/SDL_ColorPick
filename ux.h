@@ -218,6 +218,7 @@ static Ux* Singleton();
     static void interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction *delta);
     static void interactionFileBrowserTime(uiObject *interactionObj, uiInteraction *delta);
     static void interactionReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta);
+    static void interactionBeginReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta);
     static void interactionAddHistory(uiObject *interactionObj, uiInteraction *delta);
     static void clickPalleteColor(uiObject *interactionObj, uiInteraction *delta);
     static void clickHistoryColor(uiObject *interactionObj, uiInteraction *delta);
