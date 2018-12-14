@@ -324,6 +324,8 @@ void OpenGLContext::prepareForHuePickerMode(void) {
 
         lastTrueFullPickImgSurface = SDL_DuplicateSurface(fullPickImgSurface);
         last_mode_hue_picker = true;
+
+        generalUx->uxAnimations->scale_bounce(generalUx->returnToLastImgBtn, 0.006);
     }
 }
 

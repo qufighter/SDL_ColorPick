@@ -109,7 +109,7 @@ struct uiNavArrows{
     static void interactionDirectionalArrowClickBegin(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
         //uiNavArrows* self = ((uiNavArrows*)interactionObj->myUiController);
-        uxInstance->uxAnimations->scale(interactionObj);
+        uxInstance->uxAnimations->scale_bounce(interactionObj);
     }
 
     static void interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteraction *delta){

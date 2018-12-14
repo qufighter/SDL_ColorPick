@@ -800,9 +800,13 @@ struct UxAnim
         return myAnimChain;
     }
 
-    uiAminChain* scale(Ux::uiObject *uiObject){ // orig soft bounce
+    uiAminChain* scale_bounce(Ux::uiObject *uiObject){ // orig soft bounce
+        return scale_bounce(uiObject, 0.005);
+    }
+
+    uiAminChain* scale_bounce(Ux::uiObject *uiObject, float intensity){ // orig soft bounce
         uiAminChain* myAnimChain = new uiAminChain();
-        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialScaleVelocity(-0.005, -0.005) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialScaleVelocity(-intensity, -intensity) );
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->resetPosition() );
         myAnimChain->addAnim( (new uiAnimation(uiObject))->resetMatrix() );
         pushAnimChain(myAnimChain);

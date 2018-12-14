@@ -206,8 +206,16 @@ void Ux::updateStageDimension(float w, float h){
 void Ux::resizeUiElements(void){
 
     // move to constructor?
-#ifdef COLORPICK_PLATFORM_DESKTOP
-     //   clock_bar=0.0f;
+
+
+#ifdef DEVELOPER_TEST_MODE
+
+#else
+
+#ifndef __IPHONEOS__
+    clock_bar=0.0f;
+#endif
+
 #endif
 
     //historyPreview->updateRenderPosition();

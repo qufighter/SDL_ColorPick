@@ -30,8 +30,6 @@ scroll scroller part way OOB (dragging content) then right click or middle click
 
 feedback for toolbar buttons
 
-indicate back button when entering HSV viewer (possibly delayed indication or slow indication?)
-
 remove myScrollController just use myUiController instead of the 1off (not necessarily removable when child elements have different controllers)
 remove hasInteraction hasInteractionCb just use nullptr check... (meh)
 fix crop of rounded corners in scrollers (see cleanup shader code)
@@ -90,7 +88,7 @@ esc key exit modals (desktop platforms)
 desktop scroll wheel in pallete (modal)
 other keypress support (modal confirm enter, ...)
 click bg to dismiss any modal such as historyPalleteHolder, yesno?, etc
-clock bar hide (enabled now for dev) (dev cleanup) (seperate testing constant to trigger it?)
+clock bar hide (enabled now for dev) (dev cleanup) (seperate testing constant to trigger it? DEVELOPER_TEST_MODE )
 SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK < - do we want a right click menu?
 handle when save of history data occurs (specifically desktop plat?)
     see SDL_APP_WILLENTERBACKGROUND < this is where we currently write state, works good on mobile clients where there is no fixed quit command...
@@ -110,8 +108,8 @@ win impl
 ## mobile any
 
 ### android
-resources into android bundle... ? (done?)
-there is no clock bar - why leave space for it
+resources into android bundle... ? (done?) 
+    bundle name
 // (done?) timer keeps firign in background if file chooser is left open... // we tried this but we can't pick an image... not quite sure why yet... compare logs?
 movement velocity platform diffences (android) (dupe)
 
