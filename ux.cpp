@@ -528,6 +528,7 @@ Ux::uiObject* Ux::create(void){
     Ux::setColor(&zoomSliderBg->foregroundColor, 128, 128, 128, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
 //    printCharToUiObject(zoomSliderBg, CHAR_VERTICAL_BAR, DO_NOT_RESIZE_NOW);
     printCharToUiObject(zoomSliderBg, CHAR_ASYMP_SLOPE, DO_NOT_RESIZE_NOW);
+    zoomSliderHolder->setInteractionBegin(clickZoomSliderBg);
     zoomSliderHolder->setInteraction(clickZoomSliderBg);
     zoomSliderHolder->addChild(zoomSliderBg);
 

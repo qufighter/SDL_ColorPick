@@ -4,7 +4,7 @@ movement velocity platform diffences (android) (dupe)
   ^ zoom based velocity application ?
 
 pallete swatch color -> huePicker for adjustment ( see cp_set_from_hsv )
-     ^ above is basically "done" but further refinements would be good
+     ^ above is basically "done" but further optimizations could be good
      
 sort pallete colors
     ^ (web interface? / later)
@@ -22,13 +22,19 @@ add version string somewhere (do not let it look like an IP address!)  maybe thi
 
 1024w intro image paneling
 
-tap zoom control bg- must move to update it (not efect for setInteractionBegin ? )
+consider squarify on widescreen texts for hex/rgb?
+
+verify 2048 limit 
+
+see recall delete states in scrollers (fresh branch)
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 scroll scroller part way OOB (dragging content) then right click or middle click without releasing lclick
 
 ##  can do
+
+dedupe history
 
 feedback for toolbar buttons
 
@@ -76,6 +82,9 @@ recall delete states in scrollers (dont't keep just a list of SDL Color but keep
     SDL_free(myIterator);
     // except use ColorList struct and build a new list of SDL_Color for save, or reverse for load....
 
+  consider using protocol buffers for the above though... then we can save all state, even delete states!
+
+perhaps one must swipe too far left to show delete button // swipe left (on desktop this is fine though)
 
 # platform specific todo
 
@@ -98,6 +107,7 @@ handle when save of history data occurs (specifically desktop plat?)
     SDL_WINDOWEVENT_FOCUS_LOST, 
     SDL_WINDOWEVENT_CLOSE
 hold mouse down on scroll arrow, expect continuous scroll
+drop image when history holder present - we should hide it (other modals should be canceled too?)
 
 ### osx
 osx application bundle (see readme and  see   Use pbxbuild in the same directory as your .pbproj file)
