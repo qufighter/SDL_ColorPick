@@ -22,6 +22,8 @@ add version string somewhere (do not let it look like an IP address!)  maybe thi
 
 1024w intro image paneling
 
+tap zoom control bg- must move to update it (not efect for setInteractionBegin ? )
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 scroll scroller part way OOB (dragging content) then right click or middle click without releasing lclick

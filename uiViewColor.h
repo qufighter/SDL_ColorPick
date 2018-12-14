@@ -109,7 +109,8 @@ struct uiViewColor{
             Ux::setColor(&hueBtn->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
             uxInstance->printCharToUiObject(hueBtn, CHAR_APP_ICON, DO_NOT_RESIZE_NOW);
             hueBtn->squarifyKeepVt();
-            hueBtn->setInteractionCallback(&pickFromHueClicked);
+            hueBtn->setInteractionBegin(&pickFromHueTouched);
+            hueBtn->setClickInteractionCallback(&pickFromHueClicked);
             uiObjectItself->addChild(hueBtn);
             hueBtn->myUiController = this;
         }else{
@@ -147,11 +148,17 @@ struct uiViewColor{
         }
     }
 
+    static void pickFromHueTouched(uiObject *interactionObj, uiInteraction *delta){
+        Ux* uxInstance = Ux::Singleton();
+        uxInstance->uxAnimations->scale_bounce(interactionObj, 0.005);
+    }
+
     static void pickFromHueClicked(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
         uiViewColor* self = ((uiViewColor*)interactionObj->myUiController);
         // uxInstance->hueClicked(self->last_color);
-        uxInstance->hueClickedPickerHsv(&self->last_color);
+        uxInstance->hueClickedPickerHsv(&self->last_color); // < heavy op...
+        uxInstance->uxAnimations->scale_bounce(interactionObj, 0.02);
     }
 
     void resize(Float_Rect boundaries){
@@ -181,7 +188,7 @@ struct uiViewColor{
             }
 
             if( hueBtn != nullptr ){
-                float h = 0.15;
+                float h = 0.13;
                 float hh = h * 0.5;
                 hueBtn->setBoundaryRect(hex_size-hh, 0.5-hh, h, h);
             }

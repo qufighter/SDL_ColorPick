@@ -599,6 +599,11 @@ struct uiObject
         addChild(c);
     }
 
+    bool hasStacking(){
+        if(stack_right||stack_bottom||stack_left) return true;
+        return false;
+    }
+
     void noStacking(){
         stack_right=false;
         stack_bottom=false;
@@ -799,7 +804,7 @@ struct uiObject
 
 
     // updateRenderPosition
-    void updateRenderPosition(){
+    void updateRenderPosition(){ // this is an entry point only DO NOT recurs into this variant...
         // TODO: we may pass a way to avoid updating  child nodes? (for testing if optimztion possible?)
 
         Float_Rect parentRenderRect;
@@ -808,6 +813,11 @@ struct uiObject
         if( hasParentObject ){
             parentRenderRect = parentObject->renderRect;
             parentCollisionRect = parentObject->collisionRect;
+            if( hasStacking() ){
+                // since we are stacking we must update the parent object instead
+                parentObject->updateRenderPosition();
+                return;
+            }
         }else{
             // note we s hould get here rarely if its workign right
             SDL_Log("EXPECTED ONCE AT BOOT ONLY - updateRenderPosition root element (reshape/resize window ok)");

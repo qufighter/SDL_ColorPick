@@ -482,10 +482,10 @@ Ux::uiObject* Ux::create(void){
 
     pickSourceBtn = new uiObject();
     pickSourceBtn->hasForeground = true;
-    pickSourceBtn->hasBackground = true;
-    pickSourceBtn->setClickInteractionCallback(&Ux::interactionFileBrowserTime); // TODO rename me
-    Ux::setColor(&pickSourceBtn->backgroundColor, 32, 0, 0, 128);
     Ux::setColor(&pickSourceBtn->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+//    pickSourceBtn->hasBackground = true;
+//    Ux::setColor(&pickSourceBtn->backgroundColor, 32, 0, 0, 128);
+    pickSourceBtn->setClickInteractionCallback(&Ux::interactionFileBrowserTime); // TODO rename me
     //printCharToUiObject(pickSourceBtn, '+', DO_NOT_RESIZE_NOW);
     printCharToUiObject(pickSourceBtn, CHAR_OPEN_FILES, DO_NOT_RESIZE_NOW);
     pickSourceBtn->squarify();
@@ -494,10 +494,10 @@ Ux::uiObject* Ux::create(void){
 
     addHistoryBtn = new uiObject();
     addHistoryBtn->hasForeground = true;
-    addHistoryBtn->hasBackground = true;
-    addHistoryBtn->setClickInteractionCallback(&Ux::interactionAddHistory); // TODO rename me
-    Ux::setColor(&addHistoryBtn->backgroundColor, 32, 0, 0, 128);
     Ux::setColor(&addHistoryBtn->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+//    addHistoryBtn->hasBackground = true;
+//    Ux::setColor(&addHistoryBtn->backgroundColor, 32, 0, 0, 128);
+    addHistoryBtn->setClickInteractionCallback(&Ux::interactionAddHistory); // TODO rename me
     printCharToUiObject(addHistoryBtn, CHAR_CIRCLE_PLUSS, DO_NOT_RESIZE_NOW);
     addHistoryBtn->squarify(); // "keep round"
     addHistoryBtn->setRoundedCorners(0.5);
@@ -1076,8 +1076,7 @@ bool Ux::interactionComplete(uiInteraction *delta){
 
 //static
 void Ux::interactionHistoryEnteredView(uiObject *interactionObj){
-    // check delta->dx for movement amount
-    // no movement total
+
     Ux* self = Ux::Singleton();
     //self->historyScroller->allowUp = true;
     self->updatePickHistoryPreview();  /// this is too much update right?
@@ -1087,8 +1086,7 @@ void Ux::interactionHistoryEnteredView(uiObject *interactionObj){
 //static
 void Ux::interactionNoOp(uiObject *interactionObj, uiInteraction *delta){
     //SDL_Log("INERACTION NOOP REACHED");
-    // check delta->dx for movement amount
-    // no movement total
+
 }
 
 
@@ -1158,6 +1156,7 @@ void Ux::clickDeletePalleteColor(uiObject *interactionObj, uiInteraction *delta)
     //myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate == myUxRef->defaultYesNoChoiceHolder
 
     if( delta->dx == 0.0f && myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state == false ){
+        myUxRef->uxAnimations->scale_bounce(interactionObj->childList[0], 0.001);
         myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::removePalleteColor, &Ux::clickDeletePalleteColor);; // when no clicked we reach else
     }else{
         interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) ); // returns uiAminChain*
@@ -1218,6 +1217,8 @@ void Ux::clickPalleteColor(uiObject *interactionObj, uiInteraction *delta){ // s
                 removeButton->setAnimation( myUxRef->uxAnimations->slideLeftFullWidth(removeButton) );
             }
 
+            myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
+
             myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::clickClearPallete, &Ux::clickCancelClearPallete, myUxRef->palleteList->total());
 
 
@@ -1255,6 +1256,9 @@ void Ux::clickPalleteColor(uiObject *interactionObj, uiInteraction *delta){ // s
 
             SDL_free(clrStr);
             SDL_free(myIterator); // does free recurse
+
+            myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
+
         }
         
         return;
@@ -1354,6 +1358,7 @@ void Ux::clickDeleteHistoryColor(uiObject *interactionObj, uiInteraction *delta)
     //myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate == myUxRef->defaultYesNoChoiceHolder
 
     if( delta->dx == 0.0f && myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state == false ){
+        myUxRef->uxAnimations->scale_bounce(interactionObj->childList[0], 0.001);
         myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::removeHistoryColor, &Ux::clickDeleteHistoryColor); // when no clicked we reach else
     }else{
         interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) ); // returns uiAminChain*
@@ -1390,8 +1395,7 @@ void Ux::historyReceivedFocus(uiObject *interactionObj, uiInteraction *delta){
 
 void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // see also updateUiObjectFromHistory
 
-    // check delta->dx for movement amount
-    // no movement total
+
 
     //SDL_Log("clickHistoryColor --------------------- %i", interactionObj->myIntegerIndex);
 
@@ -1418,7 +1422,11 @@ void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // s
                 removeButton->setAnimation( myUxRef->uxAnimations->slideLeftFullWidth(removeButton) );
             }
 
+            myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
+
             myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::clickClearHistory, &Ux::clickCancelClearHistory, myUxRef->pickHistoryList->total());
+
+
         }
 
         return;
@@ -1488,12 +1496,6 @@ void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // s
 //void Ux::resizePalleteBasedOnNumberOfColors(){
 //
 //}
-
-void Ux::interactionFileBrowserTime(uiObject *interactionObj, uiInteraction *delta){
-    OpenGLContext* ogg=OpenGLContext::Singleton();
-    ogg->chooseFile();
-}
-
 //static
 void Ux::interactionReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta){
 
@@ -1503,17 +1505,24 @@ void Ux::interactionReturnToPreviousSurface(uiObject *interactionObj, uiInteract
     myUxRef->returnToLastImgBtn->hideAndNoInteraction(); // this should have aleady occured, best be safe though, above does return false wehn we need to do this...
 }
 
+void Ux::interactionFileBrowserTime(uiObject *interactionObj, uiInteraction *delta){
+    Ux* myUxRef = Ux::Singleton();
+    myUxRef->uxAnimations->scale_bounce(interactionObj, 0.001);
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    ogg->chooseFile();
+}
+
+
 //static
 void Ux::interactionAddHistory(uiObject *interactionObj, uiInteraction *delta){
-
-
-    // check delta->dx for movement amount
-    // no movement total
-
-
     Ux* myUxRef = Ux::Singleton();
+    myUxRef->uxAnimations->scale_bounce(interactionObj, 0.001);
     myUxRef->addCurrentToPickHistory();
 
+    // in the popup, if we were viewing a color, we should hide it next time we open this up.... esp for widescreen
+    if( myUxRef->palleteSelectionPreviewHolder->is_being_viewed_state ) {
+        myUxRef->interactionTogglePalletePreview(myUxRef->palleteSelectionPreviewHolder, delta);
+    }
 }
 
 // possibly unused now...
