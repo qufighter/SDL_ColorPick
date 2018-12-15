@@ -269,6 +269,7 @@ struct uiObject
         forceDelta=nullptr;
 
         matrix = glm::mat4(1.0f);
+        matrixInheritedByDescendants = false;
         isCentered=false;
 
         is_circular = false;
@@ -332,6 +333,7 @@ struct uiObject
     //Float_Rect scrollyRect; //what tpye or sort of corrindants es this?
 
     glm::mat4 matrix;
+    bool matrixInheritedByDescendants;
 
     uiObject *interactionProxy; // if our interaction is suppose to effect a different object
     uiAminChain* myCurrentAnimation;
@@ -660,6 +662,7 @@ struct uiObject
         this->hasChildren=true;
         c->parentObject = this; // neat?
         c->hasParentObject =true;
+        c->matrixInheritedByDescendants = this->matrixInheritedByDescendants;
         if( this->myScrollController != nullptr ){
             c->myScrollController = this->myScrollController;
         }

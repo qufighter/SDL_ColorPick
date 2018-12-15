@@ -1,15 +1,14 @@
 #  todo
 
+sort pallete colors
+^ (web interface
+
 movement velocity platform diffences (android) (dupe)
   ^ zoom based velocity application ?
 
-pallete swatch color -> huePicker for adjustment ( see cp_set_from_hsv )
-     ^ above is basically "done" but further optimizations could be good
-     
-sort pallete colors
-    ^ (web interface? / later)
-
 scoreboard
+  uxInstance->uxAnimations->scale_bounce(score_position, 0.001); // TODO: inherit anim
+  
 
 disable builtin image list looping/defaulting when nothign opened... (dev cleanup)
 disable adding random history colors (dev cleanup)
@@ -31,6 +30,12 @@ osx/ios jpg rotation not respected (is this exif rotation???)
 scroll scroller part way OOB (dragging content) then right click or middle click without releasing lclick
 
 ##  can do
+
+pallete swatch color -> huePicker for adjustment ( see cp_set_from_hsv )
+^ above is basically "done" but further optimizations could be good
+
+sort pallete colors
+^ (web interface? / later - watch out for index?)
 
 text selection and or copy ~~paste~~ ease (desktop, mobile)             SDL_Log("Double touched color preview......");
 ^ copy menu, modal-ish (any interaction shall call dismiss modals function)
@@ -89,7 +94,7 @@ drop image when history holder present - we should hide it (other modals should 
 
 ### osx
 osx application bundle (see readme and  see   Use pbxbuild in the same directory as your .pbproj file)
-energy usage -> SDL_HINT_MAC_BACKGROUND_APP ??
+energy usage -> we can improve this if we allow nap or disable the main loop when the app enters the background (somehow!)
 window border mouse drag listen limit
 
 ### win

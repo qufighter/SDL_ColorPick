@@ -141,13 +141,17 @@ struct uiAnimation
         return moveTo(myUiObject->origBoundryRect.x, myUiObject->origBoundryRect.y);
     }
 
-    uiAnimation* resetMatrix(){
+    uiAnimation* resetMatrix(glm::mat4 destMatrix){
         is_reset = true;
         dest_matrix_set = true;
-        dest_matrix = glm::mat4(1.0f);
+        dest_matrix = destMatrix;
         durationMs = 500;
 //        return moveTo(myUiObject->origBoundryRect.x, myUiObject->origBoundryRect.y);
         return this;
+    }
+
+    uiAnimation* resetMatrix(){
+        return resetMatrix(glm::mat4(1.0f));
     }
 
     uiAnimation* immediately(){
@@ -494,6 +498,8 @@ struct UxAnim
         //    currentTime = SDL_GetTicks();
         //    openglContext->updateFrame(currentTime - lastTimerTime);
 
+        mat_identity = glm::mat4(1.0f);
+        mat_zeroscale = glm::scale(mat_identity, glm::vec3(0.0,0.0,1.0));
     }
 
 
@@ -509,6 +515,10 @@ struct UxAnim
     uiAminChain* animChains[animChainsMax]; //  128 parallel anim chains
     int newChainIndex;
     uiAminChain* newChains[animChainsMax];
+
+
+    glm::mat4 mat_identity;
+    glm::mat4 mat_zeroscale;
 
     Uint32 lastTimerTime;
     Uint32 currentTime;
@@ -800,15 +810,27 @@ struct UxAnim
         return myAnimChain;
     }
 
+    uiAminChain* reset_matrix(Ux::uiObject *uiObject){ // orig soft bounce
+        uiAminChain* myAnimChain = new uiAminChain();
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->resetMatrix(glm::mat4(1.0)) );
+        myAnimChain->animList[0]->durationMs = 100; // argue: instead resetMatrix needs to accept more args... and so does this fn...
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
+
     uiAminChain* scale_bounce(Ux::uiObject *uiObject){ // orig soft bounce
         return scale_bounce(uiObject, 0.005);
     }
 
     uiAminChain* scale_bounce(Ux::uiObject *uiObject, float intensity){ // orig soft bounce
+        return scale_bounce(uiObject, intensity, glm::mat4(1.0f));
+    }
+
+    uiAminChain* scale_bounce(Ux::uiObject *uiObject, float intensity, glm::mat4 resetToMat){ // orig soft bounce
         uiAminChain* myAnimChain = new uiAminChain();
         myAnimChain->addAnim( (new uiAnimation(uiObject))->initialScaleVelocity(-intensity, -intensity) );
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->resetPosition() );
-        myAnimChain->addAnim( (new uiAnimation(uiObject))->resetMatrix() );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->resetMatrix(resetToMat) );
         pushAnimChain(myAnimChain);
         return myAnimChain;
     }

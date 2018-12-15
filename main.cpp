@@ -521,7 +521,7 @@ void ShowFrame(void*)
 
     //SDL_Log("RENDER SCENE....");
 
-    if( !openglContext->renderShouldUpdate && !openglContext->generalUx->uxAnimations->shouldUpdate ) return SDL_Delay(1);
+    if( !openglContext->renderShouldUpdate && !openglContext->generalUx->uxAnimations->shouldUpdate ) return SDL_Delay(34);
 
     openglContext->generalUx->uxAnimations->shouldUpdate = false; // timer will keep reseetting this
 

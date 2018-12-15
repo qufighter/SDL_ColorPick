@@ -42,6 +42,7 @@ Ux::~Ux(void) {
 Ux::Ux(void) {
 
     lastHue = new HSV_Color();
+    currentlyPickedColor = new SDL_Color();
 
     isInteracting = false;
     currentInteraction = uiInteraction();
@@ -570,6 +571,7 @@ Ux::uiObject* Ux::create(void){
     bottomBar->addChild(bottomBarRightStack);
 
 
+
     zoomSliderHolder = new uiObject();
     bottomBar->addChild(zoomSliderHolder);
 
@@ -796,6 +798,8 @@ Ux::uiObject* Ux::create(void){
     //defaultYesNoChoiceDialogue->uiObjectItself->setAnimation( uxAnimations->slideUp(defaultYesNoChoiceDialogue->uiObjectItself) ); // returns uiAminChain*
 
 
+    defaultScoreDisplay = new uiScore(rootUiObject);
+
 
     updateRenderPositions();
 
@@ -807,12 +811,13 @@ Ux::uiObject* Ux::create(void){
 
 
     //test cololr history
+#ifdef DEVELOPER_TEST_MODE
     for( int q=0; q<64; q++ ){
         currentlyPickedColor = new SDL_Color();
         setColor(currentlyPickedColor, randomInt(0,44), randomInt(0,185), randomInt(0,44), 0);
         addCurrentToPickHistory();
     }
-
+#endif
 
     //writeOutState(); // testing
 
@@ -870,6 +875,8 @@ void Ux::printStringToUiObject(uiObject* printObj, char* text, bool resizeText){
 
     printObj->doesNotCollide = true;
     printObj->doesInFactRender = printObj->containText; // the container is never the size to render.. unless contains text?!
+
+    printObj->matrixInheritedByDescendants = true;
 
     for (i=text; *i; i++) {
         //SDL_Log("%c %i", *i, *i);
@@ -2126,7 +2133,11 @@ void Ux::addCurrentToPickHistory(){
             //colora->updateRenderPosition();
             // openglContext->
             bounceIntensity = -0.01;
+
+
             uxAnimations->emphasizedBounce(colora, widescreen?bounceIntensity:0, widescreen?0:bounceIntensity);
+            defaultScoreDisplay->loose(historyPreview->childList[0]);
+
             return;
         }else{
             uxAnimations->softBounce(historyPreview, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0);
@@ -2136,6 +2147,8 @@ void Ux::addCurrentToPickHistory(){
     }
 
     pickHistoryList->add(ColorList(*currentlyPickedColor));
+
+    defaultScoreDisplay->display(historyPreview->childList[0], 1);
 
     updatePickHistoryPreview();
 
@@ -2225,15 +2238,21 @@ void Ux::updatePickHistoryPreview(){
 
 
 int Ux::renderObject(uniformLocationStruct *uniformLocations){
-    return renderObjects(uniformLocations, rootUiObject);
+    return renderObjects(uniformLocations, rootUiObject, glm::mat4(1.0f));
 }
 
-int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderObj){
+int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderObj, glm::mat4 inheritMat){
     // update
     // render object itself, then render all child hobj
 
 
     if( !renderObj->isInBounds ) return 1;
+
+    glm::mat4 resolvedRenderObjMat = renderObj->matrix; // copy struct
+
+    if( renderObj->matrixInheritedByDescendants ){
+        resolvedRenderObjMat *= inheritMat; // we limit the matrix math except where needed this way....
+    }
 
     //glm::mat4 uiMatrix = glm::mat4(1.0f);
 
@@ -2252,7 +2271,7 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 
     //renderObj->matrix = glm::scale(renderObj->matrix, glm::vec3(0.998,0.998,1.0));
 
-    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &renderObj->matrix[0][0]); // Send our model matrix to the shader
+    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &resolvedRenderObjMat[0][0]); // Send our model matrix to the shader
 
     //textMatrix = glm::translate(textMatrix, screenToWorldSpace(1000.0,500.0,450.1));  // just try screen coord like -512??
 
@@ -2410,7 +2429,7 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 
 //
         for( int x=0,l=renderObj->childListIndex; x<l; x++ ){
-            renderObjects(uniformLocations, renderObj->childList[x]);
+            renderObjects(uniformLocations, renderObj->childList[x], resolvedRenderObjMat);
         }
 
         // renderChildrenInReverse

@@ -4,8 +4,8 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := main
 
+# the following symlinks exist...
 SDL_PATH := ../SDL
-
 SDL_IMG_PATH := ../SDL_Image
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include $(LOCAL_PATH)/$(SDL_IMG_PATH)/

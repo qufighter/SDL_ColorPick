@@ -162,6 +162,7 @@ static Ux* Singleton();
 #include "uiNavArrows.h"
 #include "uiYesNoChoice.h"
 #include "uiHueGradient.h"
+#include "uiScore.h"
 
 #include "ux-anim.h"
     
@@ -193,7 +194,7 @@ static Ux* Singleton();
 
 
     int renderObject(uniformLocationStruct* uniformLocations);
-    int renderObjects(uniformLocationStruct* uniformLocations, uiObject* renderObj);
+    int renderObjects(uniformLocationStruct* uniformLocations, uiObject* renderObj, glm::mat4 inheritMat);
 
     void printStringToUiObject(uiObject* printToThisObj, char* text, bool resizeText);
     void printCharToUiObject(uiObject* letter, char character, bool resizeText);
@@ -319,6 +320,7 @@ static Ux* Singleton();
         uiObject* defaultYesNoChoiceHolder;
         uiHueGradient* huePicker;
         uiNavArrows* movementArrows;
+        uiScore* defaultScoreDisplay;
 
         uiEdgeShadow* historyPalleteHolderTlEdgeShadow;
         uiEdgeShadow* historyPalleteHolderBrEdgeShadow;
