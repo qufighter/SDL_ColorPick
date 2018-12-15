@@ -9,9 +9,6 @@ pallete swatch color -> huePicker for adjustment ( see cp_set_from_hsv )
 sort pallete colors
     ^ (web interface? / later)
 
-text selection and or copy ~~paste~~ ease (desktop, mobile)             SDL_Log("Double touched color preview......");
-  ^ copy menu, modal-ish (any interaction shall call dismiss modals function)
-
 scoreboard
 
 disable builtin image list looping/defaulting when nothign opened... (dev cleanup)
@@ -19,6 +16,7 @@ disable adding random history colors (dev cleanup)
 remove unused textures from bundle (dev cleanup?)
 
 add version string somewhere (do not let it look like an IP address!)  maybe this is plat specifc/bundle specific?
+ > AndroidManifest.xml
 
 1024w intro image paneling
 
@@ -26,15 +24,20 @@ consider squarify on widescreen texts for hex/rgb?
 
 verify 2048 limit 
 
+read about SDL_Log
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 scroll scroller part way OOB (dragging content) then right click or middle click without releasing lclick
 
 ##  can do
 
-dedupe history
+text selection and or copy ~~paste~~ ease (desktop, mobile)             SDL_Log("Double touched color preview......");
+^ copy menu, modal-ish (any interaction shall call dismiss modals function)
 
-3up pallete drag it down where it should crop - observe artifacts
+dedupe history (when out of space?)
+
+3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 remove myScrollController just use myUiController instead of the 1off (not necessarily removable when child elements have different controllers)
 remove hasInteraction hasInteractionCb just use nullptr check... (meh)
@@ -76,12 +79,12 @@ other keypress support (modal confirm enter, ...)
 click bg to dismiss any modal such as historyPalleteHolder, yesno?, etc
 clock bar hide (enabled now for dev) (dev cleanup) (seperate testing constant to trigger it? DEVELOPER_TEST_MODE )
 SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK < - do we want a right click menu?
-handle when save of history data occurs (specifically desktop plat?)
+handle when save of history data occurs (specifically desktop plat?) (program exit)
     see SDL_APP_WILLENTERBACKGROUND < this is where we currently write state, works good on mobile clients where there is no fixed quit command...
     SDL_WINDOWEVENT_LEAVE,
     SDL_WINDOWEVENT_FOCUS_LOST, 
     SDL_WINDOWEVENT_CLOSE
-hold mouse down on scroll arrow, expect continuous scroll
+hold mouse down on scroll arrow, expect continuous scroll (also nav arrow?)
 drop image when history holder present - we should hide it (other modals should be canceled too?)
 
 ### osx
