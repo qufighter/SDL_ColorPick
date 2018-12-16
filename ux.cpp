@@ -36,6 +36,12 @@ Ux::~Ux(void) {
 
 }
 
+void Ux::GetPrefPath(char* preferencesPath, const char* filename, char** resultDest){
+    size_t len = SDL_strlen(preferencesPath) + SDL_strlen(filename) + 4;
+    *resultDest = (char*)SDL_malloc( sizeof(char) * len );
+    SDL_snprintf(*resultDest, len, "%s%s", preferencesPath, filename);
+}
+
 /**
  Default constructor
  */
@@ -53,36 +59,12 @@ Ux::Ux(void) {
 //        palleteColorsIndex[x] = palleteMax; //-1; // largest Uint..
 //    }
 
-    const char* filename1 = "history.bin";
-    const char* filename2 = "pallete.bin";
-
     char* preferencesPath = SDL_GetPrefPath("vidsbee", "colorpick");
-//    SDL_Log("Pref file path: %s", preferencesPath);
-//    SDL_Log("Pref file len: %i", SDL_strlen(filename1));
-//    SDL_Log("Pref file len: %i", SDL_strlen(preferencesPath));
-    size_t len;
 
-    len = SDL_strlen(preferencesPath) + SDL_strlen(filename1) + 4;
-    historyPath = (char*)SDL_malloc( sizeof(char) * len );
-    SDL_snprintf(historyPath, len, "%s%s", preferencesPath, filename1);
-
-    len = SDL_strlen(preferencesPath) + SDL_strlen(filename2) + 4;
-    palletePath = (char*)SDL_malloc( sizeof(char) * len );
-    SDL_snprintf(palletePath, len, "%s%s", preferencesPath, filename2);
-
-    //SDL_memset(filePath1, 0, SDL_strlen(filename1) + 1);
-    //SDL_memcpy(filePath1, preferencesPath, SDL_strlen(preferencesPath));
-    //SDL_memcpy(&filePath1[SDL_strlen(preferencesPath)], filename1, SDL_strlen(filename1));
-
-//    SDL_Log("Pref file path: %s", historyPath);
-//    SDL_Log("Pref file len: %i", SDL_strlen(historyPath));
-//
-//    SDL_Log("Pref file path: %s", palletePath);
-//    SDL_Log("Pref file len: %i", SDL_strlen(palletePath));
+    GetPrefPath(preferencesPath, "history.bin", &historyPath);
+    GetPrefPath(preferencesPath, "pallete.bin", &palletePath);
 
     SDL_free(preferencesPath);
-    
-
 }
 
 void Ux::readInState(char* filepath, void* dest, int destMaxSize, int* readSize){
@@ -115,17 +97,16 @@ void Ux::readInState(void){
 
     int quantityBytesRead = 0;
 
-    int eachElementSize;
+    int eachElementSize = sizeof(SDL_Color);
     int memOffset;
     int readOffset;
 
     SDL_Color* newHistoryList = (SDL_Color*)SDL_malloc( sizeof(SDL_Color) *  pickHistoryList->maxSize );
 
-    readInState(historyPath, newHistoryList, pickHistoryList->maxMemorySize(), &quantityBytesRead);
+    readInState(historyPath, newHistoryList, pickHistoryList->maxSize * eachElementSize, &quantityBytesRead);
 
     pickHistoryList->clear();
 
-    eachElementSize = sizeof(SDL_Color);
     memOffset = 0;
     readOffset = 0;
     while( memOffset < quantityBytesRead ){
@@ -142,10 +123,9 @@ void Ux::readInState(void){
 
     SDL_Color* newPalleteList = (SDL_Color*)SDL_malloc( sizeof(SDL_Color) * palleteList->maxSize );
 
-    readInState(palletePath, newPalleteList, palleteList->maxMemorySize(), &quantityBytesRead);
+    readInState(palletePath, newPalleteList, palleteList->maxSize * eachElementSize, &quantityBytesRead);
 
     palleteList->clear();
-    eachElementSize = sizeof(SDL_Color);
     memOffset = 0;
     readOffset = 0;
     while( memOffset < quantityBytesRead ){
@@ -158,12 +138,6 @@ void Ux::readInState(void){
 
     updatePalleteScroller();
 
-    //readInState(palletePath, palleteList->listItself, palleteList->maxMemorySize(), &quantityBytesRead);
-
-    // todo pallete index will now be wrong
-    // total and last index will now be wrong
-    // etc.....
-    // maybe its easier to allocate some new memory and then call ->add for each item?
 
 }
 

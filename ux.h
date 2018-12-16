@@ -182,8 +182,7 @@ static Ux* Singleton();
 
     uiObject* create();
 
-
-
+    void GetPrefPath(char* preferencesPath, const char* filename, char** historyPath);
 
     void writeOutState(void);
     void readInState(void);

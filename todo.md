@@ -1,7 +1,6 @@
-# done
-disable builtin image list looping/defaulting when nothign opened... (dev cleanup) (done))
-disable adding random history colors (dev cleanup) DEVELOPER_TEST_MODE
-remove unused textures from bundle (dev cleanup?) (done)
+# notes
+DEVELOPER_TEST_MODE
+
 
 #  todo
 
@@ -28,6 +27,7 @@ verify 2048 limit
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
+3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 ##  can do
 
@@ -42,7 +42,6 @@ text selection and or copy ~~paste~~ ease (desktop, mobile)             SDL_Log(
 
 dedupe history (when out of space?)
 
-3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 remove myScrollController just use myUiController instead of the 1off (not necessarily removable when child elements have different controllers)
 remove hasInteraction hasInteractionCb just use nullptr check... (meh)
