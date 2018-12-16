@@ -169,7 +169,7 @@ void Shader::reload() {
 
 
     glBindAttribLocation(shader_id, SHADER_POSITION, "position");
-    glBindAttribLocation(shader_id, SHADER_COLOR, "colorVarying");
+    //glBindAttribLocation(shader_id, SHADER_COLOR, "colorVarying");
     glBindAttribLocation(shader_id, SHADER_TEXTURE, "TexCoordIn");
     //glBindAttribLocation(shader_id, SHADER_NORMAL, "normalAAA");
 

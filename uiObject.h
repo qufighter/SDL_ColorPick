@@ -827,7 +827,7 @@ struct uiObject
             }
         }else{
             // note we s hould get here rarely if its workign right
-            SDL_Log("EXPECTED ONCE AT BOOT ONLY - updateRenderPosition root element (reshape/resize window ok)");
+            SDL_Log("Update Render Position - Root element!");
             parentRenderRect = Float_Rect();
             parentCollisionRect = Float_Rect();
         }

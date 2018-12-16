@@ -131,12 +131,12 @@ SDL_Surface* Textures::ConvertSurface(SDL_Surface *origSurface, SDL_Color* backg
 
     SDL_Log("orig imgs pixel format name: %s", SDL_GetPixelFormatName(origSurface->format->format));
 
-    SDL_Log("orig MASKS for image as follows %i %i %i %i",
-            origSurface->format->Rmask == 0x000000ff,
-            origSurface->format->Gmask == 0x000000ff,
-            origSurface->format->Bmask == 0x000000ff,
-            origSurface->format->Amask == 0x000000ff
-            );
+//    SDL_Log("orig MASKS for image as follows %i %i %i %i",
+//            origSurface->format->Rmask == 0x000000ff,
+//            origSurface->format->Gmask == 0x000000ff,
+//            origSurface->format->Bmask == 0x000000ff,
+//            origSurface->format->Amask == 0x000000ff
+//            );
 
     bool isProbablyAndroid = origSurface->format->Rmask == 0x000000ff;
 
@@ -209,12 +209,12 @@ SDL_Surface* Textures::ConvertSurface(SDL_Surface *origSurface, SDL_Color* backg
     SDL_Log("images pixel format name: %s", SDL_GetPixelFormatName(origSurface->format->format));
 
 
-    SDL_Log("MASKS for image as follows %i %i %i %i",
-            origSurface->format->Rmask == 0x000000ff,
-            origSurface->format->Gmask == 0x000000ff,
-            origSurface->format->Bmask == 0x000000ff,
-            origSurface->format->Amask == 0x000000ff
-            );
+//    SDL_Log("MASKS for image as follows %i %i %i %i",
+//            origSurface->format->Rmask == 0x000000ff,
+//            origSurface->format->Gmask == 0x000000ff,
+//            origSurface->format->Bmask == 0x000000ff,
+//            origSurface->format->Amask == 0x000000ff
+//            );
 
     SDL_Log("images bpp: %i", origSurface->format->BytesPerPixel );
 
@@ -285,12 +285,12 @@ SDL_bool ModeForSurface(SDL_Surface *surface, GLint* internalFormat, GLenum* for
     isProbablyAndroid = true;
 #endif
 
-    SDL_Log("MASKS for image as follows %i %i %i %i",
-            surface->format->Rmask == 0x000000ff,
-            surface->format->Gmask == 0x000000ff,
-            surface->format->Bmask == 0x000000ff,
-            surface->format->Amask == 0x000000ff
-            );
+//    SDL_Log("MASKS for image as follows %i %i %i %i",
+//            surface->format->Rmask == 0x000000ff,
+//            surface->format->Gmask == 0x000000ff,
+//            surface->format->Bmask == 0x000000ff,
+//            surface->format->Amask == 0x000000ff
+//            );
 
     if (surface->format->BytesPerPixel == 3  /*surface->format->format == SDL_PIXELFORMAT_RGB888 (not necessarily RGB order)*/ ) { // RGB 24bit
         *internalFormat = GL_RGB; // always keep alpah
@@ -335,7 +335,7 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
 
     // this indented block can be normalized and shared between next fn and this one
-        SDL_Log("making 2048 from Width height %d %d !!!!", surface->w, surface->h );
+        //SDL_Log("making 2048 from Width height %d %d !!!!", surface->w, surface->h );
 
         //shader currently set at 2048
         int hwh = widthHeight / 2;
@@ -382,7 +382,7 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
 
         if( contained_in_texture_id > 0 ){
-            SDL_Log("We are creating the contain in surface (yes even on android)");
+            SDL_Log("Creating the \"contain in\" surface");
 
             // also second surface to process... todo move to helper function???
             // we will default to strecth
@@ -1042,7 +1042,7 @@ bool Textures::colorFromSurface(SDL_Surface *newSurface, int x, int y, SDL_Color
         outColor->g = green;
         outColor->b = blue;
         outColor->a = alpha;
-        SDL_Log("Pixel Color -> R: %d,  G: %d,  B: %d,  A: %d\n", red, green, blue, alpha);
+        //SDL_Log("Pixel Color -> R: %d,  G: %d,  B: %d,  A: %d\n", red, green, blue, alpha);
 
     }
 

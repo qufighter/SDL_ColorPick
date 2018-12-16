@@ -1,18 +1,20 @@
+# done
+disable builtin image list looping/defaulting when nothign opened... (dev cleanup) (done))
+disable adding random history colors (dev cleanup) DEVELOPER_TEST_MODE
+remove unused textures from bundle (dev cleanup?) (done)
+
 #  todo
 
 sort pallete colors
 ^ (web interface
 
 movement velocity platform diffences (android) (dupe)
-  ^ zoom based velocity application ?
+  ^ zoom based velocity application ? // see "Pixel Velocity is"
 
 scoreboard
   uxInstance->uxAnimations->scale_bounce(score_position, 0.001); // TODO: inherit anim
   
-
-disable builtin image list looping/defaulting when nothign opened... (dev cleanup)
-disable adding random history colors (dev cleanup)
-remove unused textures from bundle (dev cleanup?)
+persist score - this way we could close the app and truly pick up where we let off.... 
 
 add version string somewhere (do not let it look like an IP address!)  maybe this is plat specifc/bundle specific?
  > AndroidManifest.xml
@@ -23,11 +25,9 @@ consider squarify on widescreen texts for hex/rgb?
 
 verify 2048 limit 
 
-read about SDL_Log
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
-scroll scroller part way OOB (dragging content) then right click or middle click without releasing lclick
 
 ##  can do
 
@@ -62,7 +62,7 @@ leak / leaking keyword (done 2019)
     
  lookup trilinear or aniostropic filteirng 
  
- main thread animations for less jitter see MAIN_THREAD_ANIMATIONS
+ main thread animations for less jitter see MAIN_THREAD_ANIMATIONS (meh?)
  
 cleanup shader code
 
@@ -94,7 +94,7 @@ drop image when history holder present - we should hide it (other modals should 
 
 ### osx
 osx application bundle (see readme and  see   Use pbxbuild in the same directory as your .pbproj file)
-energy usage -> we can improve this if we allow nap or disable the main loop when the app enters the background (somehow!)
+energy usage -> we can improve this if we allow nap or disable the main loop when the app enters the background (somehow!) SDL_Delay (33 works good desktop but poor on android )
 window border mouse drag listen limit
 
 ### win
@@ -103,10 +103,9 @@ win impl
 ## mobile any
 
 ### android
-resources into android bundle... ? (done?) 
-    bundle name
 // (done?) timer keeps firign in background if file chooser is left open... // we tried this but we can't pick an image... not quite sure why yet... compare logs?
-movement velocity platform diffences (android) (dupe)
+tons of "unrecognized event" in log durring pan - maybe we should listen to this event...
+built in back button - make it work like esc would work
 
 ### ios
 anything using main loop timers (processed on main loop) are not processed....

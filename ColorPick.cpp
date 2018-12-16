@@ -96,13 +96,9 @@ void OpenGLContext::keyUp(SDL_Keycode k){
 }
 
 void OpenGLContext::chooseFile(void) {
-
-    //    OpenGLContext* ogg=OpenGLContext::Singleton();
-    //    ogg->loadNextTestImage();
-
-    loadNextTestImage(); // TODO maths remove this please
-
-//  this is where we should proivide a callback...... circular import references exist
+#ifdef DEVELOPER_TEST_MODE
+    loadNextTestImage();
+#endif
     beginImageSelector();
 }
 
@@ -132,7 +128,7 @@ void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
 
     if( lastHue!=nullptr ) SDL_free(lastHue);
     lastHue = nullptr;
-    SDL_Log("an image was selected !!!!");
+    //SDL_Log("an image was selected !!!!");
 
     if( myCoolSurface == NULL ) return;
 
@@ -170,14 +166,14 @@ void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
     updateColorPreview();
 
     renderShouldUpdate = true;
-    SDL_Log("really done loading new surface.... right?");
+    //SDL_Log("really done loading new surface.... right?");
 }
 
 void OpenGLContext:: loadNextTestImage(){
 
     if( lastHue!=nullptr ) SDL_free(lastHue);
     lastHue = nullptr;
-    SDL_Log("an image was selected !!!!");
+    //SDL_Log("an image was selected !!!!");
 
     SDL_Surface *myCoolSurface = textures->LoadSurface(*testTexturesBuiltin->next());
     if( myCoolSurface == NULL ) return;
@@ -212,7 +208,7 @@ void OpenGLContext:: loadNextTestImage(){
 
     renderShouldUpdate = true;
 
-    SDL_Log("really done loading new surface.... right?");
+    //SDL_Log("really done loading new surface.... right?");
 }
 
 void OpenGLContext:: pickerForHue(HSV_Color* color, SDL_Color* desired_color){
@@ -264,7 +260,7 @@ void OpenGLContext:: pickerForHue(SDL_Color* color){
 
     lastHue = new SDL_Color();
     Ux::setColor(lastHue, color);
-    SDL_Log("we wish to get a picker for a color hue !!!!"); // TODO: second arg for selecting color???? position_y ??position_x
+    //SDL_Log("we wish to get a picker for a color hue !!!!"); // TODO: second arg for selecting color???? position_y ??position_x
 
     if( colorPickerFGSurfaceGradient == NULL ) return;
 
@@ -279,7 +275,7 @@ void OpenGLContext:: pickerForHue(SDL_Color* color){
     generalUx->huePicker->showHueSlider();
 
 
-    SDL_Log("current position x/y %i/%i", position_x, position_y );
+    //SDL_Log("current position x/y %i/%i", position_x, position_y );
 
     SDL_FreeSurface(fullPickImgSurface);// free previous surface
 
@@ -297,7 +293,7 @@ void OpenGLContext:: pickerForHue(SDL_Color* color){
 
     renderShouldUpdate = true;
 
-    SDL_Log("really done loading new surface.... right?");
+    //SDL_Log("really done loading new surface.... right?");
 
 }
 
@@ -307,7 +303,7 @@ void OpenGLContext::prepareForHuePickerMode(void) {
         last_mode_position_x = position_x;
         last_mode_position_y = position_y;
 
-        SDL_Log("current position was x/y %i/%i fisheye: %f ", position_x, position_y, fishEyeScalePct );
+        //SDL_Log("current position was x/y %i/%i fisheye: %f ", position_x, position_y, fishEyeScalePct );
 
         // in general if we were NOT picking hue before, certain x/y should be avoided... since it is confusing to be greeted with a solid black screen
         // also possibly certain zoom should be avoided.....
@@ -376,10 +372,12 @@ void OpenGLContext::setupScene(void) {
     // todo: wrong number of items in list -> crash simulator
     Ux::uiList<const char*, Uint8>* textureList = new Ux::uiList<const char*, Uint8>(128);
     textureList->add("textures/4.png");
+
+#ifdef DEVELOPER_TEST_MODE
    // textureList->add("textures/simimage_NOEXIST.png");
     textureList->add("textures/ascii.png");
     textureList->add("textures/anim.gif");  // TODO: broken on android...
-textureList->add("textures/simimage.png");
+    textureList->add("textures/simimage.png");
  //   textureList->add("textures/p04_shape1.bmp");
  //   textureList->add("textures/p10_shape1.bmp");
     textureList->add("textures/p10_shape1_rotated.png");
@@ -387,7 +385,6 @@ textureList->add("textures/simimage.png");
 //    textureList->add("textures/p04_shape1.bmp");
 //    textureList->add("textures/p10_shape1.bmp");
 //    textureList->add("textures/p16_shape1.bmp");
-    
     textureList->add("textures/default.png"); // ok
     //textureList->add("textures/snow.jpg");
     textureList->add("textures/cp_bg.png");
@@ -401,6 +398,8 @@ textureList->add("textures/simimage.png");
     textureList->add("textures/unnamed.jpg");
     textureList->add("textures/DSC04958.JPG");
     textureList->add("textures/IMG_0172.jpg");
+#endif
+
     testTexturesBuiltin = new Ux::uiListLoopingIterator<Ux::uiList<const char*, Uint8>, const char*>(textureList);
 
     //fullPickImgSurface = textures->LoadSurface("textures/4.png");
@@ -734,7 +733,7 @@ void OpenGLContext::triggerMovement(){
 
 
 
-    SDL_Log("MOUSE xy %d %d", colorPickState->mmovex,colorPickState->mmovey);
+    //SDL_Log("MOUSE xy %d %d", colorPickState->mmovex,colorPickState->mmovey);
     openglContext->renderShouldUpdate = true;
 
 }

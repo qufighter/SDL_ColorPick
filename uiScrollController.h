@@ -250,7 +250,7 @@ struct uiScrollController{
             if( interactionObj == self->scrollChildContainer || interactionObj == self->uiObjectItself ){
                 self->animateScrollXyRelative(0, delta->vy);
             }else if( interactionObj == self->scrollVtDrag ){
-                self->animateScrollXyRelative(0, -delta->vy);
+                //self->animateScrollXyRelative(0, -delta->vy);
             }
         }
     }
@@ -596,7 +596,7 @@ struct uiScrollController{
 
         while( tileCounter < scrollChildContainer->childListIndex ){
 
-            SDL_Log("we are hiding extra tiles...");
+            //SDL_Log("we are hiding extra tiles...");
 
             // there are MORE tiles allocated than we currently need...
             // we can hide them

@@ -51,7 +51,7 @@ struct uiHueGradient{
         //uxInstance->printCharToUiObject(markerBtm, CHAR_ARR_UP, DO_NOT_RESIZE_NOW);
         huePositionMarker->addChild(markerBtm);
 
-        while( offset < totalColors ){
+        while( offset < totalColors - 6 ){
             uiObject* rt = new uiObject();
             rt->hasBackground=true;
             Ux::setColor(&rt->backgroundColor, &manyColors[offset]);
@@ -97,7 +97,7 @@ struct uiHueGradient{
 
         if( percent < 0 ) percent = 0;
         else if( percent > 1 ) percent = 1;
-        SDL_Log("HUE PCT %f", percent);
+        //SDL_Log("HUE PCT %f", percent);
 
 
         self->lastPickPercent = percent;

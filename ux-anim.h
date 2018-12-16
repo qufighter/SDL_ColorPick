@@ -333,7 +333,7 @@ struct uiAnimation
             if( progressBar >= 1.0 ){
                 progressBar = 1.0;
                 ani_done_count++;
-                SDL_Log("Mat reset done");
+                //SDL_Log("Mat reset done");
             }
 
             // we perform a "linear" reset here for starters...
@@ -354,7 +354,7 @@ struct uiAnimation
             svx -= (friction_factor * svx) * elapsedMs;
             svy -= (friction_factor * svy) * elapsedMs;
 
-            SDL_Log("%f %f ljkljkljklj", svx, svy);
+            //SDL_Log("%f %f ljkljkljklj", svx, svy);
 
             if( svx < threshold && svx > negThreshold ){ svx  = 0; ani_done_count++; }
             if( svy < threshold && svy > negThreshold ){ svy  = 0; ani_done_count++; }
@@ -569,7 +569,7 @@ struct UxAnim
         if( animChainIndex > 0 ) return false;
         else{
             SDL_RemoveTimer(my_timer_id);
-            SDL_Log("removing timer due to comlpeted");
+            SDL_Log("Animition timer completed");
         }
 
         return true;
@@ -594,7 +594,7 @@ struct UxAnim
 
         UxAnim* self = (UxAnim*)parm;
 
-        SDL_Log("Our animition timere is firign loke mad"); // useful to see that animations DO stop...
+        //SDL_Log("Animition timer is firing..."); // useful to see that animations DO stop...
 
 #ifndef MAIN_THREAD_ANIMATIONS
         bool isDone = self->updateAnimationsMain(false);

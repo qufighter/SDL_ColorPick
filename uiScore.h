@@ -10,6 +10,7 @@ struct uiScore{
     uiScore(uiObject* parentObj){
 
         int_score = 0;
+        int_max_score = 0;
         maxLen = 14;
         score_disp_char = (char*)SDL_malloc( sizeof(char) * maxLen );
 
@@ -82,6 +83,7 @@ struct uiScore{
 
     char* score_disp_char;
     Sint32 int_score;
+    Sint32 int_max_score;
     int maxLen;
 
     uiAminChain* chain1;
@@ -161,6 +163,10 @@ struct uiScore{
         }
 
         int_score += numberToDisplay;
+
+        if( int_score > int_max_score ){
+            int_max_score = int_score;
+        }
     }
 
 
