@@ -8,7 +8,6 @@ sort pallete colors
 ^ (web interface
 
 movement velocity platform diffences (android) (dupe)
-  ^ zoom based velocity application ? // see "Pixel Velocity is"
 
 scoreboard
   uxInstance->uxAnimations->scale_bounce(score_position, 0.001); // TODO: inherit anim
@@ -23,8 +22,6 @@ verify 2048 limit
 when picking hue grad, consider selected hue's S V values? (obvious need to restrict quadrants still)
 
 home pressed - maybe ios screenshot? time for gimicky marketing ploy
-
-reshape window - zoom indicator becomes WRONG!!!!
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)

@@ -133,7 +133,8 @@ public:
     float fishEyeScale = 7.0f;
     float fishEyeScalePct = fishEyeScale / MAX_FISHEYE_ZOOM;
     // do not set directly....
-    
+
+    void updateFishScaleSlider();
     void setFishScale(float modifierAmt, float scaler);
     static void setFishScalePerentage(Ux::uiObject *interactionObj, float percent); // anAnimationPercentCallback
 

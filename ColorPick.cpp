@@ -633,6 +633,9 @@ void OpenGLContext::reshapeWindow(int w, int h) {
     //SDL_GL_MakeCurrent(sdlWindow, gl);
 }
 
+void  OpenGLContext::updateFishScaleSlider(){
+    generalUx->zoomSlider->updateAnimationPercent(fishEyeScalePct, 0.0);
+}
 
 void  OpenGLContext::setFishScale(float modifierAmt, float scaler){
     // SDL_Log("%f", modifierAmt);
@@ -652,9 +655,7 @@ void  OpenGLContext::setFishScale(float modifierAmt, float scaler){
     fishEyeScalePct = fishEyeScale / MAX_FISHEYE_ZOOM;
     //SDL_Log("FISH EYE SCALE %f", fishEyeScale);
 
-        // todo should be a helper on the UI object zoomSlider instead
-
-    generalUx->zoomSlider->updateAnimationPercent(fishEyeScalePct, 0.0);
+    updateFishScaleSlider();
 }
 
 //static for use as UI:: callback

@@ -422,6 +422,9 @@ void Ux::resizeUiElements(void){
 
     }
 
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    ogg->updateFishScaleSlider();
+
     updatePalleteScroller();
 
     rootUiObject->updateRenderPosition();
