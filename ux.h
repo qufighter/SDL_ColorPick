@@ -357,6 +357,7 @@ static Ux* Singleton();
 
     char* historyPath;
     char* palletePath;
+    char* scoresPath;
 
 private:
 

@@ -36,6 +36,29 @@ Ux::~Ux(void) {
 
 }
 
+void Ux::updateModal(uiObject *newModal, anInteractionFn pModalDismissal){
+    if( currentModal == newModal ) return;
+    if( currentModal == nullptr ){
+        currentModal = rootUiObject;
+    }
+    newModal->modalParent = currentModal;
+    newModal->modalDismissal = pModalDismissal;
+    currentModal = newModal;
+}
+void Ux::endModal(uiObject *oldModal){
+    if( currentModal == oldModal ){
+        currentModal = oldModal->modalParent;
+    }
+}
+void Ux::endCurrentModal(){
+    if( currentModal != rootUiObject && currentModal != nullptr ){
+        // NOTE: just using  currentInteraction here could have SIDE EFFECTS (key presses could reset those???)
+        currentModal->modalDismissal(currentModal, &currentInteraction);
+        // endModal(currentModal); // the modal dismissal SHOULD call end modal automatically!  if not you probably did it wrong
+    }
+}
+
+
 void Ux::GetPrefPath(char* preferencesPath, const char* filename, char** resultDest){
     size_t len = SDL_strlen(preferencesPath) + SDL_strlen(filename) + 4;
     *resultDest = (char*)SDL_malloc( sizeof(char) * len );
@@ -63,32 +86,9 @@ Ux::Ux(void) {
 
     GetPrefPath(preferencesPath, "history.bin", &historyPath);
     GetPrefPath(preferencesPath, "pallete.bin", &palletePath);
+    GetPrefPath(preferencesPath, "records.bin", &scoresPath);
 
     SDL_free(preferencesPath);
-}
-
-void Ux::updateModal(uiObject *newModal, anInteractionFn pModalDismissal){
-    if( currentModal == newModal ) return;
-    if( currentModal == nullptr ){
-        currentModal = rootUiObject;
-    }
-    newModal->modalParent = currentModal;
-    newModal->modalDismissal = pModalDismissal;
-    currentModal = newModal;
-}
-
-void Ux::endModal(uiObject *oldModal){
-    if( currentModal == oldModal ){
-        currentModal = oldModal->modalParent;
-    }
-}
-
-void Ux::endCurrentModal(){
-    if( currentModal != rootUiObject && currentModal != nullptr ){
-        // NOTE: just using  currentInteraction here could have SIDE EFFECTS (key presses could reset those???)
-        currentModal->modalDismissal(currentModal, &currentInteraction);
-        // endModal(currentModal); // the modal dismissal SHOULD call end modal automatically!  if not you probably did it wrong
-    }
 }
 
 void Ux::readInState(char* filepath, void* dest, int destMaxSize, int* readSize){
@@ -110,15 +110,12 @@ void Ux::readInState(char* filepath, void* dest, int destMaxSize, int* readSize)
 void Ux::readInState(void){
 
     int quantityBytesRead = 0;
-
     int eachElementSize = sizeof(SDL_Color);
     int memOffset;
     int readOffset;
 
     SDL_Color* newHistoryList = (SDL_Color*)SDL_malloc( sizeof(SDL_Color) *  pickHistoryList->maxSize );
-
     readInState(historyPath, newHistoryList, pickHistoryList->maxSize * eachElementSize, &quantityBytesRead);
-
     pickHistoryList->clear();
 
     memOffset = 0;
@@ -132,14 +129,12 @@ void Ux::readInState(void){
     updatePickHistoryPreview();
 
 
-
     quantityBytesRead = 0;
 
     SDL_Color* newPalleteList = (SDL_Color*)SDL_malloc( sizeof(SDL_Color) * palleteList->maxSize );
-
     readInState(palletePath, newPalleteList, palleteList->maxSize * eachElementSize, &quantityBytesRead);
-
     palleteList->clear();
+
     memOffset = 0;
     readOffset = 0;
     while( memOffset < quantityBytesRead ){
@@ -147,22 +142,33 @@ void Ux::readInState(void){
         memOffset+=eachElementSize;
     }
     //palleteList->addAll(newPalleteList, quantityBytesRead);
-
     SDL_free(newPalleteList);
-
     updatePalleteScroller();
 
 
+    eachElementSize = sizeof(Sint32);
+    int maxReads = 2 * eachElementSize;
+    SDL_RWops* fileref = SDL_RWFromFile(scoresPath, "r");
+    if( fileref == NULL ) return;
+    Sint64 filesize = SDL_RWsize(fileref); // this filesize is in ? units... not a count of u8? (actually it seems to count u8s)
+    int currentPosition = 0;
+    if( currentPosition < filesize && currentPosition < maxReads ){
+        defaultScoreDisplay->int_max_score = SDL_ReadBE32(fileref);
+        currentPosition++;
+    }
+    if( currentPosition < filesize && currentPosition < maxReads ){
+        defaultScoreDisplay->int_score = SDL_ReadLE32(fileref);
+        currentPosition++;
+    }
+    SDL_RWclose(fileref);
+    //*readSize = currentPosition;
 }
 
 void Ux::writeOutState(void){
-
 //    SDL_Log("Pref file path: %s", historyPath);
 //    SDL_Log("Pref file len: %i", SDL_strlen(historyPath));
 //    SDL_Log("Pref file path: %s", palletePath);
 //    SDL_Log("Pref file len: %i", SDL_strlen(palletePath));
-
-
 //    int totalUint8s;
 //    int currentPosition;
 //    SDL_RWops* memref;
@@ -221,6 +227,11 @@ void Ux::writeOutState(void){
 //    }
 //    if( memref != NULL ) SDL_RWclose(memref);
 //    SDL_RWclose(fileref);
+
+    fileref = SDL_RWFromFile(scoresPath, "w");
+    SDL_WriteBE32(fileref, defaultScoreDisplay->int_max_score);
+    SDL_WriteLE32(fileref, defaultScoreDisplay->int_score);
+    SDL_RWclose(fileref);
 
 }
 

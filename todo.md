@@ -10,10 +10,8 @@ sort pallete colors
 movement velocity platform diffences (android) (dupe)
 
 scoreboard
-  uxInstance->uxAnimations->scale_bounce(score_position, 0.001); // TODO: inherit anim
+  uxInstance->uxAnimations->scale_bounce(score_position, 0.001);
   
-persist score - this way we could close the app and truly pick up where we let off.... 
-
 add version string somewhere (do not let it look like an IP address!)  maybe this is plat specifc/bundle specific?
  > AndroidManifest.xml
 

@@ -242,9 +242,9 @@ void main()
 		}
 
         //circle
-        if( dis > 0.009 && dis < 0.01 ){
-            bcolor = ccolor;
-        }
+//        if( dis > 0.009 && dis < 0.01 ){
+//            bcolor = ccolor;
+//        }
 
 
 //        if( ncolor != bcolor ){
