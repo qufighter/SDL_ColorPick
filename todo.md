@@ -18,15 +18,7 @@ persist score - this way we could close the app and truly pick up where we let o
 add version string somewhere (do not let it look like an IP address!)  maybe this is plat specifc/bundle specific?
  > AndroidManifest.xml
 
-1024w intro image paneling
-
-consider squarify on widescreen texts for hex/rgb?
-
 verify 2048 limit 
-
-esc key exit modals (desktop platforms)
-
-close button for historyPalleteHolder ???  
 
 when picking hue grad, consider selected hue's S V values? (obvious need to restrict quadrants still)
 
@@ -71,8 +63,9 @@ leak / leaking keyword (done 2019)
  
 cleanup shader code
 
-
 perhaps one must swipe too far left to show delete button // swipe left (on desktop this is fine though)
+
+NOTE: just using  currentInteraction here could have SIDE EFFECTS
 
 # platform specific todo
 
@@ -109,8 +102,6 @@ win impl
 ### android
 // (done?) timer keeps firign in background if file chooser is left open... // we tried this but we can't pick an image... not quite sure why yet... compare logs?
 tons of "unrecognized event" in log durring pan - maybe we should listen to this event...  ALSO IOS
-built in back button - make it work like esc would work
-     SDL_Log("back/esc pressed");
 
 
 ### ios

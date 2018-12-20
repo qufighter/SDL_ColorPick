@@ -54,7 +54,7 @@ Ux::Ux(void) {
     currentInteraction = uiInteraction();
 
     interactionObject = nullptr;
-
+    currentModal = nullptr;
 //    for( int x=0; x<COLOR_INDEX_MAX; x++ ){
 //        palleteColorsIndex[x] = palleteMax; //-1; // largest Uint..
 //    }
@@ -65,6 +65,30 @@ Ux::Ux(void) {
     GetPrefPath(preferencesPath, "pallete.bin", &palletePath);
 
     SDL_free(preferencesPath);
+}
+
+void Ux::updateModal(uiObject *newModal, anInteractionFn pModalDismissal){
+    if( currentModal == newModal ) return;
+    if( currentModal == nullptr ){
+        currentModal = rootUiObject;
+    }
+    newModal->modalParent = currentModal;
+    newModal->modalDismissal = pModalDismissal;
+    currentModal = newModal;
+}
+
+void Ux::endModal(uiObject *oldModal){
+    if( currentModal == oldModal ){
+        currentModal = oldModal->modalParent;
+    }
+}
+
+void Ux::endCurrentModal(){
+    if( currentModal != rootUiObject && currentModal != nullptr ){
+        // NOTE: just using  currentInteraction here could have SIDE EFFECTS (key presses could reset those???)
+        currentModal->modalDismissal(currentModal, &currentInteraction);
+        // endModal(currentModal); // the modal dismissal SHOULD call end modal automatically!  if not you probably did it wrong
+    }
 }
 
 void Ux::readInState(char* filepath, void* dest, int destMaxSize, int* readSize){
@@ -277,12 +301,14 @@ void Ux::resizeUiElements(void){
 
         // depending on animation state rect is different....
         historyPalleteHolder->setBoundaryRectForAnimState(
-            0.025, ws_clock, 0.95, 1.0 - ws_clock, //visible and orig
-            1.0, ws_clock, 0.9, 1.0 - ws_clock ); // hidden
+            0.025, ws_clock, 0.92, 1.0 - ws_clock, //visible and orig
+            1.0, ws_clock, 0.92, 1.0 - ws_clock ); // hidden
         historyPalleteHolderTlEdgeShadow->resize(SQUARE_EDGE_ENUM::LEFT);
         historyPalleteHolderBrEdgeShadow->resize(SQUARE_EDGE_ENUM::RIGHT);
 
         historyPalleteHolder->setInteraction(&Ux::interactionHorizontal);
+
+            historyPalleteCloseX->setBoundaryRect( 1.01, 0.5-0.025, 0.05, 0.05);
 
             newHistoryFullsize->setBoundaryRect( 0.0, 0.0, 0.6, 1.0);
             // historyScroller->resize()?
@@ -349,11 +375,13 @@ void Ux::resizeUiElements(void){
 
         // depending on animation state rect is different....
         historyPalleteHolder->setBoundaryRectForAnimState(
-            0.0, clock_bar,     1.0, 0.8, //visible and orig
-            0.0, clock_bar+1.0, 1.0, 0.8 ); // hidden
+            0.0, clock_bar,     1.0, 0.92-clock_bar, //visible and orig
+            0.0, clock_bar+1.0, 1.0, 0.92-clock_bar ); // hidden
         historyPalleteHolderTlEdgeShadow->resize(SQUARE_EDGE_ENUM::TOP);
         historyPalleteHolderBrEdgeShadow->resize(SQUARE_EDGE_ENUM::BOTTOM);
         historyPalleteHolder->setInteraction(&Ux::interactionVert);
+
+            historyPalleteCloseX->setBoundaryRect( 0.5-0.025, 1.01, 0.05, 0.08);
 
             newHistoryFullsize->setBoundaryRect( 0.0, 0.0, 1.0, 0.6);
             // historyScroller->resize()?
@@ -581,6 +609,8 @@ Ux::uiObject* Ux::create(void){
     //historyPalleteHolder->setAnimation( uxAnimations->slideDown(historyPalleteHolder) ); // returns uiAminChain*
 
 
+
+
     historyScroller = new uiScrollController();
                                    // 3  2
     historyScroller->initTilingEngine(6, 6, &Ux::updateUiObjectFromHistory, &Ux::getHistoryTotalCount, &Ux::clickHistoryColor, &Ux::interactionHorizontal);
@@ -608,6 +638,7 @@ Ux::uiObject* Ux::create(void){
 
     historyPalleteHolderTlEdgeShadow = new uiEdgeShadow(historyPalleteHolder, SQUARE_EDGE_ENUM::TOP, 0.03);
     historyPalleteHolderBrEdgeShadow = new uiEdgeShadow(historyPalleteHolder, SQUARE_EDGE_ENUM::BOTTOM, 0.03);
+
 
 
     historyPreviewHolder = new uiObject();
@@ -711,6 +742,13 @@ Ux::uiObject* Ux::create(void){
     historyPalleteHolder->addChild(palleteSelectionPreviewHolder);
     historyPalleteHolder->addChild(newHistoryPallete);
 
+
+    historyPalleteCloseX = new uiObject();
+    printCharToUiObject(historyPalleteCloseX, CHAR_CLOSE_ICON, DO_NOT_RESIZE_NOW);
+    historyPalleteCloseX->hasForeground = true;
+    historyPalleteCloseX->squarify();
+    Ux::setColor(&historyPalleteCloseX->foregroundColor, 255, 255, 255, 96); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+    historyPalleteHolder->addChild(historyPalleteCloseX);
 
 
     palleteSelectionColorPreview = new uiViewColor(palleteSelectionPreviewHolder, Float_Rect(0.0, 0.0, 1.0, 1.0), true); // this rect is reset next...
@@ -1135,13 +1173,14 @@ void Ux::interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction
         }
         trueInteractionObj->is_being_viewed_state =false;
         trueInteractionObj->doesNotCollide = true;
+        self->endModal(trueInteractionObj);
     }else{
         trueInteractionObj->isInBounds = true; // nice hack
         self->updatePickHistoryPreview();
         trueInteractionObj->setAnimation( self->uxAnimations->resetPosition(trueInteractionObj) ); // returns uiAminChain*
         trueInteractionObj->is_being_viewed_state = true;
         trueInteractionObj->doesNotCollide = false;
-
+        self->updateModal(trueInteractionObj, &Ux::interactionTogglePalletePreview);
     }
 }
 
@@ -1352,6 +1391,7 @@ void Ux::interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta
             self->historyPalleteHolder->setAnimation( self->uxAnimations->slideDown(self->historyPalleteHolder) ); // returns uiAminChain*
         }
         self->historyPalleteHolder->is_being_viewed_state = false;
+        self->endModal(self->historyPalleteHolder);
     }else{
         self->historyPalleteHolder->isInBounds = true; // nice hack
         self->updatePickHistoryPreview();
@@ -1359,6 +1399,7 @@ void Ux::interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta
         self->historyPalleteHolder->setAnimation( self->uxAnimations->resetPosition(self->historyPalleteHolder) ); // returns uiAminChain*
         self->historyPalleteHolder->is_being_viewed_state = true;
         //self->historyScroller->allowUp = true;
+        self->updateModal(self->historyPalleteHolder, &Ux::interactionToggleHistory);
     }
 }
 

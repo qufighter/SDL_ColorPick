@@ -197,6 +197,8 @@ struct uiYesNoChoice{
 
         uiObjToAnimate->is_being_viewed_state = true;
 
+        uxInstance->updateModal(uiObjectItself, defaultCancelFn);
+
     }
 
     void hide(){
@@ -205,6 +207,9 @@ struct uiYesNoChoice{
         uiObjToAnimate->setAnimation( uxInstance->uxAnimations->slideUp(uiObjToAnimate) );// returns uiAminChain*
 
         uiObjToAnimate->is_being_viewed_state = false;
+
+        uxInstance->endModal(uiObjectItself);
+
 
     }
 
