@@ -32,7 +32,7 @@ OpenGLContext::OpenGLContext(void) {
     last_mode_hue_picker = false;
     lastTrueFullPickImgSurface=nullptr;
 
-    pixelInteraction.friction=1.3;
+    pixelInteraction.friction=6.3;
 }
 
 SDL_Window* OpenGLContext::getSdlWindow(){
@@ -688,9 +688,41 @@ void OpenGLContext::setFishScalePerentage(Ux::uiObject *interactionObj, float pe
 //    
 //}
 
+float OpenGLContext::getPixelMovementFactor(){
+    // 64 - 0.25 * screen larger dimension - sqrt 64 = 8.0
+    // 32 - 0.178362573099415
+    // 16 - 0.126705653021442
+    // 5.2 - 0.8333
+    // 1.5 - 0.038011695906433
+    float screen_pct = (SDL_sqrtf(fishEyeScale) / 8.0) * 0.25;
+    int bigPixelSize = 1;
+    if( colorPickState->viewport_ratio > 1.0 ){
+        bigPixelSize = colorPickState->windowWidth * screen_pct;
+    }else{
+        bigPixelSize = colorPickState->windowHeight * screen_pct;
+    }
 
+    //float factor = ((openglContext->fishEyeScale - FISHEYE_SLOW_ZOOM_THRESHOLD) / (MAX_FISHEYE_ZOOM - FISHEYE_SLOW_ZOOM_THRESHOLD)) * FISHEYE_SLOW_ZOOM_MAX;
+    float factor = bigPixelSize * 0.5; // the big pixel is N across, we must move by this much to move 1px... but if we start center pixel its half that much
+    if( factor < 1 ) factor = 1.0; // basically negates the normal effects of this block to slow things, when this is 1.0 we move 1px per px movement
+
+    if( openglContext->fishEyeScale <= FISHEYE_SLOW_ZOOM_THRESHOLD ){
+
+        //factor = (0.05 - openglContext->fishEyeScalePct) * 80;
+        factor /= 25;
+    }
+//    SDL_Log("bigPixelSize          %i" , bigPixelSize);
+//    SDL_Log("computed factor %f" , factor);
+
+    return factor;
+}
 
 void OpenGLContext::triggerMovement(){
+
+    //    SDL_Log("fishEyeScale    %f" , fishEyeScale);
+    //    SDL_Log("fishEyeScalePct %f" , fishEyeScalePct);
+
+    float pxFactor = getPixelMovementFactor();
 
     //SDL_Log("Velocity is: %f %f", openglContext->pixelInteraction.vx, openglContext->pixelInteraction.vy);
 
@@ -705,62 +737,37 @@ void OpenGLContext::triggerMovement(){
     // below 0.1
     //
 
-    SDL_Log("fishEyeScale    %f" , fishEyeScale);
-    SDL_Log("fishEyeScalePct %f" , fishEyeScalePct);
 
-    if( openglContext->fishEyeScale <= FISHEYE_SLOW_ZOOM_THRESHOLD /*openglContext->fishEyeScalePct < 0.05*/ ){
-        // to move faster when zoomed out (sensible)
-        float factor = (0.05 - openglContext->fishEyeScalePct);
-        colorPickState->mmovex = accumulated_movement_x *( 1 + (80.0 * factor));
-        colorPickState->mmovey = accumulated_movement_y *( 1 + (80.0 * factor));
-
-        accumulated_movement_x=0;
-        accumulated_movement_y=0; // fully applied
-
-    }else if( openglContext->fishEyeScale > FISHEYE_SLOW_ZOOM_THRESHOLD){
-        // 64 - 0.25 * screen larger dimension - sqrt 64 = 8.0
-        // 32 - 0.178362573099415
-        // 16 - 0.126705653021442
-        // 5.2 - 0.8333
-        // 1.5 - 0.038011695906433
-        float screen_pct = (SDL_sqrtf(fishEyeScale) / 8.0) * 0.25;
-        int bigPixelSize = 1;
-        if( colorPickState->viewport_ratio > 1.0 ){
-            bigPixelSize = colorPickState->windowWidth * screen_pct;
-        }else{
-            bigPixelSize = colorPickState->windowHeight * screen_pct;
-        }
+//    if( false && openglContext->fishEyeScale <= FISHEYE_SLOW_ZOOM_THRESHOLD /*openglContext->fishEyeScalePct < 0.05*/ ){
+//        // to move faster when zoomed out (sensible)
+////        colorPickState->mmovex = accumulated_movement_x *( 1 + (factor));
+////        colorPickState->mmovey = accumulated_movement_y *( 1 + (factor));
+//
+//        colorPickState->mmovex = accumulated_movement_x / (factor);
+//        colorPickState->mmovey = accumulated_movement_y / (factor);
+//
+//
+//        accumulated_movement_x=0;
+//        accumulated_movement_y=0; // fully applied
+//
+//    }else if( openglContext->fishEyeScale > FISHEYE_SLOW_ZOOM_THRESHOLD){
 
 
-        float factor = ((openglContext->fishEyeScale - FISHEYE_SLOW_ZOOM_THRESHOLD) / (MAX_FISHEYE_ZOOM - FISHEYE_SLOW_ZOOM_THRESHOLD)) * FISHEYE_SLOW_ZOOM_MAX;
+//        colorPickState->mmovex = accumulated_movement_x;
+//        colorPickState->mmovey = accumulated_movement_y;
+//        accumulated_movement_x=0;
+//        accumulated_movement_y=0; // fully applied
 
-        factor = bigPixelSize * 0.5; // the big pixel is N across, we must move by this much to move 1px... but if we start center pixel its half that much
-        if( factor < 1 ) factor = 1.0; // basically negates the normal effects of this block to slow things, when this is 1.0 we move 1px per px movement
+    //SDL_Log("max zoom time: current:%f max:%f threshold:%f range:%f computed factor: %f", openglContext->fishEyeScale, MAX_FISHEYE_ZOOM, FISHEYE_SLOW_ZOOM_THRESHOLD, FISHEYE_SLOW_ZOOM_MAX, factor);
 
+    int resultx = (int) accumulated_movement_x / pxFactor;
+    int resulty = (int) accumulated_movement_y / pxFactor;
 
-        SDL_Log("bigPixelSize          %i" , bigPixelSize);
-        SDL_Log("computed factor %f" , factor);
+    colorPickState->mmovex = resultx;
+    colorPickState->mmovey = resulty;
 
-
-        //SDL_Log("max zoom time: current:%f max:%f threshold:%f range:%f computed factor: %f", openglContext->fishEyeScale, MAX_FISHEYE_ZOOM, FISHEYE_SLOW_ZOOM_THRESHOLD, FISHEYE_SLOW_ZOOM_MAX, factor);
-
-        int resultx = (int) accumulated_movement_x / factor;
-        int resulty = (int) accumulated_movement_y / factor;
-
-        colorPickState->mmovex = resultx;
-        colorPickState->mmovey = resulty;
-
-        accumulated_movement_x-=resultx * factor;
-        accumulated_movement_y-=resulty * factor; // at least partially applied, but also a good chance result x/y is 0
-
-
-    }else{
-        colorPickState->mmovex = accumulated_movement_x;
-        colorPickState->mmovey = accumulated_movement_y;
-        accumulated_movement_x=0;
-        accumulated_movement_y=0; // fully applied
-    }
-
+    accumulated_movement_x-=resultx * pxFactor;
+    accumulated_movement_y-=resulty * pxFactor; // at least partially applied, but also a good chance result x/y is 0
 
 
     //SDL_Log("MOUSE xy %d %d", colorPickState->mmovex,colorPickState->mmovey);
@@ -799,6 +806,8 @@ void OpenGLContext::renderScene(void) {
 
     if( has_velocity ){
 
+        float pxFactor = getPixelMovementFactor();
+
         accumulated_velocity_y += pixelInteraction.vy;
         accumulated_velocity_x += pixelInteraction.vx;
         pixelInteraction.update();
@@ -808,14 +817,14 @@ void OpenGLContext::renderScene(void) {
 //        int acu_v_y_int = SDL_floorf(accumulated_velocity_y);
 //        int acu_v_x_int = SDL_floorf(accumulated_velocity_x);
         /// todo does this work good for negative numbers?? ANSWER : yes  X: -9.183308 -9 Y: -5.968337 -5    X: -9.247559 -9 Y: -6.010095 -6
-        int acu_v_y_int = (int)(accumulated_velocity_y);
-        int acu_v_x_int = (int)(accumulated_velocity_x);
+        int acu_v_y_int = (int)(accumulated_velocity_y) / pxFactor;
+        int acu_v_x_int = (int)(accumulated_velocity_x) / pxFactor;
         SDL_Log("Pixel Velocity is: %f %f", pixelInteraction.vx, pixelInteraction.vy);
         //SDL_Log("Velocity is: X: %f %i Y: %f %i", accumulated_velocity_x, acu_v_x_int, accumulated_velocity_y, acu_v_y_int);
         colorPickState->mmovex = acu_v_x_int;
         colorPickState->mmovey = acu_v_y_int;
-        accumulated_velocity_x -= acu_v_x_int; // subtract the velocity we "already" applied, remainder will continue to be tracked and might still apply...
-        accumulated_velocity_y -= acu_v_y_int;
+        accumulated_velocity_x -= acu_v_x_int * pxFactor; // subtract the velocity we "already" applied, remainder will continue to be tracked and might still apply...
+        accumulated_velocity_y -= acu_v_y_int * pxFactor;
 
         // set movex and movey accordingly
         if( fabs(pixelInteraction.vy) < VELOCITY_MIN && fabs(pixelInteraction.vx) < VELOCITY_MIN ){
@@ -929,12 +938,14 @@ void OpenGLContext::renderScene(void) {
     debugGLerror("renderScene glDisable(GL_BLEND");
 
 
+#ifndef COLORPICK_PLATFORM_DESKTOP
 //#ifdef __ANDROID__  // also needed on IOS!!
     // there is probably a better ifdef we can use for EGL OES or something like that... its not a "core" context ??? or just forgets we bound this??? not sure...
     glBindVertexArray(rect_vaoID[0]); // Bind our Vertex Array Object GL_INVALID_OPERATION (except android?)
     debugGLerror("renderScene glBindVertexArray(rect_vaoID");
     /// maybe itz caused by SDL_GL_SwapWindow
 //#endif
+#endif
 //
 //        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rect_triangleStripIndexBuffer); // its already bound ?
 //        debugGLerror("renderScene glBindBuffer(GL_ELEMENT_ARRAY_BUFFER");

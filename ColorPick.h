@@ -137,6 +137,7 @@ public:
     void setFishScale(float modifierAmt, float scaler);
     static void setFishScalePerentage(Ux::uiObject *interactionObj, float percent); // anAnimationPercentCallback
 
+    float getPixelMovementFactor();
     void triggerMovement();
     void triggerVelocity(float x, float y);
     void clearVelocity();
@@ -171,7 +172,7 @@ private:
 
     bool has_velocity = false;
 
-    float pan_friction = 0.9;
+    //float pan_friction = 0.9;
 
     float accumulated_velocity_x =0;
     float accumulated_velocity_y =0;

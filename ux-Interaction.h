@@ -23,6 +23,7 @@ struct uiInteraction
         friction = 1.3;  // really inverse friction. higher values for less friction.
 //        friction = 0.2;
 //        friction = 4.2;
+        friction = 4.2;
     }
     void begin(float x, float y){
 
@@ -78,8 +79,12 @@ struct uiInteraction
         if( decay > 1.0 ){
             decay = 0.99999999;
         }
-        vx = (vx * decay) + (decay * rx);
-        vy = (vy * decay) + (decay * ry);
+        // todo the following is probably wrong.... vx responds to decay, but rx should nearly respondn to inverse of decay (movement over more time is slower movement though)
+        // it seems odd to decay the instantaneous velocity immediately...
+//        vx = (vx * decay) + (decay * rx);
+//        vy = (vy * decay) + (decay * ry);
+        vx = (vx * decay) + (rx);
+        vy = (vy * decay) + (ry);
         //        vx = (vx + rx) * decay;// + (decay * rx);
         //        vy = (vy + rx) * decay;// + (decay * ry);
 
