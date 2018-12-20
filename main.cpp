@@ -342,6 +342,13 @@ int EventFilter(void* userdata, SDL_Event* event){
         case SDL_KEYDOWN:
             //SDL_Log("1keydown %d", event->key.keysym.sym);
             //openglContext->keyDown(event->key.keysym.sym);
+            if (event->key.keysym.sym == SDLK_AC_BACK || event->key.keysym.sym == SDLK_ESCAPE){
+                SDL_Log("back/esc pressed");
+            }
+            if(event->key.keysym.sym == SDLK_AC_HOME){
+                // nope only works on windows..... maybe android, but how to screenshot android?
+                //SDL_Log("home pressed - maybe ios screenshot? time for gimicky marketing ploy");
+            }
             return 0;
         case SDL_KEYUP:
             openglContext->keyUp(event->key.keysym.sym);

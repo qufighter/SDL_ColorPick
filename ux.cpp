@@ -71,23 +71,13 @@ void Ux::readInState(char* filepath, void* dest, int destMaxSize, int* readSize)
     SDL_RWops* fileref = SDL_RWFromFile(filepath, "r");
     if( fileref == NULL ) return;
 
-    //int autoFree=1;
-    //size_t readDataSize;
-    //return SDL_LoadFile_RW(fileref, &readDataSize, autoFree);
-
-
     SDL_RWops* memref = SDL_RWFromMem(dest, destMaxSize);
-
     Sint64 filesize = SDL_RWsize(fileref); // this filesize is in ? units... not a count of u8? (actually it seems to count u8s)
-
     int currentPosition = 0;
     while( currentPosition < filesize && currentPosition < destMaxSize ){
-
         SDL_WriteU8(memref, SDL_ReadU8(fileref));
-
         currentPosition++;
     }
-
     SDL_RWclose(memref);
     SDL_RWclose(fileref);
     *readSize = currentPosition;
@@ -143,16 +133,15 @@ void Ux::readInState(void){
 
 void Ux::writeOutState(void){
 
-    SDL_Log("Pref file path: %s", historyPath);
-    SDL_Log("Pref file len: %i", SDL_strlen(historyPath));
+//    SDL_Log("Pref file path: %s", historyPath);
+//    SDL_Log("Pref file len: %i", SDL_strlen(historyPath));
+//    SDL_Log("Pref file path: %s", palletePath);
+//    SDL_Log("Pref file len: %i", SDL_strlen(palletePath));
 
-    SDL_Log("Pref file path: %s", palletePath);
-    SDL_Log("Pref file len: %i", SDL_strlen(palletePath));
 
-
-    int totalUint8s;
-    int currentPosition;
-    SDL_RWops* memref;
+//    int totalUint8s;
+//    int currentPosition;
+//    SDL_RWops* memref;
     SDL_RWops* fileref;
 
     uiListIterator<uiList<ColorList, Uint8>, ColorList>* myIterator;
@@ -264,7 +253,7 @@ void Ux::resizeUiElements(void){
 
         bottomBar->setBoundaryRect( 1.0-0.27777777777778+hue_picker, ws_clock, 0.27777777777778-hue_picker-history_preview, 1.0 - ws_clock);
 
-            zoomSliderHolder->setBoundaryRect( 0.0, 0.0, 1.0, 0.25);
+            zoomSliderHolder->setBoundaryRect( 0.0, 0.01, 1.0, 0.25);
                 zoomSliderBg->setBoundaryRect( 0.05, 0, 0.88, 1);
                 zoomSlider->setBoundaryRect( 0.0, 0, 0.5, 1);
                 zoomSlider->setMovementBoundaryRect( 0.0, 0, 1.0, 0.0);
@@ -338,7 +327,7 @@ void Ux::resizeUiElements(void){
 
         bottomBar->setBoundaryRect( 0.0, 0.75, 1.0, 0.15);
 
-            zoomSliderHolder->setBoundaryRect( 0.0, 0, 0.25, 1);
+            zoomSliderHolder->setBoundaryRect( 0.0, 0.05, 0.25, 0.95);
                 zoomSliderBg->setBoundaryRect( 0.05, 0, 0.88, 1);
                 zoomSlider->setBoundaryRect( 0.0, 0, 0.5, 1);
                 zoomSlider->setMovementBoundaryRect( 0.0, 0, 1.0, 0.0);

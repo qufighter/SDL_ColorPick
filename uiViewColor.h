@@ -33,18 +33,30 @@ struct uiViewColor{
             myEdgeShadow = nullptr;
         }
 
+
+        hexBg = new uiObject();
+        rgbRedBg = new uiObject();
+        rgbGreenBg = new uiObject();
+        rgbBlueBg = new uiObject();
+
+        uiObjectItself->addChild(hexBg);
+        uiObjectItself->addChild(rgbRedBg);
+        uiObjectItself->addChild(rgbGreenBg);
+        uiObjectItself->addChild(rgbBlueBg);
+
+
         hexValueText = new uiObject();
 
 
         //NEW rule size the container for the letter size of first letter
-        hexValueText->setBoundaryRect( 0.0, 0.0, 0.16666666666667, 0.6);
+//        hexValueText->setBoundaryRect( 0.0, 0.0, 0.16666666666667, 0.6);
 
         //NEW rule 2 - the ohter properties define the text rendering only
         hexValueText->hasForeground = true;
         Ux::setColor(&hexValueText->foregroundColor, 255, 255, 255, 223); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
 
-        hexValueText->hasBackground = true;
-        Ux::setColor(&hexValueText->backgroundColor,0, 0, 0, 0);
+        hexBg->hasBackground = true;
+        Ux::setColor(&hexBg->backgroundColor,0, 0, 0, 0);
 
         uiObjectItself->setInteractionCallback(&pickHexValueClicked);
         uiObjectItself->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
@@ -57,50 +69,54 @@ struct uiViewColor{
 
         SDL_snprintf(resultText6char, 7,  "000000");
         uxInstance->printStringToUiObject(hexValueText, resultText6char, DO_NOT_RESIZE_NOW);
+        hexValueText->squarifyChildren();
 
         // very odd not initializing these...
 
         rgbRedText = new uiObject();
         //NEW rule size the container for the letter size of first letter
-        rgbRedText->setBoundaryRect( 0.0, 0.6, 0.11111111111111, 0.4);
+//        rgbRedText->setBoundaryRect( 0.0, 0.6, 0.11111111111111, 0.4);
         //NEW rule 2 - the ohter properties define the text rendering only
         rgbRedText->hasForeground = true;
         Ux::setColor(&rgbRedText->foregroundColor, 255, 100, 100, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-        rgbRedText->hasBackground = true;
-        Ux::setColor(&rgbRedText->backgroundColor, 32, 0, 0, 192);
+        rgbRedBg->hasBackground = true;
+        Ux::setColor(&rgbRedBg->backgroundColor, 32, 0, 0, 192);
         uiObjectItself->addChild(rgbRedText);
 
         //sprintf(resultText6char, "  R");
         SDL_snprintf(resultText6char, 7,  "  R");
         uxInstance->printStringToUiObject(rgbRedText, resultText6char, DO_NOT_RESIZE_NOW);
+        rgbRedText->squarifyChildren();
 
 
         rgbGreenText = new uiObject();
         //NEW rule size the container for the letter size of first letter
-        rgbGreenText->setBoundaryRect( 0.33333333333333, 0.6, 0.11111111111111, 0.4);
+//        rgbGreenText->setBoundaryRect( 0.33333333333333, 0.6, 0.11111111111111, 0.4);
         //NEW rule 2 - the ohter properties define the text rendering only
         rgbGreenText->hasForeground = true;
         Ux::setColor(&rgbGreenText->foregroundColor, 100, 255, 100, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-        rgbGreenText->hasBackground = true;
-        Ux::setColor(&rgbGreenText->backgroundColor, 0, 32, 0, 192);
+        rgbGreenBg->hasBackground = true;
+        Ux::setColor(&rgbGreenBg->backgroundColor, 0, 32, 0, 192);
         uiObjectItself->addChild(rgbGreenText);
         //sprintf(resultText6char, "  G");
         SDL_snprintf(resultText6char, 7,  "  G");
         uxInstance->printStringToUiObject(rgbGreenText, resultText6char, DO_NOT_RESIZE_NOW);
+        rgbGreenText->squarifyChildren();
 
 
         rgbBlueText = new uiObject();
         //NEW rule size the container for the letter size of first letter
-        rgbBlueText->setBoundaryRect( 0.66666666666666, 0.6, 0.11111111111111, 0.4);
+//        rgbBlueText->setBoundaryRect( 0.66666666666666, 0.6, 0.11111111111111, 0.4);
         //NEW rule 2 - the ohter properties define the text rendering only
         rgbBlueText->hasForeground = true;
         Ux::setColor(&rgbBlueText->foregroundColor, 100, 100, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-        rgbBlueText->hasBackground = true;
-        Ux::setColor(&rgbBlueText->backgroundColor, 0, 0, 32, 192);
+        rgbBlueBg->hasBackground = true;
+        Ux::setColor(&rgbBlueBg->backgroundColor, 0, 0, 32, 192);
         uiObjectItself->addChild(rgbBlueText);
         //sprintf(resultText6char, "  B");
         SDL_snprintf(resultText6char, 7,  "  B");
         uxInstance->printStringToUiObject(rgbBlueText, resultText6char, DO_NOT_RESIZE_NOW);
+        rgbBlueText->squarifyChildren();
 
 
         if( topShadow ){
@@ -132,6 +148,11 @@ struct uiViewColor{
     uiObject *rgbRedText;
     uiObject *rgbGreenText;
     uiObject *rgbBlueText;
+
+    uiObject *hexBg;
+    uiObject *rgbRedBg;
+    uiObject *rgbGreenBg;
+    uiObject *rgbBlueBg;
 
     uiObject *hueBtn;
 
@@ -172,13 +193,18 @@ struct uiViewColor{
 
         if( uxInstance->widescreen ){
             hex_size=0.3;
-            rgb_size=(1.0-hex_size) / 3.0; // letter width for 3 char...
+            float rgb_bg_size=(1.0-hex_size);
+            rgb_size=rgb_bg_size / 3.0; // letter width for 3 char...
+            hexBg->setBoundaryRect( 0.0, 0.0, hex_size, 1.0);
             //NEW rule size the container for the letter size of first letter
             hexValueText->setBoundaryRect( 0.0, 0.0, hex_size, 0.16666666666667);
             hexValueText->setChildNodeDirection(TEXT_DIR_ENUM::TTB, false);
 
+            rgbRedBg->setBoundaryRect( hex_size,0.0, rgb_bg_size, 0.333333333333333);
             rgbRedText->setBoundaryRect( hex_size,0.0, rgb_size, 0.333333333333333);
+            rgbGreenBg->setBoundaryRect( hex_size, 0.33333333333333, rgb_bg_size, 0.333333333333333);
             rgbGreenText->setBoundaryRect( hex_size, 0.33333333333333, rgb_size, 0.333333333333333);
+            rgbBlueBg->setBoundaryRect( hex_size, 0.66666666666666, rgb_bg_size, 0.333333333333333);
             rgbBlueText->setBoundaryRect( hex_size, 0.66666666666666, rgb_size, 0.333333333333333);
 
 
@@ -188,17 +214,21 @@ struct uiViewColor{
             }
 
             if( hueBtn != nullptr ){
-                float h = 0.13;
+                float h = 0.09;
                 float hh = h * 0.5;
-                hueBtn->setBoundaryRect(hex_size-hh, 0.5-hh, h, h);
+                hueBtn->setBoundaryRect(hex_size-0.04-hh, 0.5-hh, h, h);
             }
         }else{
+            hexBg->setBoundaryRect( 0.0, 0.0, 1.0, hex_size);
             //NEW rule size the container for the letter size of first letter
             hexValueText->setBoundaryRect( 0.0, 0.0, 0.16666666666667, hex_size);
             hexValueText->setChildNodeDirection(TEXT_DIR_ENUM::LTR, false);
 
+            rgbRedBg->setBoundaryRect( 0.0, hex_size, 0.33333333333333, rgb_size);
             rgbRedText->setBoundaryRect( 0.0, hex_size, 0.11111111111111, rgb_size);
+            rgbGreenBg->setBoundaryRect( 0.33333333333333, hex_size, 0.33333333333333, rgb_size);
             rgbGreenText->setBoundaryRect( 0.33333333333333, hex_size, 0.11111111111111, rgb_size);
+            rgbBlueBg->setBoundaryRect( 0.66666666666666, hex_size, 0.33333333333333, rgb_size);
             rgbBlueText->setBoundaryRect( 0.66666666666666, hex_size, 0.11111111111111, rgb_size);
 
             if( myEdgeShadow != nullptr ){
@@ -227,23 +257,24 @@ struct uiViewColor{
 
         SDL_snprintf(resultText6char, 7,  "%02x%02x%02x", color->r, color->g, color->b);
 
-        Ux::setColor(&hexValueText->backgroundColor,color->r, color->g, color->b, 255);
+
+        Ux::setColor(&hexBg->backgroundColor,color->r, color->g, color->b, 255);
         uxInstance->printStringToUiObject(hexValueText, resultText6char, DO_NOT_RESIZE_NOW);
 
         //sprintf(resultText6char, "%3d", color->r);
         SDL_snprintf(resultText6char, 7,  "%3d", color->r);
 
-        rgbRedText->backgroundColor.a = SDL_min(color->r * alphaMulitiplier, 255);
+        rgbRedBg->backgroundColor.a = SDL_min(color->r * alphaMulitiplier, 255);
         uxInstance->printStringToUiObject(rgbRedText, resultText6char, DO_NOT_RESIZE_NOW);
 
         //sprintf(resultText6char, "%3d", color->g);
         SDL_snprintf(resultText6char, 7,  "%3d", color->g);
-        rgbGreenText->backgroundColor.a = SDL_min(color->g * alphaMulitiplier, 255);
+        rgbGreenBg->backgroundColor.a = SDL_min(color->g * alphaMulitiplier, 255);
         uxInstance->printStringToUiObject(rgbGreenText, resultText6char, DO_NOT_RESIZE_NOW);
 
         //sprintf(resultText6char, "%3d", color->b);
         SDL_snprintf(resultText6char, 7,  "%3d", color->b);
-        rgbBlueText->backgroundColor.a = SDL_min(color->b * alphaMulitiplier, 255);
+        rgbBlueBg->backgroundColor.a = SDL_min(color->b * alphaMulitiplier, 255);
         uxInstance->printStringToUiObject(rgbBlueText, resultText6char, DO_NOT_RESIZE_NOW);
 
 

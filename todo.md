@@ -24,6 +24,13 @@ consider squarify on widescreen texts for hex/rgb?
 
 verify 2048 limit 
 
+esc key exit modals (desktop platforms)
+
+close button for historyPalleteHolder ???  
+
+when picking hue grad, consider selected hue's S V values? (obvious need to restrict quadrants still)
+
+home pressed - maybe ios screenshot? time for gimicky marketing ploy
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -47,7 +54,6 @@ remove myScrollController just use myUiController instead of the 1off (not neces
 remove hasInteraction hasInteractionCb just use nullptr check... (meh)
 fix crop of rounded corners in scrollers (see cleanup shader code)
 
-close button for historyPalleteHolder ???  
 
 ux feedback when nav arrow is pressed
   -see setInteractionBegin should work now....
@@ -77,7 +83,6 @@ perhaps one must swipe too far left to show delete button // swipe left (on desk
 > hide scrolly arrows on touchy devices
 
 ## desktop any
-esc key exit modals (desktop platforms)
 desktop scroll wheel in pallete (modal)
 other keypress support (modal confirm enter, ...)
 click bg to dismiss any modal such as historyPalleteHolder, yesno?, etc
@@ -103,11 +108,14 @@ win impl
 
 ### android
 // (done?) timer keeps firign in background if file chooser is left open... // we tried this but we can't pick an image... not quite sure why yet... compare logs?
-tons of "unrecognized event" in log durring pan - maybe we should listen to this event...
+tons of "unrecognized event" in log durring pan - maybe we should listen to this event...  ALSO IOS
 built in back button - make it work like esc would work
+     SDL_Log("back/esc pressed");
+
 
 ### ios
 anything using main loop timers (processed on main loop) are not processed....
   ^ uncomment lines above pickerForPercentV(&percent); to test it out... eg USER EVENT 1
+  tons of "unrecognized event" in log durring pan - maybe we should listen to this event...  ALSO IOS
   ^ this is at least addressed / worked around.... potential for future issues though since these custom events are just not processed
 10 phone special stuffs?

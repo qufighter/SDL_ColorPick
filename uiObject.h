@@ -427,6 +427,14 @@ struct uiObject
         doesRenderChildObjects = true;
     }
 
+    void squarifyChildren(){
+        if( hasChildren  ){
+            for( int x=0,l=childListIndex; x<l; x++ ){
+                childList[x]->squarify();
+            }
+        }
+    }
+
     void squarify(){
         squarify(true, false, false);
     }

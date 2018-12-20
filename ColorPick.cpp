@@ -371,7 +371,8 @@ void OpenGLContext::setupScene(void) {
 //    ColorPick iOS SDL(4046,0x10d290380) malloc: *** set a breakpoint in malloc_error_break to debug
     // todo: wrong number of items in list -> crash simulator
     Ux::uiList<const char*, Uint8>* textureList = new Ux::uiList<const char*, Uint8>(128);
-    textureList->add("textures/4.png");
+    textureList->add("textures/intro-image.png");
+    //textureList->add("textures/4.png");
 
 #ifdef DEVELOPER_TEST_MODE
    // textureList->add("textures/simimage_NOEXIST.png");
@@ -424,7 +425,12 @@ void OpenGLContext::setupScene(void) {
     fullPickImgSurface = textures->ConvertSurface(textures->LoadSurface(*testTexturesBuiltin->next()));
     loadedImageMaxSize = SDL_max(fullPickImgSurface->clip_rect.w, fullPickImgSurface->clip_rect.h);
 
+    //SDL_Log("position before %i %i" , position_x, position_y); < see
+    position_x=0;
+    position_y= (fullPickImgSurface->h * 0.5) - 513;
 
+    //fullPickImgSurface->h
+    //2047
 
     // slower attempt....
 //
@@ -803,7 +809,7 @@ void OpenGLContext::renderScene(void) {
 
         generalUx->hideHistoryPalleteIfShowing(); // panning background...
 
-        //SDL_Log("position before %d %d" , position_x, position_y);
+        //SDL_Log("position before %i %i" , position_x, position_y);0 1535
 
         // pass a reference to the posiiton - then use that, rather than above
         // since textureId_default is not changing..... we should omit it here... (we keep moving it, but we can move it in shader...) // maths
@@ -899,12 +905,12 @@ void OpenGLContext::renderScene(void) {
     debugGLerror("renderScene glDisable(GL_BLEND");
 
 
-#ifdef __ANDROID__
+//#ifdef __ANDROID__  // also needed on IOS!!
     // there is probably a better ifdef we can use for EGL OES or something like that... its not a "core" context ??? or just forgets we bound this??? not sure...
     glBindVertexArray(rect_vaoID[0]); // Bind our Vertex Array Object GL_INVALID_OPERATION (except android?)
     debugGLerror("renderScene glBindVertexArray(rect_vaoID");
     /// maybe itz caused by SDL_GL_SwapWindow
-#endif
+//#endif
 //
 //        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rect_triangleStripIndexBuffer); // its already bound ?
 //        debugGLerror("renderScene glBindBuffer(GL_ELEMENT_ARRAY_BUFFER");

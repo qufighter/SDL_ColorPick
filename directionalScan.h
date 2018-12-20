@@ -401,7 +401,7 @@ struct DirectionalScan
                     }
                 }
             }else{
-                SDL_Log("skipping invalid vector %i %i ", getVector(de)->x, getVector(de)->y);
+                //SDL_Log("skipping invalid vector %i %i ", getVector(de)->x, getVector(de)->y);
             }
         }
 
