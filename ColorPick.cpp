@@ -708,52 +708,34 @@ float OpenGLContext::getPixelMovementFactor(){
     if( factor < 1 ) factor = 1.0; // basically negates the normal effects of this block to slow things, when this is 1.0 we move 1px per px movement
 
     if( openglContext->fishEyeScale <= FISHEYE_SLOW_ZOOM_THRESHOLD ){
-
         //factor = (0.05 - openglContext->fishEyeScalePct) * 80;
-        factor /= 25;
+        factor /= 25.0;
     }
 //    SDL_Log("bigPixelSize          %i" , bigPixelSize);
 //    SDL_Log("computed factor %f" , factor);
-
     return factor;
 }
 
 void OpenGLContext::triggerMovement(){
-
     //    SDL_Log("fishEyeScale    %f" , fishEyeScale);
     //    SDL_Log("fishEyeScalePct %f" , fishEyeScalePct);
 
     float pxFactor = getPixelMovementFactor();
 
     //SDL_Log("Velocity is: %f %f", openglContext->pixelInteraction.vx, openglContext->pixelInteraction.vy);
-
     accumulated_movement_x += openglContext->pixelInteraction.rx;
     accumulated_movement_y += openglContext->pixelInteraction.ry;
-
-//    colorPickState->mmovex = openglContext->pixelInteraction.rx;
-//    colorPickState->mmovey = openglContext->pixelInteraction.ry;
-
-    // velocity has a multiplier the closer
-    //OpenGLContext->fishEyeScalePct is to zero
-    // below 0.1
-    //
-
 
 //    if( false && openglContext->fishEyeScale <= FISHEYE_SLOW_ZOOM_THRESHOLD /*openglContext->fishEyeScalePct < 0.05*/ ){
 //        // to move faster when zoomed out (sensible)
 ////        colorPickState->mmovex = accumulated_movement_x *( 1 + (factor));
 ////        colorPickState->mmovey = accumulated_movement_y *( 1 + (factor));
-//
 //        colorPickState->mmovex = accumulated_movement_x / (factor);
 //        colorPickState->mmovey = accumulated_movement_y / (factor);
-//
-//
 //        accumulated_movement_x=0;
 //        accumulated_movement_y=0; // fully applied
 //
 //    }else if( openglContext->fishEyeScale > FISHEYE_SLOW_ZOOM_THRESHOLD){
-
-
 //        colorPickState->mmovex = accumulated_movement_x;
 //        colorPickState->mmovey = accumulated_movement_y;
 //        accumulated_movement_x=0;
@@ -769,7 +751,6 @@ void OpenGLContext::triggerMovement(){
 
     accumulated_movement_x-=resultx * pxFactor;
     accumulated_movement_y-=resulty * pxFactor; // at least partially applied, but also a good chance result x/y is 0
-
 
     //SDL_Log("MOUSE xy %d %d", colorPickState->mmovex,colorPickState->mmovey);
     openglContext->renderShouldUpdate = true;
