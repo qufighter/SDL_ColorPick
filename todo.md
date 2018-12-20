@@ -24,6 +24,8 @@ when picking hue grad, consider selected hue's S V values? (obvious need to rest
 
 home pressed - maybe ios screenshot? time for gimicky marketing ploy
 
+reshape window - zoom indicator becomes WRONG!!!!
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)

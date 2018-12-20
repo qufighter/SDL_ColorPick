@@ -56,10 +56,13 @@ void main()
 
 
     if( widthHeightRatio > 1.0 ){ //squareify
+        // widescreen
         gl_Position=vec4(position.x, position.y * widthHeightRatio, position.z, position.a);
     }else{
         gl_Position=vec4(position.x / widthHeightRatio, position.y, position.z, position.a);
     }
+
+
 
     //gl_Position=position;
     //gl_Position=position * vec4(1.0,widthHeightRatio,1.0,1.0);

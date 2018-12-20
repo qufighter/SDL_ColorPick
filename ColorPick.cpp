@@ -704,7 +704,11 @@ void OpenGLContext::triggerMovement(){
     //OpenGLContext->fishEyeScalePct is to zero
     // below 0.1
     //
-    if( openglContext->fishEyeScalePct < 0.05 ){
+
+    SDL_Log("fishEyeScale    %f" , fishEyeScale);
+    SDL_Log("fishEyeScalePct %f" , fishEyeScalePct);
+
+    if( openglContext->fishEyeScale <= FISHEYE_SLOW_ZOOM_THRESHOLD /*openglContext->fishEyeScalePct < 0.05*/ ){
         // to move faster when zoomed out (sensible)
         float factor = (0.05 - openglContext->fishEyeScalePct);
         colorPickState->mmovex = accumulated_movement_x *( 1 + (80.0 * factor));
@@ -714,9 +718,29 @@ void OpenGLContext::triggerMovement(){
         accumulated_movement_y=0; // fully applied
 
     }else if( openglContext->fishEyeScale > FISHEYE_SLOW_ZOOM_THRESHOLD){
+        // 64 - 0.25 * screen larger dimension - sqrt 64 = 8.0
+        // 32 - 0.178362573099415
+        // 16 - 0.126705653021442
+        // 5.2 - 0.8333
+        // 1.5 - 0.038011695906433
+        float screen_pct = (SDL_sqrtf(fishEyeScale) / 8.0) * 0.25;
+        int bigPixelSize = 1;
+        if( colorPickState->viewport_ratio > 1.0 ){
+            bigPixelSize = colorPickState->windowWidth * screen_pct;
+        }else{
+            bigPixelSize = colorPickState->windowHeight * screen_pct;
+        }
+
 
         float factor = ((openglContext->fishEyeScale - FISHEYE_SLOW_ZOOM_THRESHOLD) / (MAX_FISHEYE_ZOOM - FISHEYE_SLOW_ZOOM_THRESHOLD)) * FISHEYE_SLOW_ZOOM_MAX;
-        if( factor < 1 ) factor = 1.0; // basically negates the normal effects of this block to slow things when this is 1.0
+
+        factor = bigPixelSize * 0.5; // the big pixel is N across, we must move by this much to move 1px... but if we start center pixel its half that much
+        if( factor < 1 ) factor = 1.0; // basically negates the normal effects of this block to slow things, when this is 1.0 we move 1px per px movement
+
+
+        SDL_Log("bigPixelSize          %i" , bigPixelSize);
+        SDL_Log("computed factor %f" , factor);
+
 
         //SDL_Log("max zoom time: current:%f max:%f threshold:%f range:%f computed factor: %f", openglContext->fishEyeScale, MAX_FISHEYE_ZOOM, FISHEYE_SLOW_ZOOM_THRESHOLD, FISHEYE_SLOW_ZOOM_MAX, factor);
 
