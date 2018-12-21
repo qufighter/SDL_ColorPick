@@ -32,7 +32,8 @@ OpenGLContext::OpenGLContext(void) {
     last_mode_hue_picker = false;
     lastTrueFullPickImgSurface=nullptr;
 
-    pixelInteraction.friction=6.3;
+    pixelInteraction.friction=6.9;
+    pixelInteraction.useInstantaneousVelocity=true;
 }
 
 SDL_Window* OpenGLContext::getSdlWindow(){
@@ -211,20 +212,27 @@ void OpenGLContext:: loadNextTestImage(){
     //SDL_Log("really done loading new surface.... right?");
 }
 
-void OpenGLContext:: pickerForHue(HSV_Color* color, SDL_Color* desired_color){
-
-    prepareForHuePickerMode();
-
+int OpenGLContext::huePositionX(HSV_Color* color){
     int cp_x=(((color->s)/100.0)*255.0);
-    int cp_y=(((100.0-color->v)/100.0)*255.0);
+    //SDL_Log("current position x %i <--- computed", cp_x );
+    return (-cp_x) + 127;
+}
 
-    SDL_Log("current position x/y %i/%i <--- computed", cp_x, cp_y );
+int OpenGLContext::huePositionY(HSV_Color* color){
+    int cp_y=(((100.0-color->v)/100.0)*255.0);
+    //SDL_Log("current position y %i <--- computed", cp_y );
+    return (-cp_y) + 127;
+}
+
+void OpenGLContext::pickerForHue(HSV_Color* color, SDL_Color* desired_color){
+
+    prepareForHuePickerMode(false);
 
     int ix = position_x; // used for logging debug only....
     int iy = position_y;
 
-    position_x = (-cp_x) + 127;
-    position_y = (-cp_y) + 127;
+    position_x = huePositionX(color);
+    position_y = huePositionY(color);
 
     SDL_Log("moved by x/y %i/%i <--- computed", ix-position_x, iy-position_y );
 
@@ -282,7 +290,7 @@ void OpenGLContext:: pickerForHue(SDL_Color* color){
 //    position_y = 0;
 
 
-    prepareForHuePickerMode(); // this is no-op if we are already in mode
+    prepareForHuePickerMode(true); // this is no-op if we are already in mode
 
     // show the button to return now....
     generalUx->returnToLastImgBtn->showAndAllowInteraction();
@@ -311,7 +319,7 @@ void OpenGLContext:: pickerForHue(SDL_Color* color){
 
 }
 
-void OpenGLContext::prepareForHuePickerMode(void) {
+void OpenGLContext::prepareForHuePickerMode(bool fromHueGradient) {
     if( !last_mode_hue_picker ){
 
         last_mode_position_x = position_x;
@@ -322,6 +330,25 @@ void OpenGLContext::prepareForHuePickerMode(void) {
         // in general if we were NOT picking hue before, certain x/y should be avoided... since it is confusing to be greeted with a solid black screen
         // also possibly certain zoom should be avoided.....
         // if last_mode_hue_picker though - the rules enforced here should be skipped (except maybe zoom?)
+
+        // we can try to approximate a good S/V value based on previous color... we still apply constraints
+        // score opportunity for picking right hue?
+
+        if( fromHueGradient ){
+            HSV_Color lastSelection;
+            lastSelection.fromColor(&textures->selectedColor);
+            position_x = huePositionX(&lastSelection);
+            position_y = huePositionY(&lastSelection);
+            if( lastHue != nullptr ){
+                Uint16 pickedHue = lastSelection.h;
+                lastSelection.fromColor(lastHue);
+                if( SDL_abs(pickedHue - lastSelection.h) < 5 ){
+                    generalUx->defaultScoreDisplay->displayExplanation("Right Hue're");
+                    generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 10, SCORE_EFFECTS::NOMOVE);
+                }
+            }
+        }
+
         if( position_x > 0 ){
             position_x = 0;
         }

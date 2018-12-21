@@ -81,7 +81,7 @@ public:
     SDL_Window *sdlWindow;
     bool createContext(SDL_Window *sdlWindow); // Creation of our OpenGL 3.x context
     void destroyContext();
-    void prepareForHuePickerMode(void);
+    void prepareForHuePickerMode(bool fromHueGradient);
     void createUI(void);
     void setupScene(void); // All scene information can be setup here
     void reshapeWindow(int w, int h); // Method to get our window width and height on resize
@@ -147,6 +147,11 @@ public:
     void imageWasSelectedCb(SDL_Surface *myCoolSurface);
     bool restoreLastSurface();
     void loadNextTestImage();
+
+
+    int huePositionX(HSV_Color* color);
+    int huePositionY(HSV_Color* color);
+
     void pickerForHue(HSV_Color* color, SDL_Color* desired_color);
     void pickerForHue(SDL_Color* color);
     void updateColorPreview(void);

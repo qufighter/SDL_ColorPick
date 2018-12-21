@@ -18,6 +18,8 @@ when picking hue grad, consider currently picked color selected hue's S V values
    ^ maintain relative brightness of current selected color..... could be nice
 
 
+clear color is 1 off... sync it up for fun...
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
