@@ -21,8 +21,7 @@ when picking hue grad, consider selected hue's S V values? (obvious need to rest
 
 home pressed - maybe ios screenshot? time for gimicky marketing ploy
 
-back button strangeness - dismissal by "nav to color" hsv - seems to not clear the modal
-     -- actually esc will continually re-trigger - seems like the final modal is not cleared??? (only after above occurs)
+lightening bolt first click delete checked only? // we should show delete x on all visible tiles....
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)

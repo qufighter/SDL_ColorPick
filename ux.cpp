@@ -48,6 +48,10 @@ void Ux::updateModal(uiObject *newModal, anInteractionFn pModalDismissal){
 void Ux::endModal(uiObject *oldModal){
     if( currentModal == oldModal ){
         currentModal = oldModal->modalParent;
+    }else{
+        // it is possible oldModal is in the chain of modals....
+        // if it isn't then maybe this should be a no-op instead?
+        currentModal = nullptr;
     }
 }
 void Ux::endCurrentModal(){
@@ -1422,6 +1426,11 @@ void Ux::interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta
         self->historyPalleteHolder->is_being_viewed_state = true;
         //self->historyScroller->allowUp = true;
         self->updateModal(self->historyPalleteHolder, &Ux::interactionToggleHistory);
+
+        // WE JUST PUSHED OUR MODAL... HOWEVER IF OUR CURRENT STATE SHOWS THE SELECTED COLOR, THAT SHOULD BE THE FIFRST MODAL DISMISSED BY ESC/BACK.... ??
+//        if( self->palleteSelectionPreviewHolder->is_being_viewed_state ) {
+//            self->updateModal(self->palleteSelectionPreviewHolder, &Ux::interactionTogglePalletePreview);
+//        }
     }
 }
 
