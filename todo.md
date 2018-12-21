@@ -9,25 +9,27 @@ sort pallete colors
 
 movement velocity platform diffences (android) (dupe)
 
-scoreboard
-  uxInstance->uxAnimations->scale_bounce(score_position, 0.001);
-  
 add version string somewhere (do not let it look like an IP address!)  maybe this is plat specifc/bundle specific?
  > AndroidManifest.xml
 
-verify 2048 limit 
+arrow interaction repeat....
 
-when picking hue grad, consider selected hue's S V values? (obvious need to restrict quadrants still)
+when picking hue grad, consider currently picked color selected hue's S V values? (obvious need to restrict quadrants still)
+   ^ maintain relative brightness of current selected color..... could be nice
 
-home pressed - maybe ios screenshot? time for gimicky marketing ploy
-
-lightening bolt first click delete checked only? // we should show delete x on all visible tiles....
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 ##  can do
+
+huge negative score values are frequently not displayed ( -SDL_MAX_SINT32 ? )
+
+home pressed - maybe ios screenshot? time for gimicky marketing ploy
+
+lightening bolt first click delete checked only? // we should show delete x on all visible tiles....
+^ - instead this should be something we can trigger from the modal for a single delete "all checked" or something like that....
 
 pallete swatch color -> huePicker for adjustment ( see cp_set_from_hsv )
 ^ above is basically "done" but further optimizations could be good

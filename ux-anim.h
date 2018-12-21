@@ -159,6 +159,11 @@ struct uiAnimation
         return this;
     }
 
+    uiAnimation* setDuration(int ms){
+        durationMs = ms;
+        return this;
+    }
+
     uiAnimation* setAnimationCallback(animationUpdateCallbackFn pAnimUpdateFn){
         if( pAnimUpdateFn != nullptr)
             myAnimationCallbackFn = pAnimUpdateFn;
@@ -193,7 +198,7 @@ struct uiAnimation
         return new Float_Rect(self->myUiObject->boundryRect); // why are we copying the rect? its leaking hte memory?  (well the rect is in fact modified so we had better copy it?)  try freeing it right after its returned... you will find SDL_free(newBoundaryRect);, so the scrollAnimationUpdaterCb always handles freeing this, so its not !
     }
 
-    // this is animationUpdateCallbackFn
+    // this is animationUpdateCallbackFn - if you implement your own you have to free the rect when you are done with it
     static void defaultUiObjectAnimationupdater(uiAnimation* self, Float_Rect *newBoundaryRect){
         Ux::setRect(&self->myUiObject->boundryRect, newBoundaryRect->x, newBoundaryRect->y, newBoundaryRect->w, newBoundaryRect->h);
         SDL_free(newBoundaryRect);
@@ -866,10 +871,14 @@ struct UxAnim
     }
 
     uiAminChain* scale_bounce(Ux::uiObject *uiObject, float intensity, glm::mat4 resetToMat){
+        return scale_bounce(uiObject, intensity, resetToMat, 1000);
+    }
+
+    uiAminChain* scale_bounce(Ux::uiObject *uiObject, float intensity, glm::mat4 resetToMat, int durationMs){
         uiAminChain* myAnimChain = new uiAminChain();
-        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialScaleVelocity(-intensity, -intensity) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialScaleVelocity(-intensity, -intensity)->setDuration(durationMs) );  // duration does not strictly work, its not time bounded.... friction bounded
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->resetPosition() );
-        myAnimChain->addAnim( (new uiAnimation(uiObject))->resetMatrix(resetToMat) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->resetMatrix(resetToMat)->setDuration(durationMs) );
         pushAnimChain(myAnimChain);
         return myAnimChain;
     }

@@ -255,15 +255,18 @@ void OpenGLContext:: pickerForHue(HSV_Color* color, SDL_Color* desired_color){
         float matchDistance = textures->directionalScan->lastBestDistance;
 
         if( matchDistance == 0 ){
-            generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 1, SCORE_EFFECTS::NOMOVE);
+            // exact match, after moving
+            generalUx->defaultScoreDisplay->displayExplanation(" [ ] ");
+            generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 13, SCORE_EFFECTS::NOMOVE);
         }else{
+            generalUx->defaultScoreDisplay->displayExplanation("*in-exact!!");
             generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, matchDistance * 14, SCORE_EFFECTS::NOMOVE);
         }
         // next up - modulate scoring based on exactness... further off more points....
 
     }else{
-        // rare spot on guess....
-        generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 13, SCORE_EFFECTS::NOMOVE);
+        // rare spot on guess.... no need to move at all!!!!
+        generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 1, SCORE_EFFECTS::NOMOVE);
     }
 }
 

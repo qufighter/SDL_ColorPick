@@ -237,6 +237,8 @@ struct uiYesNoChoice{
             // and even instances would need configurable callback...
 
             uxInstance->defaultScoreDisplay->display(interactionObj, 10 * self->last_num_delete, SCORE_EFFECTS::MOVE_UP);
+            uxInstance->defaultScoreDisplay->displayExplanation(" Much Risk ");
+
             uxInstance->uxAnimations->spin_negative(self->yes, 15);
 
             return;
@@ -267,6 +269,8 @@ struct uiYesNoChoice{
             // score can maybe be a function of how complete the animation is??
 
             uxInstance->defaultScoreDisplay->display(interactionObj, 10, SCORE_EFFECTS::MOVE_UP);
+            uxInstance->defaultScoreDisplay->displayExplanation("  So Fast  ");
+
             //uxInstance->uxAnimations->spin_reset(self->no, 15);
             uxInstance->uxAnimations->spin(self->no, 25);
 

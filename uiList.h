@@ -67,6 +67,7 @@ struct uiList
         _nextIndex=0;
         _previousIndex=-1;
         _largestIndex=-1;
+        _out_of_space = false;
         clearIndex();
     }
 
@@ -103,6 +104,7 @@ struct uiList
     int _previousIndex;
     int _largestIndex;
     int _tmp_index_offset;
+    bool _out_of_space;
 
     bool _indexed;
     int _indexSize;
@@ -154,6 +156,9 @@ struct uiList
         if( _nextIndex >= maxSize ){
             //_nextIndex = 0; // LOOP!!!
             _nextIndex = maxSize-1; // stuck
+            _out_of_space= true;
+        }else{
+            _out_of_space= false;
         }
 
         return _previousIndex;

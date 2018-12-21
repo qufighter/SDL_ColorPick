@@ -265,7 +265,9 @@ static Ux* Singleton();
     //int pickHistoryIndex = 0;
     //int lastPickHistoryIndex = -1;
     //int largestPickHistoryIndex=0; // how far in history we have gone, to allow loop if we have greater history available
-    static const int pickHistoryMax = 4096;  // cannot be less than SIX_ACROSS
+    static const int pickHistoryMax = 8192;  // cannot be less than SIX_ACROSS
+    //static const int pickHistoryMax = 7;
+
     //SDL_Color pickHistory[pickHistoryMax];
     static bool updateUiObjectFromHistory(uiObject *historyTile, int offset);
     static int getHistoryTotalCount();
@@ -278,6 +280,7 @@ static Ux* Singleton();
     //int lastPalleteIndex = -1;
     //int largestPalleteIndex=-1; // how far in history we have gone, to allow loop if we have greater history available
     static const int palleteMax = 254; // 254 // WARN do not exeede max size Uint8 palleteColorsIndex 255
+    //static const int palleteMax = 4;
     //SDL_Color palleteColors[palleteMax];
     static bool updateUiObjectFromPallete(uiObject *historyTile, int offset);
     static int getPalleteTotalCount();
@@ -359,7 +362,7 @@ static Ux* Singleton();
 
 
     SDL_Color* currentlyPickedColor;
-    HSV_Color* lastHue;
+    HSV_Color* lastHue;  // bad var name?  this is an SDL_Color in ColorPick.h...
 
     char* historyPath;
     char* palletePath;

@@ -152,6 +152,7 @@ void Ux::readInState(void){
 
     eachElementSize = sizeof(Sint32);
     int maxReads = 2 * eachElementSize;
+    Sint32 tempRead = 0;
     SDL_RWops* fileref = SDL_RWFromFile(scoresPath, "r");
     if( fileref == NULL ) return;
     Sint64 filesize = SDL_RWsize(fileref); // this filesize is in ? units... not a count of u8? (actually it seems to count u8s)
@@ -161,9 +162,30 @@ void Ux::readInState(void){
         currentPosition++;
     }
     if( currentPosition < filesize && currentPosition < maxReads ){
-        defaultScoreDisplay->int_score = SDL_ReadLE32(fileref);
+        tempRead = SDL_ReadLE32(fileref);
         currentPosition++;
     }
+    if( defaultScoreDisplay->int_max_score != tempRead ){
+        defaultScoreDisplay->int_max_score = 0; // corrupted file!
+        SDL_Log("File appears to be corrupted, resetting high score");
+    }
+
+    if( currentPosition < filesize && currentPosition < maxReads ){
+        defaultScoreDisplay->int_score = SDL_ReadBE32(fileref);
+        currentPosition++;
+    }
+    if( currentPosition < filesize && currentPosition < maxReads ){
+        tempRead = SDL_ReadLE32(fileref);
+        currentPosition++;
+    }
+    if( defaultScoreDisplay->int_score != tempRead ){
+        defaultScoreDisplay->int_score = 0; // corrupted file!
+        SDL_Log("File appears to be corrupted, resetting score");
+    }
+
+    //defaultScoreDisplay->int_score = SDL_MAX_SINT32;
+    //defaultScoreDisplay->int_max_score = 0;
+
     SDL_RWclose(fileref);
     //*readSize = currentPosition;
 }
@@ -234,6 +256,8 @@ void Ux::writeOutState(void){
 
     fileref = SDL_RWFromFile(scoresPath, "w");
     SDL_WriteBE32(fileref, defaultScoreDisplay->int_max_score);
+    SDL_WriteLE32(fileref, defaultScoreDisplay->int_max_score);
+    SDL_WriteBE32(fileref, defaultScoreDisplay->int_score);
     SDL_WriteLE32(fileref, defaultScoreDisplay->int_score);
     SDL_RWclose(fileref);
 
@@ -352,8 +376,8 @@ void Ux::resizeUiElements(void){
 
 
         temp = 0.15;
-        movementArrows->resize(Float_Rect(0.27777777777778, temp,
-            1.0 - 0.27777777777778 - 0.27777777777778, 1.0 - temp - temp));
+        movementArrows->resize(Float_Rect(0.27777777777778, 0.0,
+            1.0 - 0.27777777777778 - 0.27777777777778, 1.0));
 
         curerntColorPreview->resize(Float_Rect(0.0, ws_clock, 0.27777777777778, 1.0 - ws_clock));
 
@@ -424,7 +448,7 @@ void Ux::resizeUiElements(void){
             palleteSelectionPreviewHolder->setInteraction(&Ux::interactionVert);
                 palleteSelectionColorPreview->resize(Float_Rect(0.0, 0.0, 1.0, 1.0));
 
-        temp = 0.27777777777778 + 0.06;
+        temp = 0.27777777777778 + 0.04;
         movementArrows->resize(Float_Rect(0.0, temp, 1.0, 1.0 - temp - temp));
         curerntColorPreview->resize(Float_Rect(0.0, clock_bar, 1.0, 0.27777777777778));
 
@@ -602,12 +626,12 @@ Ux::uiObject* Ux::create(void){
     zoomSlider = new uiObject();
     zoomSlider->hasBackground = true;
     Ux::setColor(&zoomSlider->backgroundColor, 255, 255, 255, 255);
-    Ux::setColor(&zoomSlider->foregroundColor, 0, 0, 0, 1); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+    Ux::setColor(&zoomSlider->foregroundColor, 0, 0, 0, 50); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
     zoomSlider->setInteraction(&Ux::interactionHZ);//zoomSlider->canCollide = true;
     //printCharToUiObject(zoomSlider, '^', DO_NOT_RESIZE_NOW);
     //printCharToUiObject(zoomSlider, CHAR_VERTICAL_BAR_POINTED, DO_NOT_RESIZE_NOW);
     printCharToUiObject(zoomSlider, CHAR_ZOOM_PLUSS, DO_NOT_RESIZE_NOW);
-    zoomSlider->setRoundedCorners(0.5);
+    zoomSlider->setRoundedCorners(0.486);
     zoomSliderHolder->addChild(zoomSlider);
 
 
@@ -1300,6 +1324,8 @@ void Ux::clickPalleteColor(uiObject *interactionObj, uiInteraction *delta){ // s
 
             if( myUxRef->defaultYesNoChoiceDialogue->isDisplayed ){ return; }
 
+            // ColorList* listItem = myUxRef->palleteList->get(removeButton->myIntegerIndex);
+
             // we should show delete x on all visible tiles....
             for( int x=0,l=myUxRef->palleteScroller->scrollChildContainer->childListIndex; x<l; x++ ){
                 uiObject* childObj = myUxRef->palleteScroller->scrollChildContainer->childList[x];
@@ -1527,6 +1553,8 @@ void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // s
 
             if( myUxRef->defaultYesNoChoiceDialogue->isDisplayed ){ return; }
 
+            // ColorList* listItem = myUxRef->pickHistoryList->get(removeButton->myIntegerIndex);
+
             // we should show delete x on all visible tiles....
             for( int x=0,l=myUxRef->historyScroller->scrollChildContainer->childListIndex; x<l; x++ ){
                 uiObject* childObj = myUxRef->historyScroller->scrollChildContainer->childList[x];
@@ -1603,13 +1631,18 @@ void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // s
 
         myUxRef->defaultScoreDisplay->loose(interactionObj, SCORE_EFFECTS::NOMOVE);
 
-        
         return;
     }
 
-    myUxRef->defaultScoreDisplay->display(interactionObj, 5, SCORE_EFFECTS::NOMOVE);
+
 
     myUxRef->palleteList->add(ColorList(interactionObj->backgroundColor));
+    if( myUxRef->palleteList->_out_of_space ){
+        myUxRef->defaultScoreDisplay->displayExplanation("out of space!");
+        myUxRef->defaultScoreDisplay->display(interactionObj, 10, SCORE_EFFECTS::NOMOVE);
+    }else{
+        myUxRef->defaultScoreDisplay->display(interactionObj, 5, SCORE_EFFECTS::NOMOVE);
+    }
 
     myUxRef->updatePalleteScroller();
 
@@ -2196,8 +2229,13 @@ void Ux::addCurrentToPickHistory(){
     }
 
     pickHistoryList->add(ColorList(*currentlyPickedColor));
+    if( pickHistoryList->_out_of_space ){
+        defaultScoreDisplay->displayExplanation("out of space!");
+        defaultScoreDisplay->display(historyPreview->childList[0], 2);
+    }else{
+        defaultScoreDisplay->display(historyPreview->childList[0], 1);
+    }
 
-    defaultScoreDisplay->display(historyPreview->childList[0], 1);
 
     updatePickHistoryPreview();
 

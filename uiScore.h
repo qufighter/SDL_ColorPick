@@ -12,6 +12,7 @@ struct uiScore{
         int_score = 0;
         int_max_score = 0;
         maxLen = 14;
+        isHighScore=false;
         score_disp_char = (char*)SDL_malloc( sizeof(char) * maxLen );
 
         //int_score = SDL_MAX_SINT32 - 3; // TEST ONLY!  - simulate overflow condition.....
@@ -22,6 +23,10 @@ struct uiScore{
 
         score = new uiObject();
         score_position = new uiObject();
+
+        explanation = new uiObject();
+        explanation_position = new uiObject();
+
 
         uiObjectItself->myUiController = this; // this propagates to the other child objects
 
@@ -42,6 +47,7 @@ struct uiScore{
 
         //score->squarify();
         score->squarifyKeepHz();
+        explanation->squarifyKeepHz();
 
 
 
@@ -51,11 +57,15 @@ struct uiScore{
 
         //no->setBoundaryRect( 0.0+pad, 0.5-hh, w, h);
 
+        explanation_position->setBoundaryRect( 0.5, 0.5, w, w);
         score_position->setBoundaryRect( 0.5, 0.5, w, w);
 
+        explanation->setBoundaryRect( -0.5, -0.5, 1.0, 1.0); // on right
         score->setBoundaryRect( -0.5, -0.5, 1.0, 1.0); // on right
 
 
+        explanation_position->addChild(explanation);
+        uiObjectItself->addChild(explanation_position);
 
         score_position->addChild(score);
         uiObjectItself->addChild(score_position);
@@ -78,6 +88,9 @@ struct uiScore{
         chain2 = uxInstance->uxAnimations->softBounce(score_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
         chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
 
+        chain4 = uxInstance->uxAnimations->reset_matrix(explanation_position)->preserveReference();
+        chain5 = uxInstance->uxAnimations->softBounce(explanation_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
+        chain6 = uxInstance->uxAnimations->scale_bounce(explanation_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
 
     }
 
@@ -86,8 +99,11 @@ struct uiScore{
     uiObject* uiObjectItself; // no real inheritance here, this its the uiSqware, I would use self->
     uiObject *score_position;
     uiObject *score;
+    uiObject *explanation;
+    uiObject *explanation_position;
 
     char* score_disp_char;
+    bool isHighScore;
     Sint32 int_score;
     Sint32 int_max_score;
     int maxLen;
@@ -95,14 +111,22 @@ struct uiScore{
     uiAminChain* chain1;
     uiAminChain* chain2;
     uiAminChain* chain3;
+    uiAminChain* chain4; // explanation chains...
+    uiAminChain* chain5;
+    uiAminChain* chain6;
+
 
     void loose(uiObject *p_dispalyNearUiObject){
         loose(p_dispalyNearUiObject, SCORE_EFFECTS::DEFAULT);
     }
 
     void loose(uiObject *p_dispalyNearUiObject, int effectNum){
+        if( isHighScore && int_score > 10 ){
+            displayExplanation("  High Score!");
+        }
         display(p_dispalyNearUiObject, -int_score, effectNum);
         int_score = 0; // this is sort of redundant probably....
+        isHighScore = false;
     }
 
     void display(uiObject *p_dispalyNearUiObject, int numberToDisplay){
@@ -129,6 +153,7 @@ struct uiScore{
             if( int_score + numberToDisplay < 0 ){
                 // this is pretty special... means we overflowed Sint32...
                 // we could modulate color/ animation/ etc...
+                displayExplanation("int overflow!");
             }
 
             Float_Rect* dispRect = &p_dispalyNearUiObject->collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
@@ -208,13 +233,55 @@ struct uiScore{
 
         }
 
+        score_position->updateRenderPosition();
+
         int_score += numberToDisplay;
 
         if( int_score > int_max_score ){
             int_max_score = int_score;
+            isHighScore = true;
         }
+
+        //displayExplanation("-Yes it work-");
+        //displayExplanation("-Yes-");
+        //myUxRef->defaultScoreDisplay->displayExplanation("-Yes-");
     }
 
+
+    void displayExplanation(const char* textToShow){
+        // longer strings won't work... the size is critical too (since if first char goes off screen it will not render)
+        Ux* uxInstance = Ux::Singleton();
+        //bool widescreen = uxInstance->widescreen;
+
+        SDL_snprintf(score_disp_char, maxLen, "%s", textToShow);
+        uxInstance->printStringToUiObject(explanation, score_disp_char, DO_NOT_RESIZE_NOW);
+
+        float text_length = (float)SDL_strlen(score_disp_char);
+
+        float my_scale = 1.0 / text_length;
+        if( my_scale > 0.125 ){
+            my_scale = 0.125;
+        }
+        explanation_position->setBoundaryRect(0.5,  0.5, my_scale, my_scale );
+
+        explanation->boundryRect.x =  text_length * -0.5; // center
+        SDL_Log("result was %f", explanation->boundryRect.x * explanation_position->origBoundryRect.w);
+//        float hidLeftAmt = explanation_position->boundryRect.x + (explanation_position->origBoundryRect.w * explanation->boundryRect.x);
+//        if( hidLeftAmt < 0 ){
+//            explanation_position->boundryRect.x -= hidLeftAmt; // minus a negative
+//        }
+
+        chain4->endAnimation();
+        chain4 = uxInstance->uxAnimations->reset_matrix(explanation_position)->preserveReference();
+
+        chain5->endAnimation();
+        chain6->endAnimation();
+        chain5 = uxInstance->uxAnimations->spin(explanation_position, 2)->preserveReference();
+        chain6 = uxInstance->uxAnimations->scale_bounce(explanation_position, 0.017, uxInstance->uxAnimations->mat_zeroscale, 1200)->preserveReference();
+
+
+        explanation_position->updateRenderPosition();
+    }
 
     void hide(){
         uiObjectItself->hide();

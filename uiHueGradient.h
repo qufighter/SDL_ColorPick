@@ -101,6 +101,7 @@ struct uiHueGradient{
 
 
         self->lastPickPercent = percent;
+        self->showHueSlider(); // < this is a litlte dupllicate.... but provides much more instant feedback...
         //int clrOffset =  SDL_floorf(self->totalColors * percent); g
 
         //uxInstance->hueClicked(self->colorForPercent(percent));
@@ -141,6 +142,12 @@ struct uiHueGradient{
     static void pickerForPercentV(float* percent){ // don't use the arg... its out of date!
         Ux* uxInstance = Ux::Singleton();
         uiHueGradient* self = uxInstance->huePicker;
+
+        if( *percent != self->lastPickPercent ){
+            // user is not done moving it yet.... lets avoid lag?? (actually this doesn't work since its teh same float always
+            return;
+        }
+
         uxInstance->hueClicked(self->colorForPercent(self->lastPickPercent));
 
         self->showHueSlider();
