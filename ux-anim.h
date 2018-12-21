@@ -801,16 +801,55 @@ struct UxAnim
         return myAnimChain;
     }
 
-
-    uiAminChain* spin(Ux::uiObject *uiObject){ // orig soft bounce
+    uiAminChain* emptyChain(){
         uiAminChain* myAnimChain = new uiAminChain();
-        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialRotationVelocity(5) );
+        //pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
+
+    uiAminChain* spin(Ux::uiObject *uiObject, float impulse){
+        uiAminChain* myAnimChain = new uiAminChain();
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialRotationVelocity(impulse) );
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->resetPosition() );
         pushAnimChain(myAnimChain);
         return myAnimChain;
     }
 
-    uiAminChain* reset_matrix(Ux::uiObject *uiObject){ // orig soft bounce
+    uiAminChain* spin(Ux::uiObject *uiObject){
+        return spin(uiObject, 5);
+    }
+
+    uiAminChain* spin_reset(Ux::uiObject *uiObject, float impulse){
+        return spin_reset(uiObject, impulse, glm::mat4(1.0f));
+    }
+
+    uiAminChain* spin_reset(Ux::uiObject *uiObject, float impulse, glm::mat4 resetToMat){ // orig soft bounce resetToMat){ // orig soft bounce
+        uiAminChain* myAnimChain = new uiAminChain();
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialRotationVelocity(impulse) );
+        //myAnimChain->addAnim( (new uiAnimation(uiObject))->resetPosition() );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->resetMatrix(resetToMat) );
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
+
+    uiAminChain* spin_reset(Ux::uiObject *uiObject){
+        return spin_reset(uiObject, 5);
+    }
+
+    uiAminChain* spin_negative(Ux::uiObject *uiObject, float impulse){
+        return spin_negative(uiObject, impulse, glm::mat4(1.0f));
+    }
+
+    uiAminChain* spin_negative(Ux::uiObject *uiObject, float impulse, glm::mat4 resetToMat){
+        uiAminChain* myAnimChain = new uiAminChain();
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialRotationVelocity(impulse) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialRotationVelocity(-impulse * 2) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->resetMatrix(resetToMat) );
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
+
+    uiAminChain* reset_matrix(Ux::uiObject *uiObject){
         uiAminChain* myAnimChain = new uiAminChain();
         myAnimChain->addAnim( (new uiAnimation(uiObject))->resetMatrix(glm::mat4(1.0)) );
         myAnimChain->animList[0]->durationMs = 100; // argue: instead resetMatrix needs to accept more args... and so does this fn...
@@ -818,15 +857,15 @@ struct UxAnim
         return myAnimChain;
     }
 
-    uiAminChain* scale_bounce(Ux::uiObject *uiObject){ // orig soft bounce
+    uiAminChain* scale_bounce(Ux::uiObject *uiObject){
         return scale_bounce(uiObject, 0.005);
     }
 
-    uiAminChain* scale_bounce(Ux::uiObject *uiObject, float intensity){ // orig soft bounce
+    uiAminChain* scale_bounce(Ux::uiObject *uiObject, float intensity){
         return scale_bounce(uiObject, intensity, glm::mat4(1.0f));
     }
 
-    uiAminChain* scale_bounce(Ux::uiObject *uiObject, float intensity, glm::mat4 resetToMat){ // orig soft bounce
+    uiAminChain* scale_bounce(Ux::uiObject *uiObject, float intensity, glm::mat4 resetToMat){
         uiAminChain* myAnimChain = new uiAminChain();
         myAnimChain->addAnim( (new uiAnimation(uiObject))->initialScaleVelocity(-intensity, -intensity) );
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->resetPosition() );

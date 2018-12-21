@@ -252,7 +252,18 @@ void OpenGLContext:: pickerForHue(HSV_Color* color, SDL_Color* desired_color){
 //            renderShouldUpdate = true;
 //
 //        }
+        float matchDistance = textures->directionalScan->lastBestDistance;
 
+        if( matchDistance == 0 ){
+            generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 1, SCORE_EFFECTS::NOMOVE);
+        }else{
+            generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, matchDistance * 14, SCORE_EFFECTS::NOMOVE);
+        }
+        // next up - modulate scoring based on exactness... further off more points....
+
+    }else{
+        // rare spot on guess....
+        generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 13, SCORE_EFFECTS::NOMOVE);
     }
 }
 

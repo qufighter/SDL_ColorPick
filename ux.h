@@ -48,6 +48,12 @@ typedef enum { BUTTON_CLEAR_PALLETE, BUTTON_SAVE_PALLETE, PALLETE_EXTRA_BUTTONS_
 //static bool is_monitoring=false;  // THIS IS A DEBUGING VARIABLE!
 
 typedef enum  {
+    DEFAULT,
+    NOMOVE,
+    MOVE_UP
+} SCORE_EFFECTS;
+
+typedef enum  {
     NO_TEXT,
     LTR,
     RTL,

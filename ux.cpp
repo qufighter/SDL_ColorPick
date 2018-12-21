@@ -1258,10 +1258,13 @@ void Ux::clickCancelClearPallete(uiObject *interactionObj, uiInteraction *delta)
     Ux* myUxRef = Ux::Singleton();
     // we should show delete x on all visible tiles....
     for( int x=0,l=myUxRef->palleteScroller->scrollChildContainer->childListIndex; x<l; x++ ){
-        uiObject* removeButton = myUxRef->palleteScroller->scrollChildContainer->childList[x]->childList[0];
-        ColorList* listItem = myUxRef->palleteList->get(removeButton->myIntegerIndex);
-        if( listItem == nullptr || !listItem->is_delete_state ){
-            removeButton->setAnimation( myUxRef->uxAnimations->resetPosition(removeButton) );
+        uiObject* childObj = myUxRef->palleteScroller->scrollChildContainer->childList[x];
+        uiObject* removeButton = childObj->childList[0];
+        if( childObj->myIntegerIndex >= 0){
+            ColorList* listItem = myUxRef->palleteList->get(removeButton->myIntegerIndex);
+            if( listItem == nullptr || !listItem->is_delete_state ){
+                removeButton->setAnimation( myUxRef->uxAnimations->resetPosition(removeButton) );
+            }
         }
     }
     
@@ -1291,10 +1294,15 @@ void Ux::clickPalleteColor(uiObject *interactionObj, uiInteraction *delta){ // s
         if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_CLEAR_PALLETE ){
             SDL_Log("PALLETEClear Button ---------------------");
 
+            if( myUxRef->defaultYesNoChoiceDialogue->isDisplayed ){ return; }
+
             // we should show delete x on all visible tiles....
             for( int x=0,l=myUxRef->palleteScroller->scrollChildContainer->childListIndex; x<l; x++ ){
-                uiObject* removeButton = myUxRef->palleteScroller->scrollChildContainer->childList[x]->childList[0];
-                removeButton->setAnimation( myUxRef->uxAnimations->slideLeftFullWidth(removeButton) );
+                uiObject* childObj = myUxRef->palleteScroller->scrollChildContainer->childList[x];
+                uiObject* removeButton = childObj->childList[0];
+                if( childObj->myIntegerIndex >= 0){
+                    removeButton->setAnimation( myUxRef->uxAnimations->slideLeftFullWidth(removeButton) );
+                }
             }
 
             myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
@@ -1464,10 +1472,13 @@ void Ux::clickCancelClearHistory(uiObject *interactionObj, uiInteraction *delta)
 
     // we should show delete x on all visible tiles....
     for( int x=0,l=myUxRef->historyScroller->scrollChildContainer->childListIndex; x<l; x++ ){
-        uiObject* removeButton = myUxRef->historyScroller->scrollChildContainer->childList[x]->childList[0];
-        ColorList* listItem = myUxRef->pickHistoryList->get(removeButton->myIntegerIndex);
-        if( listItem == nullptr || !listItem->is_delete_state ){
-            removeButton->setAnimation( myUxRef->uxAnimations->resetPosition(removeButton) );
+        uiObject* childObj = myUxRef->historyScroller->scrollChildContainer->childList[x];
+        uiObject* removeButton = childObj->childList[0];
+        if( childObj->myIntegerIndex >= 0){
+            ColorList* listItem = myUxRef->pickHistoryList->get(removeButton->myIntegerIndex);
+            if( listItem == nullptr || !listItem->is_delete_state ){
+                removeButton->setAnimation( myUxRef->uxAnimations->resetPosition(removeButton) );
+            }
         }
     }
 
@@ -1505,10 +1516,15 @@ void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // s
         if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_CLEAR_HISTORY ){
             SDL_Log("Clear Button ---------------------");
 
+            if( myUxRef->defaultYesNoChoiceDialogue->isDisplayed ){ return; }
+
             // we should show delete x on all visible tiles....
             for( int x=0,l=myUxRef->historyScroller->scrollChildContainer->childListIndex; x<l; x++ ){
-                uiObject* removeButton = myUxRef->historyScroller->scrollChildContainer->childList[x]->childList[0];
-                removeButton->setAnimation( myUxRef->uxAnimations->slideLeftFullWidth(removeButton) );
+                uiObject* childObj = myUxRef->historyScroller->scrollChildContainer->childList[x];
+                uiObject* removeButton = childObj->childList[0];
+                if( childObj->myIntegerIndex >= 0){
+                    removeButton->setAnimation( myUxRef->uxAnimations->slideLeftFullWidth(removeButton) );
+                }
             }
 
             myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
@@ -1575,8 +1591,14 @@ void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // s
 //        if( removeButton != nullptr ){
 //            myUxRef->uxAnimations->rvbounce(removeButton);
 //        }
+
+        myUxRef->defaultScoreDisplay->loose(interactionObj, SCORE_EFFECTS::NOMOVE);
+
+        
         return;
     }
+
+    myUxRef->defaultScoreDisplay->display(interactionObj, 5, SCORE_EFFECTS::NOMOVE);
 
     myUxRef->palleteList->add(ColorList(interactionObj->backgroundColor));
 

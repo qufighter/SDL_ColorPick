@@ -8,7 +8,7 @@ struct uiYesNoChoice{
 
     uiYesNoChoice(uiObject* parentObj, Float_Rect boundaries, bool animateContainerInstead){
 
-
+        isDisplayed=false;
         Ux* uxInstance = Ux::Singleton(); // some useful helper?
 
         uiObjectItself = new uiObject();
@@ -138,12 +138,14 @@ struct uiYesNoChoice{
     anInteractionFn noClickedFn;
 
     float text_length;
+    int last_num_delete = 1;
+    bool isDisplayed; // only one
 
     // GENERICS - GENRAL PURPOSE use for whatever
     uiObject *myTriggeringUiObject;
 
     void display(uiObject *p_myTriggeringUiObject, anInteractionFn p_yesClickedFn, anInteractionFn p_noClickedFn, int numberToDelete){
-
+        if( isDisplayed ) return;
         if( numberToDelete > 1 ){
             int maxLen = 5;
             char* total_del = (char*)SDL_malloc( sizeof(char) * maxLen );
@@ -153,6 +155,7 @@ struct uiYesNoChoice{
                 SDL_snprintf(total_del, maxLen, "xAll");
             }
             display( p_myTriggeringUiObject,  p_yesClickedFn,  p_noClickedFn, total_del);
+            last_num_delete = numberToDelete;
 
             SDL_free(total_del);
         }else{
@@ -161,7 +164,7 @@ struct uiYesNoChoice{
     }
 
     void display(uiObject *p_myTriggeringUiObject, anInteractionFn p_yesClickedFn, anInteractionFn p_noClickedFn, char* message){
-
+        if( isDisplayed ) return;
         display( p_myTriggeringUiObject,  p_yesClickedFn,  p_noClickedFn);
         text_length = (float)SDL_strlen(message);
         Ux* uxInstance = Ux::Singleton();
@@ -181,6 +184,9 @@ struct uiYesNoChoice{
     }
 
     void display(uiObject *p_myTriggeringUiObject, anInteractionFn p_yesClickedFn, anInteractionFn p_noClickedFn){
+        if( isDisplayed ) return;
+        last_num_delete = 1;
+        isDisplayed = true;
 
         text_holder->hide();
 
@@ -210,12 +216,14 @@ struct uiYesNoChoice{
 
         uxInstance->endModal(uiObjectItself);
 
+        isDisplayed=false;
+
 
     }
 
     static void defaultOkFn(uiObject *interactionObj, uiInteraction *delta){
 
-        //Ux* uxInstance = Ux::Singleton();
+        Ux* uxInstance = Ux::Singleton();
         uiYesNoChoice* self = ((uiYesNoChoice*)interactionObj->myUiController);
 
         if( self->uiObjToAnimate->isAnimating() ){
@@ -228,7 +236,12 @@ struct uiYesNoChoice{
             // problem being this is generic dialogue
             // and even instances would need configurable callback...
 
+            uxInstance->defaultScoreDisplay->display(interactionObj, 10 * self->last_num_delete, SCORE_EFFECTS::MOVE_UP);
+            uxInstance->uxAnimations->spin_negative(self->yes, 15);
+
             return;
+        }else{
+            uxInstance->defaultScoreDisplay->display(interactionObj, 2 * self->last_num_delete, SCORE_EFFECTS::MOVE_UP);
         }
 
         if( self->yesClickedFn != nullptr ){
@@ -239,10 +252,10 @@ struct uiYesNoChoice{
     }
 
     static void defaultCancelFn(uiObject *interactionObj, uiInteraction *delta){
-        //Ux* uxInstance = Ux::Singleton();
+        Ux* uxInstance = Ux::Singleton();
         uiYesNoChoice* self = ((uiYesNoChoice*)interactionObj->myUiController);
 
-        if( self->uiObjectItself->isAnimating() ){
+        if( self->uiObjToAnimate->isAnimating() ){
 
             /// this is worth 50 points easily though... and can cancel the dialogue?!!
             // the multiplier is based on size in pallete?
@@ -251,7 +264,15 @@ struct uiYesNoChoice{
             // problem being this is generic dialogue
             // and even instances would need configurable callback...
 
+            // score can maybe be a function of how complete the animation is??
+
+            uxInstance->defaultScoreDisplay->display(interactionObj, 10, SCORE_EFFECTS::MOVE_UP);
+            //uxInstance->uxAnimations->spin_reset(self->no, 15);
+            uxInstance->uxAnimations->spin(self->no, 25);
+
             //return;
+        }else{
+            uxInstance->defaultScoreDisplay->display(interactionObj, 1, SCORE_EFFECTS::MOVE_UP);
         }
 
 

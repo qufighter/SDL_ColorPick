@@ -168,6 +168,8 @@ struct DirectionalScan
 
     int _vector_search_cutoff = 2; // for any given vector, if we take this many steps and teh results are not improving, stop going in that direction
 
+    float lastBestDistance = 0;
+
     //DirectionalScan(){}
     DirectionalScan(int pmaxSize, aDimensionalTypeIsDimensionOfdimensionalTypeComparitor pDimensionalTypeIsDimensionOfdimensionalType){
 
@@ -370,6 +372,7 @@ struct DirectionalScan
 
                     // we found it
                     result = de->coordinate;
+                    lastBestDistance = 0; // exact match!
                     return result;
                 }else{
 
@@ -405,6 +408,7 @@ struct DirectionalScan
             }
         }
 
+        lastBestDistance = bestDist;
         result = bestDe->coordinate;
         return result;
     }

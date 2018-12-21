@@ -53,13 +53,13 @@ public:
     SDL_Color selectedColor;
     SDL_Color tmpColor;
 
+    DirectionalScan<SDL_Point, glm::vec3>* directionalScan;
 
 private:
 	//GLuint LoadTextureRAW( const char * filename, int wrap );
 	
 	void dataToTgaFile(char filename[160],unsigned char *data,int width, int height);
 
-    DirectionalScan<SDL_Point, glm::vec3>* directionalScan;
     SDL_Point scanOrigin;
     SDL_Surface *scanSurface;
 

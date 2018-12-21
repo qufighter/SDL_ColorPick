@@ -69,10 +69,16 @@ struct uiScore{
         bool widescreen = uxInstance->widescreen;
         float bounceIntensity = -0.001;
 
-        // just so we can call end on these??? 
+        // just so we can call end on these??? this could crash the app at boot time right??
+//        chain1 = uxInstance->uxAnimations->emptyChain(); // uxInstance->uxAnimations->reset_matrix(score_position)->preserveReference();
+//        chain2 = uxInstance->uxAnimations->emptyChain(); //uxInstance->uxAnimations->softBounce(score_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
+//        chain3 = uxInstance->uxAnimations->emptyChain(); //uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
+
         chain1 = uxInstance->uxAnimations->reset_matrix(score_position)->preserveReference();
         chain2 = uxInstance->uxAnimations->softBounce(score_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
         chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
+
+
     }
 
     //anInteractionFn tileClicked=nullptr;
@@ -91,14 +97,19 @@ struct uiScore{
     uiAminChain* chain3;
 
     void loose(uiObject *p_dispalyNearUiObject){
+        loose(p_dispalyNearUiObject, SCORE_EFFECTS::DEFAULT);
+    }
 
-        //Uint32 test;
-
-        display(p_dispalyNearUiObject, -int_score);
+    void loose(uiObject *p_dispalyNearUiObject, int effectNum){
+        display(p_dispalyNearUiObject, -int_score, effectNum);
         int_score = 0; // this is sort of redundant probably....
     }
 
     void display(uiObject *p_dispalyNearUiObject, int numberToDisplay){
+        display(p_dispalyNearUiObject, numberToDisplay, SCORE_EFFECTS::DEFAULT);
+    }
+
+    void display(uiObject *p_dispalyNearUiObject, int numberToDisplay, int effectNum){
 
         //SDL_Log("this is the biggest int %i " , SDL_MAX_SINT32); // 2147483647  ( 10 char, sign, extra)
         Ux* uxInstance = Ux::Singleton();
@@ -131,28 +142,63 @@ struct uiScore{
                 SDL_snprintf(score_disp_char, maxLen, "+%i", numberToDisplay);
                 chain2->endAnimation();
                 chain3->endAnimation();
-                chain2 = uxInstance->uxAnimations->softBounce(score_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
-                chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
+                switch( effectNum ){
+                    case SCORE_EFFECTS::NOMOVE:
+                        chain2 = uxInstance->uxAnimations->spin(score_position)->preserveReference();
+                        chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
+                        break;
+                    case SCORE_EFFECTS::MOVE_UP:
+                        chain2 = uxInstance->uxAnimations->slideUpFullHeight(score_position)->preserveReference();
+                        chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
+                        break;
+                    case SCORE_EFFECTS::DEFAULT:
+                    default:
+                        chain2 = uxInstance->uxAnimations->softBounce(score_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
+                        chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
+                        break;
+                }
 
-            }else if( numberToDisplay > -1 ){
-                SDL_snprintf(score_disp_char, maxLen, "-%i", numberToDisplay); // -0
-                chain2->endAnimation();
-                chain3->endAnimation();
-                chain2 = uxInstance->uxAnimations->emphasizedBounce(score_position, widescreen?bounceIntensity:0, widescreen?0:bounceIntensity)->preserveReference();
-                chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.005, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
             }else{
-                // "loose" condition
-                SDL_snprintf(score_disp_char, maxLen, "%i", numberToDisplay);
+
+                if( numberToDisplay > -1 ){
+                    SDL_snprintf(score_disp_char, maxLen, "-%i", numberToDisplay); // -0
+                }else{
+                    // "loose" condition
+                    SDL_snprintf(score_disp_char, maxLen, "%i", numberToDisplay);
+                }
                 chain2->endAnimation();
                 chain3->endAnimation();
-                chain2 = uxInstance->uxAnimations->emphasizedBounce(score_position, widescreen?bounceIntensity:0, widescreen?0:bounceIntensity)->preserveReference();
-                chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.005, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
+                switch( effectNum ){
+                    case SCORE_EFFECTS::NOMOVE:
+                        chain2 = uxInstance->uxAnimations->spin(score_position, -1)->preserveReference();
+                        chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.005, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
+                        break;
+                    case SCORE_EFFECTS::MOVE_UP:
+                        chain2 = uxInstance->uxAnimations->slideUpFullHeight(score_position)->preserveReference();
+                        chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.005, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
+                        break;
+                    case SCORE_EFFECTS::DEFAULT:
+                    default:
+                        chain2 = uxInstance->uxAnimations->emphasizedBounce(score_position, widescreen?bounceIntensity:0, widescreen?0:bounceIntensity)->preserveReference();
+                        chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.005, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
+                        break;
+                }
             }
 
             float text_length = (float)SDL_strlen(score_disp_char);
             //score->boundryRect.x =  text_length * -0.5; // center
             score->boundryRect.x =  -text_length + 0.5; // right aligned (center the rightmost char)
             //score->boundryRect.x = -0.5;
+
+
+
+            //if( score->boundryRect.x + -0.5 + score_position->boundryRect.x < 0 ) score_position->boundryRect.x += score->boundryRect.x + -0.5 + score_position->boundryRect.x; // keep "on screen"
+
+            float hidLeftAmt = score_position->boundryRect.x + (score_position->origBoundryRect.w * score->boundryRect.x);
+            if( hidLeftAmt < 0 ){
+                score_position->boundryRect.x -= hidLeftAmt; // minus a negative
+            }
+
 
             uxInstance->printStringToUiObject(score, score_disp_char, DO_NOT_RESIZE_NOW);
 

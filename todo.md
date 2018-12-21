@@ -21,6 +21,9 @@ when picking hue grad, consider selected hue's S V values? (obvious need to rest
 
 home pressed - maybe ios screenshot? time for gimicky marketing ploy
 
+back button strangeness - dismissal by "nav to color" hsv - seems to not clear the modal
+     -- actually esc will continually re-trigger - seems like the final modal is not cleared??? (only after above occurs)
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
