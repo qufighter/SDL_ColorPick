@@ -594,8 +594,7 @@ void OpenGLContext::setupScene(void) {
     textureId_default = textures->GenerateTexture();
     textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y);
 
-
-
+    //glClearColor(0.0f, 1.0f, 0.0f, 0.0f); // will be fixed next...
     updateColorPreview();
 
 //    SDL_Color c;
@@ -624,7 +623,6 @@ void OpenGLContext::setupScene(void) {
     debugGLerror("setupScene nearly done");
 
 
-    glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
 
     debugGLerror("setupScene completely done");
 
