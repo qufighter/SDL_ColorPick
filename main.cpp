@@ -476,8 +476,13 @@ int EventFilter(void* userdata, SDL_Event* event){
             return 0;
         }
         default:
-            SDL_Log("unrecognized event type %i", event->type );
-            //SDL_Log("unrecognized event");
+
+#ifndef COLORPICK_PLATFORM_DESKTOP
+            if( event->type == SDL_MOUSEMOTION ){
+                break; // we handled this as SDL_FINGERMOTION
+            }
+#endif
+            SDL_Log("unrecognized event; type %i", event->type );
             break;
             
     }
@@ -700,7 +705,7 @@ compatibility; this flag is ignored
     SDL_Log("main -----------------------");
 
 
-#ifndef __ANDROID__
+#ifdef USE_EVENT_WATCH_FOR_EVENTS
     SDL_AddEventWatch(EventFilter, nullptr); // second param is provided to filter which runs in different thread... void* userdata
 #endif
 
@@ -755,14 +760,14 @@ compatibility; this flag is ignored
                             break;//return 0;
                         }
 #endif
+#ifdef __ANDROID__
                         case USER_EVENT_ENUM::IMAGE_SELECTOR_READY:
                         {
                             SDL_Log("USER EVENT 0 - get picked image on android");
-#ifdef __ANDROID__
                             getImagePathFromMainThread();
-#endif
                             break;//return 0;
                         }
+#endif
                         case USER_EVENT_ENUM::NEW_HUE_CHOSEN:
                         {
                             SDL_Log("USER EVENT 1 - new hue gradient bg color");
@@ -783,7 +788,7 @@ compatibility; this flag is ignored
                     break;//return 0;
                 }
             }
-#ifdef __ANDROID__
+#ifndef USE_EVENT_WATCH_FOR_EVENTS
             EventFilter(nullptr, &event);
             // should we return teh reuslt of this??
 #endif

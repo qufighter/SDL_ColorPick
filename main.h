@@ -154,6 +154,11 @@ typedef enum  {
 
 //#define MAIN_THREAD_ANIMATIONS
 
+//#ifndef __ANDROID__
+#define USE_EVENT_WATCH_FOR_EVENTS
+//#endif
+
+
 // static seems a bit redundant, no?
 static SDL_Window *window;
 static int win_w = SCREEN_WIDTH;
