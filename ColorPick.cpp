@@ -280,6 +280,8 @@ void OpenGLContext::pickerForHue(HSV_Color* color, SDL_Color* desired_color){
 
 void OpenGLContext:: pickerForHue(SDL_Color* color){
 
+    if( lastHue!=nullptr ) SDL_free(lastHue);
+    //lastHue = nullptr;
     lastHue = new SDL_Color();
     Ux::setColor(lastHue, color);
     //SDL_Log("we wish to get a picker for a color hue !!!!"); // TODO: second arg for selecting color???? position_y ??position_x
@@ -342,9 +344,10 @@ void OpenGLContext::prepareForHuePickerMode(bool fromHueGradient) {
             if( lastHue != nullptr ){
                 Uint16 pickedHue = lastSelection.h;
                 lastSelection.fromColor(lastHue);
-                if( SDL_abs(pickedHue - lastSelection.h) < 5 ){
+                int hueDis = SDL_abs(pickedHue - lastSelection.h);
+                if( hueDis < 5 ){
                     generalUx->defaultScoreDisplay->displayExplanation("Right Hue're");
-                    generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 10, SCORE_EFFECTS::NOMOVE);
+                    generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 10 * (5-hueDis), SCORE_EFFECTS::NOMOVE);
                 }
             }
         }
