@@ -476,7 +476,8 @@ int EventFilter(void* userdata, SDL_Event* event){
             return 0;
         }
         default:
-            SDL_Log("unrecognized event");
+            SDL_Log("unrecognized event type %i", event->type );
+            //SDL_Log("unrecognized event");
             break;
             
     }
@@ -527,13 +528,15 @@ void ReshapeWindow(){
 
     SDL_GetWindowSize(window, &colorPickState->windowWidth, &colorPickState->windowHeight);
 
+    SDL_GL_GetDrawableSize(window, &colorPickState->drawableWidth, &colorPickState->drawableHiehgt);
+
     win_w=colorPickState->windowWidth;
     win_h=colorPickState->windowHeight;
 
-    colorPickState->viewport_ratio = (win_w+1.0f)/win_h;
-    SDL_Log("SDL_GetWindowSize %d %d %f", win_w,win_h, colorPickState->viewport_ratio);
+    colorPickState->updateComputedSizes();
 
-    SDL_GL_GetDrawableSize(window, &colorPickState->drawableWidth, &colorPickState->drawableHiehgt);
+    //colorPickState->viewport_ratio = (win_w+1.0f)/win_h;
+    SDL_Log("SDL_GetWindowSize %d %d %f", win_w,win_h, colorPickState->viewport_ratio);
 
 
     SDL_Log("SDL_GL_GetDrawableSize %d %d %f", colorPickState->drawableWidth,colorPickState->drawableHiehgt, (colorPickState->drawableWidth+1.0f)/colorPickState->drawableHiehgt);

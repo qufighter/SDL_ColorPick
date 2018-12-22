@@ -747,11 +747,32 @@ float OpenGLContext::getPixelMovementFactor(){
     // 1.5 - 0.038011695906433
     float screen_pct = (SDL_sqrtf(fishEyeScale) / 8.0) * 0.25;
     int bigPixelSize = 1;
-    if( colorPickState->viewport_ratio > 1.0 ){
+    int longerScreenSize = colorPickState->windowHeight;
+    if( colorPickState->viewport_ratio > 1.0 ){ // wide
         bigPixelSize = colorPickState->windowWidth * screen_pct;
+        longerScreenSize = colorPickState->windowWidth;
     }else{
         bigPixelSize = colorPickState->windowHeight * screen_pct;
     }
+    float halfLongerScreenSize = longerScreenSize * 0.5f;
+
+    //generalUx->currentInteraction;
+//    pixelInteraction;
+//    colorPickState;
+
+
+    //float distFromCtr = glm::distance(glm::vec2(generalUx->currentInteraction.px, generalUx->currentInteraction.py), glm::vec2(0.5,0.5));
+
+    float distFromCtr = glm::distance(glm::vec2(pixelInteraction.px, pixelInteraction.py),
+                                      glm::vec2(colorPickState->halfWindowWidth,colorPickState->halfWindowHeight));
+
+    //float closenessToCenter = 1.0 - (distFromCtr / (longerScreenSize * 0.5));
+
+    float closenessToCenter = 1.0 - ((distFromCtr) / (halfLongerScreenSize));
+
+    //SDL_Log("closeness to center: %f", closenessToCenter);
+
+    bigPixelSize *= closenessToCenter;
 
     //float factor = ((openglContext->fishEyeScale - FISHEYE_SLOW_ZOOM_THRESHOLD) / (MAX_FISHEYE_ZOOM - FISHEYE_SLOW_ZOOM_THRESHOLD)) * FISHEYE_SLOW_ZOOM_MAX;
     float factor = bigPixelSize * 0.5; // the big pixel is N across, we must move by this much to move 1px... but if we start center pixel its half that much

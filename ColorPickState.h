@@ -28,7 +28,12 @@ public:
     int windowWidth; // this is size of window in screen coorindates (not pixels
     int windowHeight;
 
+    float halfWindowWidth;
+    float halfWindowHeight;
+
     bool appInForeground;
+
+    void updateComputedSizes(void);
 
 private:
 

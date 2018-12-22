@@ -35,7 +35,7 @@
 
 
 #define MIN_FISHEYE_ZOOM 0.1f
-#define FISHEYE_SLOW_ZOOM_THRESHOLD 0.5f
+#define FISHEYE_SLOW_ZOOM_THRESHOLD 0.1f
 // you'd have to move 16.0 px to move 1px at FISHEYE_SLOW_ZOOM_MAX
 #define FISHEYE_SLOW_ZOOM_MAX 16.0 // hopefully not use this <--
 #define MAX_FISHEYE_ZOOM 64.0f
