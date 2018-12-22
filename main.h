@@ -131,6 +131,7 @@ void debugGLerror(const char *c_str);
 void debugGLerror();
 
 void ReshapeWindow();
+void ReshapeWindow(bool fromMain);
 void ShowFrame(void*);
 
 typedef enum { SHADER_POSITION, SHADER_COLOR, SHADER_TEXTURE, SHADER_NORMAL } SHADER_BIND_LOCATIONS;

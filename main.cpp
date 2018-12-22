@@ -277,7 +277,7 @@ int EventFilter(void* userdata, SDL_Event* event){
                     SDL_Log("\n SDL_WINDOWEVENT_RESIZED || SDL_WINDOWEVENT_SIZE_CHANGED");
 
                     //SDL_Log("RESIZED (lowdpi size wouldbe) %d %d", event->window.data1,event->window.data2);
-                    ReshapeWindow();
+                    ReshapeWindow(); // on android this needs to occur occur in the main thread.. this call will fire a subsequent event in the main thread...
                     return 0;
                 case SDL_WINDOWEVENT_MINIMIZED:
                 case SDL_WINDOWEVENT_HIDDEN:
@@ -528,8 +528,11 @@ static Uint32 my_reshape_callbackfunc(Uint32 interval, void* parm){
     //return interval;
 }
 
-
 void ReshapeWindow(){
+    ReshapeWindow(false);
+}
+
+void ReshapeWindow(bool fromMain){
     // just in case we didn't get hi-dpi from SDL_WINDOW_ALLOW_HIGHDPI we can see what size we actually got here
 
     SDL_GetWindowSize(window, &colorPickState->windowWidth, &colorPickState->windowHeight);
@@ -615,8 +618,10 @@ void ReshapeWindow(){
     openglContext->reshapeWindow(colorPickState->drawableWidth, colorPickState->drawableHiehgt);
 
 #ifdef __ANDROID__
-    // after rotation, the viewport pespective matrix seems to undergo a delayed update (since we are using default)
-    SDL_AddTimer(250, my_reshape_callbackfunc, nullptr);
+    if( !fromMain ){
+        // after rotation, the viewport pespective matrix seems to undergo a delayed update (since we are using default)
+        SDL_AddTimer(250, my_reshape_callbackfunc, nullptr);
+    }
 #endif
 
 }
@@ -784,6 +789,7 @@ compatibility; this flag is ignored
                         case USER_EVENT_ENUM::VIEW_RECENTLY_ROTATED:
                         {
                             SDL_Log("USER EVENT 2 - rotation delayted update");
+                            ReshapeWindow(true);
                             openglContext->renderShouldUpdate = true;
                             break;//return 0;
                         }
