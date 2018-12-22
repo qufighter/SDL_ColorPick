@@ -14,6 +14,8 @@ struct uiHueGradient{
 
     uiHueGradient(uiObject* parentObj, Float_Rect boundaries, anInteractionFn tileClickedFn){
 
+        totalColors = 1530;
+
         tileClicked = tileClickedFn;
 
         //Ux* uxInstance = Ux::Singleton(); // some useful helper?
@@ -78,7 +80,7 @@ struct uiHueGradient{
     uiObject* huePositionMarker;
     bool hueSliderVisible;
 
-    int totalColors = 1530;
+    int totalColors = 1530; // so this may not be defined with a value???
     SDL_Color manyColors[1530];// *totalColorsPer * 6
 
     float lastPickPercent = 0.0f;

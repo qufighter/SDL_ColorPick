@@ -119,6 +119,7 @@ struct uiYesNoChoice{
         ///yes->setBoundaryRect( 1.0-w-pad, 0.5-hh, w, h); // on left
 
         text_length = 2;
+        last_num_delete = 1;
 
         resize();
     }
@@ -138,7 +139,7 @@ struct uiYesNoChoice{
     anInteractionFn noClickedFn;
 
     float text_length;
-    int last_num_delete = 1;
+    int last_num_delete;
     bool isDisplayed; // only one
 
     // GENERICS - GENRAL PURPOSE use for whatever

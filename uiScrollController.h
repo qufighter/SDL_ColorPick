@@ -15,6 +15,8 @@ struct uiScrollController{
     uiScrollController(){
         Ux* uxInstance = Ux::Singleton();
 
+        childObjectsToRender=0; // MUST init here too...
+
 
         uiObjectItself = new uiObject();
         scrollChildContainer = new uiObject();
@@ -101,6 +103,7 @@ struct uiScrollController{
         childObjectsPerRow = 1;
         rowsToShow = 1;
         childObjectsOffset=0;
+        tileRightToLeft = true;
         getTile=nullptr;
 
        // allocateChildTiles(); // this should just allocate 2 tiles....  WHY DO WE DO THIS .... its a good deafult but they don't have the click events added....
@@ -130,13 +133,13 @@ struct uiScrollController{
     float tileHeight;
 
     bool tileChildObjects; // enables tiling engine
-    bool tileRightToLeft = true; // we just tile rtl for now to match our needs
+    bool tileRightToLeft; // we just tile rtl for now to match our needs
     int childObjectsPerRow; // this is suppose to help the tiling engine for the scroll container
     int rowsToShow;
-    int childObjectsOffset=0;
+    int childObjectsOffset;
     int totalObjects; // this is for the tiling engine to understand the total items we may represent in the limited squares we allocate
     int totalScrollRows; // is zero when no scrolling possible
-    int childObjectsToRender=0; // in case we allocated extra...
+    int childObjectsToRender; // in case we allocated extra...
     float minimumScrollY;
 
     updateTileFunction getTile=nullptr;

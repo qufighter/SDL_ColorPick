@@ -102,12 +102,11 @@ win impl
 
 ### android
 // (done?) timer keeps firign in background if file chooser is left open... // we tried this but we can't pick an image... not quite sure why yet... compare logs?
-tons of "unrecognized event" in log durring pan - maybe we should listen to this event...  ALSO IOS
 
 
 ### ios
 anything using main loop timers (processed on main loop) are not processed....
   ^ uncomment lines above pickerForPercentV(&percent); to test it out... eg USER EVENT 1
-  tons of "unrecognized event" in log durring pan - maybe we should listen to this event...  ALSO IOS
   ^ this is at least addressed / worked around.... potential for future issues though since these custom events are just not processed
 10 phone special stuffs?
+  ^ there is "no clock bar" on iphone 10

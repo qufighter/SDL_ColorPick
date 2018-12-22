@@ -288,9 +288,9 @@ void Ux::resizeUiElements(void){
 
 #else
 
-#ifndef __IPHONEOS__
+//#ifndef __IPHONEOS__
     clock_bar=0.0f;
-#endif
+//#endif
 
 #endif
 
@@ -413,9 +413,12 @@ void Ux::resizeUiElements(void){
             historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::RTL, true);
 
         // depending on animation state rect is different....
+
+        float clocky_space = 0.032;
+
         historyPalleteHolder->setBoundaryRectForAnimState(
-            0.0, clock_bar,     1.0, 0.92-clock_bar, //visible and orig
-            0.0, clock_bar+1.0, 1.0, 0.92-clock_bar ); // hidden
+            0.0, clock_bar+clocky_space,     1.0, 0.92-clock_bar-clocky_space, //visible and orig
+            0.0, clock_bar+clocky_space+1.0, 1.0, 0.92-clock_bar-clocky_space ); // hidden
         historyPalleteHolderTlEdgeShadow->resize(SQUARE_EDGE_ENUM::TOP);
         historyPalleteHolderBrEdgeShadow->resize(SQUARE_EDGE_ENUM::BOTTOM);
         historyPalleteHolder->setInteraction(&Ux::interactionVert);
@@ -2119,7 +2122,7 @@ void Ux::colorTileAddChildObjects(uiObject *historyTile, anInteractionFn removeC
     // any nececesssary child objects upfront, possibly with the use of a helper function which could be common between this and
     // the pallet tile updater function....  then each child tile index may have a special purpose of its own and be enabled/disable easily as needed
 
-    if( historyTile->getChildCount() < 1 ){
+    if( historyTile->getChildCount() < 2 ){
 
 
 

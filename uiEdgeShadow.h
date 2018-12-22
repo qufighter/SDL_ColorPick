@@ -32,6 +32,8 @@ struct uiEdgeShadow{
 
         if( size > 0 ){
             render_scale = size;
+        }else{
+            render_scale = 0.1;
         }
 
         // top edge....... or just an edge...  this is double edge

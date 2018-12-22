@@ -166,9 +166,9 @@ struct DirectionalScan
 
     int _total_size;
 
-    int _vector_search_cutoff = 2; // for any given vector, if we take this many steps and teh results are not improving, stop going in that direction
+    int _vector_search_cutoff; // for any given vector, if we take this many steps and teh results are not improving, stop going in that direction
 
-    float lastBestDistance = 0;
+    float lastBestDistance;
 
     //DirectionalScan(){}
     DirectionalScan(int pmaxSize, aDimensionalTypeIsDimensionOfdimensionalTypeComparitor pDimensionalTypeIsDimensionOfdimensionalType){
@@ -190,6 +190,7 @@ struct DirectionalScan
 //        SDL_Log("float ize %i", sizeof(float));
 
         _vector_search_cutoff = 3;
+        lastBestDistance = 0;
 
         _maxSize = pmaxSize;
         _startIndex = -_maxSize;
