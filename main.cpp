@@ -482,6 +482,7 @@ int EventFilter(void* userdata, SDL_Event* event){
                 break; // we handled this as SDL_FINGERMOTION
             }
 #endif
+            // see instead (of the above) SDL_HINT_TOUCH_MOUSE_EVENTS (actually that broke android?)
             SDL_Log("unrecognized event; type %i", event->type );
             break;
             
@@ -656,7 +657,10 @@ compatibility; this flag is ignored
 //
     SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
     SDL_SetHint(SDL_HINT_MAC_BACKGROUND_APP, "0");  // as far as I can tell.... this only makes the window not re-enter the background once focused - and also becomes incapable of entering the forground (no menu bar)
-
+//    SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "1");
+//#ifdef __ANDROID
+//    SDL_SetHint(SDL_ANDROID_SEPARATE_MOUSE_AND_TOUCH, "1");
+//#endif
 
     /* initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER) < 0) {

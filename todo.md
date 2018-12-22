@@ -7,8 +7,6 @@ DEVELOPER_TEST_MODE
 sort pallete colors
 ^ (web interface
 
-movement too slow when cursor away from center point and zoomed
-
 movement velocity platform diffences (android) (dupe)
 
 add version string somewhere (do not let it look like an IP address!)  maybe this is plat specifc/bundle specific?
