@@ -633,6 +633,7 @@ glm::vec3 Textures::getVec3ColorForPoint(SDL_Point point){
 
 // too many args..
 bool Textures::searchSurfaceForColor(SDL_Surface *newSurface, SDL_Color* seekClr, int x, int y, int* outx, int* outy){
+// return true if we found a better match that requires a pixel movement
 
     // todo call
     // SDL_Point result = myDirectionalScan->getOffsetForBestMatch(dest, &getDistanceForVec3s, &getItemForPointTest2);

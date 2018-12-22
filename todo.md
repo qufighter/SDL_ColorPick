@@ -14,17 +14,17 @@ movement velocity platform diffences (android) (dupe)
 add version string somewhere (do not let it look like an IP address!)  maybe this is plat specifc/bundle specific?
  > AndroidManifest.xml
 
-arrow interaction repeat....
-
-unable to find some colors precisely or properly score missed colors (pink ff00fc > "works" while ff00fd des not)
-
-leftover velocity applied when zooming in? (wheel anyway)
-
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 ##  can do
+
+unable to find some colors precisely (pink ff00fc > "works" while ff00fd des not)
+-> android -> ff00fc resolevs to fe00fd
+-> desktop osx -> ff00fc resolves to ff00fe
+
+arrow interaction repeat....
 
 huge negative score values are frequently not displayed ( -SDL_MAX_SINT32 ? )
 

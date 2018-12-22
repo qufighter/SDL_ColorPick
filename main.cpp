@@ -300,6 +300,7 @@ int EventFilter(void* userdata, SDL_Event* event){
         case SDL_MOUSEWHEEL:
             SDL_Log("Hello Wheel!!");
 
+            openglContext->clearVelocity();
             openglContext->renderShouldUpdate = true;
             openglContext->setFishScale(event->wheel.y, 0.10f);
 
@@ -308,6 +309,7 @@ int EventFilter(void* userdata, SDL_Event* event){
         case SDL_MULTIGESTURE: // http://lazyfoo.net/tutorials/SDL/55_multitouch/index.php
             SDL_Log("Hello Gesture!!");
 
+            openglContext->clearVelocity();
             openglContext->renderShouldUpdate = true;
             openglContext->setFishScale(event->mgesture.dDist, 40.0f);
 
