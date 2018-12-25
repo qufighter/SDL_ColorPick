@@ -38,18 +38,17 @@ struct uiRunningMan{
 
             uiObject* stripe = new uiObject();
             stripe->hasBackground=true;
-            Ux::setColor(&stripe->backgroundColor, 255, 255, 255, 255);
+            Ux::setColor(&stripe->backgroundColor, 192, 192, 192, 255);
             stripe->setBoundaryRect( i*0.075 + extra, i*0.0855, STRIPE_MIN_LENGTH, 0.015 );
             speedStripes->addChild(stripe);
         }
-
 
         runner = new uiObject();
 
 //        runner->hasBackground=true;
 //        Ux::setColor(&runner->backgroundColor, 32, 0, 0, 128);
         runner->hasForeground=true;
-        Ux::setColor(&runner->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        Ux::setColor(&runner->foregroundColor, 192, 192, 192, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         uxInstance->printCharToUiObject(runner, CHAR_ZOOM_SPEEDY_GUY, DO_NOT_RESIZE_NOW);
         //no->rotate(180.0f);
         //runner->setClickInteractionCallback(defaultCancelFn);

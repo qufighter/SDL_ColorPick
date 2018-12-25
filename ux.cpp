@@ -782,6 +782,7 @@ Ux::uiObject* Ux::create(void){
     palleteSelectionPreviewHolder->setInteraction(&Ux::interactionVert);
     palleteSelectionPreviewHolder->setCropParentRecursive(historyPalleteHolder);
     palleteSelectionPreviewHolder->is_being_viewed_state = false;
+    palleteSelectionPreviewHolder->doesNotCollide = true;
     //palleteSelectionPreviewHolder->setDefaultHidden();
 
     historyPalleteHolder->addChild(newHistoryFullsize);
@@ -798,6 +799,7 @@ Ux::uiObject* Ux::create(void){
 
 
     palleteSelectionColorPreview = new uiViewColor(palleteSelectionPreviewHolder, Float_Rect(0.0, 0.0, 1.0, 1.0), true); // this rect is reset next...
+    //palleteSelectionColorPreview->uiObjectItself->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClickOrHiddenPalletePreview);
 
     //palleteSelectionColorPreview->uiObjectItself->is_being_viewed_state = false;
     //palleteSelectionColorPreview->uiObjectItself->setDefaultHidden();
@@ -1880,6 +1882,21 @@ void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
 //}
 
 
+//static add Ux:: // UNUSED FUNCTION
+bool Ux::bubbleInteractionIfNonClickOrHiddenPalletePreview(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
+    // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
+
+    Ux* self = Ux::Singleton();
+    // see also interactionUpdate
+
+    if( !self->palleteSelectionPreviewHolder->is_being_viewed_state || delta->dy != 0 || delta->dx != 0 ){
+        return self->bubbleCurrentInteraction(); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
+    }
+
+    return true;
+}
+
+
 //static add Ux::
 bool Ux::bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
     // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
@@ -1926,7 +1943,6 @@ bool Ux::bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiIn
 
         //SDL_Log("00))))0000000000000000000000000 y:%i x:%f",delta ->dy, fabs(0.0f-delta->dx));
         return self->bubbleCurrentInteraction(); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
-
     }
 
     return true;

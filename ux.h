@@ -252,6 +252,7 @@ static Ux* Singleton();
     static void hueClickedPickerHsv(SDL_Color* c);
     static void pickerForHuePercentage(float percent);
     static void interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteraction *delta);
+    static bool bubbleInteractionIfNonClickOrHiddenPalletePreview(uiObject *interactionObj, uiInteraction *delta);
     static bool bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *delta);
     static bool bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiInteraction *delta); // return true always, unless the interaction should be dropped and not bubble for some reason....
 

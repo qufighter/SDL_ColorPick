@@ -177,6 +177,7 @@ struct uiViewColor{
     static void pickFromHueClicked(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
         uiViewColor* self = ((uiViewColor*)interactionObj->myUiController);
+        //if( !self->uiObjectItself->parentObject->is_being_viewed_state ) return;
         // uxInstance->hueClicked(self->last_color);
         uxInstance->hueClickedPickerHsv(&self->last_color); // < heavy op...
         uxInstance->uxAnimations->scale_bounce(interactionObj, 0.02);
