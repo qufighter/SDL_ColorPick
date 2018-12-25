@@ -41,6 +41,7 @@ const static float const_threshold = 0.0001; // velocity below this threshold st
 
 typedef enum { BUTTON_CLEAR_HISTORY, PICK_HISRTORY_EXTRA_BUTTONS_TOTAL } PICK_HISRTORY_EXTRA_BUTTONS;
 typedef enum { BUTTON_CLEAR_PALLETE, BUTTON_SAVE_PALLETE, PALLETE_EXTRA_BUTTONS_TOTAL } PALLETE_EXTRA_BUTTONS;
+typedef enum { BUTTON_PALLETE_HELP, EMPTY_PALLETE_PALLETE_EXTRA_BUTTONS_TOTAL } EMPTY_PALLETE_EXTRA_BUTTONS;
 
 //const static float historyPreviewHeight = 0.9; // todo this should be a return value
 

@@ -1325,6 +1325,24 @@ void Ux::clickPalleteColor(uiObject *interactionObj, uiInteraction *delta){ // s
 
     if( interactionObj->myIntegerIndex < -1 ){
 
+        if( myUxRef->palleteList->total() < 1 ){
+
+            if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_PALLETE_HELP ){
+                SDL_Log("PALLETE Help Button ---------------------");
+
+                if( myUxRef->defaultYesNoChoiceDialogue->isDisplayed ){ return; }
+
+                myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
+
+                if( myUxRef->historyScroller->scrollChildContainer->getChildCount() > 0 )
+                    myUxRef->uxAnimations->spin_reset(myUxRef->historyScroller->scrollChildContainer->childList[0], 32);
+
+                //myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::clickClearPallete, &Ux::clickCancelClearPallete, myUxRef->palleteList->total());
+
+            }
+
+            return;
+        }
         if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_CLEAR_PALLETE ){
             SDL_Log("PALLETEClear Button ---------------------");
 
@@ -1998,6 +2016,26 @@ bool Ux::updateUiObjectFromPallete(uiObject *historyTile, int offset){  // see a
 
                 return true;
             }
+        }else{
+
+            if( offset == self->palleteList->total() + BUTTON_PALLETE_HELP ){
+
+                historyTile->show();
+                removeButton->hide(); // it still collides..... so we set the rect above!
+                iconBtn->show();
+                Ux::setColor(&historyTile->backgroundColor, 0, 0, 0, 255);
+
+                self->printCharToUiObject(iconBtn, '0', DO_NOT_RESIZE_NOW);
+
+                historyTile->myIntegerIndex = BTN_NEGATIVE_START - BUTTON_PALLETE_HELP; //awkward but using negative space beyond -1 for codes
+
+                historyTile->hasInteraction = false; // disable animations which are default for this scroll controller....
+
+                historyTile->interactionProxy=nullptr;
+
+                return true;
+            }
+
         }
 
         historyTile->hide();
@@ -2042,6 +2080,8 @@ int Ux::getPalleteTotalCount(){
     int total = self->palleteList->total();
     if( total > 0 ){
         total+=PALLETE_EXTRA_BUTTONS_TOTAL;
+    }else{
+        total+=EMPTY_PALLETE_PALLETE_EXTRA_BUTTONS_TOTAL;
     }
     return total;
 
@@ -2141,6 +2181,7 @@ void Ux::colorTileAddChildObjects(uiObject *historyTile, anInteractionFn removeC
 
     if( historyTile->getChildCount() < 2 ){
 
+        historyTile->matrixInheritedByDescendants = true; // animate teh tile to animate anything...
 
 
         uiObject* removeButtonHolder = new uiObject();
@@ -2185,6 +2226,7 @@ void Ux::colorTileAddChildObjects(uiObject *historyTile, anInteractionFn removeC
         historyTile->addChild(buttonIcon);
         buttonIcon->hide();
         buttonIcon->squarify();
+
 
 
 
