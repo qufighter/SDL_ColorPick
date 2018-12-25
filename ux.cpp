@@ -49,8 +49,9 @@ void Ux::endModal(uiObject *oldModal){
     if( currentModal == oldModal ){
         currentModal = oldModal->modalParent;
     }else{
-        // it is possible oldModal is in the chain of modals....
-        // if it isn't then maybe this should be a no-op instead?
+        if( oldModal->modalParent && currentModal == oldModal->modalParent ){
+            return; // preserve modal
+        }
         currentModal = nullptr;
     }
 }

@@ -17,8 +17,6 @@ huge negative score values are frequently not displayed ( -SDL_MAX_SINT32 ? )
 
 arrow toggle aka "hide scrolly arrows on touchy devices"
 
-modal chain possible to destroy when there could be a better modal found (hue picker, return to, dismiss hue picker, esc broke)
-
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
