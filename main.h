@@ -76,15 +76,16 @@
 
 //okay here are the int defs... should be more reliable right?
 #define CHAR_APP_ICON 127
-#define CHAR_BACK_ICON 128
+#define CHAR_ZOOM_PLUSS 128
 
-#define CHAR_LINEAR_SLOPE 129
+#define CHAR_ZOOM_SPEEDY_GUY 129
 #define CHAR_ASYMP_SLOPE 130
 #define CHAR_ARR_UP 131
 #define CHAR_ARR_DN 132
-#define CHAR_BARS 133
 
+#define CHAR_BARS 133
 #define CHAR_VERTICAL_BAR 134
+
 #define CHAR_CIRCLE_PLUSS 135
 #define CHAR_CIRCLE 136
 
@@ -107,7 +108,7 @@
 #define CHAR_SAVE_ICON 147
 #define CHAR_GEAR_ICON 148
 
-#define CHAR_ZOOM_PLUSS 149
+#define CHAR_BACK_ICON 149
 #define CHAR_LIGHTENING_BOLT 150
 #define CHAR_OPEN_FILES 151
 
@@ -155,9 +156,11 @@ typedef enum  {
 
 //#define MAIN_THREAD_ANIMATIONS
 
-//#ifndef __ANDROID__
+#ifndef __ANDROID__
+// android requires some events and handled in the main thread, even some click events
+// this is all click events related to creating a new image:  (picker for hsv, return to last image)
 #define USE_EVENT_WATCH_FOR_EVENTS
-//#endif
+#endif
 
 
 // static seems a bit redundant, no?

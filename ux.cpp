@@ -396,6 +396,7 @@ void Ux::resizeUiElements(void){
                 zoomSliderBg->setBoundaryRect( 0.05, 0, 0.88, 1);
                 zoomSlider->setBoundaryRect( 0.0, 0, 0.5, 1);
                 zoomSlider->setMovementBoundaryRect( 0.0, 0, 1.0, 0.0);
+                    //runner->resize(Float_Rect(0.0, 0.7, 1.0, hue_picker));
 
             temp = (1.0 - zoomSliderHolder->boundryRect.w) / (float)bottomBarRightStack->getChildCount(); // 2 total stack right components
             bottomBarRightStack->setBoundaryRect( 1.0-temp, 0.0, temp, 1.0); // max size of single stacked right component?
@@ -625,7 +626,6 @@ Ux::uiObject* Ux::create(void){
 
 
 
-
     zoomSlider = new uiObject();
     zoomSlider->hasBackground = true;
     Ux::setColor(&zoomSlider->backgroundColor, 255, 255, 255, 255);
@@ -638,6 +638,7 @@ Ux::uiObject* Ux::create(void){
     zoomSliderHolder->addChild(zoomSlider);
 
 
+    runner = new uiRunningMan(zoomSlider, Float_Rect(1.0,0.0,1.0,1.0));
 
 
 

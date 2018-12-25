@@ -169,6 +169,7 @@ static Ux* Singleton();
 #include "uiYesNoChoice.h"
 #include "uiHueGradient.h"
 #include "uiScore.h"
+#include "uiRunningMan.h"
 
 #include "ux-anim.h"
     
@@ -323,6 +324,7 @@ static Ux* Singleton();
         uiObject *zoomSliderHolder;
         uiObject *zoomSliderBg;
         uiObject *zoomSlider;
+        uiRunningMan *runner;
 
         uiViewColor *curerntColorPreview;
         uiViewColor *palleteSelectionColorPreview;

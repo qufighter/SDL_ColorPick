@@ -683,8 +683,19 @@ void OpenGLContext::reshapeWindow(int w, int h) {
     //SDL_GL_MakeCurrent(sdlWindow, gl);
 }
 
+void  OpenGLContext::updateFishScaleSliderRunner(){
+    if( openglContext->fishEyeScale < FISHEYE_SLOW_ZOOM_MAX ){
+        float intensity = 1.0 - ((openglContext->fishEyeScale-FISHEYE_SLOW_ZOOM_THRESHOLD) / (FISHEYE_SLOW_ZOOM_MAX-FISHEYE_SLOW_ZOOM_THRESHOLD));
+        //SDL_Log("run intensity %f", intensity);
+        generalUx->runner->show(intensity);
+    }else{
+        generalUx->runner->hide();
+    }
+}
+
 void  OpenGLContext::updateFishScaleSlider(){
     generalUx->zoomSlider->updateAnimationPercent(fishEyeScalePct, 0.0);
+    updateFishScaleSliderRunner();
 }
 
 void  OpenGLContext::setFishScale(float modifierAmt, float scaler){
@@ -722,22 +733,8 @@ void OpenGLContext::setFishScalePerentage(Ux::uiObject *interactionObj, float pe
 
     myOglContext->fishEyeScale = MIN_FISHEYE_ZOOM + (zoomRange * myOglContext->fishEyeScalePct);
 
+    myOglContext->updateFishScaleSliderRunner();
 }
-
-//static for use as UI:: callback
-//void OpenGLContext::setFishScalePerentage(Ux::uiObject *interactionObj, float percent){
-//    SDL_Log("MMV PERC SLIDER %f %%", (percent));
-//    // from static function we must get instance
-//
-//    OpenGLContext* myOglContext = OpenGLContext::Singleton();
-//
-//    // todo need to use logscale or crop
-//    myOglContext->fishEyeScalePct = percent;
-//
-//
-//    myOglContext->fishEyeScale = MIN_FISHEYE_ZOOM + (zoomRange * myOglContext->fishEyeScalePct);
-//    
-//}
 
 float OpenGLContext::getPixelMovementFactor(){
     // 64 - 0.25 * screen larger dimension - sqrt 64 = 8.0
@@ -778,10 +775,16 @@ float OpenGLContext::getPixelMovementFactor(){
     float factor = bigPixelSize * 0.5; // the big pixel is N across, we must move by this much to move 1px... but if we start center pixel its half that much
     if( factor < 1 ) factor = 1.0; // basically negates the normal effects of this block to slow things, when this is 1.0 we move 1px per px movement
 
-    if( openglContext->fishEyeScale <= FISHEYE_SLOW_ZOOM_THRESHOLD ){
-        //factor = (0.05 - openglContext->fishEyeScalePct) * 80;
-        factor /= 25.0;
+
+    if( openglContext->fishEyeScale < FISHEYE_SLOW_ZOOM_MAX ){
+        float intensity = 1.0 - ((openglContext->fishEyeScale-FISHEYE_SLOW_ZOOM_THRESHOLD) / (FISHEYE_SLOW_ZOOM_MAX-FISHEYE_SLOW_ZOOM_THRESHOLD));
+        factor /= (25.0 * intensity);
     }
+
+//    if( openglContext->fishEyeScale <= FISHEYE_SLOW_ZOOM_THRESHOLD ){
+//        //factor = (0.05 - openglContext->fishEyeScalePct) * 80;
+//        factor /= 25.0;
+//    }
 //    SDL_Log("bigPixelSize          %i" , bigPixelSize);
 //    SDL_Log("computed factor %f" , factor);
     return factor;

@@ -12,6 +12,13 @@ movement velocity platform diffences (android) (dupe)
 add version string somewhere (do not let it look like an IP address!)  maybe this is plat specifc/bundle specific?
  > AndroidManifest.xml
 
+huge negative score values are frequently not displayed ( -SDL_MAX_SINT32 ? )
+^ or any score over some threshold
+
+arrow toggle aka "hide scrolly arrows on touchy devices"
+
+modal chain possible to destroy when there could be a better modal found (hue picker, return to, dismiss hue picker, esc broke)
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
@@ -23,8 +30,6 @@ unable to find some colors precisely (pink ff00fc > "works" while ff00fd des not
 -> desktop osx -> ff00fc resolves to ff00fe
 
 arrow interaction repeat....
-
-huge negative score values are frequently not displayed ( -SDL_MAX_SINT32 ? )
 
 home pressed - maybe ios screenshot? time for gimicky marketing ploy
 
