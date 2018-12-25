@@ -40,6 +40,7 @@ struct uiScrollController{
 
         scrollBarVertHolder->setBoundaryRect( 1.0 - SCROLLY_WIDTH, 0.0, SCROLLY_WIDTH, 1.0);
 
+
         scrollUp->hasForeground = true;
         //uxInstance->printCharToUiObject(scrollUp, '^', true);
         uxInstance->printCharToUiObject(scrollUp, CHAR_ARR_UP, true);
@@ -58,10 +59,13 @@ struct uiScrollController{
         //Ux::setColor(&scrollDown->backgroundColor, 255, 255, 255, 50);
         Ux::setColor(&scrollDown->foregroundColor, 255, 255, 255, 224);
 
-
-        // TODO?done? scrollVtDrag should become a container, that way it can intercept clicks etc..., then we can do the dynamic part below...
-
-        scrollVtDragHolder->setBoundaryRect( 0.0, SCROLLY_WIDTH, 1.0, 1.0 - SCROLLY_WIDTH - SCROLLY_WIDTH);// 0.23 is the height of the scrolly widget... make it dynamic :!
+#ifdef OMIT_SCROLLBAR_ARROWS
+        scrollDown->hideAndNoInteraction();
+        scrollUp->hideAndNoInteraction();
+        scrollVtDragHolder->setBoundaryRect( 0.0, SCROLLY_MISSING_WIDTH, 1.0, 1.0 - SCROLLY_MISSING_WIDTH - SCROLLY_MISSING_WIDTH);
+#else
+        scrollVtDragHolder->setBoundaryRect( 0.0, SCROLLY_WIDTH, 1.0, 1.0 - SCROLLY_WIDTH - SCROLLY_WIDTH);
+#endif
         scrollVtDragHolder->setInteraction(&this->interactionDragBgClicked);
         scrollVtDragHolder->setInteractionCallback(&this->interactionDragReleased);
 

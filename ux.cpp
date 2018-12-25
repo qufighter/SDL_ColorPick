@@ -377,9 +377,10 @@ void Ux::resizeUiElements(void){
 
 
         temp = 0.15;
+#ifndef OMIT_SCROLLY_ARROWS
         movementArrows->resize(Float_Rect(0.27777777777778, 0.0,
             1.0 - 0.27777777777778 - 0.27777777777778, 1.0));
-
+#endif
         curerntColorPreview->resize(Float_Rect(0.0, ws_clock, 0.27777777777778, 1.0 - ws_clock));
 
         defaultYesNoChoiceHolder->setBoundaryRectForAnimState(0.0, 0.0, 1.0, 1.0, // vis
@@ -454,7 +455,9 @@ void Ux::resizeUiElements(void){
                 palleteSelectionColorPreview->resize(Float_Rect(0.0, 0.0, 1.0, 1.0));
 
         temp = 0.27777777777778 + 0.04;
+#ifndef OMIT_SCROLLY_ARROWS
         movementArrows->resize(Float_Rect(0.0, temp, 1.0, 1.0 - temp - temp));
+#endif
         curerntColorPreview->resize(Float_Rect(0.0, clock_bar, 1.0, 0.27777777777778));
 
 
@@ -646,7 +649,7 @@ Ux::uiObject* Ux::create(void){
 
     historyPalleteHolder = new uiObject();
     historyPalleteHolder->hasBackground = true;
-    Ux::setColor(&historyPalleteHolder->backgroundColor, 0, 0, 0, 192);
+    Ux::setColor(&historyPalleteHolder->backgroundColor, 0, 0, 0, 220);
 
     historyPalleteHolder->setInteractionCallback(&Ux::interactionToggleHistory); // if we dragged and released... it will animate the rest of the way because of this
     historyPalleteHolder->setInteraction(&Ux::interactionVert);
@@ -667,8 +670,8 @@ Ux::uiObject* Ux::create(void){
 
     //newHistoryFullsize->isDebugObject=true;
 
-    newHistoryFullsize->hasBackground = true;
-    Ux::setColor(&newHistoryFullsize->backgroundColor, 0, 0, 0, 192);
+    //newHistoryFullsize->hasBackground = true;
+    //Ux::setColor(&newHistoryFullsize->backgroundColor, 0, 0, 0, 192);
 
 
 
@@ -748,9 +751,9 @@ Ux::uiObject* Ux::create(void){
 
 
 
-
+#ifndef OMIT_SCROLLY_ARROWS
     movementArrows = new uiNavArrows(rootUiObject, Float_Rect(0.0, clock_bar + 0.27777777777778, 1.0, 0.38), &Ux::interactionDirectionalArrowClicked);
-
+#endif
     curerntColorPreview = new uiViewColor(rootUiObject, Float_Rect(0.0, clock_bar, 1.0, 0.27777777777778), false);
 
 

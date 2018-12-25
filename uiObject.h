@@ -11,6 +11,7 @@
 #define ColorPick_iOS_SDL_uiObject_h
 
 #define SCROLLY_WIDTH 0.1
+#define SCROLLY_MISSING_WIDTH 0.01
 
 // FUNCTIONS DEFINED HERE ARE SATAIC UX:: member functions
 static bool pointInRect(Float_Rect* rect, float x, float y){

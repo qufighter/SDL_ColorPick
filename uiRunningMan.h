@@ -98,7 +98,10 @@ struct uiRunningMan{
         for( int i=0; i<speedStripes->getChildCount(); i++ ){
             speedStripes->childList[i]->boundryRect.w = STRIPE_MIN_LENGTH + (STRIPE_MAX_EXTENSION * intensity);
         }
-        speedStripes->updateRenderPosition();
+        float intensityXEffect = 0.02;
+        uiObjectItself->boundryRect.x=1.0 - intensityXEffect + (intensityXEffect * (intensity));
+        //speedStripes->updateRenderPosition();
+        uiObjectItself->updateRenderPosition();
     }
 
     void resize(){

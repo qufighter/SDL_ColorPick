@@ -16,6 +16,15 @@ huge negative score values are frequently not displayed ( -SDL_MAX_SINT32 ? )
 ^ or any score over some threshold
 
 arrow toggle aka "hide scrolly arrows on touchy devices"
+   OMIT_SCROLLY_ARROWS
+   OMIT_SCROLLBAR_ARROWS
+   
+a way to expand collision bounds outside object bounds automatically to contain child objects??????
+
+cannot grab history pane animating out
+  (or can grab but ani overpowers it?)
+  
+  squarilate scroller
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)

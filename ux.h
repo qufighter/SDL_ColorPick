@@ -18,6 +18,9 @@
 #define RESIZE_NOW true
 #define DO_NOT_RESIZE_NOW false
 
+#define OMIT_SCROLLY_ARROWS
+#define OMIT_SCROLLBAR_ARROWS
+
 //#include <stdio.h>
 #include "main.h"
 using namespace std;
