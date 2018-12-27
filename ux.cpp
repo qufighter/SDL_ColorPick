@@ -651,6 +651,7 @@ Ux::uiObject* Ux::create(void){
     historyPalleteHolder->hasBackground = true;
     Ux::setColor(&historyPalleteHolder->backgroundColor, 0, 0, 0, 220);
 
+//    historyPalleteHolder->setInteractionBegin(&Ux::interactionHistoryInteractionBegin);
     historyPalleteHolder->setInteractionCallback(&Ux::interactionToggleHistory); // if we dragged and released... it will animate the rest of the way because of this
     historyPalleteHolder->setInteraction(&Ux::interactionVert);
     historyPalleteHolder->setBoundsEnterFunction(&Ux::interactionHistoryEnteredView);
@@ -1454,6 +1455,12 @@ void Ux::hideHistoryPalleteIfShowing(){
         interactionToggleHistory(nullptr, nullptr);
     }
 }
+
+//static
+//void Ux::interactionHistoryInteractionBegin(uiObject *interactionObj, uiInteraction *delta){
+//    interactionObj->cancelCurrentAnimation();
+//}
+
 
 //static
 void Ux::interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta){

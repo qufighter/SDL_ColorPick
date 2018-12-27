@@ -23,8 +23,13 @@ a way to expand collision bounds outside object bounds automatically to contain 
 
 cannot grab history pane animating out
   (or can grab but ani overpowers it?)
+   in "animConstrainToScrollableRegion" in scroll controller, we could have some object we would check to see if we are in teh correct modular state for our object to be "active"
   
   squarilate scroller
+  
+  achievements
+  
+  settings
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
