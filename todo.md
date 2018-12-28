@@ -4,8 +4,7 @@ DEVELOPER_TEST_MODE
 
 #  todo
 
-sort pallete colors
-^ (web interface
+sort history colors "rewrite history"  (no index, pretty easy)
 
 movement velocity platform diffences (android) (dupe)
 
@@ -15,27 +14,19 @@ add version string somewhere (do not let it look like an IP address!)  maybe thi
 huge negative score values are frequently not displayed ( -SDL_MAX_SINT32 ? )
 ^ or any score over some threshold
 
-arrow toggle aka "hide scrolly arrows on touchy devices"
-   OMIT_SCROLLY_ARROWS
-   OMIT_SCROLLBAR_ARROWS
-   
-a way to expand collision bounds outside object bounds automatically to contain child objects??????
+achievements
 
-cannot grab history pane animating out
-  (or can grab but ani overpowers it?)
-   in "animConstrainToScrollableRegion" in scroll controller, we could have some object we would check to see if we are in teh correct modular state for our object to be "active"
-  
-  squarilate scroller
-  
-  achievements
-  
-  settings
+settings
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 ##  can do
+
+a way to expand collision bounds outside object bounds automatically to contain child objects??????
+
+squarilate scroller
 
 unable to find some colors precisely (pink ff00fc > "works" while ff00fd des not)
 -> android -> ff00fc resolevs to fe00fd

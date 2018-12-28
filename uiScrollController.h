@@ -46,6 +46,7 @@ struct uiScrollController{
         uxInstance->printCharToUiObject(scrollUp, CHAR_ARR_UP, true);
         scrollUp->setBoundaryRect( 0.0, 0.0, 1.0, SCROLLY_WIDTH);
         scrollUp->setClickInteractionCallback(&this->interactionScrollUp);
+        scrollUp->setShouldCeaseInteractionChek(&this->testIfObjectCanInteractBasic);
         //scrollUp->hasBackground = true;
         //Ux::setColor(&scrollUp->backgroundColor, 255, 255, 255, 50);
         Ux::setColor(&scrollUp->foregroundColor, 255, 255, 255, 224);
@@ -55,6 +56,7 @@ struct uiScrollController{
         uxInstance->printCharToUiObject(scrollDown, CHAR_ARR_DN, true);
         scrollDown->setBoundaryRect( 0.0, 1.0 - SCROLLY_WIDTH, 1.0, SCROLLY_WIDTH);
         scrollDown->setClickInteractionCallback(&this->interactionScrollDown);
+        scrollDown->setShouldCeaseInteractionChek(&this->testIfObjectCanInteractBasic);
         //scrollDown->hasBackground = true;
         //Ux::setColor(&scrollDown->backgroundColor, 255, 255, 255, 50);
         Ux::setColor(&scrollDown->foregroundColor, 255, 255, 255, 224);
@@ -68,6 +70,7 @@ struct uiScrollController{
 #endif
         scrollVtDragHolder->setInteraction(&this->interactionDragBgClicked);
         scrollVtDragHolder->setInteractionCallback(&this->interactionDragReleased);
+        scrollVtDragHolder->setShouldCeaseInteractionChek(&this->testIfObjectCanInteractBasic);
 
         //scrollVtDrag->hasForeground = true;
         //uxInstance->printCharToUiObject(scrollVtDrag, '|', true);
@@ -79,7 +82,7 @@ struct uiScrollController{
         scrollVtDrag->setInteraction(&Ux::interactionSliderVT);
         scrollVtDrag->setAnimationPercCallback(setScrollToPercent);
 
-
+        scrollVtDrag->setShouldCeaseInteractionChek(&this->testIfObjectCanInteractBasic);
         scrollVtDrag->setInteractionCallback(&this->interactionDragReleased);
         scrollVtDrag->hasBackground = true;
         Ux::setColor(&scrollVtDrag->backgroundColor, 255, 255, 255, 96);
@@ -194,6 +197,17 @@ struct uiScrollController{
         this->scrollChildContainer->setAnimation(myAnimChain); // imporrtant to do this before we push it..
         uxInstance->uxAnimations->pushAnimChain(myAnimChain);
         
+    }
+
+    static bool testIfObjectCanInteractBasic(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
+        Ux* uxInstance = Ux::Singleton();
+        // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
+        uiScrollController* self = interactionObj->myScrollController;
+        bool isHid = self->uiObjectItself->isInHiddenState();
+        if( isHid ){
+            return uxInstance->bubbleCurrentInteraction();
+        }
+        return true;
     }
 
     static bool testIfObjectCanInteract(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....

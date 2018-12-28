@@ -18,13 +18,19 @@
 #define RESIZE_NOW true
 #define DO_NOT_RESIZE_NOW false
 
-#define OMIT_SCROLLY_ARROWS
-#define OMIT_SCROLLBAR_ARROWS
-
 //#include <stdio.h>
 #include "main.h"
 using namespace std;
 //#include <vector>
+
+
+#ifndef COLORPICK_PLATFORM_DESKTOP
+#define OMIT_SCROLLBAR_ARROWS
+#endif
+
+//#define OMIT_SCROLLY_ARROWS
+
+
 
 
 #include "shader.h"
