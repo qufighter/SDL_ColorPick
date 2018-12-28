@@ -248,7 +248,7 @@ struct uiObject
         hasCropParent=false;
         useCropParentOrig=false;
         calculateCropParentOrig=false;
-        is_being_viewed_state=false;
+        is_being_viewed_state=true;
         default_viewed_state = true;
         hasMovementBoundary=false;
         childListIndex = 0;
@@ -300,7 +300,7 @@ struct uiObject
     uint8_t textDirection;
     bool testChildCollisionIgnoreBounds = false;
 
-    bool is_being_viewed_state = false; // some object interactions need to track the state of the toggle into/outof view
+    bool is_being_viewed_state = true; // some object interactions need to track the state of the toggle into/outof view
     bool default_viewed_state = true; // by default this object is either vis or hid, origBoundaryRect is which?
 
     bool hasBackground;
@@ -538,6 +538,7 @@ struct uiObject
     }
 
     void setClickInteractionCallback( anInteractionFn p_interactionCallback ){
+        this->canCollide = true; // so for click functions we are just setting this automatically nnow!
         setInteractionCallback(p_interactionCallback);
         interactionCallbackTypeClick = true;
     }
@@ -764,6 +765,14 @@ struct uiObject
     bool hasParentObject;
     uiObject *parentObject;
 
+    bool isInHiddenState(){ // check obj itself and parent objects to see if we are hidden...
+        if( !is_being_viewed_state ) return true;
+        if( hasParentObject ){
+            return parentObject->isInHiddenState();
+        }
+        return false;
+    }
+
     bool hasCropParent;
     bool useCropParentOrig;
     bool calculateCropParentOrig;
@@ -779,6 +788,7 @@ struct uiObject
     int getChildCount(){
         return childListIndex;
     }
+
 
     //uiObject *parentScrollObjectObject; /// gthinking about this if our x/y is outside of 0-1.0 range then we trigger a scrolly behavior
     // on our barnt scroll object whatever level up from here that might be

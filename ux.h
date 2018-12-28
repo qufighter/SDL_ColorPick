@@ -246,6 +246,8 @@ static Ux* Singleton();
     static void clickCancelClearPallete(uiObject *interactionObj, uiInteraction *delta);
     static void removePalleteColor(uiObject *interactionObj, uiInteraction *delta);
     static void removeHistoryColor(uiObject *interactionObj, uiInteraction *delta);
+    static void removeAllCheckedPalleteColor(uiObject *interactionObj, uiInteraction *delta);
+    static void removeAllCheckedHistoryColor(uiObject *interactionObj, uiInteraction *delta);
     static void clickZoomSliderBg(uiObject *interactionObj, uiInteraction *delta);
     static void interactionHZ(uiObject *interactionObj, uiInteraction *delta);
     static void interactionSliderVT(uiObject *interactionObj, uiInteraction *delta);

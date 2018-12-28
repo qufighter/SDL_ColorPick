@@ -46,7 +46,8 @@ arrow interaction repeat....
 home pressed - maybe ios screenshot? time for gimicky marketing ploy
 
 lightening bolt first click delete checked only? // we should show delete x on all visible tiles....
-^ - instead this should be something we can trigger from the modal for a single delete "all checked" or something like that....
+^ - instead this should be something we can trigger from the modal for a single delete "all checked" or something like that.... 
+^ wip see: removeAllCheckedHistoryColor / removeAllCheckedPalleteColor ( displayAdditionalAction )
 
 pallete swatch color -> huePicker for adjustment ( see cp_set_from_hsv )
 ^ above is basically "done" but further optimizations could be good
@@ -56,6 +57,7 @@ sort pallete colors
 
 text selection and or copy ~~paste~~ ease (desktop, mobile)             SDL_Log("Double touched color preview......");
 ^ copy menu, modal-ish (any interaction shall call dismiss modals function)
+^ SDL_SetClipboardText makes this easy..... 
 
 dedupe history (when out of space?)
 
@@ -91,7 +93,7 @@ NOTE: just using  currentInteraction here could have SIDE EFFECTS
   > pallete upload referrer ???????? (maybe not unless it can be consumed) - or just after this is clicked? "generated using" - could be good
   > see SDL_ShowMessageBox > allocate buttons once....
 > check update policy 
-> hide scrolly arrows on touchy devices
+> hide scrolly arrows on touchy devices OMIT_SCROLLY_ARROWS OMIT_SCROLLBAR_ARROWS
 
 ## desktop any
 desktop scroll wheel in pallete (modal)

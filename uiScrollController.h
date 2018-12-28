@@ -201,6 +201,11 @@ struct uiScrollController{
                                                                // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
         uiScrollController* self = interactionObj->myScrollController;
 
+        bool isHid = self->uiObjectItself->isInHiddenState();
+        if( isHid ){
+            return uxInstance->bubbleCurrentInteraction();
+        }
+
         if( uxInstance->widescreen ){
            // SDL_Log("00))))0000000000000000000000000x y:%f x:%f",fabs(delta->dy), delta->dx);
 

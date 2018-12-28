@@ -12,6 +12,8 @@ struct uiYesNoChoice{
         Ux* uxInstance = Ux::Singleton(); // some useful helper?
 
         uiObjectItself = new uiObject();
+        addSomeMoreHolder = new uiObject();
+        addSomeMore = new uiObject();
         yes = new uiObject();
         no = new uiObject();
         text = new uiObject();
@@ -31,6 +33,20 @@ struct uiYesNoChoice{
 
         //deleteColorPreview = new uiViewColor(uiObjectItself, Float_Rect(0.0, 0.0, 1.0, 0.27777777777778), false);
 
+//        addSomeMoreHolder->hasBackground=false;
+//        addSomeMoreHolder->hasForeground=false;
+        addSomeMoreHolder->doesInFactRender = false;
+        //addSomeMoreHolder->squarify();
+
+
+        addSomeMore->hasBackground=true;
+        addSomeMore->hasForeground=true;
+        Ux::setColor(&addSomeMore->backgroundColor, 32, 0, 0, 128);
+        Ux::setColor(&addSomeMore->foregroundColor, 255, 0, 0, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        uxInstance->printCharToUiObject(addSomeMore, CHAR_CIRCLE, DO_NOT_RESIZE_NOW);
+        addSomeMore->containText = true;
+        //uxInstance->printStringToUiObject(addSomeMore, "+499", DO_NOT_RESIZE_NOW);
+        addSomeMore->setRoundedCorners(0.5);
 
 
 
@@ -76,9 +92,13 @@ struct uiYesNoChoice{
 
         no->is_circular = false; // easier to click no
 
+        uiObjectItself->addChild(addSomeMoreHolder);
+        addSomeMoreHolder->addChild(addSomeMore);
+
         uiObjectItself->addChild(yes);
         uiObjectItself->addChild(no);
 
+        addSomeMore->setClickInteractionCallback(defaultAddMoreFn);
 
         uiObjectItself->setInteractionCallback(Ux::interactionNoOp);
 
@@ -132,29 +152,76 @@ struct uiYesNoChoice{
     uiObject *text_holder;
     uiObject *yes;
     uiObject *no;
+    uiObject *addSomeMoreHolder;
+    uiObject *addSomeMore;
 
     //uiViewColor* deleteColorPreview;
 
     anInteractionFn yesClickedFn;
     anInteractionFn noClickedFn;
+    anInteractionFn additionalActionFn;
+
+    int additional_number_to_show;
 
     float text_length;
     int last_num_delete;
     bool isDisplayed; // only one
+    /// we should consider a yes/no ID of current ticks,.....
 
     // GENERICS - GENRAL PURPOSE use for whatever
     uiObject *myTriggeringUiObject;
+
+    void displayAdditionalAction(anInteractionFn p_additionalYesClickedFn, int numberToShow){
+        additionalActionFn = p_additionalYesClickedFn;
+        additional_number_to_show = numberToShow;
+        Ux* uxInstance = Ux::Singleton();
+
+        // since we contain text, we need to do some funny shifting of our styles...
+        addSomeMore->hasBackground = false;
+        Ux::setColor(&addSomeMore->foregroundColor, 0, 0, 0, 255);
+        uxInstance->printStringToUiObject(addSomeMore, " +499 ", DO_NOT_RESIZE_NOW);
+        addSomeMore->hasBackground = true;
+        Ux::setColor(&addSomeMore->foregroundColor, 255, 0, 0, 192);
+
+        addSomeMoreHolder->showAndAllowInteraction();
+    }
+
+    void showStringNearOkButton(char* message){
+        text_length = (float)SDL_strlen(message);
+        Ux* uxInstance = Ux::Singleton();
+        if( text_length <= 7 ){
+            uxInstance->printStringToUiObject(text, message, DO_NOT_RESIZE_NOW);
+            text->boundryRect.x =  text_length * -0.5;
+            text_holder->show();
+        }
+        //        }else{
+        //            uxInstance->printStringToUiObject(text, "xAll", DO_NOT_RESIZE_NOW);
+        //            text_length = 4;
+        //        }
+        //        text->boundryRect.x =  text_length * -0.5;
+        //        text_holder->show();
+        resize();
+    }
+
+    char* convertIntegerToString(int inputInt){
+        int maxLen = 5;
+        char* total_del = (char*)SDL_malloc( sizeof(char) * maxLen );
+        if( inputInt < 1000 ){
+            SDL_snprintf(total_del, maxLen, "x%i", inputInt);
+        }else{
+            SDL_snprintf(total_del, maxLen, "xAll");
+        }
+        //last_num_delete = numberToDelete; // last_num_delete becomes score multi - set elesewhere...
+
+        //SDL_free(total_del); - if you call this please free the result...
+        return total_del;
+    }
 
     void display(uiObject *p_myTriggeringUiObject, anInteractionFn p_yesClickedFn, anInteractionFn p_noClickedFn, int numberToDelete){
         if( isDisplayed ) return;
         if( numberToDelete > 1 ){
             int maxLen = 5;
-            char* total_del = (char*)SDL_malloc( sizeof(char) * maxLen );
-            if( numberToDelete < 1000 ){
-                SDL_snprintf(total_del, maxLen, "x%i", numberToDelete);
-            }else{
-                SDL_snprintf(total_del, maxLen, "xAll");
-            }
+            char* total_del = convertIntegerToString(numberToDelete);
             display( p_myTriggeringUiObject,  p_yesClickedFn,  p_noClickedFn, total_del);
             last_num_delete = numberToDelete;
 
@@ -167,27 +234,15 @@ struct uiYesNoChoice{
     void display(uiObject *p_myTriggeringUiObject, anInteractionFn p_yesClickedFn, anInteractionFn p_noClickedFn, char* message){
         if( isDisplayed ) return;
         display( p_myTriggeringUiObject,  p_yesClickedFn,  p_noClickedFn);
-        text_length = (float)SDL_strlen(message);
-        Ux* uxInstance = Ux::Singleton();
-        if( text_length <= 7 ){
-            uxInstance->printStringToUiObject(text, message, DO_NOT_RESIZE_NOW);
-            text->boundryRect.x =  text_length * -0.5;
-            text_holder->show();
-        }
-//        }else{
-//            uxInstance->printStringToUiObject(text, "xAll", DO_NOT_RESIZE_NOW);
-//            text_length = 4;
-//        }
-//        text->boundryRect.x =  text_length * -0.5;
-//        text_holder->show();
-
-        resize();
+        showStringNearOkButton(message);
     }
 
     void display(uiObject *p_myTriggeringUiObject, anInteractionFn p_yesClickedFn, anInteractionFn p_noClickedFn){
         if( isDisplayed ) return;
         last_num_delete = 1;
         isDisplayed = true;
+        addSomeMoreHolder->hideAndNoInteraction();
+
 
         text_holder->hide();
 
@@ -221,6 +276,21 @@ struct uiYesNoChoice{
 
 
     }
+
+    static void defaultAddMoreFn(uiObject *interactionObj, uiInteraction *delta){
+        uiYesNoChoice* self = ((uiYesNoChoice*)interactionObj->myUiController);
+
+        self->addSomeMoreHolder->hideAndNoInteraction();
+
+        self->last_num_delete = self->additional_number_to_show + 1;
+
+        char* tmp = self->convertIntegerToString(self->last_num_delete);
+        self->showStringNearOkButton(tmp);
+        SDL_free(tmp);
+
+        self->yesClickedFn = self->additionalActionFn;
+    }
+
 
     static void defaultOkFn(uiObject *interactionObj, uiInteraction *delta){
 
@@ -294,11 +364,14 @@ struct uiYesNoChoice{
         //uiObjectItself->setBoundaryRect(&boundaries);
 
 
-
+        addSomeMoreHolder->setBoundaryRect( 0.5-0.125, 0.25-0.125, 0.25,0.25);
+        addSomeMore->setBoundaryRect( 0, 0, 1, 1);
 
 
         if( uxInstance->widescreen ){
             text_holder->setBoundaryRect( 0.5, 1.0, 0.5, 0.5);
+
+            addSomeMoreHolder->squarifyKeepVt();
         }else{
 
             float baseWidth = 1.53;
@@ -306,6 +379,9 @@ struct uiYesNoChoice{
                 baseWidth=1.0;
             }
             text_holder->setBoundaryRect( 0.5, 1.0, baseWidth/text_length, baseWidth/text_length);
+
+            addSomeMoreHolder->squarifyKeepHz();
+
         }
 
 

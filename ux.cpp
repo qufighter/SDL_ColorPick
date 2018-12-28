@@ -923,11 +923,13 @@ void Ux::printStringToUiObject(uiObject* printObj, char* text, bool resizeText){
     char * i;
     uiObject* letter;
 
-    int len=sizeof(text) - 1;  // unfortunately sizeof not really work right here
+    int len=SDL_strlen(text); // sizeof(text) - 1;  // unfortunately sizeof not really work right here
+
 
     float letterWidth = 1.0 / len;
+    float vertOffset = 0.5 - (letterWidth*0.5);
 
-    printObj->doesNotCollide = true;
+    printObj->doesNotCollide = !printObj->containText;
     printObj->doesInFactRender = printObj->containText; // the container is never the size to render.. unless contains text?!
 
     printObj->matrixInheritedByDescendants = true;
@@ -944,13 +946,7 @@ void Ux::printStringToUiObject(uiObject* printObj, char* text, bool resizeText){
         }else{
             letter = new uiObject();
 
-            if( printObj->containText == true ){
-
-                // LTR default
-                // move this right out of the else aboe, since we should fit any len text within, and also needs resize IF text len changed.... !?! easy compute
-                letter->setBoundaryRect( (ctr*letterWidth), 0, letterWidth, letterWidth);  /// TODO move size components into function to calculate on window rescale bonus points for suqare?
-            }else{
-
+            if( !printObj->containText ){
                 //letter->squarify();
                 // LTR default - after text is printed you can change this!
                 letter->setBoundaryRect( (ctr*1.0), 0, 1, 1);  /// TODO move size components into function to calculate on window rescale bonus points
@@ -958,6 +954,12 @@ void Ux::printStringToUiObject(uiObject* printObj, char* text, bool resizeText){
 
 
             printObj->addChild(letter);
+        }
+
+        if( printObj->containText == true ){
+            // LTR default
+            // move this right out of the else aboe, since we should fit any len text within, and also needs resize IF text len changed.... !?! easy compute
+            letter->setBoundaryRect( (ctr*letterWidth), vertOffset, letterWidth, letterWidth);  /// TODO move size components into function to calculate on window rescale bonus points for suqare?
         }
 
         letter->hasForeground = true; // printObj->hasForeground;
@@ -1260,6 +1262,11 @@ void Ux::removePalleteColor(uiObject *interactionObj, uiInteraction *delta){
     myUxRef->palleteScroller->updateTiles();
 }
 
+void Ux::removeAllCheckedPalleteColor(uiObject *interactionObj, uiInteraction *delta){
+
+
+}
+
 void Ux::clickDeletePalleteColor(uiObject *interactionObj, uiInteraction *delta){
 
     if( !interactionObj->doesInFactRender || !interactionObj->parentObject->doesInFactRender ){
@@ -1509,6 +1516,11 @@ void Ux::removeHistoryColor(uiObject *interactionObj, uiInteraction *delta){
 
 }
 
+void Ux::removeAllCheckedHistoryColor(uiObject *interactionObj, uiInteraction *delta){
+    SDL_Log("we got the callback even...");
+
+}
+
 void Ux::clickDeleteHistoryColor(uiObject *interactionObj, uiInteraction *delta){
 
     if( !interactionObj->doesInFactRender || !interactionObj->parentObject->doesInFactRender ){
@@ -1523,6 +1535,7 @@ void Ux::clickDeleteHistoryColor(uiObject *interactionObj, uiInteraction *delta)
     if( delta->dx == 0.0f && myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state == false ){
         myUxRef->uxAnimations->scale_bounce(interactionObj->childList[0], 0.001);
         myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::removeHistoryColor, &Ux::clickDeleteHistoryColor); // when no clicked we reach else
+        //myUxRef->defaultYesNoChoiceDialogue->displayAdditionalAction(&Ux::removeAllCheckedHistoryColor, 499);
     }else{
         interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) ); // returns uiAminChain*
         myUxRef->pickHistoryList->get(interactionObj->myIntegerIndex)->is_delete_state = false;
