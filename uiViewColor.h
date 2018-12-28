@@ -245,11 +245,11 @@ struct uiViewColor{
         }
     }
 
-    void update(SDL_Color* color){
+    bool update(SDL_Color* color){
 
         Ux* uxInstance = Ux::Singleton();
 
-        setColor(&last_color, color);
+        bool changed = setColorNotifyOfChange(&last_color, color);
         //last_color = color;
 
         //char* resultText6char = (char*)SDL_malloc( sizeof(char) * 6 ); // seems that we should reuse this and not free it
@@ -280,6 +280,7 @@ struct uiViewColor{
 
 
         //SDL_free(resultText6char);
+        return changed;
     }
 
 };

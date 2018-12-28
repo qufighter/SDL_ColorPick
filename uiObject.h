@@ -117,6 +117,10 @@ typedef struct ColorList // cannot really use this since we do not persist ths t
     bool is_delete_state;
 } ColorList;
 
+static bool setColorNotifyOfChange(SDL_Color * color, SDL_Color * bcolor){
+    return setColorNotifyOfChange(color, bcolor->r, bcolor->g, bcolor->b, bcolor->a);
+}
+
 
 static bool setColorNotifyOfChange(SDL_Color * color, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
     bool changed = color->r != r || color->g != g || color->b != b;

@@ -1437,9 +1437,11 @@ void Ux::clickPalleteColor(uiObject *interactionObj, uiInteraction *delta){ // s
     interactionObjectOrProxy->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObjectOrProxy) ); // returns uiAminChain*
 
 
-    myUxRef->palleteSelectionColorPreview->update(&interactionObj->backgroundColor);
+    bool changed = myUxRef->palleteSelectionColorPreview->update(&interactionObj->backgroundColor);
 
     if( !myUxRef->palleteSelectionPreviewHolder->is_being_viewed_state ) {
+        myUxRef->interactionTogglePalletePreview(myUxRef->palleteSelectionPreviewHolder, delta);
+    }else if( !changed ){
         myUxRef->interactionTogglePalletePreview(myUxRef->palleteSelectionPreviewHolder, delta);
     }
 
@@ -1967,7 +1969,7 @@ bool Ux::bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiIn
     // -y is upward movement
 
     //SDL_Log("00))))0000000000000000000000000 y:%f x:%f",delta->dy, delta->dx);
-    SDL_Log("00))))0000000000000000000000000 y:%f x:%f",fabs(delta->dy), fabs(0.0f-delta->dx));
+    //SDL_Log("00))))0000000000000000000000000 y:%f x:%f",fabs(delta->dy), fabs(0.0f-delta->dx));
     //SDL_Log("00))))0000000000000000000000000 x:%f 0x:%f",interactionObj->boundryRect.x, interactionObj->origBoundryRect.x);
 
 
