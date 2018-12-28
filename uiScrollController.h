@@ -85,7 +85,7 @@ struct uiScrollController{
         scrollVtDrag->setShouldCeaseInteractionChek(&this->testIfObjectCanInteractBasic);
         scrollVtDrag->setInteractionCallback(&this->interactionDragReleased);
         scrollVtDrag->hasBackground = true;
-        Ux::setColor(&scrollVtDrag->backgroundColor, 255, 255, 255, 96);
+        Ux::setColor(&scrollVtDrag->backgroundColor, 175, 175, 175, 200);
 
         scrollVtDrag->matrix = glm::scale(scrollVtDrag->matrix, glm::vec3(0.7,1.0,1.0));
 

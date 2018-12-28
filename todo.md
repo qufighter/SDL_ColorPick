@@ -11,9 +11,6 @@ movement velocity platform diffences (android) (dupe)
 add version string somewhere (do not let it look like an IP address!)  maybe this is plat specifc/bundle specific?
  > AndroidManifest.xml
 
-huge negative score values are frequently not displayed ( -SDL_MAX_SINT32 ? )
-^ or any score over some threshold
-
 achievements
 
 settings
@@ -52,15 +49,9 @@ text selection and or copy ~~paste~~ ease (desktop, mobile)             SDL_Log(
 
 dedupe history (when out of space?)
 
-
 remove myScrollController just use myUiController instead of the 1off (not necessarily removable when child elements have different controllers)
 remove hasInteraction hasInteractionCb just use nullptr check... (meh)
 fix crop of rounded corners in scrollers (see cleanup shader code)
-
-
-ux feedback when nav arrow is pressed
-  -see setInteractionBegin should work now....
-  ^ improve it further?!  uiAminChain* scale  -> really scaleBounce - and really we should reset it when interaction lost or complete... hmmm (meh?)
 
 ux refactor splitup files (for responsive?) meh
 
