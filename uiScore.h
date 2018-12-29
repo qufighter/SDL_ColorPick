@@ -158,6 +158,7 @@ struct uiScore{
 
             if( numberToDisplay > 0 ){
                 SDL_snprintf(score_disp_char, maxLen, "+%i", numberToDisplay);
+                handlePositioning(p_dispalyNearUiObject);
                 chain2->endAnimation();
                 chain3->endAnimation();
                 switch( effectNum ){
@@ -184,6 +185,7 @@ struct uiScore{
                     // "loose" condition
                     SDL_snprintf(score_disp_char, maxLen, "%i", numberToDisplay);
                 }
+                handlePositioning(p_dispalyNearUiObject);
                 chain2->endAnimation();
                 chain3->endAnimation();
                 switch( effectNum ){
@@ -203,39 +205,8 @@ struct uiScore{
                 }
             }
 
-            float text_length = (float)SDL_strlen(score_disp_char);
-
-            float score_size_scaling = 1.0/text_length;
-            if( score_size_scaling > score_position->origBoundryRect.w ){ // enforce "max" (default) size:
-                score_size_scaling=score_position->origBoundryRect.w;
-            }
-            Float_Rect* dispRect = &p_dispalyNearUiObject->collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
-            score_position->setBoundaryRect(dispRect->x + (dispRect->w * 0.5),
-                                            dispRect->y + (dispRect->h * 0.5),
-                                            score_size_scaling,
-                                            score_size_scaling  );
-
-
-
-            //score->boundryRect.x =  text_length * -0.5; // center
-            score->boundryRect.x =  -text_length + 0.5; // right aligned (center the rightmost char)
-            //score->boundryRect.x = -0.5;
-
-
-
-            //if( score->boundryRect.x + -0.5 + score_position->boundryRect.x < 0 ) score_position->boundryRect.x += score->boundryRect.x + -0.5 + score_position->boundryRect.x; // keep "on screen"
-
-            float hidLeftAmt = score_position->boundryRect.x + (score_size_scaling * score->boundryRect.x);
-            if( hidLeftAmt < 0 ){
-                score_position->boundryRect.x -= hidLeftAmt; // minus a negative
-            }
-
 
             uxInstance->printStringToUiObject(score, score_disp_char, DO_NOT_RESIZE_NOW);
-
-
-
-
 
         }
 
@@ -253,6 +224,34 @@ struct uiScore{
         //myUxRef->defaultScoreDisplay->displayExplanation("-Yes-");
     }
 
+    void handlePositioning(uiObject *p_dispalyNearUiObject){
+        // we need to handle positioning of the main "score_position" element before animation starts, but after we know the text...
+        float text_length = (float)SDL_strlen(score_disp_char);
+
+        float score_size_scaling = 1.0/text_length;
+        if( score_size_scaling > score_position->origBoundryRect.w ){ // enforce "max" (default) size:
+            score_size_scaling=score_position->origBoundryRect.w;
+        }
+        Float_Rect* dispRect = &p_dispalyNearUiObject->collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
+        score_position->setBoundaryRect(dispRect->x + (dispRect->w * 0.5),
+                                        dispRect->y + (dispRect->h * 0.5),
+                                        score_size_scaling,
+                                        score_size_scaling  );
+
+
+
+        //score->boundryRect.x =  text_length * -0.5; // center
+        score->boundryRect.x =  -text_length + 0.5; // right aligned (center the rightmost char)
+        //score->boundryRect.x = -0.5;
+
+        //if( score->boundryRect.x + -0.5 + score_position->boundryRect.x < 0 ) score_position->boundryRect.x += score->boundryRect.x + -0.5 + score_position->boundryRect.x; // keep "on screen"
+
+        float hidLeftAmt = score_position->boundryRect.x + (score_size_scaling * score->boundryRect.x);
+        if( hidLeftAmt < 0 ){
+            score_position->boundryRect.x -= hidLeftAmt; // minus a negative
+        }
+
+    }
 
     void displayExplanation(const char* textToShow){
         // longer strings won't work... the size is critical too (since if first char goes off screen it will not render)

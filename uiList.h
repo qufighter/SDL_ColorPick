@@ -9,14 +9,20 @@ struct uiListIterator
 {
     parentType* listInstance;
     int nextIndex;
+    int lastIndex;
 
     uiListIterator(parentType* plistInstance){
         listInstance=plistInstance;
         nextIndex = 0;
+        lastIndex = listInstance->_previousIndex;
     }
 
     genType* next(){
         return listInstance->get(nextIndex++);
+    }
+
+    genType* nextLast(){
+        return listInstance->get(lastIndex--);
     }
 };
 

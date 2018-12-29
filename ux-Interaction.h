@@ -54,9 +54,6 @@ struct uiInteraction
         ry =0; // reset these so we can keep calling update?  not always needed... plus sometimes rx and ry are needed!
     }
     void update(float x, float y){ // todo pass delta and relative
-        // maybe we should scale the coordinates to screen here instead....
-        // TODO pass time in?
-
         rx = x - px;
         ry = y - py;
 
@@ -67,7 +64,6 @@ struct uiInteraction
         dy = py - iy; // when this is greater than 0 we have moved down
 
         this->update();
-
     }
     void update(){ // update without movement.... or after movement applied
         int thisUpdate = SDL_GetTicks();

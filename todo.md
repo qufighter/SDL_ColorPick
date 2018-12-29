@@ -21,6 +21,8 @@ osx/ios jpg rotation not respected (is this exif rotation???)
 
 ##  can do
 
+"%cAll" really many/several or all....
+
 a way to expand collision bounds outside object bounds automatically to contain child objects??????
 
 squarilate scroller
@@ -62,7 +64,7 @@ leak / leaking keyword (done 2019)
  lookup trilinear or aniostropic filteirng 
  
  main thread animations for less jitter see MAIN_THREAD_ANIMATIONS (meh?)
- 
+
 cleanup shader code
 
 perhaps one must swipe too far left to show delete button // swipe left (on desktop this is fine though)
@@ -100,6 +102,7 @@ window border mouse drag listen limit
 win impl
 
 ## mobile any
+> check update policy 
 
 ### android
 // (done?) timer keeps firign in background if file chooser is left open... // we tried this but we can't pick an image... not quite sure why yet... compare logs?

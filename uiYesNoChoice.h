@@ -179,7 +179,11 @@ struct uiYesNoChoice{
         // since we contain text, we need to do some funny shifting of our styles...
         addSomeMore->hasBackground = false;
         Ux::setColor(&addSomeMore->foregroundColor, 0, 0, 0, 255);
-        uxInstance->printStringToUiObject(addSomeMore, " +499 ", DO_NOT_RESIZE_NOW);
+
+        char* total_pluss = convertIntegerToString(numberToShow, '+');
+        uxInstance->printStringToUiObject(addSomeMore, total_pluss, DO_NOT_RESIZE_NOW);
+        SDL_free(total_pluss);
+
         addSomeMore->hasBackground = true;
         Ux::setColor(&addSomeMore->foregroundColor, 255, 0, 0, 192);
 
@@ -194,25 +198,20 @@ struct uiYesNoChoice{
             text->boundryRect.x =  text_length * -0.5;
             text_holder->show();
         }
-        //        }else{
-        //            uxInstance->printStringToUiObject(text, "xAll", DO_NOT_RESIZE_NOW);
-        //            text_length = 4;
-        //        }
-        //        text->boundryRect.x =  text_length * -0.5;
-        //        text_holder->show();
         resize();
     }
 
     char* convertIntegerToString(int inputInt){
+        return convertIntegerToString(inputInt, 'x');
+    }
+    char* convertIntegerToString(int inputInt, char xcode){
         int maxLen = 5;
         char* total_del = (char*)SDL_malloc( sizeof(char) * maxLen );
         if( inputInt < 1000 ){
-            SDL_snprintf(total_del, maxLen, "x%i", inputInt);
+            SDL_snprintf(total_del, maxLen, "%c%i", xcode, inputInt);
         }else{
-            SDL_snprintf(total_del, maxLen, "xAll");
+            SDL_snprintf(total_del, maxLen, "%cAll", xcode);
         }
-        //last_num_delete = numberToDelete; // last_num_delete becomes score multi - set elesewhere...
-
         //SDL_free(total_del); - if you call this please free the result...
         return total_del;
     }
@@ -220,7 +219,6 @@ struct uiYesNoChoice{
     void display(uiObject *p_myTriggeringUiObject, anInteractionFn p_yesClickedFn, anInteractionFn p_noClickedFn, int numberToDelete){
         if( isDisplayed ) return;
         if( numberToDelete > 1 ){
-            int maxLen = 5;
             char* total_del = convertIntegerToString(numberToDelete);
             display( p_myTriggeringUiObject,  p_yesClickedFn,  p_noClickedFn, total_del);
             last_num_delete = numberToDelete;
@@ -279,6 +277,8 @@ struct uiYesNoChoice{
 
     static void defaultAddMoreFn(uiObject *interactionObj, uiInteraction *delta){
         uiYesNoChoice* self = ((uiYesNoChoice*)interactionObj->myUiController);
+
+        if( self->additionalActionFn == nullptr ) return; // this is the n on-interactive variant and has no effect when clicked
 
         self->addSomeMoreHolder->hideAndNoInteraction();
 

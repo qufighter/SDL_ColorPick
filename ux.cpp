@@ -1263,7 +1263,17 @@ void Ux::removePalleteColor(uiObject *interactionObj, uiInteraction *delta){
 }
 
 void Ux::removeAllCheckedPalleteColor(uiObject *interactionObj, uiInteraction *delta){
-
+    Ux* myUxRef = Ux::Singleton();
+    uiListIterator<uiList<ColorList, Uint8>, ColorList>* palleteListIterator = myUxRef->palleteList->iterate();
+    ColorList* pallete = palleteListIterator->nextLast(); // loop in reverse here...
+    while(pallete != nullptr){
+        if( pallete->is_delete_state ){
+            myUxRef->palleteList->remove(palleteListIterator->lastIndex+1);
+        }
+        pallete = palleteListIterator->nextLast();
+    }
+    SDL_free(palleteListIterator);
+    myUxRef->palleteScroller->updateTiles();
 
 }
 
@@ -1280,9 +1290,27 @@ void Ux::clickDeletePalleteColor(uiObject *interactionObj, uiInteraction *delta)
     if( delta->dx == 0.0f && myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state == false ){
         myUxRef->uxAnimations->scale_bounce(interactionObj->childList[0], 0.001);
         myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::removePalleteColor, &Ux::clickDeletePalleteColor); // when no clicked we reach else
+
+        uiListIterator<uiList<ColorList, Uint8>, ColorList>* palleteListIterator = myUxRef->palleteList->iterate();
+        ColorList* pallete = palleteListIterator->next();
+        int delCounter=0;
+        while(pallete != nullptr){
+            //SDL_Log("%i %i %i", hist->color.r, hist->color.g, hist->color.b);
+            if( pallete->is_delete_state ){
+                delCounter++;
+            }
+            pallete = palleteListIterator->next();
+        }
+        SDL_free(palleteListIterator);
+        if( delCounter > 1 ){
+            myUxRef->defaultYesNoChoiceDialogue->displayAdditionalAction(&Ux::removeAllCheckedPalleteColor, delCounter-1);
+        }
+
     }else{
-        interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) ); // returns uiAminChain*
-        myUxRef->palleteList->get(interactionObj->myIntegerIndex)->is_delete_state = false;
+        if( !myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state || myUxRef->defaultYesNoChoiceDialogue->yesClickedFn != &Ux::removeAllCheckedPalleteColor ){
+            interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) ); // returns uiAminChain*
+            myUxRef->palleteList->get(interactionObj->myIntegerIndex)->is_delete_state = false;
+        }
     }
 
 }
@@ -1455,8 +1483,8 @@ void Ux::clickPalleteColor(uiObject *interactionObj, uiInteraction *delta){ // s
 //        trueInteractionObj->setAnimation( self->uxAnimations->resetPosition(trueInteractionObj) ); // returns uiAminChain*
 //        trueInteractionObj->is_being_viewed_state = true;
 //    }
-    interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) ); // returns uiAminChain*
 
+    //interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) ); // returns uiAminChain*
 }
 
 void Ux::hideHistoryPalleteIfShowing(){
@@ -1519,8 +1547,17 @@ void Ux::removeHistoryColor(uiObject *interactionObj, uiInteraction *delta){
 }
 
 void Ux::removeAllCheckedHistoryColor(uiObject *interactionObj, uiInteraction *delta){
-    SDL_Log("we got the callback even...");
-
+    Ux* myUxRef = Ux::Singleton();
+    uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = myUxRef->pickHistoryList->iterate();
+    ColorList* hist = pickHistoryIterator->nextLast(); // loop in reverse here...
+    while(hist != nullptr){
+        if( hist->is_delete_state ){
+            myUxRef->pickHistoryList->remove(pickHistoryIterator->lastIndex+1);
+        }
+        hist = pickHistoryIterator->nextLast();
+    }
+    SDL_free(pickHistoryIterator);
+    myUxRef->updatePickHistoryPreview();
 }
 
 void Ux::clickDeleteHistoryColor(uiObject *interactionObj, uiInteraction *delta){
@@ -1537,10 +1574,27 @@ void Ux::clickDeleteHistoryColor(uiObject *interactionObj, uiInteraction *delta)
     if( delta->dx == 0.0f && myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state == false ){
         myUxRef->uxAnimations->scale_bounce(interactionObj->childList[0], 0.001);
         myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::removeHistoryColor, &Ux::clickDeleteHistoryColor); // when no clicked we reach else
-        //myUxRef->defaultYesNoChoiceDialogue->displayAdditionalAction(&Ux::removeAllCheckedHistoryColor, 499);
+
+        uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = myUxRef->pickHistoryList->iterate();
+        ColorList* hist = pickHistoryIterator->next();
+        int delCounter=0;
+        while(hist != nullptr){
+            //SDL_Log("%i %i %i", hist->color.r, hist->color.g, hist->color.b);
+            if( hist->is_delete_state ){
+                delCounter++;
+            }
+            hist = pickHistoryIterator->next();
+        }
+        SDL_free(pickHistoryIterator);
+        if( delCounter > 1 ){
+            myUxRef->defaultYesNoChoiceDialogue->displayAdditionalAction(&Ux::removeAllCheckedHistoryColor, delCounter-1);
+        }
+
     }else{
-        interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) ); // returns uiAminChain*
-        myUxRef->pickHistoryList->get(interactionObj->myIntegerIndex)->is_delete_state = false;
+        if( !myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state || myUxRef->defaultYesNoChoiceDialogue->yesClickedFn != &Ux::removeAllCheckedHistoryColor ){
+            interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) ); // returns uiAminChain*
+            myUxRef->pickHistoryList->get(interactionObj->myIntegerIndex)->is_delete_state = false;
+        }
     }
 }
 
