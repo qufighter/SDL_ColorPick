@@ -621,7 +621,7 @@ Ux::uiObject* Ux::create(void){
 
     updateRenderPositions();
 
-    readInState(); // reads saved state into lists
+    readInState(); // reads saved state into lists, requires historyPalleteEditor
 
 
     //test cololr history
@@ -962,7 +962,7 @@ void Ux::interactionNoOp(uiObject *interactionObj, uiInteraction *delta){
 
 }
 
-void Ux::openURL(char* url){
+void Ux::doOpenURL(char* url){
     openURL(url); // uses platform specific version from FileChooser.h
 }
 

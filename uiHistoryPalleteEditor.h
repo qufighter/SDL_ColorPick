@@ -319,7 +319,27 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
                     iconBtn->show();
                     Ux::setColor(&historyTile->backgroundColor, 0, 0, 0, 255);
 
+                    myUxRef->printCharToUiObject(iconBtn, CHAR_LIGHTENING_BOLT, DO_NOT_RESIZE_NOW);
+
                     historyTile->myIntegerIndex = BTN_NEGATIVE_START - BUTTON_CLEAR_HISTORY; //awkward but using negative space beyond -1 for codes
+
+                    historyTile->hasInteraction = false; // disable animations which are default for this scroll controller....
+
+                    historyTile->interactionProxy=nullptr;
+
+                    return true;
+                }
+
+                //if this is an optional button it should always be LAST
+                if(offset == myUxRef->pickHistoryList->total() + BUTTON_SORT_HISTORY ){
+                    historyTile->show();
+                    removeButton->hide(); // it still collides..... so we set the rect above!
+                    iconBtn->show();
+                    Ux::setColor(&historyTile->backgroundColor, 0, 0, 0, 255);
+
+                    myUxRef->printCharToUiObject(iconBtn, CHAR_SORT_ORDERING, DO_NOT_RESIZE_NOW);
+
+                    historyTile->myIntegerIndex = BTN_NEGATIVE_START - BUTTON_SORT_HISTORY; //awkward but using negative space beyond -1 for codes
 
                     historyTile->hasInteraction = false; // disable animations which are default for this scroll controller....
 
@@ -415,6 +435,46 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         }
     }
 
+    static int compareColorListItems(ColorList *a, ColorList *b){
+        HSV_Color A, B;
+        A.fromColor(&a->color);
+        B.fromColor(&b->color);
+        int result = A.h - B.h;
+        if( result == 0 ) result = A.s - B.s;
+        if( result == 0 ) result = A.v - B.v;
+        return result;
+    }
+
+    static void clickSortHistory(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        myUxRef->pickHistoryList->sort(&compareColorListItems);
+
+        // next: remove dupes
+        uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = myUxRef->pickHistoryList->iterate();
+        ColorList* hist = pickHistoryIterator->nextLast(); // loop in reverse here...
+        SDL_Color lastColor = hist->color;
+        hist = pickHistoryIterator->nextLast();
+        while(hist != nullptr){
+            if( colorEquals( &hist->color, &lastColor) ){
+                myUxRef->pickHistoryList->remove(pickHistoryIterator->lastIndex+1);
+            }else{
+                lastColor = hist->color;
+            }
+            hist = pickHistoryIterator->nextLast();
+        }
+        SDL_free(pickHistoryIterator);
+        myUxRef->updatePickHistoryPreview(); // also updates teh visible pallete scroller
+
+        // Achievement: rewrote history
+        // some custom score bonus???  right now the default one is being applied....
+        // todo: scored based on how much effect it had?
+    }
+
+    static void clickCancelSortHistory(uiObject *interactionObj, uiInteraction *delta){
+//        Ux* myUxRef = Ux::Singleton();
+//        uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
+    }
+
 
     static void removeHistoryColor(uiObject *interactionObj, uiInteraction *delta){
         Ux* myUxRef = Ux::Singleton();
@@ -447,7 +507,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
     static void clickDeleteHistoryColor(uiObject *interactionObj, uiInteraction *delta){
 
         if( !interactionObj->doesInFactRender || !interactionObj->parentObject->doesInFactRender ){
-            SDL_Log("CLICKED INVISIBLE REMOVE TILE");
+            //SDL_Log("CLICKED INVISIBLE REMOVE TILE");
             return; // this means our tile is invalid/out of range.. it is arguable we should not even get the event in this case? // todo (delete last tile and click again - it will prompt again without this or some solution)
         }
 
@@ -540,7 +600,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         if( interactionObj->myIntegerIndex < -1 ){
 
             if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_CLEAR_HISTORY ){
-                SDL_Log("Clear Button ---------------------");
+                //SDL_Log("Clear Button ---------------------");
 
                 if( myUxRef->defaultYesNoChoiceDialogue->isDisplayed ){ return; }
 
@@ -559,6 +619,19 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
                 myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickClearHistory, &clickCancelClearHistory, myUxRef->pickHistoryList->total());
 
+
+            }else if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_SORT_HISTORY ){
+
+                if( myUxRef->defaultYesNoChoiceDialogue->isDisplayed ){ return; }
+
+                myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
+
+                myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickSortHistory, &clickCancelSortHistory);
+
+                // we need to effectively communicate a "preview" of what will occur???
+                myUxRef->defaultYesNoChoiceDialogue->displayAdditionalAction(nullptr, 789);
+
+                // TODO: the Much Risk is not really enabled for this one is it??? the risk is much less.....
 
             }
 
@@ -973,7 +1046,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             if( myUxRef->palleteList->total() < 1 ){
 
                 if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_PALLETE_HELP ){
-                    SDL_Log("PALLETE Help Button ---------------------");
+                    //SDL_Log("PALLETE Help Button ---------------------");
 
                     if( myUxRef->defaultYesNoChoiceDialogue->isDisplayed ){ return; }
 
@@ -989,7 +1062,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
                 return;
             }
             if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_CLEAR_PALLETE ){
-                SDL_Log("PALLETEClear Button ---------------------");
+                //SDL_Log("PALLETEClear Button ---------------------");
 
                 if( myUxRef->defaultYesNoChoiceDialogue->isDisplayed ){ return; }
 
@@ -1010,7 +1083,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
 
             }else if(interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_SAVE_PALLETE ){
-                SDL_Log("PALLETE SAVE Button ---------------------");
+                //SDL_Log("PALLETE SAVE Button ---------------------");
 
                 //const char* urlBase = "data:text/html;<b>world";
                 const char* urlBase = "http://www.vidsbee.com/ColorPick/Pallete#";
@@ -1039,9 +1112,9 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
                 //SDL_snprintf(clrStr, len,  "%s%s", urlBase, clrStr);
 
-                SDL_Log("%s", clrStr);
+                //SDL_Log("%s", clrStr);
 
-                myUxRef->openURL(clrStr);
+                myUxRef->doOpenURL(clrStr);
 
                 SDL_free(clrStr);
                 SDL_free(myIterator); // does free recurse

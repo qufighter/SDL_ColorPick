@@ -54,6 +54,10 @@ struct uiList
     typedef int (*aIndexUpdateFn)(genType* item);
     typedef int (*aIteratorFn)(genType* item);
 
+    typedef int (*aComparitorFn)(genType* item, genType* itemB);
+    typedef int (*aGenericComparitorFn)(const void *A, const void *B);
+
+
     uiList(){
         _indexed=false;
         clear();
@@ -101,6 +105,18 @@ struct uiList
 
     }
 
+    void sort(aComparitorFn p_ComparitorFn){
+        sort((aGenericComparitorFn)p_ComparitorFn);
+    }
+
+    void sort(aGenericComparitorFn p_ComparitorFn){
+        if( _indexed ){
+            SDL_Log("Sorry sort in indexed list not currently supported");
+            return;
+        }
+        SDL_qsort(listItself, total(), sizeof(genType), p_ComparitorFn);
+        //TODO: does not fix the index....
+    }
 
     genType* listItself;
     indexType* indexItself;

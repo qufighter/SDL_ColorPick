@@ -48,7 +48,7 @@ const static float const_threshold = 0.0001; // velocity below this threshold st
 
 #define BTN_NEGATIVE_START -2
 
-typedef enum { BUTTON_CLEAR_HISTORY, PICK_HISRTORY_EXTRA_BUTTONS_TOTAL } PICK_HISRTORY_EXTRA_BUTTONS;
+typedef enum { BUTTON_CLEAR_HISTORY, BUTTON_SORT_HISTORY, PICK_HISRTORY_EXTRA_BUTTONS_TOTAL } PICK_HISRTORY_EXTRA_BUTTONS;
 typedef enum { BUTTON_CLEAR_PALLETE, BUTTON_SAVE_PALLETE, PALLETE_EXTRA_BUTTONS_TOTAL } PALLETE_EXTRA_BUTTONS;
 typedef enum { BUTTON_PALLETE_HELP, EMPTY_PALLETE_PALLETE_EXTRA_BUTTONS_TOTAL } EMPTY_PALLETE_EXTRA_BUTTONS;
 
@@ -228,7 +228,7 @@ static Ux* Singleton();
     bool triggerInteraction(); // mouseup, mouse didn't move
     bool triggerInteraction(bool isStart); // mouseup, mouse didn't move
 
-    void openURL(char* url);
+    void doOpenURL(char* url);
 
     bool bubbleCurrentInteraction();
     bool interactionUpdate(uiInteraction *delta);

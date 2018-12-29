@@ -4,7 +4,6 @@ DEVELOPER_TEST_MODE
 
 #  todo
 
-sort history colors "rewrite history"  (no index, pretty easy)
 
 movement velocity platform diffences (android) (dupe)
 
@@ -14,6 +13,14 @@ add version string somewhere (do not let it look like an IP address!)  maybe thi
 achievements
 
 settings
+
+pre-open dialogue (stock gradientz?)
+
+sort history colors "rewrite history"  (no index, pretty easy)
+  sort dialogue
+  scoring
+  
+look/feel of "all checked" button
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -54,8 +61,6 @@ dedupe history (when out of space?)
 remove myScrollController just use myUiController instead of the 1off (not necessarily removable when child elements have different controllers)
 remove hasInteraction hasInteractionCb just use nullptr check... (meh)
 fix crop of rounded corners in scrollers (see cleanup shader code)
-
-ux refactor splitup files (for responsive?) meh
 
 maths keyworkd
 leak / leaking keyword (done 2019)
