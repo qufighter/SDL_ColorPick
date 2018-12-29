@@ -340,40 +340,10 @@ void Ux::resizeUiElements(void){
             historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::BTT, true);
 
         // depending on animation state rect is different....
-        historyPalleteHolder->setBoundaryRectForAnimState(
-            0.025, ws_clock, 0.92, 1.0 - ws_clock, //visible and orig
-            1.0, ws_clock, 0.92, 1.0 - ws_clock ); // hidden
-        historyPalleteHolderTlEdgeShadow->resize(SQUARE_EDGE_ENUM::LEFT);
-        historyPalleteHolderBrEdgeShadow->resize(SQUARE_EDGE_ENUM::RIGHT);
-
-        historyPalleteHolder->setInteraction(&Ux::interactionHorizontal);
-
-            historyPalleteCloseX->setBoundaryRect( 1.01, 0.5-0.025, 0.05, 0.05);
-
-            newHistoryFullsize->setBoundaryRect( 0.0, 0.0, 0.6, 1.0);
-            // historyScroller->resize()?
-
-            newHistoryPallete->setBoundaryRect( 0.61, 0.0, 0.4 - 0.01, 1.0);
-            palleteScrollerEdgeShadow->resize(SQUARE_EDGE_ENUM::LEFT);
-            // historyScroller->resize()?
-
-            // we shoudl resize it but it should be in a new container object... that simplifies the update
-            // or just palleteSelectionColorPreview->resize() ??
-//            palleteSelectionColorPreview->uiObjectItself->setBoundaryRectForAnimState(
-//              newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y - newHistoryPallete->boundryRect.h,
-//              newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h, // vis and orig
-//              newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y,
-//              newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h // hidden
-//            );
-            palleteSelectionPreviewHolder->setBoundaryRectForAnimState(
-              newHistoryPallete->boundryRect.x - newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.y,
-              newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h, // vis and orig
-              newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y,
-              newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h // hidden
-            );
-            palleteSelectionPreviewHolder->setInteraction(&Ux::interactionHorizontal);
-                palleteSelectionColorPreview->resize(Float_Rect(0.0, 0.0, 1.0, 1.0));
-
+        historyPalleteEditor->resize(
+            Float_Rect(0.025, ws_clock, 0.92, 1.0 - ws_clock), // visible and orig
+            Float_Rect(1.0, ws_clock, 0.92, 1.0 - ws_clock) // hidden
+        );
 
 
         temp = 0.15;
@@ -419,40 +389,11 @@ void Ux::resizeUiElements(void){
 
         float clocky_space = 0.032;
 
-        historyPalleteHolder->setBoundaryRectForAnimState(
-            0.0, clock_bar+clocky_space,     1.0, 0.92-clock_bar-clocky_space, //visible and orig
-            0.0, clock_bar+clocky_space+1.0, 1.0, 0.92-clock_bar-clocky_space ); // hidden
-        historyPalleteHolderTlEdgeShadow->resize(SQUARE_EDGE_ENUM::TOP);
-        historyPalleteHolderBrEdgeShadow->resize(SQUARE_EDGE_ENUM::BOTTOM);
-        historyPalleteHolder->setInteraction(&Ux::interactionVert);
+        historyPalleteEditor->resize(
+            Float_Rect(0.0, clock_bar+clocky_space,     1.0, 0.92-clock_bar-clocky_space), // visible and orig
+            Float_Rect(0.0, clock_bar+clocky_space+1.0, 1.0, 0.92-clock_bar-clocky_space) // hidden
+        );
 
-            historyPalleteCloseX->setBoundaryRect( 0.5-0.025, 1.01, 0.05, 0.08);
-
-            newHistoryFullsize->setBoundaryRect( 0.0, 0.0, 1.0, 0.6);
-            // historyScroller->resize()?
-
-            newHistoryPallete->setBoundaryRect( 0.0, 0.61, 1.0, 0.4 - 0.01);
-            palleteScrollerEdgeShadow->resize(SQUARE_EDGE_ENUM::TOP);
-
-            // historyScroller->resize()?
-
-            // or just palleteSelectionColorPreview->resize() ??
-//            palleteSelectionColorPreview->uiObjectItself->setBoundaryRectForAnimState(
-//              newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y - newHistoryPallete->boundryRect.h,
-//              newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h, // vis and orig
-//              newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y,
-//              newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h // hidden
-//            );
-
-            //0.0, 0.5, 1.0, 0.5
-            palleteSelectionPreviewHolder->setBoundaryRectForAnimState(
-              newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y - newHistoryPallete->boundryRect.h,
-              newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h, // vis and orig
-              newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y,
-              newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h // hidden
-            );
-            palleteSelectionPreviewHolder->setInteraction(&Ux::interactionVert);
-                palleteSelectionColorPreview->resize(Float_Rect(0.0, 0.0, 1.0, 1.0));
 
         temp = 0.27777777777778 + 0.04;
 #ifndef OMIT_SCROLLY_ARROWS
@@ -479,41 +420,7 @@ void Ux::resizeUiElements(void){
 }
 
 void Ux::updatePalleteScroller(){
-    int palleteIconsTotal = getPalleteTotalCount();
-    if( widescreen ){
-        if( palleteIconsTotal > 5 ){
-            palleteScroller->resizeTililngEngine(2, 4);
-        }else if( palleteIconsTotal > 4 ){
-            palleteScroller->resizeTililngEngine(2, 3);
-        }else if( palleteIconsTotal > 3 ){
-            palleteScroller->resizeTililngEngine(1, 4);
-        }else if( palleteIconsTotal > 2 ){
-            palleteScroller->resizeTililngEngine(1, 3);
-        }else if( palleteIconsTotal > 1 ){
-            palleteScroller->resizeTililngEngine(1, 2);
-        }else{
-            palleteScroller->resizeTililngEngine(1, 1);
-        }
-    }else{
-        //resize pallete scroller as we add more selections....
-        if( palleteIconsTotal > 5 ){
-            palleteScroller->resizeTililngEngine(4, 2);
-        }else if( palleteIconsTotal > 4 ){
-            palleteScroller->resizeTililngEngine(3, 2);
-        }else if( palleteIconsTotal > 3 ){
-            palleteScroller->resizeTililngEngine(4, 1);
-        }else if( palleteIconsTotal > 2 ){
-            palleteScroller->resizeTililngEngine(3, 1);
-        }else if( palleteIconsTotal > 1 ){
-            palleteScroller->resizeTililngEngine(2, 1);
-        }else{
-            palleteScroller->resizeTililngEngine(1, 1);
-        }
-    }
-
-    if( historyPalleteHolder->isInBounds ){
-        palleteScroller->updateTiles(); // calls updateUiObjectFromPallete for each tile
-    }
+    historyPalleteEditor->updatePalleteScroller();
 }
 
 
@@ -646,52 +553,6 @@ Ux::uiObject* Ux::create(void){
 
 
 
-
-    historyPalleteHolder = new uiObject();
-    historyPalleteHolder->hasBackground = true;
-    Ux::setColor(&historyPalleteHolder->backgroundColor, 0, 0, 0, 220);
-
-//    historyPalleteHolder->setInteractionBegin(&Ux::interactionHistoryInteractionBegin);
-    historyPalleteHolder->setInteractionCallback(&Ux::interactionToggleHistory); // if we dragged and released... it will animate the rest of the way because of this
-    historyPalleteHolder->setInteraction(&Ux::interactionVert);
-    historyPalleteHolder->setBoundsEnterFunction(&Ux::interactionHistoryEnteredView);
-    historyPalleteHolder->is_being_viewed_state = true;
-
-    //historyPalleteHolder->setAnimation( uxAnimations->slideDown(historyPalleteHolder) ); // returns uiAminChain*
-
-
-
-
-    historyScroller = new uiScrollController();
-                                   // 3  2
-    historyScroller->initTilingEngine(6, 6, &Ux::updateUiObjectFromHistory, &Ux::getHistoryTotalCount, &Ux::clickHistoryColor, &Ux::interactionHorizontal);
-    historyScroller->recievedFocus = &Ux::historyReceivedFocus;
-
-    newHistoryFullsize = historyScroller->uiObjectItself;
-
-    //newHistoryFullsize->isDebugObject=true;
-
-    //newHistoryFullsize->hasBackground = true;
-    //Ux::setColor(&newHistoryFullsize->backgroundColor, 0, 0, 0, 192);
-
-
-
-    palleteScroller = new uiScrollController();
-    palleteScroller->initTilingEngine(1, 1, &Ux::updateUiObjectFromPallete, &Ux::getPalleteTotalCount, &Ux::clickPalleteColor, Ux::interactionHorizontal);
-
-    newHistoryPallete = palleteScroller->uiObjectItself;
-
-    palleteScrollerEdgeShadow = new uiEdgeShadow(newHistoryPallete, SQUARE_EDGE_ENUM::TOP, 0.0);
-
-    newHistoryPallete->hasBackground = true;
-    Ux::setColor(&newHistoryPallete->backgroundColor, 0, 0, 0, 255);
-
-
-    historyPalleteHolderTlEdgeShadow = new uiEdgeShadow(historyPalleteHolder, SQUARE_EDGE_ENUM::TOP, 0.03);
-    historyPalleteHolderBrEdgeShadow = new uiEdgeShadow(historyPalleteHolder, SQUARE_EDGE_ENUM::BOTTOM, 0.03);
-
-
-
     historyPreviewHolder = new uiObject();
     historyPreviewHolder->hasBackground = true;
     Ux::setColor(&historyPreviewHolder->backgroundColor, 0, 0, 0, 192);
@@ -742,7 +603,7 @@ Ux::uiObject* Ux::create(void){
     historyPreviewHolder->setInteractionCallback(&Ux::interactionToggleHistory);
 
     historyPreviewHolder->setInteraction(&Ux::interactionVert);
-    historyPreviewHolder->interactionProxy = historyPalleteHolder; // when we drag the preview effect the fullsize sliding into view...
+    //historyPreviewHolder->interactionProxy = historyPalleteEditor->historyPalleteHolder; // when we drag the preview effect the fullsize sliding into view...
 
     //printCharToUiObject(historyPreview, 'H', DO_NOT_RESIZE_NOW);
 
@@ -759,83 +620,9 @@ Ux::uiObject* Ux::create(void){
 
 
 
+    historyPalleteEditor = new uiHistoryPalleteEditor(rootUiObject);
 
-    //rootUiObject->addChild(curerntColorPreview->uiObjectItself);
-
-//    uiObject childObj = uiObject();
-//    childObj.hasForeground = true;
-//    childObj.setInteraction(&Ux::interactionHZ);
-//    rootUiObject.addChild(childObj);
-//
-//
-//    uiObject childObj2 = uiObject();
-//    childObj2.hasForeground = true;
-//    childObj.addChild(childObj2);
-
-
-
-    //rootUiObject.childUiObjects->push_back(&childObj);
-    
-    // the add child function on the struct may be needed (to specify parent object ref on child object)
-    // and it may expand the boundary rect automatically ?
-    // only some items will accept collisions
-    // will all boundary rect be global coordinate or within
-    // the parent coordinate space? for render purposes, later seems nice
-
-    palleteSelectionPreviewHolder = new uiObject();
-    palleteSelectionPreviewHolder->setInteractionCallback(&Ux::interactionTogglePalletePreview); // if we dragged and released... it will animate the rest of the way because of this
-    palleteSelectionPreviewHolder->setInteraction(&Ux::interactionVert);
-    palleteSelectionPreviewHolder->setCropParentRecursive(historyPalleteHolder);
-    palleteSelectionPreviewHolder->is_being_viewed_state = false;
-    palleteSelectionPreviewHolder->doesNotCollide = true;
-    //palleteSelectionPreviewHolder->setDefaultHidden();
-
-    historyPalleteHolder->addChild(newHistoryFullsize);
-    historyPalleteHolder->addChild(palleteSelectionPreviewHolder);
-    historyPalleteHolder->addChild(newHistoryPallete);
-
-
-    historyPalleteCloseX = new uiObject();
-    printCharToUiObject(historyPalleteCloseX, CHAR_CLOSE_ICON, DO_NOT_RESIZE_NOW);
-    historyPalleteCloseX->hasForeground = true;
-    historyPalleteCloseX->squarify();
-    Ux::setColor(&historyPalleteCloseX->foregroundColor, 255, 255, 255, 96); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-    historyPalleteHolder->addChild(historyPalleteCloseX);
-
-
-    palleteSelectionColorPreview = new uiViewColor(palleteSelectionPreviewHolder, Float_Rect(0.0, 0.0, 1.0, 1.0), true); // this rect is reset next...
-    //palleteSelectionColorPreview->uiObjectItself->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClickOrHiddenPalletePreview);
-
-    //palleteSelectionColorPreview->uiObjectItself->is_being_viewed_state = false;
-    //palleteSelectionColorPreview->uiObjectItself->setDefaultHidden();
-    //setDefaultHidden
-
-//    palleteSelectionColorPreview->uiObjectItself->setBoundaryRect(
-//        newHistoryPallete->boundryRect.x, newHistoryPallete->boundryRect.y - newHistoryPallete->boundryRect.h,
-//        newHistoryPallete->boundryRect.w, newHistoryPallete->boundryRect.h
-//    );
-
-
-
-
-//    palleteSelectionColorPreview->uiObjectItself->setInteractionCallback(&Ux::interactionTogglePalletePreview); // if we dragged and released... it will animate the rest of the way because of this
-//    palleteSelectionColorPreview->uiObjectItself->setInteraction(&Ux::interactionVert);
-    // palleteSelectionColorPreview->uiObjectItself->setBoundsEnterFunction(&Ux::interactionHistoryEnteredView);
-
-
-    // lets give palleteSelectionColorPreview a background
-    palleteSelectionColorPreview->uiObjectItself->hasBackground = true;
-    Ux::setColor(&palleteSelectionColorPreview->uiObjectItself->backgroundColor, 0, 0, 0, 255);
-    palleteSelectionColorPreview->alphaMulitiplier = 255; //always solid bg
-
-    //palleteSelectionColorPreview->uiObjectItself->setCropParentRecursive(historyPalleteHolder);
-
-
-
-
-
-
-    rootUiObject->addChild(historyPalleteHolder);
+    historyPreviewHolder->interactionProxy = historyPalleteEditor->historyPalleteHolder; // when we drag the preview effect the fullsize sliding into view...
 
 
     defaultYesNoChoiceHolder = new uiObject();
@@ -856,9 +643,6 @@ Ux::uiObject* Ux::create(void){
 
 
     updateRenderPositions();
-
-    historyScroller->updateTiles();
-    palleteScroller->updateTiles();
 
 
     readInState(); // reads saved state into lists
@@ -1196,7 +980,7 @@ void Ux::interactionHistoryEnteredView(uiObject *interactionObj){
     Ux* self = Ux::Singleton();
     //self->historyScroller->allowUp = true;
     self->updatePickHistoryPreview();  /// this is too much update right?
-    self->palleteScroller->updateTiles();
+    self->historyPalleteEditor->palleteScroller->updateTiles();
 }
 
 //static
@@ -1211,7 +995,7 @@ void Ux::interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction
     Ux* self = Ux::Singleton();
 
     //uiObject* trueInteractionObj = self->palleteSelectionColorPreview->uiObjectItself;
-    uiObject* trueInteractionObj = self->palleteSelectionPreviewHolder;
+    uiObject* trueInteractionObj = self->historyPalleteEditor->palleteSelectionPreviewHolder;
 
     /*
      palleteSelectionColorPreview = new uiViewColor(historyPalleteHolder, Float_Rect(0.0, 0.5, 1.0, 0.5));
@@ -1239,256 +1023,12 @@ void Ux::interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction
     }
 }
 
-void Ux::removePalleteColor(uiObject *interactionObj, uiInteraction *delta){
-
-    Ux* myUxRef = Ux::Singleton();
-
-    int offset = interactionObj->myIntegerIndex;
-    interactionObj->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // reset out of view
-    if( offset < 0 ) return;
-
-
-    if( myUxRef->palleteSelectionPreviewHolder->is_being_viewed_state ) {
-        SDL_Color clr = myUxRef->palleteList->get(offset)->color;
-
-        if( colorEquals(&myUxRef->palleteSelectionColorPreview->last_color, &clr) ){
-            // viewing deleted color
-            myUxRef->interactionTogglePalletePreview(myUxRef->palleteSelectionPreviewHolder, delta);
-        }
-    }
-
-    myUxRef->palleteList->remove(offset);
-
-    myUxRef->palleteScroller->updateTiles();
-}
-
-void Ux::removeAllCheckedPalleteColor(uiObject *interactionObj, uiInteraction *delta){
-    Ux* myUxRef = Ux::Singleton();
-    uiListIterator<uiList<ColorList, Uint8>, ColorList>* palleteListIterator = myUxRef->palleteList->iterate();
-    ColorList* pallete = palleteListIterator->nextLast(); // loop in reverse here...
-    while(pallete != nullptr){
-        if( pallete->is_delete_state ){
-            myUxRef->palleteList->remove(palleteListIterator->lastIndex+1);
-        }
-        pallete = palleteListIterator->nextLast();
-    }
-    SDL_free(palleteListIterator);
-    myUxRef->palleteScroller->updateTiles();
-
-}
-
-void Ux::clickDeletePalleteColor(uiObject *interactionObj, uiInteraction *delta){
-
-    if( !interactionObj->doesInFactRender || !interactionObj->parentObject->doesInFactRender ){
-        return; // this means our tile is invalid/out of range.. it is arguable we should not even get the event in this case? // todo (delete last tile and click again - it will prompt again without this or some solution)
-    }
-
-    Ux* myUxRef = Ux::Singleton();
-
-    //myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate == myUxRef->defaultYesNoChoiceHolder
-
-    if( delta->dx == 0.0f && myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state == false ){
-        myUxRef->uxAnimations->scale_bounce(interactionObj->childList[0], 0.001);
-        myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::removePalleteColor, &Ux::clickDeletePalleteColor); // when no clicked we reach else
-
-        uiListIterator<uiList<ColorList, Uint8>, ColorList>* palleteListIterator = myUxRef->palleteList->iterate();
-        ColorList* pallete = palleteListIterator->next();
-        int delCounter=0;
-        while(pallete != nullptr){
-            //SDL_Log("%i %i %i", hist->color.r, hist->color.g, hist->color.b);
-            if( pallete->is_delete_state ){
-                delCounter++;
-            }
-            pallete = palleteListIterator->next();
-        }
-        SDL_free(palleteListIterator);
-        if( delCounter > 1 ){
-            myUxRef->defaultYesNoChoiceDialogue->displayAdditionalAction(&Ux::removeAllCheckedPalleteColor, delCounter-1);
-        }
-
-    }else{
-        if( !myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state || myUxRef->defaultYesNoChoiceDialogue->yesClickedFn != &Ux::removeAllCheckedPalleteColor ){
-            interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) ); // returns uiAminChain*
-            myUxRef->palleteList->get(interactionObj->myIntegerIndex)->is_delete_state = false;
-        }
-    }
-
-}
-
-void Ux::clickClearPallete(uiObject *interactionObj, uiInteraction *delta){
-    Ux* myUxRef = Ux::Singleton();
-
-    myUxRef->palleteList->clear();
-    myUxRef->updatePalleteScroller();
-
-
-    if( myUxRef->palleteSelectionPreviewHolder->is_being_viewed_state ) {
-        // viewing deleted color
-        myUxRef->interactionTogglePalletePreview(myUxRef->palleteSelectionPreviewHolder, delta);
-    }
-}
-
-void Ux::clickCancelClearPallete(uiObject *interactionObj, uiInteraction *delta){
-    Ux* myUxRef = Ux::Singleton();
-    // we should show delete x on all visible tiles....
-    for( int x=0,l=myUxRef->palleteScroller->scrollChildContainer->childListIndex; x<l; x++ ){
-        uiObject* childObj = myUxRef->palleteScroller->scrollChildContainer->childList[x];
-        uiObject* removeButton = childObj->childList[0];
-        if( childObj->myIntegerIndex >= 0){
-            ColorList* listItem = myUxRef->palleteList->get(removeButton->myIntegerIndex);
-            if( listItem == nullptr || !listItem->is_delete_state ){
-                removeButton->setAnimation( myUxRef->uxAnimations->resetPosition(removeButton) );
-            }
-        }
-    }
-    
-    
-}
-
-
-
-void Ux::clickPalleteColor(uiObject *interactionObj, uiInteraction *delta){ // see also updateUiObjectFromPallete
-
-    Ux* myUxRef = Ux::Singleton();
-
-    if( !interactionObj->doesInFactRender ){
-
-        interactionObj->resetPosition();
-
-        if( myUxRef->palleteSelectionPreviewHolder->is_being_viewed_state ) {
-            myUxRef->interactionTogglePalletePreview(myUxRef->palleteSelectionPreviewHolder, delta);
-        }
-
-        return; // this means our tile is invalid/out of range
-    }
-
-
-    if( interactionObj->myIntegerIndex < -1 ){
-
-        if( myUxRef->palleteList->total() < 1 ){
-
-            if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_PALLETE_HELP ){
-                SDL_Log("PALLETE Help Button ---------------------");
-
-                if( myUxRef->defaultYesNoChoiceDialogue->isDisplayed ){ return; }
-
-                myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
-
-                if( myUxRef->historyScroller->scrollChildContainer->getChildCount() > 0 )
-                    myUxRef->uxAnimations->spin_reset(myUxRef->historyScroller->scrollChildContainer->childList[0], 32);
-
-                //myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::clickClearPallete, &Ux::clickCancelClearPallete, myUxRef->palleteList->total());
-
-            }
-
-            return;
-        }
-        if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_CLEAR_PALLETE ){
-            SDL_Log("PALLETEClear Button ---------------------");
-
-            if( myUxRef->defaultYesNoChoiceDialogue->isDisplayed ){ return; }
-
-            // ColorList* listItem = myUxRef->palleteList->get(removeButton->myIntegerIndex);
-
-            // we should show delete x on all visible tiles....
-            for( int x=0,l=myUxRef->palleteScroller->scrollChildContainer->childListIndex; x<l; x++ ){
-                uiObject* childObj = myUxRef->palleteScroller->scrollChildContainer->childList[x];
-                uiObject* removeButton = childObj->childList[0];
-                if( childObj->myIntegerIndex >= 0){
-                    removeButton->setAnimation( myUxRef->uxAnimations->slideLeftFullWidth(removeButton) );
-                }
-            }
-
-            myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
-
-            myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::clickClearPallete, &Ux::clickCancelClearPallete, myUxRef->palleteList->total());
-
-
-        }else if(interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_SAVE_PALLETE ){
-            SDL_Log("PALLETE SAVE Button ---------------------");
-
-            //const char* urlBase = "data:text/html;<b>world";
-            const char* urlBase = "http://www.vidsbee.com/ColorPick/Pallete#";
-            
-
-            int totalColors = myUxRef->palleteList->total();
-            int perColorChars = 7; // 6 plus seperator
-
-            uiListIterator<uiList<ColorList, Uint8>, ColorList>* myIterator = myUxRef->palleteList->iterate();
-
-            int len = (totalColors * perColorChars) + SDL_strlen(urlBase);
-            char* clrStr = (char*)SDL_malloc( sizeof(char) * len );
-
-            SDL_snprintf(clrStr, SDL_strlen(urlBase)+1,  "%s", urlBase);
-
-
-            ColorList *colorItem = myIterator->next();
-            while(colorItem != nullptr){
-                SDL_Color* color = &colorItem->color;
-                if( color == nullptr ) continue;
-                // hex is best compression
-                //SDL_Log("%i %i %i", color->r, color->g, color->b);
-                SDL_snprintf(clrStr, len,  "%s%02x%02x%02x,", clrStr, color->r, color->g, color->b);
-                colorItem = myIterator->next();
-            }
-
-            //SDL_snprintf(clrStr, len,  "%s%s", urlBase, clrStr);
-
-            SDL_Log("%s", clrStr);
-
-            openURL(clrStr);
-
-            SDL_free(clrStr);
-            SDL_free(myIterator); // does free recurse
-
-            myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
-
-        }
-        
-        return;
-    }
-
-
-
-    uiObject* interactionObjectOrProxy = interactionObj->interactionProxy;
-
-    if( interactionObjectOrProxy == nullptr ){
-        interactionObjectOrProxy = interactionObj;
-    }
-
-    if( delta->dx < (interactionObj->boundryRect.w * -0.25f) ){ // swipe left
-        interactionObjectOrProxy->setAnimation( myUxRef->uxAnimations->slideLeftFullWidth(interactionObjectOrProxy) );
-        myUxRef->palleteList->get(interactionObjectOrProxy->myIntegerIndex)->is_delete_state = true;
-        return;
-    }
-
-    interactionObjectOrProxy->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObjectOrProxy) ); // returns uiAminChain*
-
-
-    bool changed = myUxRef->palleteSelectionColorPreview->update(&interactionObj->backgroundColor);
-
-    if( !myUxRef->palleteSelectionPreviewHolder->is_being_viewed_state ) {
-        myUxRef->interactionTogglePalletePreview(myUxRef->palleteSelectionPreviewHolder, delta);
-    }else if( !changed ){
-        myUxRef->interactionTogglePalletePreview(myUxRef->palleteSelectionPreviewHolder, delta);
-    }
-
-
-//    if( trueInteractionObj->is_being_viewed_state ) {
-//        trueInteractionObj->setAnimation( self->uxAnimations->slideDownFullHeight(trueInteractionObj) ); // returns uiAminChain*
-//        trueInteractionObj->is_being_viewed_state =false;
-//    }else{
-//        trueInteractionObj->isInBounds = true; // nice hack
-//        self->updatePickHistoryPreview();
-//        trueInteractionObj->setAnimation( self->uxAnimations->resetPosition(trueInteractionObj) ); // returns uiAminChain*
-//        trueInteractionObj->is_being_viewed_state = true;
-//    }
-
-    //interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) ); // returns uiAminChain*
+void Ux::openURL(char* url){
+    openURL(url);
 }
 
 void Ux::hideHistoryPalleteIfShowing(){
-    if( historyPalleteHolder->is_being_viewed_state ) {
+    if( historyPalleteEditor->historyPalleteHolder->is_being_viewed_state ) {
         interactionToggleHistory(nullptr, nullptr);
     }
 }
@@ -1507,23 +1047,23 @@ void Ux::interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta
 
     //self->newHistoryFullsize->cancelCurrentAnimation();
 
-    if( self->historyPalleteHolder->is_being_viewed_state ) {
+    if( self->historyPalleteEditor->historyPalleteHolder->is_being_viewed_state ) {
         if( self->widescreen ){
-            self->historyPalleteHolder->setAnimation( self->uxAnimations->slideRight(self->historyPalleteHolder) ); // returns uiAminChain*
+            self->historyPalleteEditor->historyPalleteHolder->setAnimation( self->uxAnimations->slideRight(self->historyPalleteEditor->historyPalleteHolder) ); // returns uiAminChain*
             //self->historyPalleteHolder->setAnimation( self->uxAnimations->slideRightFullWidth(self->historyPalleteHolder) ); // returns uiAminChain*
         }else{
-            self->historyPalleteHolder->setAnimation( self->uxAnimations->slideDown(self->historyPalleteHolder) ); // returns uiAminChain*
+            self->historyPalleteEditor->historyPalleteHolder->setAnimation( self->uxAnimations->slideDown(self->historyPalleteEditor->historyPalleteHolder) ); // returns uiAminChain*
         }
-        self->historyPalleteHolder->is_being_viewed_state = false;
-        self->endModal(self->historyPalleteHolder);
+        self->historyPalleteEditor->historyPalleteHolder->is_being_viewed_state = false;
+        self->endModal(self->historyPalleteEditor->historyPalleteHolder);
     }else{
-        self->historyPalleteHolder->isInBounds = true; // nice hack
+        self->historyPalleteEditor->historyPalleteHolder->isInBounds = true; // nice hack
         self->updatePickHistoryPreview();
-        self->palleteScroller->updateTiles();
-        self->historyPalleteHolder->setAnimation( self->uxAnimations->resetPosition(self->historyPalleteHolder) ); // returns uiAminChain*
-        self->historyPalleteHolder->is_being_viewed_state = true;
+        self->historyPalleteEditor->palleteScroller->updateTiles();
+        self->historyPalleteEditor->historyPalleteHolder->setAnimation( self->uxAnimations->resetPosition(self->historyPalleteEditor->historyPalleteHolder) ); // returns uiAminChain*
+        self->historyPalleteEditor->historyPalleteHolder->is_being_viewed_state = true;
         //self->historyScroller->allowUp = true;
-        self->updateModal(self->historyPalleteHolder, &Ux::interactionToggleHistory);
+        self->updateModal(self->historyPalleteEditor->historyPalleteHolder, &Ux::interactionToggleHistory);
 
         // WE JUST PUSHED OUR MODAL... HOWEVER IF OUR CURRENT STATE SHOWS THE SELECTED COLOR, THAT SHOULD BE THE FIFRST MODAL DISMISSED BY ESC/BACK.... ??
 //        if( self->palleteSelectionPreviewHolder->is_being_viewed_state ) {
@@ -1532,226 +1072,9 @@ void Ux::interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta
     }
 }
 
-void Ux::removeHistoryColor(uiObject *interactionObj, uiInteraction *delta){
-    Ux* myUxRef = Ux::Singleton();
 
-    int offset = interactionObj->myIntegerIndex;
-    interactionObj->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // reset  (close x ? ) out of view for next obj to use this tile...
-    if( offset < 0 ) return;
 
-    myUxRef->pickHistoryList->remove(offset);
 
-    myUxRef->updatePickHistoryPreview();
-   // historyScroller->updateTiles(); // above calls this
-
-}
-
-void Ux::removeAllCheckedHistoryColor(uiObject *interactionObj, uiInteraction *delta){
-    Ux* myUxRef = Ux::Singleton();
-    uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = myUxRef->pickHistoryList->iterate();
-    ColorList* hist = pickHistoryIterator->nextLast(); // loop in reverse here...
-    while(hist != nullptr){
-        if( hist->is_delete_state ){
-            myUxRef->pickHistoryList->remove(pickHistoryIterator->lastIndex+1);
-        }
-        hist = pickHistoryIterator->nextLast();
-    }
-    SDL_free(pickHistoryIterator);
-    myUxRef->updatePickHistoryPreview();
-}
-
-void Ux::clickDeleteHistoryColor(uiObject *interactionObj, uiInteraction *delta){
-
-    if( !interactionObj->doesInFactRender || !interactionObj->parentObject->doesInFactRender ){
-        SDL_Log("CLICKED INVISIBLE REMOVE TILE");
-        return; // this means our tile is invalid/out of range.. it is arguable we should not even get the event in this case? // todo (delete last tile and click again - it will prompt again without this or some solution)
-    }
-
-    Ux* myUxRef = Ux::Singleton();
-
-    //myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate == myUxRef->defaultYesNoChoiceHolder
-
-    if( delta->dx == 0.0f && myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state == false ){
-        myUxRef->uxAnimations->scale_bounce(interactionObj->childList[0], 0.001);
-        myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::removeHistoryColor, &Ux::clickDeleteHistoryColor); // when no clicked we reach else
-
-        uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = myUxRef->pickHistoryList->iterate();
-        ColorList* hist = pickHistoryIterator->next();
-        int delCounter=0;
-        while(hist != nullptr){
-            //SDL_Log("%i %i %i", hist->color.r, hist->color.g, hist->color.b);
-            if( hist->is_delete_state ){
-                delCounter++;
-            }
-            hist = pickHistoryIterator->next();
-        }
-        SDL_free(pickHistoryIterator);
-        if( delCounter > 1 ){
-            myUxRef->defaultYesNoChoiceDialogue->displayAdditionalAction(&Ux::removeAllCheckedHistoryColor, delCounter-1);
-        }
-
-    }else{
-        if( !myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state || myUxRef->defaultYesNoChoiceDialogue->yesClickedFn != &Ux::removeAllCheckedHistoryColor ){
-            interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) ); // returns uiAminChain*
-            myUxRef->pickHistoryList->get(interactionObj->myIntegerIndex)->is_delete_state = false;
-        }
-    }
-}
-
-void Ux::clickClearHistory(uiObject *interactionObj, uiInteraction *delta){
-    Ux* myUxRef = Ux::Singleton();
-
-    myUxRef->pickHistoryList->clear();
-    myUxRef->updatePickHistoryPreview();
-
-}
-
-void Ux::clickCancelClearHistory(uiObject *interactionObj, uiInteraction *delta){
-    Ux* myUxRef = Ux::Singleton();
-
-    // we should show delete x on all visible tiles....
-    for( int x=0,l=myUxRef->historyScroller->scrollChildContainer->childListIndex; x<l; x++ ){
-        uiObject* childObj = myUxRef->historyScroller->scrollChildContainer->childList[x];
-        uiObject* removeButton = childObj->childList[0];
-        if( childObj->myIntegerIndex >= 0){
-            ColorList* listItem = myUxRef->pickHistoryList->get(removeButton->myIntegerIndex);
-            if( listItem == nullptr || !listItem->is_delete_state ){
-                removeButton->setAnimation( myUxRef->uxAnimations->resetPosition(removeButton) );
-            }
-        }
-    }
-
-
-}
-
-void Ux::historyReceivedFocus(uiObject *interactionObj, uiInteraction *delta){
-    Ux* myUxRef = Ux::Singleton();
-    // hide pallete preview if possible...
-    if( myUxRef->palleteSelectionPreviewHolder->is_being_viewed_state ){
-        myUxRef->interactionTogglePalletePreview(myUxRef->palleteSelectionPreviewHolder, delta);
-    }
-}
-
-void Ux::clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // see also updateUiObjectFromHistory
-
-
-
-    //SDL_Log("clickHistoryColor --------------------- %i", interactionObj->myIntegerIndex);
-
-    historyReceivedFocus(interactionObj, delta);
-
-
-    if( !interactionObj->doesInFactRender ){
-        interactionObj->resetPosition();
-
-        return; // this means our tile is invalid/out of range
-    }
-
-    Ux* myUxRef = Ux::Singleton();
-
-
-    if( interactionObj->myIntegerIndex < -1 ){
-
-        if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_CLEAR_HISTORY ){
-            SDL_Log("Clear Button ---------------------");
-
-            if( myUxRef->defaultYesNoChoiceDialogue->isDisplayed ){ return; }
-
-            // ColorList* listItem = myUxRef->pickHistoryList->get(removeButton->myIntegerIndex);
-
-            // we should show delete x on all visible tiles....
-            for( int x=0,l=myUxRef->historyScroller->scrollChildContainer->childListIndex; x<l; x++ ){
-                uiObject* childObj = myUxRef->historyScroller->scrollChildContainer->childList[x];
-                uiObject* removeButton = childObj->childList[0];
-                if( childObj->myIntegerIndex >= 0){
-                    removeButton->setAnimation( myUxRef->uxAnimations->slideLeftFullWidth(removeButton) );
-                }
-            }
-
-            myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
-
-            myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &Ux::clickClearHistory, &Ux::clickCancelClearHistory, myUxRef->pickHistoryList->total());
-
-
-        }
-
-        return;
-    }
-
-
-    uiObject* interactionObjectOrProxy = interactionObj->interactionProxy;
-
-    if( interactionObjectOrProxy == nullptr ){
-        interactionObjectOrProxy = interactionObj;
-    }
-
-
-    if( delta->dx < (interactionObj->boundryRect.w * -0.25f) ){ // swipe left
-        interactionObjectOrProxy->setAnimation( myUxRef->uxAnimations->slideLeftFullWidth(interactionObjectOrProxy) );
-        myUxRef->pickHistoryList->get(interactionObjectOrProxy->myIntegerIndex)->is_delete_state = true;
-        return;
-    }
-
-    interactionObjectOrProxy->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObjectOrProxy) ); // returns uiAminChain*
-
-
-    if( fabs(delta->dy) > 0.003 ){
-        return;
-    }
-
-    // A couple things
-    // if image is already in the pallete, we sholud probably not add it twice √ done
-    // we should instead scroll to the color and animate it
-    // we should always scroll to that index though...
-
-    ColorList tmpLocate = ColorList(interactionObj->backgroundColor);
-
-    int existingLocation = myUxRef->palleteList->locate(tmpLocate);
-
-    if( existingLocation > -1 ){
-        // this color is already taken then
-        Uint8 palleteOffset = existingLocation; // pointless var
-
-        myUxRef->palleteScroller->scrollToItemByIndex(palleteOffset);
-
-        uiObject* visibleTile = myUxRef->palleteScroller->getVisibleTileForOffsetOrNull(palleteOffset);
-
-        //uxAnimations->rvbounce(historyPreview);
-
-        if( visibleTile != nullptr ){
-            myUxRef->uxAnimations->rvbounce(visibleTile);
-            //historyTile->childList[0]
-//            uiObject * palleteRemoveButton = visibleTile->getChildOrNullPtr(0);
-//            if( palleteRemoveButton != nullptr ){
-//                myUxRef->uxAnimations->rvbounce(palleteRemoveButton);
-//            }
-        }
-
-        myUxRef->uxAnimations->rvbounce(interactionObj);
-//        uiObject * removeButton = interactionObj->getChildOrNullPtr(0);
-//        if( removeButton != nullptr ){
-//            myUxRef->uxAnimations->rvbounce(removeButton);
-//        }
-
-        myUxRef->defaultScoreDisplay->loose(interactionObj, SCORE_EFFECTS::NOMOVE);
-
-        return;
-    }
-
-
-
-    myUxRef->palleteList->add(ColorList(interactionObj->backgroundColor));
-    if( myUxRef->palleteList->_out_of_space ){
-        myUxRef->defaultScoreDisplay->displayExplanation("out of space!");
-        myUxRef->defaultScoreDisplay->display(interactionObj, 10, SCORE_EFFECTS::NOMOVE);
-    }else{
-        myUxRef->defaultScoreDisplay->display(interactionObj, 5, SCORE_EFFECTS::NOMOVE);
-    }
-
-    myUxRef->updatePalleteScroller();
-
-    myUxRef->palleteScroller->scrollToItemByIndex(myUxRef->palleteList->previousIndex());
-}
 
 //void Ux::resizePalleteBasedOnNumberOfColors(){
 //
@@ -1786,8 +1109,8 @@ void Ux::interactionAddHistory(uiObject *interactionObj, uiInteraction *delta){
     myUxRef->addCurrentToPickHistory();
 
     // in the popup, if we were viewing a color, we should hide it next time we open this up.... esp for widescreen
-    if( myUxRef->palleteSelectionPreviewHolder->is_being_viewed_state ) {
-        myUxRef->interactionTogglePalletePreview(myUxRef->palleteSelectionPreviewHolder, delta);
+    if( myUxRef->historyPalleteEditor->palleteSelectionPreviewHolder->is_being_viewed_state ) {
+        myUxRef->interactionTogglePalletePreview(myUxRef->historyPalleteEditor->palleteSelectionPreviewHolder, delta);
     }
 }
 
@@ -1987,7 +1310,7 @@ bool Ux::bubbleInteractionIfNonClickOrHiddenPalletePreview(uiObject *interaction
     Ux* self = Ux::Singleton();
     // see also interactionUpdate
 
-    if( !self->palleteSelectionPreviewHolder->is_being_viewed_state || delta->dy != 0 || delta->dx != 0 ){
+    if( !self->historyPalleteEditor->palleteSelectionPreviewHolder->is_being_viewed_state || delta->dy != 0 || delta->dx != 0 ){
         return self->bubbleCurrentInteraction(); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
     }
 
@@ -2047,275 +1370,8 @@ bool Ux::bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiIn
 }
 
 
-// **** PALLETTE ****
-//static
-bool Ux::updateUiObjectFromPallete(uiObject *historyTile, int offset){  // see also clickPalleteColor
-    Ux* self = Ux::Singleton();
 
-    self->colorTileAddChildObjects(historyTile, &Ux::clickDeletePalleteColor);
-    uiObject * removeButton = historyTile->childList[0];
-    uiObject * iconBtn = historyTile->childList[1];
 
-
-    if( offset > self->palleteList->largestIndex() || offset < 0 ){
-
-        removeButton->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // reset out of view (otherwise it is in the way of clicks!)
-
-        if( self->palleteList->total() > 0 ){
-
-            if( offset == self->palleteList->total() + BUTTON_CLEAR_PALLETE ){
-
-                historyTile->show();
-                removeButton->hide(); // it still collides..... so we set the rect above!
-                iconBtn->show();
-                Ux::setColor(&historyTile->backgroundColor, 0, 0, 0, 255);
-
-                self->printCharToUiObject(iconBtn, CHAR_LIGHTENING_BOLT, DO_NOT_RESIZE_NOW);
-
-                historyTile->myIntegerIndex = BTN_NEGATIVE_START - BUTTON_CLEAR_PALLETE; //awkward but using negative space beyond -1 for codes
-
-                historyTile->hasInteraction = false; // disable animations which are default for this scroll controller....
-
-                historyTile->interactionProxy=nullptr;
-                
-                return true;
-            }else if( offset == self->palleteList->total() + BUTTON_SAVE_PALLETE ){
-
-                historyTile->show();
-                removeButton->hide(); // it still collides..... so we set the rect above!
-                iconBtn->show();
-                Ux::setColor(&historyTile->backgroundColor, 0, 0, 0, 255);
-
-                self->printCharToUiObject(iconBtn, CHAR_SAVE_ICON, DO_NOT_RESIZE_NOW);
-
-                historyTile->myIntegerIndex = BTN_NEGATIVE_START - BUTTON_SAVE_PALLETE; //awkward but using negative space beyond -1 for codes
-
-                historyTile->hasInteraction = false; // disable animations which are default for this scroll controller....
-
-                historyTile->interactionProxy=nullptr;
-
-                return true;
-            }
-        }else{
-
-            if( offset == self->palleteList->total() + BUTTON_PALLETE_HELP ){
-
-                historyTile->show();
-                removeButton->hide(); // it still collides..... so we set the rect above!
-                iconBtn->show();
-                Ux::setColor(&historyTile->backgroundColor, 0, 0, 0, 255);
-
-                self->printCharToUiObject(iconBtn, '0', DO_NOT_RESIZE_NOW);
-
-                historyTile->myIntegerIndex = BTN_NEGATIVE_START - BUTTON_PALLETE_HELP; //awkward but using negative space beyond -1 for codes
-
-                historyTile->hasInteraction = false; // disable animations which are default for this scroll controller....
-
-                historyTile->interactionProxy=nullptr;
-
-                return true;
-            }
-
-        }
-
-        historyTile->hide();
-        historyTile->myIntegerIndex = -1;
-        return false;
-    }
-
-    ColorList* listItem = self->palleteList->get(offset);
-    SDL_Color* clr = &listItem->color;
-    bool is_delete_state = listItem->is_delete_state;
-
-    // following code is very much shared... requires (clr, offset, historyTile, removeButton ...)
-    historyTile->show();
-    removeButton->show();
-    iconBtn->hide();
-    historyTile->hasInteraction = true; // re enable animations which are default for this scroll controller....
-
-    bool wasBlank = historyTile->myIntegerIndex < 0;
-    historyTile->hasBackground = true;
-    historyTile->myIntegerIndex = offset;
-
-    Ux::setColor(&historyTile->backgroundColor, clr->r, clr->g, clr->b, 255);
-
-    // so if we are showing removeButton and our color changed, we know that something changed and we should hide our deleteX simple as that....
-    bool changed = Ux::setColorNotifyOfChange(&removeButton->backgroundColor, clr->r, clr->g, clr->b, 255) || wasBlank;
-    removeButton->myIntegerIndex = offset;
-    if( changed  ){
-        removeButton->cancelCurrentAnimation();// but what if we are currently animating in?  this will just jump to the wrong element...
-        removeButton->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // reset out of view
-        if( listItem->is_delete_state ){
-            removeButton->boundryRect.x = 0.0; // reset in view
-        }
-    }
-    historyTile->interactionProxy=removeButton; // the tile actually interacts with the delete x....
-    return true;
-}
-
-int Ux::getPalleteTotalCount(){
-    Ux* self = Ux::Singleton();
-    //return self->palleteList->largestIndex() + 1;
-
-    int total = self->palleteList->total();
-    if( total > 0 ){
-        total+=PALLETE_EXTRA_BUTTONS_TOTAL;
-    }else{
-        total+=EMPTY_PALLETE_PALLETE_EXTRA_BUTTONS_TOTAL;
-    }
-    return total;
-
-}
-
-
-
-// **** HISTORY ****
-//static
-bool Ux::updateUiObjectFromHistory(uiObject *historyTile, int offset){ // see also clickHistoryColor
-    Ux* self = Ux::Singleton();
-
-    self->colorTileAddChildObjects(historyTile, &Ux::clickDeleteHistoryColor);
-    uiObject * removeButton = historyTile->childList[0];
-    uiObject * iconBtn = historyTile->childList[1];
-
-    if( offset > self->pickHistoryList->total() - 1 || offset < 0 ){
-
-        removeButton->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // reset out of view (otherwise it is in the way of clicks!)
-
-        if( self->pickHistoryList->total() > 0 ){
-            if(offset == self->pickHistoryList->total() + BUTTON_CLEAR_HISTORY ){
-                historyTile->show();
-                removeButton->hide(); // it still collides..... so we set the rect above!
-                iconBtn->show();
-                Ux::setColor(&historyTile->backgroundColor, 0, 0, 0, 255);
-
-                historyTile->myIntegerIndex = BTN_NEGATIVE_START - BUTTON_CLEAR_HISTORY; //awkward but using negative space beyond -1 for codes
-
-                historyTile->hasInteraction = false; // disable animations which are default for this scroll controller....
-
-                historyTile->interactionProxy=nullptr;
-
-                return true;
-            }
-        }
-
-        //historyTile->hasInteraction = true; // re enable animations which are default for this scroll controller....
-        historyTile->hide();
-        historyTile->myIntegerIndex = -1;
-        return false;
-    }
-
-    offset = self->pickHistoryList->total() - offset - 1; // we show them in reverse here
-
-    ColorList* listItem = self->pickHistoryList->get(offset);
-    SDL_Color* clr = &listItem->color;
-    bool is_delete_state = listItem->is_delete_state;
-
-    // TODO we need to also account for largestPickHistoryIndex to see if we looped!!!!!!!!!
-    // if largest is max, then we loop from the current index, but continue looping after reaching the bottom, its a modulous problem
-    // (((really this only applies if offset computed next (here?) is less than zero))???)
-    //(or not)
-
-    // following code is very much shared... (clr, offset, historyTile, removeButton ...)
-    historyTile->show();
-    removeButton->show();
-    iconBtn->hide();
-    historyTile->hasInteraction = true; // re enable animations which are default for this scroll controller....
-
-    bool wasBlank = historyTile->myIntegerIndex < 0;
-    historyTile->hasBackground = true;
-    historyTile->myIntegerIndex = offset;
-
-    Ux::setColor(&historyTile->backgroundColor, clr->r, clr->g, clr->b, 255);
-
-    // so if we are showing removeButton and our color changed, we know that something changed and we should hide our deleteX simple as that....
-    bool changed = Ux::setColorNotifyOfChange(&removeButton->backgroundColor, clr->r, clr->g, clr->b, 255) || wasBlank;
-    removeButton->myIntegerIndex = offset;
-    if( changed ){
-        removeButton->cancelCurrentAnimation();// but what if we are currently animating in?  this will just jump to the wrong element...
-        removeButton->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // reset out of view
-        if( listItem->is_delete_state ){
-            removeButton->boundryRect.x = 0.0; // reset in view
-        }
-    }
-    historyTile->interactionProxy=removeButton; // the tile actually interacts with the delete x....
-    return true;
-}
-
-int Ux::getHistoryTotalCount(){
-    Ux* self = Ux::Singleton();
-    int total = self->pickHistoryList->total();
-    if( total > 0 ){
-        total+=PICK_HISRTORY_EXTRA_BUTTONS_TOTAL;
-    }
-    return total;
-}
-
-
-void Ux::colorTileAddChildObjects(uiObject *historyTile, anInteractionFn removeClickedFn){
-    // this adds the common child objects for history and pallete
-
-    // todo - even if this tile is not reached yet, its still a possible tile to render, so we could or might as well allocate
-    // any nececesssary child objects upfront, possibly with the use of a helper function which could be common between this and
-    // the pallet tile updater function....  then each child tile index may have a special purpose of its own and be enabled/disable easily as needed
-
-    if( historyTile->getChildCount() < 2 ){
-
-        historyTile->matrixInheritedByDescendants = true; // animate teh tile to animate anything...
-
-
-        uiObject* removeButtonHolder = new uiObject();
-        uiObject* removeButton = new uiObject();
-        removeButtonHolder->setBoundaryRect( 1.0, 0.0, 1.0, 1.0); // ofset to right 1.0
-        removeButton->setBoundaryRect( 0.0, 0.0, 1.0, 1.0);
-
-//        removeButton->setCropParentRecursive(historyTile); // must set before adding child...  not strictly needed unless performing the next opperation below .. or actually this line is dupe since the child is not yet added?
-        removeButton->setCropModeOrigPosition(); // influences the rendering of the X while we bounce (duplicate detected)
-
-        removeButtonHolder->setCropParentRecursive(historyTile); // must set before adding child...
-        removeButtonHolder->setCropModeOrigPosition(); // influences the rendering of the background color while we bounce (duplicate detected)
-
-
-
-        removeButtonHolder->addChild(removeButton);
-
-//
-
-        historyTile->addChild(removeButtonHolder);
-
-
-        printCharToUiObject(removeButton, CHAR_CLOSE_ICON, DO_NOT_RESIZE_NOW);
-        removeButton->hasForeground = true;
-        removeButtonHolder->hasBackground = true;
-
-
-        removeButton->squarify();
-        //removeButton->isDebugObject=true;
-
-        Ux::setColor(&removeButton->foregroundColor, 200, 0, 0, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-
-        removeButtonHolder->setInteraction(&Ux::interactionHorizontal);
-        removeButtonHolder->setInteractionCallback(removeClickedFn); // cannot be setClickInteractionCallback
-
-
-
-        uiObject* buttonIcon = new uiObject();
-        buttonIcon->setBoundaryRect( 0.0, 0.0, 1.0, 1.0); // ofset to right 1.0
-        buttonIcon->hasForeground = true;
-        printCharToUiObject(buttonIcon, CHAR_LIGHTENING_BOLT, DO_NOT_RESIZE_NOW);
-        historyTile->addChild(buttonIcon);
-        buttonIcon->hide();
-        buttonIcon->squarify();
-
-
-
-
-    }
-
-
-
-
-}
 
 
 /// eeeh this is really update current color
@@ -2381,10 +1437,10 @@ void Ux::addCurrentToPickHistory(){
 
     updatePickHistoryPreview();
 
-    if( historyPalleteHolder->isInBounds ){
-        historyScroller->scrollToItemByIndex(0);
+    if( historyPalleteEditor->historyPalleteHolder->isInBounds ){
+        historyPalleteEditor->historyScroller->scrollToItemByIndex(0);
     }else{
-        historyScroller->scrolly = 0;
+        historyPalleteEditor->historyScroller->scrolly = 0;
     }
 
 }
@@ -2392,8 +1448,6 @@ void Ux::addCurrentToPickHistory(){
 
 void Ux::updatePickHistoryPreview(){
 
-
-    // err - add 10 to loose add button!
 
     if( pickHistoryList->total() < 0 ) return; //no history yet, and this means we may need to keep lastPickHistoryIndex around?
 
@@ -2450,8 +1504,8 @@ void Ux::updatePickHistoryPreview(){
 
 
     // somertimes upate the full histoury preview too
-    if( historyPalleteHolder->isInBounds ){
-        historyScroller->updateTiles(); // calls updateUiObjectFromHistory for each tile
+    if( historyPalleteEditor->historyPalleteHolder->isInBounds ){
+        historyPalleteEditor->historyScroller->updateTiles(); // calls updateUiObjectFromHistory for each tile
         //palleteScroller->updateTiles();
     }
 }

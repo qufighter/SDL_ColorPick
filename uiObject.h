@@ -396,6 +396,19 @@ struct uiObject
         }
     }
 
+    void setBoundaryRectForAnimState(Float_Rect *r, Float_Rect *rH){
+        if( is_being_viewed_state ){
+            Ux::setRect(&boundryRect, r);
+        }else{
+            Ux::setRect(&boundryRect, rH);
+        }
+        if( default_viewed_state ){
+            Ux::setRect(&origBoundryRect, r);
+        }else{
+            Ux::setRect(&origBoundryRect, rH);
+        }
+    }
+
     void resetPosition(){
         Ux::setRect(&boundryRect, &origBoundryRect); // consider alternative interactionObj->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObj) );
     }

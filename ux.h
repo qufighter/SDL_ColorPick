@@ -180,6 +180,7 @@ static Ux* Singleton();
 #include "uiHueGradient.h"
 #include "uiScore.h"
 #include "uiRunningMan.h"
+#include "uiHistoryPalleteEditor.h"
 
 #include "ux-anim.h"
     
@@ -227,6 +228,7 @@ static Ux* Singleton();
     bool triggerInteraction(); // mouseup, mouse didn't move
     bool triggerInteraction(bool isStart); // mouseup, mouse didn't move
 
+    void openURL(char* url);
 
     bool bubbleCurrentInteraction();
     bool interactionUpdate(uiInteraction *delta);
@@ -241,19 +243,6 @@ static Ux* Singleton();
     static void interactionReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta);
     static void interactionBeginReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta);
     static void interactionAddHistory(uiObject *interactionObj, uiInteraction *delta);
-    static void clickPalleteColor(uiObject *interactionObj, uiInteraction *delta);
-    static void clickHistoryColor(uiObject *interactionObj, uiInteraction *delta);
-    static void clickDeletePalleteColor(uiObject *interactionObj, uiInteraction *delta);
-    static void clickDeleteHistoryColor(uiObject *interactionObj, uiInteraction *delta);
-    static void clickClearHistory(uiObject *interactionObj, uiInteraction *delta);
-    static void historyReceivedFocus(uiObject *interactionObj, uiInteraction *delta);
-    static void clickClearPallete(uiObject *interactionObj, uiInteraction *delta);
-    static void clickCancelClearHistory(uiObject *interactionObj, uiInteraction *delta);
-    static void clickCancelClearPallete(uiObject *interactionObj, uiInteraction *delta);
-    static void removePalleteColor(uiObject *interactionObj, uiInteraction *delta);
-    static void removeHistoryColor(uiObject *interactionObj, uiInteraction *delta);
-    static void removeAllCheckedPalleteColor(uiObject *interactionObj, uiInteraction *delta);
-    static void removeAllCheckedHistoryColor(uiObject *interactionObj, uiInteraction *delta);
     static void clickZoomSliderBg(uiObject *interactionObj, uiInteraction *delta);
     static void interactionHZ(uiObject *interactionObj, uiInteraction *delta);
     static void interactionSliderVT(uiObject *interactionObj, uiInteraction *delta);
@@ -284,8 +273,8 @@ static Ux* Singleton();
     //static const int pickHistoryMax = 7;
 
     //SDL_Color pickHistory[pickHistoryMax];
-    static bool updateUiObjectFromHistory(uiObject *historyTile, int offset);
-    static int getHistoryTotalCount();
+//    static bool updateUiObjectFromHistory(uiObject *historyTile, int offset);
+//    static int getHistoryTotalCount();
 
     //uiList<SDL_Color, Uint8>* palleteList;
     uiList<ColorList, Uint8>* palleteList;
@@ -297,15 +286,14 @@ static Ux* Singleton();
     static const int palleteMax = 254; // 254 // WARN do not exeede max size Uint8 palleteColorsIndex 255
     //static const int palleteMax = 4;
     //SDL_Color palleteColors[palleteMax];
-    static bool updateUiObjectFromPallete(uiObject *historyTile, int offset);
-    static int getPalleteTotalCount();
+//    static bool updateUiObjectFromPallete(uiObject *historyTile, int offset);
+//    static int getPalleteTotalCount();
 
     // palleteMax CANNOT exceede the size of Uint16 now, which is about 65536
     // palleteMax CANNOT exceede the size of Uint8 now, which is about 256
     //Uint8 palleteColorsIndex[COLOR_INDEX_MAX]; // we do not search the array
     //Uint8* palleteColorsIndex = (Uint8*)SDL_malloc( sizeof(Uint8) * COLOR_INDEX_MAX ); // totally equivilent to above
 
-    void colorTileAddChildObjects(uiObject *historyTile, anInteractionFn removeClickedFn);
     void updateColorValueDisplay(SDL_Color* color);
     void addCurrentToPickHistory();
     void updatePickHistoryPreview();
@@ -341,8 +329,7 @@ static Ux* Singleton();
         uiRunningMan *runner;
 
         uiViewColor *curerntColorPreview;
-        uiViewColor *palleteSelectionColorPreview;
-        uiObject *palleteSelectionPreviewHolder; // to contain the animation
+
 
         uiYesNoChoice* defaultYesNoChoiceDialogue;
         uiObject* defaultYesNoChoiceHolder;
@@ -350,21 +337,11 @@ static Ux* Singleton();
         uiNavArrows* movementArrows;
         uiScore* defaultScoreDisplay;
 
-        uiEdgeShadow* historyPalleteHolderTlEdgeShadow;
-        uiEdgeShadow* historyPalleteHolderBrEdgeShadow;
-
-        uiObject *historyPalleteHolder;
-        uiObject *historyPalleteCloseX;
-        uiScrollController *historyScroller;
-        uiScrollController *palleteScroller;
-        uiEdgeShadow* palleteScrollerEdgeShadow;
-
-        uiObject *newHistoryFullsize;
-        uiObject *newHistoryPallete;
+        uiHistoryPalleteEditor* historyPalleteEditor;
 
         uiObject *historyPreviewHolder;
         uiObject *historyPreview;
-        uiObject *historyFullsize;
+        //uiObject *historyFullsize;
 
 
 //        uiObject *renderedletters[2048]; // we should just make ach letter once
