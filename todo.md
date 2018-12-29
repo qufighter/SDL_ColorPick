@@ -18,9 +18,11 @@ pre-open dialogue (stock gradientz?)
 
 sort history colors "rewrite history"  (no index, pretty easy)
   sort dialogue
-  scoring
+  scoring -> configure how yesNo is scored.... or move scoring out somehow
   
 look/feel of "all checked" button
+
+touch color preview -> should dismiss the modal (must not apply when viewing pallete color)
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -41,10 +43,6 @@ unable to find some colors precisely (pink ff00fc > "works" while ff00fd des not
 arrow interaction repeat....
 
 home pressed - maybe ios screenshot? time for gimicky marketing ploy
-
-lightening bolt first click delete checked only? // we should show delete x on all visible tiles....
-^ - instead this should be something we can trigger from the modal for a single delete "all checked" or something like that.... 
-^ wip see: removeAllCheckedHistoryColor / removeAllCheckedPalleteColor ( displayAdditionalAction )
 
 pallete swatch color -> huePicker for adjustment ( see cp_set_from_hsv )
 ^ above is basically "done" but further optimizations could be good
