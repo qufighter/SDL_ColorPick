@@ -10,20 +10,10 @@
 #define ColorPick_iOS_SDL_uiHistoryPalleteEditor_h
 
 
-struct uiHistoryPalleteEditor{
-/*
-    TODO: find ref to Ux::
-
-    Ux::interactionTogglePalletePreview
-     Ux::interactionToggleHistory
+struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEditor - and is pretty much singleton....
 
 
-       ///and see about moving thos,k EG interactionToggleHistory (AND FIX/rename use of SELF within, and replace self->historyPalleteEditor with appropriate ref)
-    // 2. after above, some ref to myUxRef->historyPalleteEditor in this file can be fixed
-*/
     uiHistoryPalleteEditor(uiObject* parentObj){
-
-        // we will become uxInstance->historyPalleteEditor - and is pretty much singleton....
         Ux* uxInstance = Ux::Singleton();
 
         uiObjectItself = new uiObject();
@@ -31,7 +21,7 @@ struct uiHistoryPalleteEditor{
 
         historyPalleteHolder->hasBackground = true;
         Ux::setColor(&historyPalleteHolder->backgroundColor, 0, 0, 0, 220);
-        historyPalleteHolder->setInteractionCallback(&Ux::interactionToggleHistory); // if we dragged and released... it will animate the rest of the way because of this
+        historyPalleteHolder->setInteractionCallback(&interactionToggleHistory); // if we dragged and released... it will animate the rest of the way because of this
         historyPalleteHolder->setInteraction(&Ux::interactionVert);
         historyPalleteHolder->setBoundsEnterFunction(&Ux::interactionHistoryEnteredView);
         historyPalleteHolder->is_being_viewed_state = true;
@@ -56,7 +46,7 @@ struct uiHistoryPalleteEditor{
 
 
         palleteSelectionPreviewHolder = new uiObject();
-        palleteSelectionPreviewHolder->setInteractionCallback(&Ux::interactionTogglePalletePreview); // if we dragged and released... it will animate the rest of the way because of this
+        palleteSelectionPreviewHolder->setInteractionCallback(&interactionTogglePalletePreview); // if we dragged and released... it will animate the rest of the way because of this
         palleteSelectionPreviewHolder->setInteraction(&Ux::interactionVert);
         palleteSelectionPreviewHolder->setCropParentRecursive(historyPalleteHolder);
         palleteSelectionPreviewHolder->is_being_viewed_state = false;
@@ -392,6 +382,39 @@ struct uiHistoryPalleteEditor{
     }
 
 
+    static void interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
+
+        // PLEASE NOTE: the args may be nullptr, nullptr - we don't use them here....
+
+        //self->newHistoryFullsize->cancelCurrentAnimation();
+
+        if( self->historyPalleteHolder->is_being_viewed_state ) {
+            if( myUxRef->widescreen ){
+                self->historyPalleteHolder->setAnimation( myUxRef->uxAnimations->slideRight(self->historyPalleteHolder) ); // returns uiAminChain*
+                //self->historyPalleteHolder->setAnimation( self->uxAnimations->slideRightFullWidth(self->historyPalleteHolder) ); // returns uiAminChain*
+            }else{
+                self->historyPalleteHolder->setAnimation( myUxRef->uxAnimations->slideDown(self->historyPalleteHolder) ); // returns uiAminChain*
+            }
+            self->historyPalleteHolder->is_being_viewed_state = false;
+            myUxRef->endModal(self->historyPalleteHolder);
+        }else{
+            self->historyPalleteHolder->isInBounds = true; // nice hack
+            myUxRef->updatePickHistoryPreview();
+            self->palleteScroller->updateTiles();
+            self->historyPalleteHolder->setAnimation( myUxRef->uxAnimations->resetPosition(self->historyPalleteHolder) ); // returns uiAminChain*
+            self->historyPalleteHolder->is_being_viewed_state = true;
+            //self->historyScroller->allowUp = true;
+            myUxRef->updateModal(self->historyPalleteHolder, &interactionToggleHistory);
+
+            // WE JUST PUSHED OUR MODAL... HOWEVER IF OUR CURRENT STATE SHOWS THE SELECTED COLOR, THAT SHOULD BE THE FIFRST MODAL DISMISSED BY ESC/BACK.... ??
+            //        if( self->palleteSelectionPreviewHolder->is_being_viewed_state ) {
+            //            self->updateModal(self->palleteSelectionPreviewHolder, &Ux::interactionTogglePalletePreview);
+            //        }
+        }
+    }
+
 
     static void removeHistoryColor(uiObject *interactionObj, uiInteraction *delta){
         Ux* myUxRef = Ux::Singleton();
@@ -491,7 +514,7 @@ struct uiHistoryPalleteEditor{
         uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
         // hide pallete preview if possible...
         if( self->palleteSelectionPreviewHolder->is_being_viewed_state ){
-            myUxRef->interactionTogglePalletePreview(self->palleteSelectionPreviewHolder, delta);
+            self->interactionTogglePalletePreview(self->palleteSelectionPreviewHolder, delta);
         }
     }
 
@@ -783,6 +806,40 @@ struct uiHistoryPalleteEditor{
     }
 
 
+
+    static void interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
+
+        //uiObject* trueInteractionObj = self->palleteSelectionColorPreview->uiObjectItself;
+        uiObject* trueInteractionObj = self->palleteSelectionPreviewHolder;
+
+        /*
+         palleteSelectionColorPreview = new uiViewColor(historyPalleteHolder, Float_Rect(0.0, 0.5, 1.0, 0.5));
+         historyPalleteHolder->addChild(newHistoryPallete);
+         palleteSelectionColorPreview->uiObjectItself->setInteractionCallback(&Ux::interactionTogglePalletePreview); // if we dragged and released... it will animate the rest of the way because of this
+         palleteSelectionColorPreview->uiObjectItself->setInteraction(&Ux::interactionVert);
+         */
+
+        if( trueInteractionObj->is_being_viewed_state ) {
+            if( myUxRef->widescreen ){
+                trueInteractionObj->setAnimation( myUxRef->uxAnimations->slideRightFullWidth(trueInteractionObj) );
+            }else{
+                trueInteractionObj->setAnimation( myUxRef->uxAnimations->slideDownFullHeight(trueInteractionObj) ); // returns uiAminChain*
+            }
+            trueInteractionObj->is_being_viewed_state =false;
+            trueInteractionObj->doesNotCollide = true;
+            myUxRef->endModal(trueInteractionObj);
+        }else{
+            trueInteractionObj->isInBounds = true; // nice hack
+            myUxRef->updatePickHistoryPreview();
+            trueInteractionObj->setAnimation( myUxRef->uxAnimations->resetPosition(trueInteractionObj) ); // returns uiAminChain*
+            trueInteractionObj->is_being_viewed_state = true;
+            trueInteractionObj->doesNotCollide = false;
+            myUxRef->updateModal(trueInteractionObj, &interactionTogglePalletePreview);
+        }
+    }
+
     static void removePalleteColor(uiObject *interactionObj, uiInteraction *delta){
 
         Ux* myUxRef = Ux::Singleton();
@@ -798,7 +855,7 @@ struct uiHistoryPalleteEditor{
 
             if( colorEquals(&self->palleteSelectionColorPreview->last_color, &clr) ){
                 // viewing deleted color
-                myUxRef->interactionTogglePalletePreview(self->palleteSelectionPreviewHolder, delta);
+                self->interactionTogglePalletePreview(self->palleteSelectionPreviewHolder, delta);
             }
         }
 
@@ -870,7 +927,7 @@ struct uiHistoryPalleteEditor{
 
         if( self->palleteSelectionPreviewHolder->is_being_viewed_state ) {
             // viewing deleted color
-            myUxRef->interactionTogglePalletePreview(self->palleteSelectionPreviewHolder, delta);
+            self->interactionTogglePalletePreview(self->palleteSelectionPreviewHolder, delta);
         }
     }
 
@@ -904,7 +961,7 @@ struct uiHistoryPalleteEditor{
             interactionObj->resetPosition();
 
             if( self->palleteSelectionPreviewHolder->is_being_viewed_state ) {
-                myUxRef->interactionTogglePalletePreview(self->palleteSelectionPreviewHolder, delta);
+                self->interactionTogglePalletePreview(self->palleteSelectionPreviewHolder, delta);
             }
 
             return; // this means our tile is invalid/out of range
@@ -1016,9 +1073,9 @@ struct uiHistoryPalleteEditor{
         bool changed = self->palleteSelectionColorPreview->update(&interactionObj->backgroundColor);
 
         if( !self->palleteSelectionPreviewHolder->is_being_viewed_state ) {
-            myUxRef->interactionTogglePalletePreview(self->palleteSelectionPreviewHolder, delta);
+            self->interactionTogglePalletePreview(self->palleteSelectionPreviewHolder, delta);
         }else if( !changed ){
-            myUxRef->interactionTogglePalletePreview(self->palleteSelectionPreviewHolder, delta);
+            self->interactionTogglePalletePreview(self->palleteSelectionPreviewHolder, delta);
         }
 
 

@@ -564,49 +564,25 @@ Ux::uiObject* Ux::create(void){
 //    Ux::setColor(&historyPreview->backgroundColor, 0, 0, 0, 192);
     //Ux::setColor(&historyPreview->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
     //historyPreview->doesInFactRender = false;
-
-
-
-
     //historyPreview->setInteraction(&Ux::interactionHZ);
     //historyPreview->canCollide = true;
 
-
-
-
-
-
     // we should another way to set rects for animation support?
-
 
     int ctr = SIX_ACROSS;
     while( --ctr >= 0 ){
         uiObject * colora = new uiObject();
         colora->hasBackground = true;
         Ux::setColor(&colora->backgroundColor, 255, 0, 32, 0);
-
-        //colora->setBoundaryRect( ctr * (1/across), 1.0, 1/across, 1/across * screenRatio );
-        //colora->setBoundaryRect( ctr * SIX_ACROSS_RATIO, 0.0, SIX_ACROSS_RATIO, 1.0 );
-        //colora->setBoundaryRect( 0, 0.0, 1, 1 );
-
-        //colora->hasForeground = true;
-        //printCharToUiObject(colora, 'F'-ctr, DO_NOT_RESIZE_NOW);
-
         historyPreview->addChild(colora);
     }
 
-
     //historyPreview->hasForeground = true;
     //printCharToUiObject(historyPreview, '_', DO_NOT_RESIZE_NOW);
-
     //historyPreview->canCollide = true; // set by setInteractionCallback
-    historyPreviewHolder->setInteractionCallback(&Ux::interactionToggleHistory);
-
     historyPreviewHolder->setInteraction(&Ux::interactionVert);
     //historyPreviewHolder->interactionProxy = historyPalleteEditor->historyPalleteHolder; // when we drag the preview effect the fullsize sliding into view...
-
     //printCharToUiObject(historyPreview, 'H', DO_NOT_RESIZE_NOW);
-
     //bottomBar->addChild(historyPreview);
     historyPreviewHolder->addChild(historyPreview);
     rootUiObject->addChild(historyPreviewHolder);
@@ -622,7 +598,9 @@ Ux::uiObject* Ux::create(void){
 
     historyPalleteEditor = new uiHistoryPalleteEditor(rootUiObject);
 
+    // late setup of these, we have historyPalleteEditor now....
     historyPreviewHolder->interactionProxy = historyPalleteEditor->historyPalleteHolder; // when we drag the preview effect the fullsize sliding into view...
+    historyPreviewHolder->setInteractionCallback(&historyPalleteEditor->interactionToggleHistory);
 
 
     defaultYesNoChoiceHolder = new uiObject();
@@ -641,9 +619,7 @@ Ux::uiObject* Ux::create(void){
 
     defaultScoreDisplay = new uiScore(rootUiObject);
 
-
     updateRenderPositions();
-
 
     readInState(); // reads saved state into lists
 
@@ -658,14 +634,11 @@ Ux::uiObject* Ux::create(void){
 #endif
 
     //writeOutState(); // testing
-
-
     // for awful reasons during init some things should not be called....
-
     //palleteSelectionColorPreview->uiObjectItself->setAnimation( uxAnimations->slideDownFullHeight(palleteSelectionColorPreview->uiObjectItself) ); // returns uiAminChain*
     // todo we should just chain a interactionTogglePalletePreview
     //interactionTogglePalletePreview(nullptr, nullptr);
-    interactionToggleHistory(nullptr, nullptr);
+    historyPalleteEditor->interactionToggleHistory(nullptr, nullptr);
 
     return rootUiObject;
 }
@@ -989,96 +962,16 @@ void Ux::interactionNoOp(uiObject *interactionObj, uiInteraction *delta){
 
 }
 
-
-//static
-void Ux::interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction *delta){
-    Ux* self = Ux::Singleton();
-
-    //uiObject* trueInteractionObj = self->palleteSelectionColorPreview->uiObjectItself;
-    uiObject* trueInteractionObj = self->historyPalleteEditor->palleteSelectionPreviewHolder;
-
-    /*
-     palleteSelectionColorPreview = new uiViewColor(historyPalleteHolder, Float_Rect(0.0, 0.5, 1.0, 0.5));
-     historyPalleteHolder->addChild(newHistoryPallete);
-     palleteSelectionColorPreview->uiObjectItself->setInteractionCallback(&Ux::interactionTogglePalletePreview); // if we dragged and released... it will animate the rest of the way because of this
-     palleteSelectionColorPreview->uiObjectItself->setInteraction(&Ux::interactionVert);
-     */
-
-    if( trueInteractionObj->is_being_viewed_state ) {
-        if( self->widescreen ){
-            trueInteractionObj->setAnimation( self->uxAnimations->slideRightFullWidth(trueInteractionObj) );
-        }else{
-            trueInteractionObj->setAnimation( self->uxAnimations->slideDownFullHeight(trueInteractionObj) ); // returns uiAminChain*
-        }
-        trueInteractionObj->is_being_viewed_state =false;
-        trueInteractionObj->doesNotCollide = true;
-        self->endModal(trueInteractionObj);
-    }else{
-        trueInteractionObj->isInBounds = true; // nice hack
-        self->updatePickHistoryPreview();
-        trueInteractionObj->setAnimation( self->uxAnimations->resetPosition(trueInteractionObj) ); // returns uiAminChain*
-        trueInteractionObj->is_being_viewed_state = true;
-        trueInteractionObj->doesNotCollide = false;
-        self->updateModal(trueInteractionObj, &Ux::interactionTogglePalletePreview);
-    }
-}
-
 void Ux::openURL(char* url){
-    openURL(url);
+    openURL(url); // uses platform specific version from FileChooser.h
 }
 
 void Ux::hideHistoryPalleteIfShowing(){
     if( historyPalleteEditor->historyPalleteHolder->is_being_viewed_state ) {
-        interactionToggleHistory(nullptr, nullptr);
+        historyPalleteEditor->interactionToggleHistory(nullptr, nullptr);
     }
 }
 
-//static
-//void Ux::interactionHistoryInteractionBegin(uiObject *interactionObj, uiInteraction *delta){
-//    interactionObj->cancelCurrentAnimation();
-//}
-
-
-//static
-void Ux::interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta){
-    Ux* self = Ux::Singleton();
-
-    // PLEASE NOTE: the args may be nullptr, nullptr - we don't use them here....
-
-    //self->newHistoryFullsize->cancelCurrentAnimation();
-
-    if( self->historyPalleteEditor->historyPalleteHolder->is_being_viewed_state ) {
-        if( self->widescreen ){
-            self->historyPalleteEditor->historyPalleteHolder->setAnimation( self->uxAnimations->slideRight(self->historyPalleteEditor->historyPalleteHolder) ); // returns uiAminChain*
-            //self->historyPalleteHolder->setAnimation( self->uxAnimations->slideRightFullWidth(self->historyPalleteHolder) ); // returns uiAminChain*
-        }else{
-            self->historyPalleteEditor->historyPalleteHolder->setAnimation( self->uxAnimations->slideDown(self->historyPalleteEditor->historyPalleteHolder) ); // returns uiAminChain*
-        }
-        self->historyPalleteEditor->historyPalleteHolder->is_being_viewed_state = false;
-        self->endModal(self->historyPalleteEditor->historyPalleteHolder);
-    }else{
-        self->historyPalleteEditor->historyPalleteHolder->isInBounds = true; // nice hack
-        self->updatePickHistoryPreview();
-        self->historyPalleteEditor->palleteScroller->updateTiles();
-        self->historyPalleteEditor->historyPalleteHolder->setAnimation( self->uxAnimations->resetPosition(self->historyPalleteEditor->historyPalleteHolder) ); // returns uiAminChain*
-        self->historyPalleteEditor->historyPalleteHolder->is_being_viewed_state = true;
-        //self->historyScroller->allowUp = true;
-        self->updateModal(self->historyPalleteEditor->historyPalleteHolder, &Ux::interactionToggleHistory);
-
-        // WE JUST PUSHED OUR MODAL... HOWEVER IF OUR CURRENT STATE SHOWS THE SELECTED COLOR, THAT SHOULD BE THE FIFRST MODAL DISMISSED BY ESC/BACK.... ??
-//        if( self->palleteSelectionPreviewHolder->is_being_viewed_state ) {
-//            self->updateModal(self->palleteSelectionPreviewHolder, &Ux::interactionTogglePalletePreview);
-//        }
-    }
-}
-
-
-
-
-
-//void Ux::resizePalleteBasedOnNumberOfColors(){
-//
-//}
 //static
 void Ux::interactionReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta){
 
@@ -1110,7 +1003,7 @@ void Ux::interactionAddHistory(uiObject *interactionObj, uiInteraction *delta){
 
     // in the popup, if we were viewing a color, we should hide it next time we open this up.... esp for widescreen
     if( myUxRef->historyPalleteEditor->palleteSelectionPreviewHolder->is_being_viewed_state ) {
-        myUxRef->interactionTogglePalletePreview(myUxRef->historyPalleteEditor->palleteSelectionPreviewHolder, delta);
+        myUxRef->historyPalleteEditor->interactionTogglePalletePreview(myUxRef->historyPalleteEditor->palleteSelectionPreviewHolder, delta);
     }
 }
 
@@ -1130,7 +1023,7 @@ void Ux::hueClickedPickerHsv(SDL_Color* c){
     Ux* myUxRef = Ux::Singleton();
     myUxRef->lastHue->fromColor(c);
     ogg->pickerForHue(myUxRef->lastHue, c);
-    interactionToggleHistory(myUxRef->interactionObject, &myUxRef->currentInteraction);
+    myUxRef->historyPalleteEditor->interactionToggleHistory(myUxRef->interactionObject, &myUxRef->currentInteraction);
     //interactionToggleHistory(nullptr, nullptr);
 }
 
@@ -1370,17 +1263,11 @@ bool Ux::bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiIn
 }
 
 
-
-
-
-
 /// eeeh this is really update current color
 ///   mayhaps this only updates when you stop panning?
 ///   or otherwise seperate function for addPickHistory from this
 void Ux::updateColorValueDisplay(SDL_Color* color){
-
     curerntColorPreview->update(color);
-
     //currentlyPickedColor = color; // maybe we should copy it instead?
     setColor(currentlyPickedColor, color);
     //addCurrentToPickHistory();
@@ -1448,7 +1335,6 @@ void Ux::addCurrentToPickHistory(){
 
 void Ux::updatePickHistoryPreview(){
 
-
     if( pickHistoryList->total() < 0 ) return; //no history yet, and this means we may need to keep lastPickHistoryIndex around?
 
     int ctr = 0;
@@ -1465,31 +1351,12 @@ void Ux::updatePickHistoryPreview(){
 
 
         if( histIndex >= 0 ){
-
-
             colora->doesInFactRender = true;
-
-            //clr = &pickHistory[histIndex];
             clr = &pickHistoryList->get(histIndex)->color;
-
             Ux::setColor(&colora->backgroundColor, clr->r, clr->g, clr->b, 255);
-
-
-
-            // call itoa 10 times and we will suddenly loose a few UI elements....
-           // SDL_itoa(histIndex, resultText, 10);
-            //colora->containText =true;
-           // printStringToUiObject(colora, "A", true);
-
-
-            //colora->hasForeground = false;
-            // printCharToUiObject(colora, 'Z'+ctr, true);
-            //historyPreview->addChild(colora);
-
         }else{
             colora->doesInFactRender = false;
         }
-
 
         histIndex--;
         ctr++;
@@ -1497,11 +1364,7 @@ void Ux::updatePickHistoryPreview(){
         if( histIndex < 0 && pickHistoryList->largestIndex() > startIndex ){
             histIndex = pickHistoryList->largestIndex();
         }
-
-        //return;
-
     }
-
 
     // somertimes upate the full histoury preview too
     if( historyPalleteEditor->historyPalleteHolder->isInBounds ){
@@ -1513,11 +1376,8 @@ void Ux::updatePickHistoryPreview(){
 
 
 
-//bool Ux::updateAnimations(float elapsedMs){
-//
-//    //return uxAnimations->updateAnimations(elapsedMs);
-//
-//}
+
+
 
 
 int Ux::renderObject(uniformLocationStruct *uniformLocations){

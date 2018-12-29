@@ -236,9 +236,6 @@ static Ux* Singleton();
 
     static void interactionHistoryEnteredView(uiObject *interactionObj);
     static void interactionNoOp(uiObject *interactionObj, uiInteraction *delta);
-    //static void interactionHistoryInteractionBegin(uiObject *interactionObj, uiInteraction *delta);
-    static void interactionToggleHistory(uiObject *interactionObj, uiInteraction *delta);
-    static void interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction *delta);
     static void interactionFileBrowserTime(uiObject *interactionObj, uiInteraction *delta);
     static void interactionReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta);
     static void interactionBeginReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta);
