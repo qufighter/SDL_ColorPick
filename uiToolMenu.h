@@ -1,0 +1,262 @@
+
+#ifndef ColorPick_iOS_SDL_uiToolMenu_h
+#define ColorPick_iOS_SDL_uiToolMenu_h
+
+
+
+struct uiToolMenu{
+
+    // origionally uiScore.h
+    uiToolMenu(uiObject* parentObj){
+
+        maxLen = 14;
+        score_disp_char = (char*)SDL_malloc( sizeof(char) * maxLen );
+
+
+        Ux* uxInstance = Ux::Singleton(); // some useful helper?
+
+        uiObjectItself = new uiObject();
+        uiObjectItself->myUiController = this; // this propagates to the other child objects
+
+        shield = new uiObject();
+
+        score = new uiObject();
+        score_position = new uiObject();
+
+        explanation = new uiObject();
+        explanation_position = new uiObject();
+
+        uiObjectItself->addChild(shield);
+
+
+        //uiObjectItself->setInteractionCallback(tileClickedFn);
+
+
+        //deleteColorPreview = new uiViewColor(uiObjectItself, Float_Rect(0.0, 0.0, 1.0, 0.27777777777778), false);
+
+
+        shield->hasBackground=true;
+        Ux::setColor(&shield->backgroundColor, 0, 0, 0, 128); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+
+        shield->setInteractionCallback(clickShieldFunction);
+        shield->hideAndNoInteraction();
+
+//        score->hasBackground=true;
+//        Ux::setColor(&score->backgroundColor, 32, 0, 0, 128);
+        score->hasForeground=true;
+        Ux::setColor(&score->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        //uxInstance->printCharToUiObject(score, CHAR_CHECKMARK_ICON, DO_NOT_RESIZE_NOW);
+        //uxInstance->printStringToUiObject(score, "xAll", DO_NOT_RESIZE_NOW);
+
+        //score->squarify();
+        score->squarifyKeepHz();
+        explanation->squarifyKeepHz();
+
+
+
+        //maths
+        float w = 0.125;
+        float hw = w * 0.5;
+
+        //no->setBoundaryRect( 0.0+pad, 0.5-hh, w, h);
+
+        explanation_position->setBoundaryRect( 0.5, 0.5, w, w);
+        score_position->setBoundaryRect( 0.5, 0.5, w, w);
+
+        explanation->setBoundaryRect( -0.5, -0.5, 1.0, 1.0); // on right
+        score->setBoundaryRect( -0.5, -0.5, 1.0, 1.0); // on right
+
+
+        explanation_position->addChild(explanation);
+        uiObjectItself->addChild(explanation_position);
+
+        score_position->addChild(score);
+        uiObjectItself->addChild(score_position);
+
+        parentObj->addChild(uiObjectItself);
+
+        resize();
+
+        hide();
+
+        bool widescreen = uxInstance->widescreen;
+        float bounceIntensity = -0.001;
+
+        // just so we can call end on these??? this could crash the app at boot time right??
+//        chain1 = uxInstance->uxAnimations->emptyChain(); // uxInstance->uxAnimations->reset_matrix(score_position)->preserveReference();
+//        chain2 = uxInstance->uxAnimations->emptyChain(); //uxInstance->uxAnimations->softBounce(score_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
+//        chain3 = uxInstance->uxAnimations->emptyChain(); //uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
+
+        chain1 = uxInstance->uxAnimations->reset_matrix(score_position)->preserveReference();
+        chain2 = uxInstance->uxAnimations->softBounce(score_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
+        chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
+
+        chain4 = uxInstance->uxAnimations->reset_matrix(explanation_position)->preserveReference();
+        chain5 = uxInstance->uxAnimations->softBounce(explanation_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
+        chain6 = uxInstance->uxAnimations->scale_bounce(explanation_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
+
+    }
+
+    //anInteractionFn tileClicked=nullptr;
+
+    uiObject* uiObjectItself; // no real inheritance here, this its the uiSqware, I would use self->
+    uiObject* shield;
+    uiObject *score_position;
+    uiObject *score;
+    uiObject *explanation;
+    uiObject *explanation_position;
+
+    char* score_disp_char;
+    int maxLen;
+
+    uiAminChain* chain1;
+    uiAminChain* chain2;
+    uiAminChain* chain3;
+    uiAminChain* chain4; // explanation chains...
+    uiAminChain* chain5;
+    uiAminChain* chain6;
+
+
+    static void clickShieldFunction(uiObject *interactionObj, uiInteraction *delta){
+        uiToolMenu* self = ((uiToolMenu*)interactionObj->myUiController);
+        self->hide();
+    }
+
+    void display(uiObject *p_dispalyNearUiObject, int numberToDisplay){
+        display(p_dispalyNearUiObject, numberToDisplay, SCORE_EFFECTS::DEFAULT);
+    }
+
+    void display(uiObject *p_dispalyNearUiObject, int numberToDisplay, int effectNum){
+
+        //SDL_Log("this is the biggest int %i " , SDL_MAX_SINT32); // 2147483647  ( 10 char, sign, extra)
+        Ux* uxInstance = Ux::Singleton();
+        bool widescreen = uxInstance->widescreen;
+        float bounceIntensity = -0.001;
+
+
+        uiObjectItself->show();
+        //score_position->matrix = glm::mat4(1.0);
+
+        // we had better create a new animation for EACH one we free here...
+        chain1->endAnimation();
+        chain1 = uxInstance->uxAnimations->reset_matrix(score_position)->preserveReference();
+
+
+        SDL_snprintf(score_disp_char, maxLen, "+%i", numberToDisplay);
+        handlePositioning(p_dispalyNearUiObject);
+        chain2->endAnimation();
+        //chain3->endAnimation();
+        switch( effectNum ){
+            case SCORE_EFFECTS::NOMOVE:
+                chain2 = uxInstance->uxAnimations->spin(score_position)->preserveReference();
+                //chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
+                break;
+            case SCORE_EFFECTS::MOVE_UP:
+                chain2 = uxInstance->uxAnimations->slideUpFullHeight(score_position)->preserveReference();
+                //chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
+                break;
+            case SCORE_EFFECTS::DEFAULT:
+            default:
+                chain2 = uxInstance->uxAnimations->softBounce(score_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
+                //chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
+                        break;
+                }
+
+
+            uxInstance->printStringToUiObject(score, score_disp_char, DO_NOT_RESIZE_NOW);
+
+
+
+        shield->showAndAllowInteraction();
+
+
+        score_position->updateRenderPosition();
+
+
+
+        //displayExplanation("-Yes it work-");
+        //displayExplanation("-Yes-");
+        //myUxRef->defaultScoreDisplay->displayExplanation("-Yes-");
+    }
+
+    void handlePositioning(uiObject *p_dispalyNearUiObject){
+        // we need to handle positioning of the main "score_position" element before animation starts, but after we know the text...
+        float text_length = (float)SDL_strlen(score_disp_char);
+
+        float score_size_scaling = 1.0/text_length;
+        if( score_size_scaling > score_position->origBoundryRect.w ){ // enforce "max" (default) size:
+            score_size_scaling=score_position->origBoundryRect.w;
+        }
+        Float_Rect* dispRect = &p_dispalyNearUiObject->collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
+        score_position->setBoundaryRect(dispRect->x + (dispRect->w * 0.5),
+                                        dispRect->y + (dispRect->h * 0.5),
+                                        score_size_scaling,
+                                        score_size_scaling  );
+
+
+
+        //score->boundryRect.x =  text_length * -0.5; // center
+        score->boundryRect.x =  -text_length + 0.5; // right aligned (center the rightmost char)
+        //score->boundryRect.x = -0.5;
+
+        //if( score->boundryRect.x + -0.5 + score_position->boundryRect.x < 0 ) score_position->boundryRect.x += score->boundryRect.x + -0.5 + score_position->boundryRect.x; // keep "on screen"
+
+        float hidLeftAmt = score_position->boundryRect.x + (score_size_scaling * score->boundryRect.x);
+        if( hidLeftAmt < 0 ){
+            score_position->boundryRect.x -= hidLeftAmt; // minus a negative
+        }
+
+    }
+
+    void displayExplanation(const char* textToShow){
+        // longer strings won't work... the size is critical too (since if first char goes off screen it will not render)
+        Ux* uxInstance = Ux::Singleton();
+        //bool widescreen = uxInstance->widescreen;
+
+        SDL_snprintf(score_disp_char, maxLen, "%s", textToShow);
+        uxInstance->printStringToUiObject(explanation, score_disp_char, DO_NOT_RESIZE_NOW);
+
+        float text_length = (float)SDL_strlen(score_disp_char);
+
+        float my_scale = 1.0 / text_length;
+        if( my_scale > 0.125 ){
+            my_scale = 0.125;
+        }
+        explanation_position->setBoundaryRect(0.5,  0.5, my_scale, my_scale );
+
+        explanation->boundryRect.x =  text_length * -0.5; // center
+        SDL_Log("result was %f", explanation->boundryRect.x * explanation_position->origBoundryRect.w);
+//        float hidLeftAmt = explanation_position->boundryRect.x + (explanation_position->origBoundryRect.w * explanation->boundryRect.x);
+//        if( hidLeftAmt < 0 ){
+//            explanation_position->boundryRect.x -= hidLeftAmt; // minus a negative
+//        }
+
+        chain4->endAnimation();
+        chain4 = uxInstance->uxAnimations->reset_matrix(explanation_position)->preserveReference();
+
+        chain5->endAnimation();
+        chain6->endAnimation();
+        chain5 = uxInstance->uxAnimations->spin(explanation_position, 2)->preserveReference();
+        chain6 = uxInstance->uxAnimations->scale_bounce(explanation_position, 0.017, uxInstance->uxAnimations->mat_zeroscale, 1200)->preserveReference();
+
+
+        explanation_position->updateRenderPosition();
+    }
+
+    void hide(){
+        shield->hideAndNoInteraction();
+        uiObjectItself->hide();
+    }
+
+    void resize(){
+        update();
+    }
+
+    void update(){
+        uiObjectItself->updateRenderPosition();
+    }
+
+};
+
+
+#endif

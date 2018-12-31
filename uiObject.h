@@ -1,12 +1,13 @@
 //
 //  uiObject.h /// really this should be uiObject.h.inc  inc.h ?  its a partial??
 // struct MyStruct ; /* Forward declaration */ - maybe we can use this?
-//  ColorPick iOS SDL
+//  ColorPick SDL
 //
 //  Created by Sam Larison on 8/27/17.
 //
 //
 
+// TODO rename uxObject
 #ifndef ColorPick_iOS_SDL_uiObject_h
 #define ColorPick_iOS_SDL_uiObject_h
 

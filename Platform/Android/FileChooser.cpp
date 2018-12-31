@@ -1,6 +1,6 @@
 //
 //  FileChooser.mm
-//  ColorPick iOS SDL
+//  ColorPick SDL
 //
 //  Created by Sam Larison on 8/13/16.
 //

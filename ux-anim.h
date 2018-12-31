@@ -1,6 +1,6 @@
 //
 //  ux-anim.h
-//  ColorPick iOS SDL
+//  ColorPick SDL
 //
 //  Created by Sam Larison on 8/21/16.
 //

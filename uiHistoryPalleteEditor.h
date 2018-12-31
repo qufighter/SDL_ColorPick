@@ -1,6 +1,6 @@
 //
 //  uiHistoryPalleteEditor.h
-//  ColorPick iOS SDL
+//  ColorPick SDL
 //
 //  Created by Sam Larison on 1/7/18.
 //
@@ -584,6 +584,10 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
         //SDL_Log("clickHistoryColor --------------------- %i", interactionObj->myIntegerIndex);
 
+        if( interactionObj->isInHiddenState() ){
+            return;
+        }
+
         historyReceivedFocus(interactionObj, delta);
 
 
@@ -629,7 +633,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
                 myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickSortHistory, &clickCancelSortHistory);
 
                 // we need to effectively communicate a "preview" of what will occur???
-                myUxRef->defaultYesNoChoiceDialogue->displayAdditionalAction(nullptr, 789);
+                myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Sort?");
 
                 // TODO: the Much Risk is not really enabled for this one is it??? the risk is much less.....
 
@@ -1028,6 +1032,10 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
         Ux* myUxRef = Ux::Singleton();
         uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
+
+        if( interactionObj->isInHiddenState() ){
+            return;
+        }
 
         if( !interactionObj->doesInFactRender ){
 

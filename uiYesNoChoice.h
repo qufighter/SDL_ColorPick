@@ -43,7 +43,7 @@ struct uiYesNoChoice{
         addSomeMore->hasForeground=true;
         Ux::setColor(&addSomeMore->backgroundColor, 32, 0, 0, 128);
         Ux::setColor(&addSomeMore->foregroundColor, 255, 0, 0, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-        uxInstance->printCharToUiObject(addSomeMore, CHAR_CIRCLE, DO_NOT_RESIZE_NOW);
+        uxInstance->printCharToUiObject(addSomeMore, CHAR_CIRCLE_PLAIN, DO_NOT_RESIZE_NOW);
         addSomeMore->containText = true;
         //uxInstance->printStringToUiObject(addSomeMore, "+499", DO_NOT_RESIZE_NOW);
         addSomeMore->setRoundedCorners(0.5);
@@ -138,6 +138,8 @@ struct uiYesNoChoice{
         no->setBoundaryRect( 0.0+pad, 0.5-hh, w, h);
         ///yes->setBoundaryRect( 1.0-w-pad, 0.5-hh, w, h); // on left
 
+
+
         text_length = 2;
         last_num_delete = 1;
 
@@ -171,21 +173,55 @@ struct uiYesNoChoice{
     // GENERICS - GENRAL PURPOSE use for whatever
     uiObject *myTriggeringUiObject;
 
+    void displayAdditionalMessage(char* message){
+        additionalActionFn = nullptr;
+        Ux* uxInstance = Ux::Singleton();
+
+        // since we contain text, we need to do some funny shifting of our styles... while we print text
+        addSomeMore->hasBackground = false;
+        addSomeMore->hasForeground=true;
+        Ux::setColor(&addSomeMore->foregroundColor, 255, 255, 255, 255);
+
+        uxInstance->printStringToUiObject(addSomeMore, message, DO_NOT_RESIZE_NOW);
+        // containText should possibly have some other settings about margins?
+
+        Ux::setColor(&addSomeMore->foregroundColor, 255, 0, 0, 192);
+
+
+        addSomeMore->hasBackground = false;
+        addSomeMore->hasForeground = false;
+
+        float w = 0.5;
+        float hw = w * 0.5;
+        addSomeMoreHolder->setBoundaryRect( 0.5-hw, 0.25-hw, w,w);
+        addSomeMore->setBoundaryRect( 0, 0, 1, 1);
+
+        addSomeMoreHolder->showAndAllowInteraction();
+    }
+
+
     void displayAdditionalAction(anInteractionFn p_additionalYesClickedFn, int numberToShow){
         additionalActionFn = p_additionalYesClickedFn;
         additional_number_to_show = numberToShow;
         Ux* uxInstance = Ux::Singleton();
 
-        // since we contain text, we need to do some funny shifting of our styles...
+        // since we contain text, we need to do some funny shifting of our styles... while we print text
         addSomeMore->hasBackground = false;
-        Ux::setColor(&addSomeMore->foregroundColor, 0, 0, 0, 255);
+        Ux::setColor(&addSomeMore->foregroundColor, 255, 255, 255, 255);
 
         char* total_pluss = convertIntegerToString(numberToShow, '+');
         uxInstance->printStringToUiObject(addSomeMore, total_pluss, DO_NOT_RESIZE_NOW);
+        // containText should possibly have some other settings about margins?
         SDL_free(total_pluss);
 
         addSomeMore->hasBackground = true;
         Ux::setColor(&addSomeMore->foregroundColor, 255, 0, 0, 192);
+        addSomeMore->hasForeground = true;
+
+        float w = (0.35 + 0.25) * 0.5;
+        float hw = w * 0.5;
+        addSomeMoreHolder->setBoundaryRect( 0.5-hw, 0.25-hw, w,w);
+        addSomeMore->setBoundaryRect( 0, 0, 1, 1);
 
         addSomeMoreHolder->showAndAllowInteraction();
     }
@@ -362,11 +398,6 @@ struct uiYesNoChoice{
         Ux* uxInstance = Ux::Singleton();
 
         //uiObjectItself->setBoundaryRect(&boundaries);
-
-
-        addSomeMoreHolder->setBoundaryRect( 0.5-0.125, 0.25-0.125, 0.25,0.25);
-        addSomeMore->setBoundaryRect( 0, 0, 1, 1);
-
 
         if( uxInstance->widescreen ){
             text_holder->setBoundaryRect( 0.5, 1.0, 0.5, 0.5);

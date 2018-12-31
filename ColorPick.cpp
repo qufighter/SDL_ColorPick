@@ -418,9 +418,9 @@ void OpenGLContext::setupScene(void) {
  //   textureId_default = textures->LoadTexture("textures/blank.png");
 
 
-//    ColorPick iOS SDL(4046,0x10d290380) malloc: Heap corruption detected, free list is damaged at 0x600000101b00
+//    ColorPick SDL(4046,0x10d290380) malloc: Heap corruption detected, free list is damaged at 0x600000101b00
 //    *** Incorrect guard value: 4448617117
-//    ColorPick iOS SDL(4046,0x10d290380) malloc: *** set a breakpoint in malloc_error_break to debug
+//    ColorPick SDL(4046,0x10d290380) malloc: *** set a breakpoint in malloc_error_break to debug
     // todo: wrong number of items in list -> crash simulator
     Ux::uiList<const char*, Uint8>* textureList = new Ux::uiList<const char*, Uint8>(128);
     textureList->add("textures/intro-image.png");

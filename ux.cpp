@@ -1,6 +1,6 @@
 //
 //  ux.cpp
-//  ColorPick iOS SDL
+//  ColorPick SDL
 //
 //  Created by Sam Larison on 8/21/16.
 //
@@ -616,8 +616,11 @@ Ux::uiObject* Ux::create(void){
 
     //defaultYesNoChoiceDialogue->uiObjectItself->setAnimation( uxAnimations->slideUp(defaultYesNoChoiceDialogue->uiObjectItself) ); // returns uiAminChain*
 
+    rClickMenu = new uiToolMenu(rootUiObject);
 
     defaultScoreDisplay = new uiScore(rootUiObject);
+
+
 
     updateRenderPositions();
 
@@ -1245,6 +1248,11 @@ bool Ux::bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiIn
 
     // todo: for widescreen mode.... if we swipe right (delta->dx > 0.04f)? and we are not showing the close X
     // this means we should also bubble...
+
+    bool isHid = interactionObj->isInHiddenState();
+    if( isHid ){
+        return self->bubbleCurrentInteraction();
+    }
 
     if( !interactionObj->doesInFactRender
        || (self->widescreen && delta->dx > 0.01f )

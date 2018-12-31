@@ -1,6 +1,6 @@
 //
 //  uiScrollController.h
-//  ColorPick iOS SDL
+//  ColorPick SDL
 //
 //  Created by Sam Larison on 1/7/18.
 //
@@ -166,6 +166,11 @@ struct uiViewColor{
         if( delta->isSecondInteraction ){
 
             SDL_Log("Double touched color preview......");
+
+            // we can figure out which child element was clicked?
+
+            Ux* uxInstance = Ux::Singleton();
+            uxInstance->rClickMenu->display(interactionObj, 1232);
         }
     }
 

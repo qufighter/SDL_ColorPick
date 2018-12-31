@@ -1,6 +1,6 @@
 //
 //  uiRunningMan.h
-//  ColorPick iOS SDL
+//  ColorPick SDL
 //
 //  Created by Sam Larison on 1/7/18.
 //

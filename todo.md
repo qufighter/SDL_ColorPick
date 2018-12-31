@@ -22,7 +22,11 @@ sort history colors "rewrite history"  (no index, pretty easy)
   
 look/feel of "all checked" button
 
-touch color preview -> should dismiss the modal (must not apply when viewing pallete color)
+touch color preview -> should dismiss the modal (history+pallete modal) (must not apply when viewing pallete color)
+
+copy (dupe) SDL_SetClipboardText
+   rClickMenu uiToolMenu
+
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -64,7 +68,7 @@ maths keyworkd
 leak / leaking keyword (done 2019)
     ^  "maybe we should copy it instead "
     
- lookup trilinear or aniostropic filteirng 
+ lookup trilinear or aniostropic filteirng (better texture scaling??)
  
  main thread animations for less jitter see MAIN_THREAD_ANIMATIONS (meh?)
 
@@ -73,6 +77,8 @@ cleanup shader code
 perhaps one must swipe too far left to show delete button // swipe left (on desktop this is fine though)
 
 NOTE: just using  currentInteraction here could have SIDE EFFECTS
+
+throw out of view - initial velocity maintain... if over threshold?
 
 # platform specific todo
 

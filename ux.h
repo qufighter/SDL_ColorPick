@@ -1,6 +1,6 @@
 //
 //  ux.h
-//  ColorPick iOS SDL
+//  ColorPick SDL
 //
 //  Created by Sam Larison on 8/21/16.
 //
@@ -179,6 +179,7 @@ static Ux* Singleton();
 #include "uiYesNoChoice.h"
 #include "uiHueGradient.h"
 #include "uiScore.h"
+#include "uiToolMenu.h"
 #include "uiRunningMan.h"
 #include "uiHistoryPalleteEditor.h"
 
@@ -335,6 +336,7 @@ static Ux* Singleton();
         uiScore* defaultScoreDisplay;
 
         uiHistoryPalleteEditor* historyPalleteEditor;
+        uiToolMenu* rClickMenu;
 
         uiObject *historyPreviewHolder;
         uiObject *historyPreview;
