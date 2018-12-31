@@ -14,6 +14,7 @@ struct uiYesNoChoice{
         uiObjectItself = new uiObject();
         addSomeMoreHolder = new uiObject();
         addSomeMore = new uiObject();
+        addSomeMoreText = new uiObject();
         yes = new uiObject();
         no = new uiObject();
         text = new uiObject();
@@ -39,16 +40,22 @@ struct uiYesNoChoice{
         //addSomeMoreHolder->squarify();
 
 
+
         addSomeMore->hasBackground=true;
         addSomeMore->hasForeground=true;
         Ux::setColor(&addSomeMore->backgroundColor, 32, 0, 0, 128);
-        Ux::setColor(&addSomeMore->foregroundColor, 255, 0, 0, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        Ux::setColor(&addSomeMore->foregroundColor, 200, 200, 200, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         uxInstance->printCharToUiObject(addSomeMore, CHAR_CIRCLE_PLAIN, DO_NOT_RESIZE_NOW);
-        addSomeMore->containText = true;
         //uxInstance->printStringToUiObject(addSomeMore, "+499", DO_NOT_RESIZE_NOW);
         addSomeMore->setRoundedCorners(0.5);
 
 
+        addSomeMoreText->hasForeground=true;
+        Ux::setColor(&addSomeMoreText->foregroundColor, 200, 200, 200, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        addSomeMoreText->containText = true;
+        //addSomeMoreText->containTextPadding=0.15; // we toggle this later...
+        addSomeMoreText->scale(1.8); // this effects the text scale / letter spacing
+        uxInstance->printCharToUiObject(addSomeMoreText, ' ', DO_NOT_RESIZE_NOW);
 
 
         yes->hasBackground=true;
@@ -80,8 +87,9 @@ struct uiYesNoChoice{
         text->hasForeground=true;
         Ux::setColor(&text->foregroundColor, 255, 0, 0, 255);
         //text->containText=true;
-        uxInstance->printStringToUiObject(text, "x000000", DO_NOT_RESIZE_NOW);
+        //uxInstance->printStringToUiObject(text, "x000000", DO_NOT_RESIZE_NOW);
         text->setBoundaryRect( -3.5, 0, 1.0, 1.0); // on right
+        text->scale(1.5); // this effects the text scale / letter spacing
 
 
         text_holder->addChild(text);
@@ -93,7 +101,9 @@ struct uiYesNoChoice{
         no->is_circular = false; // easier to click no
 
         uiObjectItself->addChild(addSomeMoreHolder);
+
         addSomeMoreHolder->addChild(addSomeMore);
+        addSomeMore->addChild(addSomeMoreText);
 
         uiObjectItself->addChild(yes);
         uiObjectItself->addChild(no);
@@ -156,6 +166,7 @@ struct uiYesNoChoice{
     uiObject *no;
     uiObject *addSomeMoreHolder;
     uiObject *addSomeMore;
+    uiObject *addSomeMoreText;
 
     //uiViewColor* deleteColorPreview;
 
@@ -173,21 +184,34 @@ struct uiYesNoChoice{
     // GENERICS - GENRAL PURPOSE use for whatever
     uiObject *myTriggeringUiObject;
 
+
+    void setFontForMessageText(){
+        // since we contain text, we need to do some funny shifting of our styles... while we print text
+        // however this would chagne "addSomeMoreText" instead now... which is already set?
+//        addSomeMore->hasBackground = false;
+//        addSomeMore->hasForeground=true;
+//        Ux::setColor(&addSomeMore->foregroundColor, 200, 200, 200, 192);
+    }
+
+    void resetFontAdtlButtonApperance(){
+        addSomeMore->hasBackground = true;
+        //Ux::setColor(&addSomeMore->foregroundColor, 200, 200, 200, 192);
+        addSomeMore->hasForeground = true;
+    }
+
+
     void displayAdditionalMessage(char* message){
         additionalActionFn = nullptr;
         Ux* uxInstance = Ux::Singleton();
 
-        // since we contain text, we need to do some funny shifting of our styles... while we print text
-        addSomeMore->hasBackground = false;
-        addSomeMore->hasForeground=true;
-        Ux::setColor(&addSomeMore->foregroundColor, 255, 255, 255, 255);
-
-        uxInstance->printStringToUiObject(addSomeMore, message, DO_NOT_RESIZE_NOW);
+        setFontForMessageText();
+        addSomeMoreText->containTextPadding=0.0;
+        uxInstance->printStringToUiObject(addSomeMoreText, message, DO_NOT_RESIZE_NOW);
         // containText should possibly have some other settings about margins?
 
-        Ux::setColor(&addSomeMore->foregroundColor, 255, 0, 0, 192);
+        Ux::setColor(&addSomeMore->foregroundColor, 200, 200, 200, 192);
 
-
+        // resetFontAdtlButtonApperance() // instead we hide it
         addSomeMore->hasBackground = false;
         addSomeMore->hasForeground = false;
 
@@ -205,18 +229,16 @@ struct uiYesNoChoice{
         additional_number_to_show = numberToShow;
         Ux* uxInstance = Ux::Singleton();
 
-        // since we contain text, we need to do some funny shifting of our styles... while we print text
-        addSomeMore->hasBackground = false;
-        Ux::setColor(&addSomeMore->foregroundColor, 255, 255, 255, 255);
-
+        setFontForMessageText();
+        addSomeMoreText->containTextPadding=0.18;///15;
+        // just scale matrix up and be done with text spacing....
         char* total_pluss = convertIntegerToString(numberToShow, '+');
-        uxInstance->printStringToUiObject(addSomeMore, total_pluss, DO_NOT_RESIZE_NOW);
+        uxInstance->printStringToUiObject(addSomeMoreText, total_pluss, DO_NOT_RESIZE_NOW);
         // containText should possibly have some other settings about margins?
         SDL_free(total_pluss);
 
-        addSomeMore->hasBackground = true;
-        Ux::setColor(&addSomeMore->foregroundColor, 255, 0, 0, 192);
-        addSomeMore->hasForeground = true;
+        resetFontAdtlButtonApperance();
+
 
         float w = (0.35 + 0.25) * 0.5;
         float hw = w * 0.5;
@@ -376,7 +398,7 @@ struct uiYesNoChoice{
             // score can maybe be a function of how complete the animation is??
 
             uxInstance->defaultScoreDisplay->display(interactionObj, 10, SCORE_EFFECTS::MOVE_UP);
-            uxInstance->defaultScoreDisplay->displayExplanation("  So Fast  ");
+            uxInstance->defaultScoreDisplay->displayExplanation(" No Thanks ");
 
             //uxInstance->uxAnimations->spin_reset(self->no, 15);
             uxInstance->uxAnimations->spin(self->no, 25);

@@ -289,6 +289,8 @@ struct uiObject
         squarify_keep_contained=false;
 
         containText=false;
+        containTextPadding=0.0;
+        //textSpacing=0.0;
         textDirection=TEXT_DIR_ENUM::NO_TEXT; // this is really child node direction... we can print the child nodes in some pre-defined ways
     }
     bool isDebugObject;
@@ -302,6 +304,8 @@ struct uiObject
     bool doesRenderChildObjects;
     bool isInBounds; // equivilent to needs render
     bool containText; // this is merely a font rendering setting.... not containsText, which is textDirection==TEXT_DIR_ENUM::NO_TEXT
+    float containTextPadding;
+    //float textSpacing; // don't use this, just matrix scale the parent object of the text...
     uint8_t textDirection;
     bool testChildCollisionIgnoreBounds = false;
 
@@ -770,6 +774,11 @@ struct uiObject
         return this;
     }
 
+    uiObject* scale(float scaler){
+        this->matrix = glm::scale(this->matrix,  glm::vec3(scaler,scaler,1.0));
+        return this;
+    }
+
     uiObject* identity(){ // reset matrix
         this->matrix = glm::mat4(1.0f);
         return this;
@@ -1200,13 +1209,15 @@ struct uiObject
 
         int len=getChildCount();
 
-        float letterWidth = 1.0 / len; // for containText mode
 
 //        printObj->doesNotCollide = true;
 //        printObj->doesInFactRender = printObj->containText; // the container is never the size to render.. unless contains text?!
 
 
         if( containText == true ){
+            // HMM this is really something totally different than containText which is used for responsive.....
+            float letterWidth = 1.0 / len; // for containText mode
+
             if( textDirection == TEXT_DIR_ENUM::LTR ){
                 for( ctr=0,i=0; i<len; i++/*,ctr++*/ ){
                     letter = childList[i];

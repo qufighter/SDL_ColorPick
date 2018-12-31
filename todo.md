@@ -34,6 +34,8 @@ osx/ios jpg rotation not respected (is this exif rotation???)
 
 ##  can do
 
+HMM this is really something totally different than containText which is used for responsive.....
+
 "%cAll" really many/several or all....
 
 a way to expand collision bounds outside object bounds automatically to contain child objects??????

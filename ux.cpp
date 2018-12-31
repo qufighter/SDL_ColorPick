@@ -683,11 +683,17 @@ void Ux::printStringToUiObject(uiObject* printObj, char* text, bool resizeText){
     char * i;
     uiObject* letter;
 
-    int len=SDL_strlen(text); // sizeof(text) - 1;  // unfortunately sizeof not really work right here
+    int len=SDL_strlen(text);
 
-
-    float letterWidth = 1.0 / len;
+    float letterWidth = ((1.0 - printObj->containTextPadding - printObj->containTextPadding) / len);// + printObj->textSpacing;
+    //float letterWidth = ((1.0 - printObj->containTextPadding - printObj->containTextPadding - printObj->textSpacing) / len);// + printObj->textSpacing;
+    float letterSpacing = letterWidth; //((1.0 - printObj->containTextPadding - printObj->containTextPadding + printObj->textSpacing) / len);
+    float firstOffset = printObj->containTextPadding;// - ((printObj->textSpacing * 0.5));
     float vertOffset = 0.5 - (letterWidth*0.5);
+
+//    if( letterSpacing > SDL_fabsf(printObj->textSpacing) ){
+//        letterSpacing += printObj->textSpacing;
+//    }
 
     printObj->doesNotCollide = !printObj->containText;
     printObj->doesInFactRender = printObj->containText; // the container is never the size to render.. unless contains text?!
@@ -717,9 +723,11 @@ void Ux::printStringToUiObject(uiObject* printObj, char* text, bool resizeText){
         }
 
         if( printObj->containText == true ){
+
+
             // LTR default
             // move this right out of the else aboe, since we should fit any len text within, and also needs resize IF text len changed.... !?! easy compute
-            letter->setBoundaryRect( (ctr*letterWidth), vertOffset, letterWidth, letterWidth);  /// TODO move size components into function to calculate on window rescale bonus points for suqare?
+            letter->setBoundaryRect( firstOffset+(ctr*letterSpacing), vertOffset, letterWidth, letterWidth);  /// TODO move size components into function to calculate on window rescale bonus points for suqare?
         }
 
         letter->hasForeground = true; // printObj->hasForeground;
