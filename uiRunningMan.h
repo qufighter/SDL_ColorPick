@@ -52,7 +52,7 @@ struct uiRunningMan{
         uxInstance->printCharToUiObject(runner, CHAR_ZOOM_SPEEDY_GUY, DO_NOT_RESIZE_NOW);
         //no->rotate(180.0f);
         //runner->setClickInteractionCallback(defaultCancelFn);
-        runner->setRoundedCorners(0.5);
+        //runner->setRoundedCorners(0.5);
 
 
         // top edge....... or just an edge...  this is double edge

@@ -20,13 +20,9 @@ sort history colors "rewrite history"  (no index, pretty easy)
   sort dialogue
   scoring -> configure how yesNo is scored.... or move scoring out somehow
   
-look/feel of "all checked" button
-
-touch color preview -> should dismiss the modal (history+pallete modal) (must not apply when viewing pallete color)
-
 copy (dupe) SDL_SetClipboardText
    rClickMenu uiToolMenu
-
+   note: check widescreen -
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)

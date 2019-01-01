@@ -18,6 +18,7 @@ struct uiViewColor{
 
         uiObjectItself = new uiObject();
         uiObjectItself->setBoundaryRect(&boundaries);
+        uiObjectItself->myUiController = this;
 
 
         if( topShadow ){
@@ -59,7 +60,8 @@ struct uiViewColor{
         Ux::setColor(&hexBg->backgroundColor,0, 0, 0, 0);
 
         uiObjectItself->setInteractionCallback(&pickHexValueClicked);
-        uiObjectItself->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
+        uiObjectItself->setInteraction(&pickHexValueDragged);
+        //uiObjectItself->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
 
         // perhaps properties on container are inherited by text
         // however container itself will no longer render?
@@ -163,14 +165,27 @@ struct uiViewColor{
     float alphaMulitiplier;
 
     static void pickHexValueClicked(uiObject *interactionObj, uiInteraction *delta){
+        Ux* uxInstance = Ux::Singleton();
+        uiViewColor* self = ((uiViewColor*)interactionObj->myUiController);
         if( delta->isSecondInteraction ){
 
             SDL_Log("Double touched color preview......");
 
             // we can figure out which child element was clicked?
 
-            Ux* uxInstance = Ux::Singleton();
             uxInstance->rClickMenu->display(interactionObj, 1232);
+        }else{
+            if( self->hueBtn == nullptr ){ // we are tryiing to cancel the modal....
+                uxInstance->hideHistoryPalleteIfShowing(); // panning background...
+            }
+        }
+    }
+
+    static void pickHexValueDragged(uiObject *interactionObj, uiInteraction *delta){
+        Ux* uxInstance = Ux::Singleton();
+        uiViewColor* self = ((uiViewColor*)interactionObj->myUiController);
+        if( self->hueBtn == nullptr ){ // we are tryiing to cancel the modal....
+            uxInstance->hideHistoryPalleteIfShowing(); // panning background...
         }
     }
 
