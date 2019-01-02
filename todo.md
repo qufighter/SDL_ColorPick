@@ -20,8 +20,9 @@ sort history colors "rewrite history"  (no index, pretty easy)
   sort dialogue initial text -> "Sort?"
   
 copy (dupe) SDL_SetClipboardText
-   rClickMenu uiToolMenu
-   note: check widescreen -
+   rClickMenu uiToolMenu rClickMenu->addMenuItem
+   note: check widescreen - and responsive....
+   note: check if we remove items, they are not clickable later
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -29,11 +30,15 @@ osx/ios jpg rotation not respected (is this exif rotation???)
 
 ##  can do
 
+score_size_scaling > score_position->origBoundryRect.w ){ // enforce "max" (default) size
+  for score the above will be overwritten right???
+
 HMM this is really something totally different than containText which is used for responsive.....
 
 "%cAll" really many/several or all....
 
 a way to expand collision bounds outside object bounds automatically to contain child objects??????
+  or just use testChildCollisionIgnoreBounds ??
 
 squarilate scroller
 

@@ -839,7 +839,7 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
     // test collision with object itself, then render all child obj
 
 
-    // some objects (font) may bypass all collision checks....
+    // some objects (font container) may bypass all collision checks....
     if( renderObj->doesNotCollide ){
         return collides;
     }

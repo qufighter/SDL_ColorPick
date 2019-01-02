@@ -166,6 +166,15 @@ struct uiViewColor{
     SDL_Color last_color;
     float alphaMulitiplier;
 
+
+    char* getHexString(){ // you must free the result....
+
+    }
+
+    static void copyHexValueClicked(uiObject *interactionObj, uiInteraction *delta){
+        SDL_Log("REACHED COPY CALLBACK");
+    }
+
     static void pickHexValueClicked(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
         uiViewColor* self = ((uiViewColor*)interactionObj->myUiController);
@@ -175,7 +184,13 @@ struct uiViewColor{
 
             // we can figure out which child element was clicked?
 
-            uxInstance->rClickMenu->display(interactionObj, 1232);
+            uxInstance->rClickMenu->clearMenuItems();
+            uxInstance->rClickMenu->addMenuItem("Copy #000000", &copyHexValueClicked);
+            uxInstance->rClickMenu->addMenuItem("Bopye #000000", &copyHexValueClicked);
+
+            uxInstance->rClickMenu->display(interactionObj);
+
+
         }else{
             if( self->hueBtn == nullptr ){ // we are tryiing to cancel the modal....
                 uxInstance->hideHistoryPalleteIfShowing(); // panning background...

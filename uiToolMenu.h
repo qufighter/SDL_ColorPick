@@ -9,50 +9,28 @@ struct uiToolMenu{
     // origionally uiScore.h
     uiToolMenu(uiObject* parentObj){
 
-        maxLen = 14;
-        score_disp_char = (char*)SDL_malloc( sizeof(char) * maxLen );
-
+        longestMenuItemLen=0;
+        lastMenuItemIndex=-1;
 
         Ux* uxInstance = Ux::Singleton(); // some useful helper?
 
         uiObjectItself = new uiObject();
         uiObjectItself->myUiController = this; // this propagates to the other child objects
 
-        shield = new uiObject();
-
-        score = new uiObject();
-        score_position = new uiObject();
-
-        explanation = new uiObject();
-        explanation_position = new uiObject();
-
-        uiObjectItself->addChild(shield);
+        menu_items = new uiObject();
+        menu_position = new uiObject();
 
 
-        //uiObjectItself->setInteractionCallback(tileClickedFn);
+        uiObjectItself->hasBackground=true;
+        Ux::setColor(&uiObjectItself->backgroundColor, 0, 0, 0, 128); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
 
+        uiObjectItself->setInteractionCallback(clickShieldFunction);
+        uiObjectItself->hideAndNoInteraction();
 
-        //deleteColorPreview = new uiViewColor(uiObjectItself, Float_Rect(0.0, 0.0, 1.0, 0.27777777777778), false);
+        menu_position->testChildCollisionIgnoreBounds = true;
+        menu_items->testChildCollisionIgnoreBounds = true;
 
-
-        shield->hasBackground=true;
-        Ux::setColor(&shield->backgroundColor, 0, 0, 0, 128); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-
-        shield->setInteractionCallback(clickShieldFunction);
-        shield->hideAndNoInteraction();
-
-//        score->hasBackground=true;
-//        Ux::setColor(&score->backgroundColor, 32, 0, 0, 128);
-        score->hasForeground=true;
-        Ux::setColor(&score->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-        //uxInstance->printCharToUiObject(score, CHAR_CHECKMARK_ICON, DO_NOT_RESIZE_NOW);
-        //uxInstance->printStringToUiObject(score, "xAll", DO_NOT_RESIZE_NOW);
-
-        //score->squarify();
-        score->squarifyKeepHz();
-        explanation->squarifyKeepHz();
-
-
+        menu_items->squarifyKeepHz();
 
         //maths
         float w = 0.125;
@@ -60,18 +38,12 @@ struct uiToolMenu{
 
         //no->setBoundaryRect( 0.0+pad, 0.5-hh, w, h);
 
-        explanation_position->setBoundaryRect( 0.5, 0.5, w, w);
-        score_position->setBoundaryRect( 0.5, 0.5, w, w);
+        menu_position->setBoundaryRect( 0.5, 0.5, w, w);
 
-        explanation->setBoundaryRect( -0.5, -0.5, 1.0, 1.0); // on right
-        score->setBoundaryRect( -0.5, -0.5, 1.0, 1.0); // on right
+        menu_items->setBoundaryRect( -0.5, -0.5, 1.0, 1.0);
 
-
-        explanation_position->addChild(explanation);
-        uiObjectItself->addChild(explanation_position);
-
-        score_position->addChild(score);
-        uiObjectItself->addChild(score_position);
+        menu_position->addChild(menu_items);
+        uiObjectItself->addChild(menu_position);
 
         parentObj->addChild(uiObjectItself);
 
@@ -83,50 +55,96 @@ struct uiToolMenu{
         float bounceIntensity = -0.001;
 
         // just so we can call end on these??? this could crash the app at boot time right??
-//        chain1 = uxInstance->uxAnimations->emptyChain(); // uxInstance->uxAnimations->reset_matrix(score_position)->preserveReference();
-//        chain2 = uxInstance->uxAnimations->emptyChain(); //uxInstance->uxAnimations->softBounce(score_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
-//        chain3 = uxInstance->uxAnimations->emptyChain(); //uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
+        chain1 = uxInstance->uxAnimations->emptyChain(); // uxInstance->uxAnimations->reset_matrix(menu_position)->preserveReference();
+        chain2 = uxInstance->uxAnimations->emptyChain(); //uxInstance->uxAnimations->softBounce(menu_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
 
-        chain1 = uxInstance->uxAnimations->reset_matrix(score_position)->preserveReference();
-        chain2 = uxInstance->uxAnimations->softBounce(score_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
-        chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
-
-        chain4 = uxInstance->uxAnimations->reset_matrix(explanation_position)->preserveReference();
-        chain5 = uxInstance->uxAnimations->softBounce(explanation_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
-        chain6 = uxInstance->uxAnimations->scale_bounce(explanation_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
-
+//        chain1 = uxInstance->uxAnimations->reset_matrix(menu_position)->preserveReference();
+//        chain2 = uxInstance->uxAnimations->softBounce(menu_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
     }
 
     //anInteractionFn tileClicked=nullptr;
 
-    uiObject* uiObjectItself; // no real inheritance here, this its the uiSqware, I would use self->
-    uiObject* shield;
-    uiObject *score_position;
-    uiObject *score;
-    uiObject *explanation;
-    uiObject *explanation_position;
+    uiObject* uiObjectItself; // AKA shield // no real inheritance here, this its the uiSqware, I would use self->
+    uiObject *menu_position;
+    uiObject *menu_items;
 
-    char* score_disp_char;
-    int maxLen;
+    int longestMenuItemLen;
+    int lastMenuItemIndex;
 
     uiAminChain* chain1;
     uiAminChain* chain2;
-    uiAminChain* chain3;
-    uiAminChain* chain4; // explanation chains...
-    uiAminChain* chain5;
-    uiAminChain* chain6;
-
 
     static void clickShieldFunction(uiObject *interactionObj, uiInteraction *delta){
         uiToolMenu* self = ((uiToolMenu*)interactionObj->myUiController);
         self->hide();
     }
 
-    void display(uiObject *p_dispalyNearUiObject, int numberToDisplay){
-        display(p_dispalyNearUiObject, numberToDisplay, SCORE_EFFECTS::DEFAULT);
+    void clearMenuItems(){
+        uiObject* tempMenuItem;
+        for( int x=0,l=menu_items->childListIndex; x<l; x++ ){
+            tempMenuItem = menu_items->childList[x];
+            tempMenuItem->hideAndNoInteraction();
+        }
+        longestMenuItemLen = 0;
+        lastMenuItemIndex = -1;
     }
 
-    void display(uiObject *p_dispalyNearUiObject, int numberToDisplay, int effectNum){
+    uiObject* getOrCreateMenuItem(int index){
+        if( index < menu_items->childListIndex ){
+            return menu_items->childList[index];
+        }else{
+            uiObject* new_menu_item = new uiObject();
+            uiObject* new_menu_item_bg = new uiObject();
+            uiObject* new_menu_item_txt = new uiObject();
+
+            new_menu_item->setBoundaryRect(0,index * 1.0, 1,1 );
+
+            new_menu_item_bg->hasBackground=true;
+            Ux::setColor(&new_menu_item_bg->backgroundColor, 255, 255, 255, 192);
+            new_menu_item_txt->hasForeground=true;
+            Ux::setColor(&new_menu_item_txt->foregroundColor, 64, 64, 64, 255);
+
+            new_menu_item->testChildCollisionIgnoreBounds = true;
+
+            new_menu_item->addChild(new_menu_item_bg);
+            new_menu_item->addChild(new_menu_item_txt);
+            menu_items->addChild(new_menu_item);
+
+            return new_menu_item;
+        }
+    }
+
+    void addMenuItem(char* menuText, anInteractionFn p_interactionCallback){
+        Ux* uxInstance = Ux::Singleton();
+
+        lastMenuItemIndex += 1;
+
+        // WE ARE USING menu_item as a TEMP reference here.....
+        uiObject* menu_item = getOrCreateMenuItem(lastMenuItemIndex);
+        uiObject* menu_item_bg = menu_item->childList[0];
+        uiObject* menu_item_txt = menu_item->childList[1];
+
+
+        menu_item->showAndAllowInteraction();
+
+        uxInstance->printStringToUiObject(menu_item_txt, menuText, DO_NOT_RESIZE_NOW);
+        int menuItemLen = SDL_strlen(menuText);
+        menu_item_bg->boundryRect.w = menuItemLen * 1.0;
+        menu_item_bg->setInteractionCallback(p_interactionCallback);
+        menu_item_bg->doesNotCollide = false;
+
+        if( menuItemLen > longestMenuItemLen ){
+            longestMenuItemLen=menuItemLen;
+        }
+
+//menu_item->testChildCollisionIgnoreBounds = true;
+
+        //menu_items->setInteractionCallback(p_interactionCallback);
+
+    }
+
+    void display(uiObject *p_dispalyNearUiObject){
+
 
         //SDL_Log("this is the biggest int %i " , SDL_MAX_SINT32); // 2147483647  ( 10 char, sign, extra)
         Ux* uxInstance = Ux::Singleton();
@@ -135,44 +153,22 @@ struct uiToolMenu{
 
 
         uiObjectItself->show();
-        //score_position->matrix = glm::mat4(1.0);
+        //menu_position->matrix = glm::mat4(1.0);
 
         // we had better create a new animation for EACH one we free here...
         chain1->endAnimation();
-        chain1 = uxInstance->uxAnimations->reset_matrix(score_position)->preserveReference();
+        chain1 = uxInstance->uxAnimations->reset_matrix(menu_position)->preserveReference();
 
-
-        SDL_snprintf(score_disp_char, maxLen, "+%i", numberToDisplay);
         handlePositioning(p_dispalyNearUiObject);
         chain2->endAnimation();
-        //chain3->endAnimation();
-        switch( effectNum ){
-            case SCORE_EFFECTS::NOMOVE:
-                chain2 = uxInstance->uxAnimations->spin(score_position)->preserveReference();
-                //chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
-                break;
-            case SCORE_EFFECTS::MOVE_UP:
-                chain2 = uxInstance->uxAnimations->slideUpFullHeight(score_position)->preserveReference();
-                //chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
-                break;
-            case SCORE_EFFECTS::DEFAULT:
-            default:
-                chain2 = uxInstance->uxAnimations->softBounce(score_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
-                //chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
-                        break;
-                }
 
+      //  chain2 = uxInstance->uxAnimations->spin(menu_position)->preserveReference();
+      //  chain2 = uxInstance->uxAnimations->slideUpFullHeight(menu_position)->preserveReference();
+        chain2 = uxInstance->uxAnimations->softBounce(menu_position, 0, -bounceIntensity)->preserveReference();
 
-            uxInstance->printStringToUiObject(score, score_disp_char, DO_NOT_RESIZE_NOW);
+        uiObjectItself->showAndAllowInteraction();
 
-
-
-        shield->showAndAllowInteraction();
-
-
-        score_position->updateRenderPosition();
-
-
+        menu_position->updateRenderPosition();
 
         //displayExplanation("-Yes it work-");
         //displayExplanation("-Yes-");
@@ -180,72 +176,46 @@ struct uiToolMenu{
     }
 
     void handlePositioning(uiObject *p_dispalyNearUiObject){
-        // we need to handle positioning of the main "score_position" element before animation starts, but after we know the text...
-        float text_length = (float)SDL_strlen(score_disp_char);
 
-        float score_size_scaling = 1.0/text_length;
-        if( score_size_scaling > score_position->origBoundryRect.w ){ // enforce "max" (default) size:
-            score_size_scaling=score_position->origBoundryRect.w;
+
+        // we need to handle positioning of the main "menu_position" element before animation starts, but after we know the text...
+        float text_length = longestMenuItemLen;
+
+        float menu_item_size_scaling = 1.0/text_length;
+        if( menu_item_size_scaling > menu_position->origBoundryRect.w ){ // enforce "max" (default) size:
+            menu_item_size_scaling=menu_position->origBoundryRect.w;
         }
+
+        menu_items->boundryRect.x =  text_length * -0.5; // center
+        //        menu_items->boundryRect.x =  -text_length + 0.5; // right aligned (center the rightmost char)
+        //menu_items->boundryRect.x = -0.5;
+
         Float_Rect* dispRect = &p_dispalyNearUiObject->collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
-        score_position->setBoundaryRect(dispRect->x + (dispRect->w * 0.5),
-                                        dispRect->y + (dispRect->h * 0.5),
-                                        score_size_scaling,
-                                        score_size_scaling  );
 
+        float xPosition = dispRect->x + (dispRect->w * 0.5);
 
+        menu_position->setBoundaryRect(xPosition,
+                                       dispRect->y + (dispRect->h * 0.5),
+                                       menu_item_size_scaling,
+                                       menu_item_size_scaling  );
 
-        //score->boundryRect.x =  text_length * -0.5; // center
-        score->boundryRect.x =  -text_length + 0.5; // right aligned (center the rightmost char)
-        //score->boundryRect.x = -0.5;
-
-        //if( score->boundryRect.x + -0.5 + score_position->boundryRect.x < 0 ) score_position->boundryRect.x += score->boundryRect.x + -0.5 + score_position->boundryRect.x; // keep "on screen"
-
-        float hidLeftAmt = score_position->boundryRect.x + (score_size_scaling * score->boundryRect.x);
+        // if we go off the left edgeo f teh screen, lets try to stay on it...
+        float hidLeftAmt = menu_position->boundryRect.x + (menu_item_size_scaling * menu_items->boundryRect.x);
         if( hidLeftAmt < 0 ){
-            score_position->boundryRect.x -= hidLeftAmt; // minus a negative
+            xPosition -= hidLeftAmt; // minus a negative
         }
 
-    }
+        menu_position->setBoundaryRect(xPosition,
+                                        dispRect->y + (dispRect->h * 0.5),
+                                        menu_item_size_scaling,
+                                        menu_item_size_scaling  );
 
-    void displayExplanation(const char* textToShow){
-        // longer strings won't work... the size is critical too (since if first char goes off screen it will not render)
-        Ux* uxInstance = Ux::Singleton();
-        //bool widescreen = uxInstance->widescreen;
+        //if( menu_item->boundryRect.x + -0.5 + menu_position->boundryRect.x < 0 ) menu_position->boundryRect.x += menu_item->boundryRect.x + -0.5 + menu_position->boundryRect.x; // keep "on screen"
 
-        SDL_snprintf(score_disp_char, maxLen, "%s", textToShow);
-        uxInstance->printStringToUiObject(explanation, score_disp_char, DO_NOT_RESIZE_NOW);
-
-        float text_length = (float)SDL_strlen(score_disp_char);
-
-        float my_scale = 1.0 / text_length;
-        if( my_scale > 0.125 ){
-            my_scale = 0.125;
-        }
-        explanation_position->setBoundaryRect(0.5,  0.5, my_scale, my_scale );
-
-        explanation->boundryRect.x =  text_length * -0.5; // center
-        SDL_Log("result was %f", explanation->boundryRect.x * explanation_position->origBoundryRect.w);
-//        float hidLeftAmt = explanation_position->boundryRect.x + (explanation_position->origBoundryRect.w * explanation->boundryRect.x);
-//        if( hidLeftAmt < 0 ){
-//            explanation_position->boundryRect.x -= hidLeftAmt; // minus a negative
-//        }
-
-        chain4->endAnimation();
-        chain4 = uxInstance->uxAnimations->reset_matrix(explanation_position)->preserveReference();
-
-        chain5->endAnimation();
-        chain6->endAnimation();
-        chain5 = uxInstance->uxAnimations->spin(explanation_position, 2)->preserveReference();
-        chain6 = uxInstance->uxAnimations->scale_bounce(explanation_position, 0.017, uxInstance->uxAnimations->mat_zeroscale, 1200)->preserveReference();
-
-
-        explanation_position->updateRenderPosition();
     }
 
     void hide(){
-        shield->hideAndNoInteraction();
-        uiObjectItself->hide();
+        uiObjectItself->hideAndNoInteraction();
     }
 
     void resize(){
