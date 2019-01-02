@@ -23,6 +23,7 @@ copy (dupe) SDL_SetClipboardText
    rClickMenu uiToolMenu rClickMenu->addMenuItem
    note: check widescreen - and responsive....
    note: check if we remove items, they are not clickable later
+   -- important: we should have some user feedback when copy is successful --
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -31,7 +32,8 @@ osx/ios jpg rotation not respected (is this exif rotation???)
 ##  can do
 
 score_size_scaling > score_position->origBoundryRect.w ){ // enforce "max" (default) size
-  for score the above will be overwritten right???
+  for score the above will be overwritten right??? 
+  what this does is effectively keep things from ever getting larger than the smallest size ever reached..... strange right?  maybe needs testing with SDL_MAX_SINT32
 
 HMM this is really something totally different than containText which is used for responsive.....
 

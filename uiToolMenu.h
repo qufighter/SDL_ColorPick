@@ -114,7 +114,7 @@ struct uiToolMenu{
         }
     }
 
-    void addMenuItem(char* menuText, anInteractionFn p_interactionCallback){
+    void addMenuItem(uiObject *p_cbUiObject, char* menuText, anInteractionFn p_interactionCallback){
         Ux* uxInstance = Ux::Singleton();
 
         lastMenuItemIndex += 1;
@@ -124,7 +124,6 @@ struct uiToolMenu{
         uiObject* menu_item_bg = menu_item->childList[0];
         uiObject* menu_item_txt = menu_item->childList[1];
 
-
         menu_item->showAndAllowInteraction();
 
         uxInstance->printStringToUiObject(menu_item_txt, menuText, DO_NOT_RESIZE_NOW);
@@ -132,15 +131,11 @@ struct uiToolMenu{
         menu_item_bg->boundryRect.w = menuItemLen * 1.0;
         menu_item_bg->setInteractionCallback(p_interactionCallback);
         menu_item_bg->doesNotCollide = false;
+        menu_item_bg->interactionProxy = p_cbUiObject;
 
         if( menuItemLen > longestMenuItemLen ){
             longestMenuItemLen=menuItemLen;
         }
-
-//menu_item->testChildCollisionIgnoreBounds = true;
-
-        //menu_items->setInteractionCallback(p_interactionCallback);
-
     }
 
     void display(uiObject *p_dispalyNearUiObject){
@@ -148,8 +143,8 @@ struct uiToolMenu{
 
         //SDL_Log("this is the biggest int %i " , SDL_MAX_SINT32); // 2147483647  ( 10 char, sign, extra)
         Ux* uxInstance = Ux::Singleton();
-        bool widescreen = uxInstance->widescreen;
-        float bounceIntensity = -0.001;
+        //bool widescreen = uxInstance->widescreen;
+        float bounceIntensity = -0.0005;
 
 
         uiObjectItself->show();
@@ -182,9 +177,10 @@ struct uiToolMenu{
         float text_length = longestMenuItemLen;
 
         float menu_item_size_scaling = 1.0/text_length;
-        if( menu_item_size_scaling > menu_position->origBoundryRect.w ){ // enforce "max" (default) size:
-            menu_item_size_scaling=menu_position->origBoundryRect.w;
-        }
+        // what this does is effectively keep things from ever getting larger than the smallest size ever...
+//        if( menu_item_size_scaling > menu_position->origBoundryRect.w ){ // enforce "max" (default) size:
+//            menu_item_size_scaling=menu_position->origBoundryRect.w;
+//        }
 
         menu_items->boundryRect.x =  text_length * -0.5; // center
         //        menu_items->boundryRect.x =  -text_length + 0.5; // right aligned (center the rightmost char)

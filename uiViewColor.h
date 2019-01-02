@@ -14,6 +14,9 @@ struct uiViewColor{
 
     uiViewColor(uiObject* parentObj, Float_Rect boundaries, bool topShadow){
 
+        resultText6char = (char*)SDL_malloc( sizeof(char) * 8 );
+        resultText25char = (char*)SDL_malloc( sizeof(char) * 27 );
+
         Ux* uxInstance = Ux::Singleton();
 
         uiObjectItself = new uiObject();
@@ -91,6 +94,7 @@ struct uiViewColor{
         SDL_snprintf(resultText6char, 7,  "  R");
         uxInstance->printStringToUiObject(rgbRedText, resultText6char, DO_NOT_RESIZE_NOW);
         rgbRedText->squarifyChildren();
+        rgbRedBg->setInteractionCallback(&pickRgbValueClicked);
 
 
         rgbGreenText = new uiObject();
@@ -106,6 +110,7 @@ struct uiViewColor{
         SDL_snprintf(resultText6char, 7,  "  G");
         uxInstance->printStringToUiObject(rgbGreenText, resultText6char, DO_NOT_RESIZE_NOW);
         rgbGreenText->squarifyChildren();
+        rgbGreenBg->setInteractionCallback(&pickRgbValueClicked);
 
 
         rgbBlueText = new uiObject();
@@ -121,6 +126,7 @@ struct uiViewColor{
         SDL_snprintf(resultText6char, 7,  "  B");
         uxInstance->printStringToUiObject(rgbBlueText, resultText6char, DO_NOT_RESIZE_NOW);
         rgbBlueText->squarifyChildren();
+        rgbBlueBg->setInteractionCallback(&pickRgbValueClicked);
 
 
         if( topShadow ){
@@ -161,35 +167,73 @@ struct uiViewColor{
     uiObject *hueBtn;
 
 
-    char* resultText6char = (char*)SDL_malloc( sizeof(char) * 6 ); // seems that we should reuse this and not free it
+    char* resultText6char; // seems that we should reuse this and not free it
+    char* resultText25char;
 
     SDL_Color last_color;
     float alphaMulitiplier;
 
 
-    char* getHexString(){ // you must free the result....
+    char* getHexString(const char* prefix){
+        SDL_snprintf(resultText25char, 25,  "%s#%02x%02x%02x", prefix, last_color.r, last_color.g, last_color.b);
+        return resultText25char;
+    }
 
+    char* getRgbString(const char* prefix){
+        SDL_snprintf(resultText25char, 25,  "%srgb(%d,%d,%d)", prefix, last_color.r, last_color.g, last_color.b);
+        return resultText25char;
     }
 
     static void copyHexValueClicked(uiObject *interactionObj, uiInteraction *delta){
-        SDL_Log("REACHED COPY CALLBACK");
+        Ux* uxInstance = Ux::Singleton();
+        uiViewColor* self = ((uiViewColor*)interactionObj->interactionProxy->myUiController);
+        //SDL_Log("REACHED COPY HEX CALLBACK");
+        SDL_SetClipboardText(self->getHexString(""));
+        uxInstance->rClickMenu->hide();
+    }
+
+    static void copyRgbValueClicked(uiObject *interactionObj, uiInteraction *delta){
+        Ux* uxInstance = Ux::Singleton();
+        uiViewColor* self = ((uiViewColor*)interactionObj->interactionProxy->myUiController);
+        //SDL_Log("REACHED COPY RGB CALLBACK");
+        SDL_SetClipboardText(self->getRgbString(""));
+        uxInstance->rClickMenu->hide();
+    }
+
+    static void copyHsvValueClicked(uiObject *interactionObj, uiInteraction *delta){
+        SDL_Log("REACHED COPY HSV CALLBACK"); // HSV_Color
     }
 
     static void pickHexValueClicked(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
         uiViewColor* self = ((uiViewColor*)interactionObj->myUiController);
         if( delta->isSecondInteraction ){
-
-            SDL_Log("Double touched color preview......");
-
-            // we can figure out which child element was clicked?
-
+            //SDL_Log("Double touched color preview......");
             uxInstance->rClickMenu->clearMenuItems();
-            uxInstance->rClickMenu->addMenuItem("Copy #000000", &copyHexValueClicked);
-            uxInstance->rClickMenu->addMenuItem("Bopye #000000", &copyHexValueClicked);
-
+            uxInstance->rClickMenu->addMenuItem(interactionObj, self->getHexString("Copy "), &copyHexValueClicked);
             uxInstance->rClickMenu->display(interactionObj);
+        }else{
+            if( self->hueBtn == nullptr ){ // we are tryiing to cancel the modal....
+                uxInstance->hideHistoryPalleteIfShowing(); // panning background...
+            }
+        }
+    }
 
+    static void pickRgbValueClicked(uiObject *interactionObj, uiInteraction *delta){
+        Ux* uxInstance = Ux::Singleton();
+        uiViewColor* self = ((uiViewColor*)interactionObj->myUiController);
+        if( delta->isSecondInteraction ){
+            //SDL_Log("Double touched rgb color preview......");
+            uxInstance->rClickMenu->clearMenuItems();
+            uxInstance->rClickMenu->addMenuItem(self->rgbRedBg, "Copy rgb(,,)" /*self->getRgbString("Copy ")*/, &copyRgbValueClicked);
+            //uxInstance->rClickMenu->addMenuItem("Copy hsv(0,0,0)", &copyHsvValueClicked);
+            uxInstance->rClickMenu->addMenuItem(self->rgbRedBg, self->getHexString("Copy "), &copyHexValueClicked);
+
+            if( uxInstance->widescreen ){
+                uxInstance->rClickMenu->display(self->rgbGreenBg);
+            }else{
+                uxInstance->rClickMenu->display(self->rgbRedBg);
+            }
 
         }else{
             if( self->hueBtn == nullptr ){ // we are tryiing to cancel the modal....
@@ -197,6 +241,7 @@ struct uiViewColor{
             }
         }
     }
+
 
     static void pickHexValueDragged(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
