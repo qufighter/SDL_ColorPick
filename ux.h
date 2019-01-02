@@ -64,6 +64,13 @@ typedef enum  {
 } SCORE_EFFECTS;
 
 typedef enum  {
+    RESULT_NO,
+    RESULT_NO_FAST,
+    RESULT_YES,
+    RESULT_YES_FAST
+} YES_NO_RESULTS;
+
+typedef enum  {
     NO_TEXT,
     LTR,
     RTL,

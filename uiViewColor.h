@@ -60,14 +60,16 @@ struct uiViewColor{
         Ux::setColor(&hexBg->backgroundColor,0, 0, 0, 0);
 
         uiObjectItself->setInteractionCallback(&pickHexValueClicked);
-        uiObjectItself->setInteraction(&pickHexValueDragged);
-        //uiObjectItself->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
+        if( topShadow ){
+            uiObjectItself->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
+        }else{
+            uiObjectItself->setInteraction(&pickHexValueDragged);
+        }
 
         // perhaps properties on container are inherited by text
         // however container itself will no longer render?
 
         uiObjectItself->addChild(hexValueText);
-
 
         SDL_snprintf(resultText6char, 7,  "000000");
         uxInstance->printStringToUiObject(hexValueText, resultText6char, DO_NOT_RESIZE_NOW);

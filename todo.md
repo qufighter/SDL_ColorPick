@@ -17,8 +17,7 @@ settings
 pre-open dialogue (stock gradientz?)
 
 sort history colors "rewrite history"  (no index, pretty easy)
-  sort dialogue
-  scoring -> configure how yesNo is scored.... or move scoring out somehow
+  sort dialogue initial text -> "Sort?"
   
 copy (dupe) SDL_SetClipboardText
    rClickMenu uiToolMenu

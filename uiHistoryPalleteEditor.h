@@ -435,46 +435,6 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         }
     }
 
-    static int compareColorListItems(ColorList *a, ColorList *b){
-        HSV_Color A, B;
-        A.fromColor(&a->color);
-        B.fromColor(&b->color);
-        int result = A.h - B.h;
-        if( result == 0 ) result = A.s - B.s;
-        if( result == 0 ) result = A.v - B.v;
-        return result;
-    }
-
-    static void clickSortHistory(uiObject *interactionObj, uiInteraction *delta){
-        Ux* myUxRef = Ux::Singleton();
-        myUxRef->pickHistoryList->sort(&compareColorListItems);
-
-        // next: remove dupes
-        uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = myUxRef->pickHistoryList->iterate();
-        ColorList* hist = pickHistoryIterator->nextLast(); // loop in reverse here...
-        SDL_Color lastColor = hist->color;
-        hist = pickHistoryIterator->nextLast();
-        while(hist != nullptr){
-            if( colorEquals( &hist->color, &lastColor) ){
-                myUxRef->pickHistoryList->remove(pickHistoryIterator->lastIndex+1);
-            }else{
-                lastColor = hist->color;
-            }
-            hist = pickHistoryIterator->nextLast();
-        }
-        SDL_free(pickHistoryIterator);
-        myUxRef->updatePickHistoryPreview(); // also updates teh visible pallete scroller
-
-        // Achievement: rewrote history
-        // some custom score bonus???  right now the default one is being applied....
-        // todo: scored based on how much effect it had?
-    }
-
-    static void clickCancelSortHistory(uiObject *interactionObj, uiInteraction *delta){
-//        Ux* myUxRef = Ux::Singleton();
-//        uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
-    }
-
 
     static void removeHistoryColor(uiObject *interactionObj, uiInteraction *delta){
         Ux* myUxRef = Ux::Singleton();
@@ -578,6 +538,77 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         }
     }
 
+    static int compareColorListItems(ColorList *a, ColorList *b){
+        HSV_Color A, B;
+        A.fromColor(&a->color);
+        B.fromColor(&b->color);
+        int result = A.h - B.h;
+        if( result == 0 ) result = A.s - B.s;
+        if( result == 0 ) result = A.v - B.v;
+        return result;
+    }
+
+    static void clickSortHistory(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        // TODO: clone the list, compare them, also clear the clone....
+        myUxRef->pickHistoryList->sort(&compareColorListItems);
+
+        int oldLen = myUxRef->pickHistoryList->total();
+
+        // next: remove dupes
+        uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = myUxRef->pickHistoryList->iterate();
+        ColorList* hist = pickHistoryIterator->nextLast(); // loop in reverse here...
+        SDL_Color lastColor = hist->color;
+        hist = pickHistoryIterator->nextLast();
+        while(hist != nullptr){
+            if( colorEquals( &hist->color, &lastColor) ){
+                myUxRef->pickHistoryList->remove(pickHistoryIterator->lastIndex+1);
+            }else{
+                lastColor = hist->color;
+            }
+            hist = pickHistoryIterator->nextLast();
+        }
+        SDL_free(pickHistoryIterator);
+        myUxRef->updatePickHistoryPreview(); // also updates teh visible pallete scroller
+
+        // Achievement: rewrote history
+        // some custom score bonus???  right now the default one is being applied....
+        // todo: scored based on how much effect it had?
+
+        myUxRef->defaultYesNoChoiceDialogue->updateNumberToEffectWhenYes((oldLen + 1) - myUxRef->pickHistoryList->total());
+    }
+
+    static void clickCancelSortHistory(uiObject *interactionObj, uiInteraction *delta){
+        //        Ux* myUxRef = Ux::Singleton();
+        //        uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
+    }
+
+    // default scoreDisplayFn
+    static void sortScoringHandler(uiObject *interactionObj, int eventCode, int quantitySelected){
+        Ux* uxInstance = Ux::Singleton();
+        switch(eventCode){
+            case YES_NO_RESULTS::RESULT_YES_FAST:
+                uxInstance->defaultScoreDisplay->display(interactionObj, 5 * quantitySelected, SCORE_EFFECTS::MOVE_UP);
+                //uxInstance->defaultScoreDisplay->displayExplanation(" Too Quick ");
+                break;
+            case YES_NO_RESULTS::RESULT_YES:
+                uxInstance->defaultScoreDisplay->display(interactionObj, 2 * quantitySelected, SCORE_EFFECTS::MOVE_UP);
+                // we should consider checking on quantitySelected.... to see if we really effected any change?
+                uxInstance->defaultScoreDisplay->displayExplanation("Wrote History");
+
+                break;
+            case YES_NO_RESULTS::RESULT_NO_FAST:
+                uxInstance->defaultScoreDisplay->display(interactionObj, 5, SCORE_EFFECTS::MOVE_UP);
+                uxInstance->defaultScoreDisplay->displayExplanation(" No Thanks ");
+                break;
+            case YES_NO_RESULTS::RESULT_NO:
+            default:
+                uxInstance->defaultScoreDisplay->display(interactionObj, 1, SCORE_EFFECTS::MOVE_UP);
+                break;
+        }
+    }
+
+    
     static void clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // see also updateUiObjectFromHistory
 
 
@@ -635,8 +666,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
                 // we need to effectively communicate a "preview" of what will occur???
                 myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Sort?");
 
-                // TODO: the Much Risk is not really enabled for this one is it??? the risk is much less.....
-
+                myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(sortScoringHandler);
             }
 
             return;

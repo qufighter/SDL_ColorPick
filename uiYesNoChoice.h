@@ -2,6 +2,9 @@
 #ifndef ColorPick_iOS_SDL_uiYesNoChoice_h
 #define ColorPick_iOS_SDL_uiYesNoChoice_h
 
+// event code will be "YES_NO_RESULTS" enum...
+typedef void (*scoreDisplayFn)(uiObject *interactionObj, int eventCode, int quantitySelected);
+
 
 struct uiYesNoChoice{
 
@@ -122,6 +125,7 @@ struct uiYesNoChoice{
 
         yesClickedFn = nullptr;
         noClickedFn = nullptr;
+        scoreDisplayCallback = &defaultScoringFn;
 
         uiObjectItself->setBoundaryRect(&boundaries);
 
@@ -173,17 +177,22 @@ struct uiYesNoChoice{
     anInteractionFn yesClickedFn;
     anInteractionFn noClickedFn;
     anInteractionFn additionalActionFn;
+    scoreDisplayFn scoreDisplayCallback;
 
     int additional_number_to_show;
 
     float text_length;
-    int last_num_delete;
+    int last_num_delete;  // we should rename this, number to effect really... and influences scoring.
     bool isDisplayed; // only one
     /// we should consider a yes/no ID of current ticks,.....
 
     // GENERICS - GENRAL PURPOSE use for whatever
     uiObject *myTriggeringUiObject;
 
+    void assignScoringProcessor(scoreDisplayFn scoreHandler){
+        // if you pass nullptr you can disable the scoring....
+        scoreDisplayCallback = scoreHandler;
+    }
 
     void setFontForMessageText(){
         // since we contain text, we need to do some funny shifting of our styles... while we print text
@@ -274,13 +283,16 @@ struct uiYesNoChoice{
         return total_del;
     }
 
-    void display(uiObject *p_myTriggeringUiObject, anInteractionFn p_yesClickedFn, anInteractionFn p_noClickedFn, int numberToDelete){
-        if( isDisplayed ) return;
-        if( numberToDelete > 1 ){
-            char* total_del = convertIntegerToString(numberToDelete);
-            display( p_myTriggeringUiObject,  p_yesClickedFn,  p_noClickedFn, total_del);
-            last_num_delete = numberToDelete;
+    void updateNumberToEffectWhenYes(int numberToEffectWhenYes){
+        last_num_delete = numberToEffectWhenYes;
+    }
 
+    void display(uiObject *p_myTriggeringUiObject, anInteractionFn p_yesClickedFn, anInteractionFn p_noClickedFn, int numberToEffectWhenYes){
+        if( isDisplayed ) return;
+        if( numberToEffectWhenYes > 1 ){
+            char* total_del = convertIntegerToString(numberToEffectWhenYes);
+            display( p_myTriggeringUiObject,  p_yesClickedFn,  p_noClickedFn, total_del);
+            last_num_delete = numberToEffectWhenYes;
             SDL_free(total_del);
         }else{
             display( p_myTriggeringUiObject,  p_yesClickedFn,  p_noClickedFn);
@@ -308,6 +320,7 @@ struct uiYesNoChoice{
 
         noClickedFn = p_noClickedFn;
         yesClickedFn = p_yesClickedFn;
+        scoreDisplayCallback = &defaultScoringFn; // we have a default scoring function always set now... arguably this should be activated when needed instead...
 
         //yes->setClickInteractionCallback(p_yesClickedFn); // probably changing this...
 
@@ -349,11 +362,33 @@ struct uiYesNoChoice{
         self->yesClickedFn = self->additionalActionFn;
     }
 
+    // default scoreDisplayFn
+    static void defaultScoringFn(uiObject *interactionObj, int eventCode, int quantitySelected){
+        Ux* uxInstance = Ux::Singleton();
+        switch(eventCode){
+            case YES_NO_RESULTS::RESULT_YES_FAST:
+                uxInstance->defaultScoreDisplay->display(interactionObj, 10 * quantitySelected, SCORE_EFFECTS::MOVE_UP);
+                uxInstance->defaultScoreDisplay->displayExplanation(" Much Risk ");
+                break;
+            case YES_NO_RESULTS::RESULT_YES:
+                uxInstance->defaultScoreDisplay->display(interactionObj, 2 * quantitySelected, SCORE_EFFECTS::MOVE_UP);
+                break;
+            case YES_NO_RESULTS::RESULT_NO_FAST:
+                uxInstance->defaultScoreDisplay->display(interactionObj, 10, SCORE_EFFECTS::MOVE_UP);
+                uxInstance->defaultScoreDisplay->displayExplanation(" No Thanks ");
+                break;
+            case YES_NO_RESULTS::RESULT_NO:
+            default:
+                uxInstance->defaultScoreDisplay->display(interactionObj, 1, SCORE_EFFECTS::MOVE_UP);
+                break;
+        }
+    }
 
     static void defaultOkFn(uiObject *interactionObj, uiInteraction *delta){
 
         Ux* uxInstance = Ux::Singleton();
         uiYesNoChoice* self = ((uiYesNoChoice*)interactionObj->myUiController);
+        int resultCode = YES_NO_RESULTS::RESULT_YES;
 
         if( self->uiObjToAnimate->isAnimating() ){
             // yes is too easy to click right now by accident, we are not done animating in.... this should be based on which choice is dangerous, default yes
@@ -365,18 +400,21 @@ struct uiYesNoChoice{
             // problem being this is generic dialogue
             // and even instances would need configurable callback...
 
-            uxInstance->defaultScoreDisplay->display(interactionObj, 10 * self->last_num_delete, SCORE_EFFECTS::MOVE_UP);
-            uxInstance->defaultScoreDisplay->displayExplanation(" Much Risk ");
-
+            resultCode = YES_NO_RESULTS::RESULT_YES_FAST;
             uxInstance->uxAnimations->spin_negative(self->yes, 15);
 
-            return;
-        }else{
-            uxInstance->defaultScoreDisplay->display(interactionObj, 2 * self->last_num_delete, SCORE_EFFECTS::MOVE_UP);
+            if( self->scoreDisplayCallback != nullptr ){
+                self->scoreDisplayCallback(interactionObj, resultCode, self->last_num_delete); // this is dupe of below, but we return too fast here...
+            }
+            return; // we cannot early click it... but we still want to run the score animations...
         }
 
         if( self->yesClickedFn != nullptr ){
             self->yesClickedFn(self->myTriggeringUiObject, delta);
+        }
+
+        if( self->scoreDisplayCallback != nullptr ){
+            self->scoreDisplayCallback(interactionObj, resultCode, self->last_num_delete);
         }
 
         self->hide();
@@ -385,6 +423,7 @@ struct uiYesNoChoice{
     static void defaultCancelFn(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
         uiYesNoChoice* self = ((uiYesNoChoice*)interactionObj->myUiController);
+        int resultCode = YES_NO_RESULTS::RESULT_NO;
 
         if( self->uiObjToAnimate->isAnimating() ){
 
@@ -397,20 +436,21 @@ struct uiYesNoChoice{
 
             // score can maybe be a function of how complete the animation is??
 
-            uxInstance->defaultScoreDisplay->display(interactionObj, 10, SCORE_EFFECTS::MOVE_UP);
-            uxInstance->defaultScoreDisplay->displayExplanation(" No Thanks ");
+            resultCode = YES_NO_RESULTS::RESULT_NO_FAST;
 
             //uxInstance->uxAnimations->spin_reset(self->no, 15);
             uxInstance->uxAnimations->spin(self->no, 25);
 
-            //return;
-        }else{
-            uxInstance->defaultScoreDisplay->display(interactionObj, 1, SCORE_EFFECTS::MOVE_UP);
+            //return; // allow no to be early clicked, no harm done
         }
 
 
         if( self->noClickedFn != nullptr ){
             self->noClickedFn(self->myTriggeringUiObject, delta);
+        }
+
+        if( self->scoreDisplayCallback != nullptr ){
+            self->scoreDisplayCallback(interactionObj, resultCode, 0);
         }
 
         self->hide();
