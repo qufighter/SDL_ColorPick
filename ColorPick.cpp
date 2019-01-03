@@ -836,6 +836,10 @@ void OpenGLContext::triggerVelocity(float x, float y){
     accumulated_velocity_y=0;
     accumulated_velocity_x=0;
     has_velocity = true;
+
+    if( generalUx->runner->uiObjectItself->doesInFactRender ){
+        generalUx->uxAnimations->scale_bounce(generalUx->runner->runner, 0.002);
+    }
 }
 void OpenGLContext::clearVelocity(){
     has_velocity = false;
@@ -875,7 +879,7 @@ void OpenGLContext::renderScene(void) {
         /// todo does this work good for negative numbers?? ANSWER : yes  X: -9.183308 -9 Y: -5.968337 -5    X: -9.247559 -9 Y: -6.010095 -6
         int acu_v_y_int = (int)(accumulated_velocity_y) / pxFactor;
         int acu_v_x_int = (int)(accumulated_velocity_x) / pxFactor;
-        SDL_Log("Pixel Velocity is: %f %f", pixelInteraction.vx, pixelInteraction.vy);
+        //SDL_Log("Pixel Velocity is: %f %f", pixelInteraction.vx, pixelInteraction.vy);
         //SDL_Log("Velocity is: X: %f %i Y: %f %i", accumulated_velocity_x, acu_v_x_int, accumulated_velocity_y, acu_v_y_int);
         colorPickState->mmovex = acu_v_x_int;
         colorPickState->mmovey = acu_v_y_int;

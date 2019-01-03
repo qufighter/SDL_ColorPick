@@ -549,7 +549,7 @@ Ux::uiObject* Ux::create(void){
     zoomSliderHolder->addChild(zoomSlider);
 
 
-    runner = new uiRunningMan(zoomSlider, Float_Rect(1.0,0.0,1.0,1.0));
+    runner = new uiRunningMan(zoomSlider, Float_Rect(1.0,-0.05,1.0,1.0));
 
 
 

@@ -219,7 +219,7 @@ void mouseUpEvent(SDL_Event* event){
             //openglContext->generalUx->interactionUpdate(uiInteraction *delta);
         }
     }else{
-        openglContext->triggerVelocity(openglContext->pixelInteraction.vx, openglContext->pixelInteraction.vy);
+        openglContext->triggerVelocity(openglContext->pixelInteraction.vx, openglContext->pixelInteraction.vy); // args unused....
     }
 
     if( mousStateDown == 1 ){

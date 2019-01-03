@@ -18,7 +18,6 @@ pre-open dialogue (stock gradientz?)
 
 sort history colors "rewrite history"  (no index, pretty easy)
   sort dialogue initial text -> "Sort?"
-  
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)

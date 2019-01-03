@@ -21,11 +21,17 @@ struct uiRunningMan{
 
         uiObjectItself = new uiObject();
         uiObjectItself->myUiController = this;
+        //uiObjectItself->matrixInheritedByDescendants=true;
 
         uiObjectItself->setBoundaryRect(&boundaries);
 
         speedStripes = new uiObject();
         speedStripes->doesInFactRender = false; // only children render
+        runner = new uiObject();
+
+        uiObjectItself->addChild(speedStripes);
+
+        uiObjectItself->addChild(runner);
 
         for( int i=3; i<11; i++ ){
 
@@ -43,7 +49,6 @@ struct uiRunningMan{
             speedStripes->addChild(stripe);
         }
 
-        runner = new uiObject();
 
 //        runner->hasBackground=true;
 //        Ux::setColor(&runner->backgroundColor, 32, 0, 0, 128);
@@ -74,9 +79,7 @@ struct uiRunningMan{
 //
 //            top_shadow2->doesInFactRender = false; //addHighlight
 //
-        uiObjectItself->addChild(speedStripes);
 
-        uiObjectItself->addChild(runner);
 
         parentObj->addChild(uiObjectItself);
 
