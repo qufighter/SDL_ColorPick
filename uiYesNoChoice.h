@@ -209,7 +209,7 @@ struct uiYesNoChoice{
     }
 
 
-    void displayAdditionalMessage(char* message){
+    void displayAdditionalMessage(const char* message){
         additionalActionFn = nullptr;
         Ux* uxInstance = Ux::Singleton();
 

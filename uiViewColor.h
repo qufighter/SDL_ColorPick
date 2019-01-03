@@ -189,6 +189,7 @@ struct uiViewColor{
         uiViewColor* self = ((uiViewColor*)interactionObj->interactionProxy->myUiController);
         //SDL_Log("REACHED COPY HEX CALLBACK");
         SDL_SetClipboardText(self->getHexString(""));
+        uxInstance->defaultScoreDisplay->displayExplanation(" Paste Ready ");
         uxInstance->rClickMenu->hide();
     }
 
@@ -197,6 +198,7 @@ struct uiViewColor{
         uiViewColor* self = ((uiViewColor*)interactionObj->interactionProxy->myUiController);
         //SDL_Log("REACHED COPY RGB CALLBACK");
         SDL_SetClipboardText(self->getRgbString(""));
+        uxInstance->defaultScoreDisplay->displayExplanation(" Paste Ready ");
         uxInstance->rClickMenu->hide();
     }
 

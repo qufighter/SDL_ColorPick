@@ -224,7 +224,7 @@ static Ux* Singleton();
     int renderObject(uniformLocationStruct* uniformLocations);
     int renderObjects(uniformLocationStruct* uniformLocations, uiObject* renderObj, glm::mat4 inheritMat);
 
-    void printStringToUiObject(uiObject* printToThisObj, char* text, bool resizeText);
+    void printStringToUiObject(uiObject* printToThisObj, const char* text, bool resizeText);
     void printCharToUiObject(uiObject* letter, char character, bool resizeText);
     void printCharToUiObject(uiObject* letter, int character, bool resizeText);
     void printCharOffsetUiObject(uiObject* letter, int charOffset);

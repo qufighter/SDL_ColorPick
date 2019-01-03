@@ -74,7 +74,9 @@ struct uiScore{
 
         resize();
 
-        hide();
+        //hide();
+        uxInstance->printStringToUiObject(score, " ", DO_NOT_RESIZE_NOW);
+
 
         bool widescreen = uxInstance->widescreen;
         float bounceIntensity = -0.001;
@@ -141,7 +143,7 @@ struct uiScore{
         float bounceIntensity = -0.001;
 
 
-        uiObjectItself->show();
+        //uiObjectItself->show();
         //score_position->matrix = glm::mat4(1.0);
 
         // we had better create a new animation for EACH one we free here...
@@ -270,7 +272,7 @@ struct uiScore{
         explanation_position->setBoundaryRect(0.5,  0.5, my_scale, my_scale );
 
         explanation->boundryRect.x =  text_length * -0.5; // center
-        SDL_Log("result was %f", explanation->boundryRect.x * explanation_position->origBoundryRect.w);
+//        SDL_Log("result was %f", explanation->boundryRect.x * explanation_position->origBoundryRect.w);
 //        float hidLeftAmt = explanation_position->boundryRect.x + (explanation_position->origBoundryRect.w * explanation->boundryRect.x);
 //        if( hidLeftAmt < 0 ){
 //            explanation_position->boundryRect.x -= hidLeftAmt; // minus a negative
@@ -287,10 +289,10 @@ struct uiScore{
 
         explanation_position->updateRenderPosition();
     }
-
-    void hide(){
-        uiObjectItself->hide();
-    }
+//
+//    void hide(){
+//        //uiObjectItself->hide();
+//    }
 
     void resize(){
         update();

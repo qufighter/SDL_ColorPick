@@ -667,7 +667,7 @@ void Ux::updateRenderPosition(uiObject *renderObj){
 // so should the print functions move into uiObject?
 // maybe just be static Ux:: member functions defined the same way as others
 
-void Ux::printStringToUiObject(uiObject* printObj, char* text, bool resizeText){
+void Ux::printStringToUiObject(uiObject* printObj, const char* text, bool resizeText){
     // this function will print or update text, adding characters if needed
     // the object must be empy (essentially to become a text container and no loner normal UI object)
 
@@ -680,7 +680,7 @@ void Ux::printStringToUiObject(uiObject* printObj, char* text, bool resizeText){
 
     int ctr=0;
     int charOffset = 0;
-    char * i;
+    const char * i;
     uiObject* letter;
 
     int len=SDL_strlen(text);

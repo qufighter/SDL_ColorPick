@@ -34,7 +34,7 @@ struct uiToolMenu{
 
         //maths
         float w = 0.125;
-        float hw = w * 0.5;
+        //float hw = w * 0.5;
 
         //no->setBoundaryRect( 0.0+pad, 0.5-hh, w, h);
 
@@ -123,7 +123,7 @@ struct uiToolMenu{
         }
     }
 
-    void addMenuItem(uiObject *p_cbUiObject, char* menuText, anInteractionFn p_interactionCallback){
+    void addMenuItem(uiObject *p_cbUiObject, const char* menuText, anInteractionFn p_interactionCallback){
         Ux* uxInstance = Ux::Singleton();
 
         lastMenuItemIndex += 1;
