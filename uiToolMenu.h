@@ -180,8 +180,7 @@ struct uiToolMenu{
     }
 
     void handlePositioning(uiObject *p_dispalyNearUiObject){
-
-
+        Ux* uxInstance = Ux::Singleton();
         // we need to handle positioning of the main "menu_position" element before animation starts, but after we know the text...
         float text_length = longestMenuItemLen;
 
@@ -198,7 +197,13 @@ struct uiToolMenu{
         Float_Rect* dispRect = &p_dispalyNearUiObject->collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
 
         float xPosition = dispRect->x + (dispRect->w * 0.5);
-        float yPosition = dispRect->y + (dispRect->h/* * 0.5*/);
+        float yPosition = dispRect->y;
+
+        if( uxInstance->widescreen ){
+            yPosition +=  (dispRect->h * 0.5);
+        }else{
+            yPosition += dispRect->h;
+        };
 
         menu_position->setBoundaryRect(xPosition, yPosition, menu_item_size_scaling, menu_item_size_scaling );
 

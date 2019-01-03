@@ -19,19 +19,14 @@ pre-open dialogue (stock gradientz?)
 sort history colors "rewrite history"  (no index, pretty easy)
   sort dialogue initial text -> "Sort?"
   
-copy (dupe) SDL_SetClipboardText
-   rClickMenu uiToolMenu rClickMenu->addMenuItem
-   note: check widescreen - and responsive....
-   note: check if we remove items, they are not clickable later
-   -- important: we should have some user feedback when copy is successful --
-   -- vertical alignment of menu uiToolMenu - maybe just avoid being under cursor though???
-
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 ##  can do
+
+score explanation - bg for readability?
 
 score_size_scaling > score_position->origBoundryRect.w ){ // enforce "max" (default) size
   for score the above will be overwritten right??? 
