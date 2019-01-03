@@ -1257,8 +1257,7 @@ bool Ux::bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiIn
     // todo: for widescreen mode.... if we swipe right (delta->dx > 0.04f)? and we are not showing the close X
     // this means we should also bubble...
 
-    bool isHid = interactionObj->isInHiddenState();
-    if( isHid ){
+    if( interactionObj->isInHiddenState() /*|| interactionObj->isInAnimation()*/ ){
         return self->bubbleCurrentInteraction();
     }
 

@@ -612,10 +612,12 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
     static void clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // see also updateUiObjectFromHistory
 
 
+        Ux* myUxRef = Ux::Singleton();
+        uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
 
         //SDL_Log("clickHistoryColor --------------------- %i", interactionObj->myIntegerIndex);
 
-        if( interactionObj->isInHiddenState() ){
+        if( interactionObj->isInHiddenState() || self->historyPalleteHolder->isAnimating() ){
             return;
         }
 
@@ -628,8 +630,6 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             return; // this means our tile is invalid/out of range
         }
 
-        Ux* myUxRef = Ux::Singleton();
-        uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
 
 
         if( interactionObj->myIntegerIndex < -1 ){
@@ -1063,7 +1063,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         Ux* myUxRef = Ux::Singleton();
         uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
 
-        if( interactionObj->isInHiddenState() ){
+        if( interactionObj->isInHiddenState() || self->historyPalleteHolder->isAnimating() ){
             return;
         }
 

@@ -582,7 +582,27 @@ struct uiObject
         myCurrentAnimation = chain->preserveReference(); // do not auto garbage collect!
     }
 
-    bool isAnimating(){
+//    bool isNotAnimating(){ // check obj itself and parent objects to see if we aren't animating...
+//        bool hasAnim = false;
+////        if( myCurrentAnimation!= nullptr ){
+////            hasAnim = !myCurrentAnimation->chainCompleted;
+////        }
+//        if( !hasAnim ){
+//            if( hasParentObject ){
+//                return parentObject->isNotAnimating();
+//            }else{
+//                return hasAnim; // false
+//            }
+//        }else{
+//            return hasAnim; // true
+//        }
+//    }
+//
+//    bool isInAnimation(){
+//        return !isNotAnimating();
+//    }
+
+    bool isAnimating(){ // maybe this can take a hit from isInHiddenState and also check the parent objects... if any parent is animating we are animating... see isNotAnimating which does this...
         if( myCurrentAnimation!= nullptr ){
             return !myCurrentAnimation->chainCompleted;
         }

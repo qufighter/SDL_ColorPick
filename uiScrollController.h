@@ -203,8 +203,7 @@ struct uiScrollController{
         Ux* uxInstance = Ux::Singleton();
         // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
         uiScrollController* self = interactionObj->myScrollController;
-        bool isHid = self->uiObjectItself->isInHiddenState();
-        if( isHid ){
+        if( self->uiObjectItself->isInHiddenState() /*|| self->uiObjectItself->isInAnimation()*/ ){
             return uxInstance->bubbleCurrentInteraction();
         }
         return true;
@@ -215,8 +214,7 @@ struct uiScrollController{
                                                                // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
         uiScrollController* self = interactionObj->myScrollController;
 
-        bool isHid = self->uiObjectItself->isInHiddenState();
-        if( isHid ){
+        if( self->uiObjectItself->isInHiddenState() /*|| self->uiObjectItself->isInAnimation()*/ ){
             return uxInstance->bubbleCurrentInteraction();
         }
 

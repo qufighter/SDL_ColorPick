@@ -24,6 +24,8 @@ copy (dupe) SDL_SetClipboardText
    note: check widescreen - and responsive....
    note: check if we remove items, they are not clickable later
    -- important: we should have some user feedback when copy is successful --
+   -- vertical alignment of menu uiToolMenu - maybe just avoid being under cursor though???
+
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
