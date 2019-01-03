@@ -40,6 +40,8 @@ a way to expand collision bounds outside object bounds automatically to contain 
 
 squarilate scroller
 
+zoom scrollers?  maybe both would zoom at same time??? not sure...
+
 unable to find some colors precisely (pink ff00fc > "works" while ff00fd des not)
 -> android -> ff00fc resolevs to fe00fd
 -> desktop osx -> ff00fc resolves to ff00fe
@@ -53,10 +55,6 @@ pallete swatch color -> huePicker for adjustment ( see cp_set_from_hsv )
 
 sort pallete colors
 ^ (web interface? / later - watch out for index?)
-
-text selection and or copy ~~paste~~ ease (desktop, mobile)             SDL_Log("Double touched color preview......");
-^ copy menu, modal-ish (any interaction shall call dismiss modals function)
-^ SDL_SetClipboardText makes this easy..... 
 
 dedupe history (when out of space?)
 
@@ -91,14 +89,15 @@ throw out of view - initial velocity maintain... if over threshold?
 ## desktop any
 desktop scroll wheel in pallete (modal)
 other keypress support (modal confirm enter, ...)
-click bg to dismiss any modal such as historyPalleteHolder, yesno?, etc
 clock bar hide (enabled now for dev) (dev cleanup) (seperate testing constant to trigger it? DEVELOPER_TEST_MODE )
 SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK < - do we want a right click menu?
+- copy menu on right click....
 handle when save of history data occurs (specifically desktop plat?) (program exit)
     see SDL_APP_WILLENTERBACKGROUND < this is where we currently write state, works good on mobile clients where there is no fixed quit command...
     SDL_WINDOWEVENT_LEAVE,
     SDL_WINDOWEVENT_FOCUS_LOST, 
     SDL_WINDOWEVENT_CLOSE
+      ^ currently saving when program exits (window closed) only
 hold mouse down on scroll arrow, expect continuous scroll (also nav arrow?)
 drop image when history holder present - we should hide it (other modals should be canceled too?)
 
