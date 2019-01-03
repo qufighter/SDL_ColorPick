@@ -79,6 +79,12 @@ struct uiToolMenu{
         self->hide();
     }
 
+
+    static void touchMenuChoice(uiObject *interactionObj, uiInteraction *delta){
+        Ux* uxInstance = Ux::Singleton();
+        uxInstance->uxAnimations->scale_bounce(interactionObj, 0.006);
+    }
+
     void clearMenuItems(){
         uiObject* tempMenuItem;
         for( int x=0,l=menu_items->childListIndex; x<l; x++ ){
@@ -97,7 +103,7 @@ struct uiToolMenu{
             uiObject* new_menu_item_bg = new uiObject();
             uiObject* new_menu_item_txt = new uiObject();
 
-            new_menu_item->setBoundaryRect(0,index * 1.0, 1,1 );
+            new_menu_item->setBoundaryRect(0,index * 1.25, 1,1 );
 
             new_menu_item_bg->hasBackground=true;
             Ux::setColor(&new_menu_item_bg->backgroundColor, 255, 255, 255, 192);
@@ -109,6 +115,9 @@ struct uiToolMenu{
             new_menu_item->addChild(new_menu_item_bg);
             new_menu_item->addChild(new_menu_item_txt);
             menu_items->addChild(new_menu_item);
+
+            //new_menu_item->matrixInheritedByDescendants=true;
+            new_menu_item_bg->setInteractionBegin(&touchMenuChoice);
 
             return new_menu_item;
         }
@@ -129,7 +138,7 @@ struct uiToolMenu{
         uxInstance->printStringToUiObject(menu_item_txt, menuText, DO_NOT_RESIZE_NOW);
         int menuItemLen = SDL_strlen(menuText);
         menu_item_bg->boundryRect.w = menuItemLen * 1.0;
-        menu_item_bg->setInteractionCallback(p_interactionCallback);
+        menu_item_bg->setClickInteractionCallback(p_interactionCallback);
         menu_item_bg->doesNotCollide = false;
         menu_item_bg->interactionProxy = p_cbUiObject;
 
@@ -189,11 +198,9 @@ struct uiToolMenu{
         Float_Rect* dispRect = &p_dispalyNearUiObject->collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
 
         float xPosition = dispRect->x + (dispRect->w * 0.5);
+        float yPosition = dispRect->y + (dispRect->h/* * 0.5*/);
 
-        menu_position->setBoundaryRect(xPosition,
-                                       dispRect->y + (dispRect->h * 0.5),
-                                       menu_item_size_scaling,
-                                       menu_item_size_scaling  );
+        menu_position->setBoundaryRect(xPosition, yPosition, menu_item_size_scaling, menu_item_size_scaling );
 
         // if we go off the left edgeo f teh screen, lets try to stay on it...
         float hidLeftAmt = menu_position->boundryRect.x + (menu_item_size_scaling * menu_items->boundryRect.x);
@@ -201,10 +208,7 @@ struct uiToolMenu{
             xPosition -= hidLeftAmt; // minus a negative
         }
 
-        menu_position->setBoundaryRect(xPosition,
-                                        dispRect->y + (dispRect->h * 0.5),
-                                        menu_item_size_scaling,
-                                        menu_item_size_scaling  );
+        menu_position->setBoundaryRect(xPosition, yPosition, menu_item_size_scaling, menu_item_size_scaling );
 
         //if( menu_item->boundryRect.x + -0.5 + menu_position->boundryRect.x < 0 ) menu_position->boundryRect.x += menu_item->boundryRect.x + -0.5 + menu_position->boundryRect.x; // keep "on screen"
 

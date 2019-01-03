@@ -210,8 +210,8 @@ struct uiViewColor{
         if( delta->isSecondInteraction ){
             //SDL_Log("Double touched color preview......");
             uxInstance->rClickMenu->clearMenuItems();
-            uxInstance->rClickMenu->addMenuItem(interactionObj, self->getHexString("Copy "), &copyHexValueClicked);
-            uxInstance->rClickMenu->display(interactionObj);
+            uxInstance->rClickMenu->addMenuItem(self->hexBg, self->getHexString("Copy "), &copyHexValueClicked);
+            uxInstance->rClickMenu->display(self->hexBg);
         }else{
             if( self->hueBtn == nullptr ){ // we are tryiing to cancel the modal....
                 uxInstance->hideHistoryPalleteIfShowing(); // panning background...

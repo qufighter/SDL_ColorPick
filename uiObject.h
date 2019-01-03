@@ -559,6 +559,7 @@ struct uiObject
         hasInteractionCb = true;
     }
 
+    // "click" is a little better in that it has to be a mouse up on teh same element that was moused down
     void setClickInteractionCallback( anInteractionFn p_interactionCallback ){
         this->canCollide = true; // so for click functions we are just setting this automatically nnow!
         setInteractionCallback(p_interactionCallback);
