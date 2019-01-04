@@ -12,7 +12,8 @@ add version string somewhere (do not let it look like an IP address!)  maybe thi
 
 achievements
 
-settings
+settings -
+  - if we disable scoring - some or all of the displayed explanations should still be preserved.... (eg "out of space!")
 
 pre-open dialogue (stock gradientz?)
 
