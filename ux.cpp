@@ -75,6 +75,8 @@ void Ux::GetPrefPath(char* preferencesPath, const char* filename, char** resultD
  */
 Ux::Ux(void) {
 
+    hueGradientData = new uxHueGradientData();
+
     lastHue = new HSV_Color();
     currentlyPickedColor = new SDL_Color();
 
@@ -438,7 +440,7 @@ int Ux::indexForColor(SDL_Color* c){
 //                if( found[idx] ){
 //                    console.error('index is found', idx, found[idx]);
 //                }else{
-//                    found[idx] = {r:r,g:g,b:b}
+//                    found[idx] = {r:r,g:g,b:b};
 //                }
 //            }
 //        }
@@ -504,7 +506,7 @@ Ux::uiObject* Ux::create(void){
     rootUiObject->addChild(bottomBar);
     bottomBar->setInteractionCallback(Ux::interactionNoOp); // cannot click through this bar...
 
-    huePicker = new uiHueGradient(rootUiObject, Float_Rect(0.0, 0.60, 1.0, 0.09), &Ux::hueClicked);
+    huePicker = new uiHueGradient(rootUiObject, Float_Rect(0.0, 0.60, 1.0, 0.09));
     huePicker->resize(Float_Rect(0.0, 0.7, 1.0, hue_picker));
 
 
@@ -649,6 +651,9 @@ Ux::uiObject* Ux::create(void){
 
 
 
+    //uiHueGradientScroller* gradTest = new uiHueGradientScroller(rootUiObject, Float_Rect(0.0,0.0,1.0,0.035), true);
+
+
     updateRenderPositions();
 
     readInState(); // reads saved state into lists, requires historyPalleteEditor
@@ -685,27 +690,26 @@ Ux::uiObject* Ux::create(void){
 } SDL_MessageBoxData;
 */
 
-    OpenGLContext* ogg=OpenGLContext::Singleton();
-    int selected;
-    SDL_MessageBoxData messagebox;
-    SDL_MessageBoxButtonData buttons[] = {
-        {   0,  SDL_ASSERTION_RETRY,            "Retry" },
-        {   0,  SDL_ASSERTION_BREAK,            "Break" },
-        {   0,  SDL_ASSERTION_ABORT,            "Abort" },
-        {   SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,
-            SDL_ASSERTION_IGNORE,           "Ignore" },
-        {   SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,
-            SDL_ASSERTION_ALWAYS_IGNORE,    "Always Ignore" }
-    };
-
-    SDL_zero(messagebox);
-    messagebox.flags = SDL_MESSAGEBOX_WARNING;
-    messagebox.window = ogg->sdlWindow;
-    messagebox.title = "Assertion Failed";
-    messagebox.message = "test message1";
-    messagebox.numbuttons = SDL_arraysize(buttons);
-    messagebox.buttons = buttons;
-
+//    OpenGLContext* ogg=OpenGLContext::Singleton();
+//    int selected;
+//    SDL_MessageBoxData messagebox;
+//    SDL_MessageBoxButtonData buttons[] = {
+//        {   0,  SDL_ASSERTION_RETRY,            "Retry" },
+//        {   0,  SDL_ASSERTION_BREAK,            "Break" },
+//        {   0,  SDL_ASSERTION_ABORT,            "Abort" },
+//        {   SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,
+//            SDL_ASSERTION_IGNORE,           "Ignore" },
+//        {   SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,
+//            SDL_ASSERTION_ALWAYS_IGNORE,    "Always Ignore" }
+//    };
+//
+//    SDL_zero(messagebox);
+//    messagebox.flags = SDL_MESSAGEBOX_WARNING;
+//    messagebox.window = ogg->sdlWindow;
+//    messagebox.title = "Assertion Failed";
+//    messagebox.message = "test message1";
+//    messagebox.numbuttons = SDL_arraysize(buttons);
+//    messagebox.buttons = buttons;
 //    if (SDL_ShowMessageBox(&messagebox, &selected) == 0) {
 //        SDL_Log("itz zero pretty much no matter what");
 //        SDL_Log("--- itz %d", selected);
@@ -1088,12 +1092,6 @@ void Ux::interactionAddHistory(uiObject *interactionObj, uiInteraction *delta){
     if( myUxRef->historyPalleteEditor->palleteSelectionPreviewHolder->is_being_viewed_state ) {
         myUxRef->historyPalleteEditor->interactionTogglePalletePreview(myUxRef->historyPalleteEditor->palleteSelectionPreviewHolder, delta);
     }
-}
-
-// possibly unused now...
-void Ux::hueClicked(uiObject *interactionObj, uiInteraction *delta){
-    // seeingly unused...
-    hueClicked(&interactionObj->backgroundColor);
 }
 
 void Ux::hueClicked(SDL_Color* c){

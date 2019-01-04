@@ -89,6 +89,13 @@ NOTE: just using  currentInteraction here could have SIDE EFFECTS
 
 throw out of view - initial velocity maintain... if over threshold?
 
+// TODO maybe just call resize (without update render position) on hueGradient->resize() instead of handling it here???
+
+128; //derp
+  // use const static int then you don't need to derp!
+  
+  SDL_Color manyColors[totalColors];// *totalColorsPer * 6 // we really want this to be static and allocated once....
+
 # platform specific todo
 
 > rate it 5 stars

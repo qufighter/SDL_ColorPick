@@ -12,11 +12,7 @@
 
 struct uiHueGradient{
 
-    uiHueGradient(uiObject* parentObj, Float_Rect boundaries, anInteractionFn tileClickedFn){
-
-        totalColors = 1530;
-
-        tileClicked = tileClickedFn;
+    uiHueGradient(uiObject* parentObj, Float_Rect boundaries){
 
         //Ux* uxInstance = Ux::Singleton(); // some useful helper?
 
@@ -24,16 +20,16 @@ struct uiHueGradient{
 
         uiObjectItself->myUiController = this; // this propagates to the other child objects
 
-        generateHueGradient();
-
         int counter = 0;
         int offset = 0;
         float width = 1.0 / 128;
 
         // 6 chunks of 0-255 rainbow
-        hueGradientHolder = new uiObject();
-        hueGradientHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
-        uiObjectItself->addChild(hueGradientHolder); // add first so controller proagates
+//        hueGradientHolder = new uiObject();
+//        hueGradientHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+//        uiObjectItself->addChild(hueGradientHolder); // add first so controller proagates
+        hueGradient = new uiHueGradientScroller(uiObjectItself, Float_Rect(0.0,0.0,1.0,1.0), false); // we dissable scrolling
+        hueGradientHolder = hueGradient->hueGradientHolder;
 
 
         huePositionMarker = new uiObject();
@@ -53,17 +49,8 @@ struct uiHueGradient{
         //uxInstance->printCharToUiObject(markerBtm, CHAR_ARR_UP, DO_NOT_RESIZE_NOW);
         huePositionMarker->addChild(markerBtm);
 
-        while( offset < totalColors - 6 ){
-            uiObject* rt = new uiObject();
-            rt->hasBackground=true;
-            Ux::setColor(&rt->backgroundColor, &manyColors[offset]);
-            //rt->setInteractionCallback(interactionHueClicked); //setClickInteractionCallback
-            rt->setBoundaryRect( counter * (width) , 0.0, width+0.01, 1.0);
-            hueGradientHolder->addChild(rt);
-            //uiObjectItself->addChild(rt);
-            offset+=12;
-            counter++;
-        }
+
+
 
         uiObjectItself->setInteraction(interactionHueBgClicked);
         uiObjectItself->setInteractionCallback(interactionHueBgClicked);
@@ -73,15 +60,12 @@ struct uiHueGradient{
         resize(boundaries);
     }
 
-    anInteractionFn tileClicked=nullptr;
-
     uiObject* uiObjectItself; // no real inheritance here, this its the uiSqware, I would use self->
-    uiObject* hueGradientHolder;
+    uiHueGradientScroller* hueGradient;
+    uiObject* hueGradientHolder; // the above's hueGradientHolder is hueGradientHolder, there is still hueGradient->uiObjectItself between though...
     uiObject* huePositionMarker;
     bool hueSliderVisible;
 
-    int totalColors = 1530; // so this may not be defined with a value???
-    SDL_Color manyColors[1530];// *totalColorsPer * 6
 
     float lastPickPercent = 0.0f;
     bool lockPickerEvent = false;
@@ -158,19 +142,9 @@ struct uiHueGradient{
         self->lockPickerEvent = false;
     }
 
-
     SDL_Color* colorForPercent(float percent){
-        lastPickPercent = percent;
-        int clrOffset =  SDL_floorf((this->totalColors-1) * percent);
-        return &this->manyColors[clrOffset];
+        return hueGradient->colorForPercent(percent);
     }
-
-//    static void interactionHueClicked(uiObject *interactionObj, uiInteraction *delta){
-//       // Ux* uxInstance = Ux::Singleton();
-//        uiHueGradient* self = ((uiHueGradient*)interactionObj->myUiController);
-//
-//        self->tileClicked(interactionObj, delta);
-//    }
 
     void showHueSlider(){
         hueSliderVisible = true;
@@ -208,7 +182,7 @@ struct uiHueGradient{
 
         if( uxInstance->widescreen ){ // widescreen
             markerHeight=0.45;
-            hueGradientHolder->setChildNodeDirection(TEXT_DIR_ENUM::TTB, true);
+            hueGradientHolder->setChildNodeDirection(TEXT_DIR_ENUM::TTB, true); // TODO maybe just call resize (without update render position) on hueGradient->resize() instead of handling it here???
             huePositionMarker->setBoundaryRect(-markerOutset, 0.0, 1.0+markerOutset+markerOutset, hueMarkerWidth);
             markerTop->setBoundaryRect(0.0, 0.0, markerHeight, 1.0);
             markerBtm->setBoundaryRect(1.0-markerHeight, 0.0, markerHeight, 1.0);
@@ -217,7 +191,7 @@ struct uiHueGradient{
             uxInstance->printCharToUiObject(markerBtm, CHAR_ARR_LEFT, DO_NOT_RESIZE_NOW);
 
         }else{
-            hueGradientHolder->setChildNodeDirection(TEXT_DIR_ENUM::LTR, true);
+            hueGradientHolder->setChildNodeDirection(TEXT_DIR_ENUM::LTR, true); // TODO maybe just call resize (without update render position) on hueGradient->resize() instead of handling it here???
             huePositionMarker->setBoundaryRect(0.0, -markerOutset, hueMarkerWidth, 1.0+markerOutset+markerOutset);
             markerTop->setBoundaryRect(0.0, 0.0, 1.0, markerHeight);
             markerBtm->setBoundaryRect(0.0, 1.0-markerHeight, 1.0, markerHeight);
@@ -239,66 +213,6 @@ struct uiHueGradient{
 
     }
 
-    void generateHueGradient(){
-
-        int totalColorsPer = 255;
-        int stopPoint = totalColorsPer;
-        int counter = 0;
-        int current_r = 255;
-        int current_g = 0;
-        int current_b = 0;
-
-        // 6 chunks of 0-255 rainbow
-
-        SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
-
-        while( counter < totalColorsPer ){
-            Ux::setColor(&manyColors[counter], current_r, current_g, current_b, 255);
-            current_b+=1;
-            counter++;
-        }
-        SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
-
-        stopPoint = totalColorsPer * 2;
-        while( counter < stopPoint ){
-            Ux::setColor(&manyColors[counter], current_r, current_g, current_b, 255);
-            current_r-=1;
-            counter++;
-        }
-        SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
-
-        stopPoint = totalColorsPer * 3;
-        while( counter < stopPoint ){
-            Ux::setColor(&manyColors[counter], current_r, current_g, current_b, 255);
-            current_g+=1;
-            counter++;
-        }
-        SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
-
-        stopPoint = totalColorsPer * 4;
-        while( counter < stopPoint ){
-            Ux::setColor(&manyColors[counter], current_r, current_g, current_b, 255);
-            current_b-=1;
-            counter++;
-        }
-        SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
-
-        stopPoint = totalColorsPer * 5;
-        while( counter < stopPoint ){
-            Ux::setColor(&manyColors[counter], current_r, current_g, current_b, 255);
-            current_r+=1;
-            counter++;
-        }
-        SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
-
-        stopPoint = totalColorsPer * 6;
-        while( counter < stopPoint ){
-            Ux::setColor(&manyColors[counter], current_r, current_g, current_b, 255);
-            current_g-=1;
-            counter++;
-        }
-        SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
-    }
 
 };
 

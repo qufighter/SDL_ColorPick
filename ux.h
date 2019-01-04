@@ -179,6 +179,7 @@ static Ux* Singleton();
 
 
 #include "uiList.h" // referrs to Ux:: which referrs to uiObject...
+#include "ux-HueGradientData.h"
 
 #include "uiObject.h" // referrs to Ux:: which referrs to uiObject...
 #include "uiEdgeShadow.h"
@@ -188,6 +189,7 @@ static Ux* Singleton();
 //#include "uiSqware.h"  // its because we don't really have square, and if we do we do not really need this, because squares would already be squares
 #include "uiNavArrows.h"
 #include "uiYesNoChoice.h"
+#include "uiHueGradientScroller.h"
 #include "uiHueGradient.h"
 #include "uiScore.h"
 #include "uiToolMenu.h"
@@ -258,7 +260,6 @@ static Ux* Singleton();
     static void interactionHorizontal(uiObject *interactionObj, uiInteraction *delta);
     static void interactionVert(uiObject *interactionObj, uiInteraction *delta);
 
-    static void hueClicked(uiObject *interactionObj, uiInteraction *delta);
     static void hueClicked(SDL_Color* c);
     static void hueClickedPickerHsv(SDL_Color* c);
     static void pickerForHuePercentage(float percent);
@@ -316,6 +317,8 @@ static Ux* Singleton();
     float hue_picker = 0.05; // huePicker "height" (or width when widescreen)
     float history_preview = 0.1; // historyPreview "height" (or width when widescreen)
 
+    uxHueGradientData* hueGradientData;
+
     uiInteraction currentInteraction;
     uiObject *rootUiObject; // there is a root ui object
     uiObject* currentModal;
@@ -353,6 +356,7 @@ static Ux* Singleton();
         uiObject *historyPreview;
         //uiObject *historyFullsize;
 
+    
 
 //        uiObject *renderedletters[2048]; // we should just make ach letter once
 //        int renderedLettersCtr=0;
