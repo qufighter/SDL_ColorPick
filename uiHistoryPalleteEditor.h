@@ -548,27 +548,72 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         return result;
     }
 
-    static void clickSortHistory(uiObject *interactionObj, uiInteraction *delta){
-        Ux* myUxRef = Ux::Singleton();
-        // TODO: clone the list, compare them, also clear the clone....
-        myUxRef->pickHistoryList->sort(&compareColorListItems);
+    int dedupeHistoryList(uiList<ColorList, Uint8>* listToSort){
+        int oldLen = listToSort->total(); // if we return some scoring info... we could reveal that here??? (should probably return a struct tho)
 
-        int oldLen = myUxRef->pickHistoryList->total();
+        listToSort->sort(&compareColorListItems);
 
         // next: remove dupes
-        uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = myUxRef->pickHistoryList->iterate();
+        uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = listToSort->iterate();
         ColorList* hist = pickHistoryIterator->nextLast(); // loop in reverse here...
         SDL_Color lastColor = hist->color;
         hist = pickHistoryIterator->nextLast();
         while(hist != nullptr){
             if( colorEquals( &hist->color, &lastColor) ){
-                myUxRef->pickHistoryList->remove(pickHistoryIterator->lastIndex+1);
+                listToSort->remove(pickHistoryIterator->lastIndex+1);
             }else{
                 lastColor = hist->color;
             }
             hist = pickHistoryIterator->nextLast();
         }
         SDL_free(pickHistoryIterator);
+
+        return oldLen;
+    }
+
+    void showSortConfirmationDialogue(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+
+//        uiList<ColorList, Uint8>* tempList = myUxRef->pickHistoryList->clone();
+//        // we can determine what exactly whill occur....
+//        int oldLen = dedupeHistoryList(tempList);
+//        SDL_free(tempList);
+
+
+        myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickSortHistory, &clickCancelSortHistory);
+        myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Sort?");
+        myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(sortScoringHandler);
+
+
+        //SDL_free(myUxRef->pickHistoryList);
+        //myUxRef->pickHistoryList = tempList;
+        //myUxRef->updatePickHistoryPreview();
+
+    }
+
+
+    static void clickSortHistory(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
+        // TODO: clone the list, compare them, also clear the clone....
+        //myUxRef->pickHistoryList->sort(&compareColorListItems);
+
+        int oldLen = self->dedupeHistoryList(myUxRef->pickHistoryList);
+//
+//        // next: remove dupes
+//        uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = myUxRef->pickHistoryList->iterate();
+//        ColorList* hist = pickHistoryIterator->nextLast(); // loop in reverse here...
+//        SDL_Color lastColor = hist->color;
+//        hist = pickHistoryIterator->nextLast();
+//        while(hist != nullptr){
+//            if( colorEquals( &hist->color, &lastColor) ){
+//                myUxRef->pickHistoryList->remove(pickHistoryIterator->lastIndex+1);
+//            }else{
+//                lastColor = hist->color;
+//            }
+//            hist = pickHistoryIterator->nextLast();
+//        }
+//        SDL_free(pickHistoryIterator);
         myUxRef->updatePickHistoryPreview(); // also updates teh visible pallete scroller
 
         // Achievement: rewrote history
@@ -661,12 +706,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
                 myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
 
-                myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickSortHistory, &clickCancelSortHistory);
-
-                // we need to effectively communicate a "preview" of what will occur???
-                myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Sort?");
-
-                myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(sortScoringHandler);
+                self->showSortConfirmationDialogue(interactionObj, delta);
             }
 
             return;

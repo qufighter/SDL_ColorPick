@@ -18,7 +18,7 @@ struct uiHueGradientScroller{
 
         uiObjectItself = new uiObject();
 
-        uiObjectItself->myUiController = this; // this propagates to the other child objects
+        uiObjectItself->myUiController = this; // this propagates to the other child objects  NOTE: this is one case right now where there are really 2 myUiController sometiems depending how this is nested....
 
         int counter = 0;
         int offset = 0;

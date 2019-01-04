@@ -105,6 +105,24 @@ struct uiList
 
     }
 
+    uiList<genType, indexType>* clone(){
+        // DOES NOT CLONE THE INDEX
+        if( _indexed ){
+            SDL_Log("Sorry the index is NOT cloned - you have to index your clone if you want an indexed clone");
+        }
+        uiList<genType, indexType>* newList = new uiList<genType, indexType>(maxSize);
+
+        SDL_memcpy(newList->listItself, listItself, sizeof(genType)*total()-1);
+
+        newList->indexOffsetGen = indexOffsetGen;
+        newList->_nextIndex = _nextIndex-1;
+        newList->_previousIndex = _previousIndex-1;
+        newList->_largestIndex = _largestIndex-1;
+        newList->_out_of_space = _out_of_space;
+
+        return newList;
+    }
+
     void sort(aComparitorFn p_ComparitorFn){
         sort((aGenericComparitorFn)p_ComparitorFn);
     }
@@ -125,8 +143,8 @@ struct uiList
     int _nextIndex;
     int _previousIndex;
     int _largestIndex;
-    int _tmp_index_offset;
     bool _out_of_space;
+    int _tmp_index_offset;
 
     bool _indexed;
     int _indexSize;
