@@ -424,10 +424,37 @@ void Ux::updatePalleteScroller(){
 }
 
 
-int Ux::indexForColor(SDL_Color* c){ // warn if your index components return zero its all zeroes
-    return (c->r+1) * (c->g+1) * (c->b+1);
+int Ux::indexForColor(SDL_Color* c){
+//     //here is an index test, albeit in javascript:
+//    console.log('test beginning ... ... ... ... ...');
+//    function getIndex(r,g,b){
+//        return (r*65536) + (g*256) + (b);
+//    }
+//    var found=[];
+//    for( var r=0;r<256;r++ ){
+//        for( var g=0;g<256;g++ ){
+//            for( var b=0;b<256;b++ ){
+//                var idx=getIndex(r,g,b);
+//                if( found[idx] ){
+//                    console.error('index is found', idx, found[idx]);
+//                }else{
+//                    found[idx] = {r:r,g:g,b:b}
+//                }
+//            }
+//        }
+//    }
+//    if( found.length != 16777216 ){
+//        console.error('length of index appears odd, maybe JS engine...');
+//    }
+//    for( var i=0,l=found.length; i<l; i++ ){
+//        if(!found[i]){
+//            console.error('index is not tight, there is space at index', i);
+//        }
+//    }
+//    console.log('test concluded, any errors above?');
+    return (c->r*65536) + (c->g*256) + (c->b);
 }
-int Ux::indexForColor(ColorList* cli){ // warn if your index components return zero its all zeroes
+int Ux::indexForColor(ColorList* cli){
     return indexForColor(&cli->color);
 }
 
@@ -642,6 +669,51 @@ Ux::uiObject* Ux::create(void){
     // todo we should just chain a interactionTogglePalletePreview
     //interactionTogglePalletePreview(nullptr, nullptr);
     historyPalleteEditor->interactionToggleHistory(nullptr, nullptr);
+
+/*
+     typedef struct
+     {
+     Uint32 flags;                       /// ::SDL_MessageBoxFlags
+    SDL_Window *window;                 ///< Parent window, can be NULL
+    const char *title;                 // / UTF-8 title
+    const char *message;                /// UTF-8 message text
+
+    int numbuttons;
+    const SDL_MessageBoxButtonData *buttons;
+
+    const SDL_MessageBoxColorScheme *colorScheme;   /**< ::SDL_MessageBoxColorScheme, can be NULL to use system settings
+} SDL_MessageBoxData;
+*/
+
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    int selected;
+    SDL_MessageBoxData messagebox;
+    SDL_MessageBoxButtonData buttons[] = {
+        {   0,  SDL_ASSERTION_RETRY,            "Retry" },
+        {   0,  SDL_ASSERTION_BREAK,            "Break" },
+        {   0,  SDL_ASSERTION_ABORT,            "Abort" },
+        {   SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,
+            SDL_ASSERTION_IGNORE,           "Ignore" },
+        {   SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,
+            SDL_ASSERTION_ALWAYS_IGNORE,    "Always Ignore" }
+    };
+
+    SDL_zero(messagebox);
+    messagebox.flags = SDL_MESSAGEBOX_WARNING;
+    messagebox.window = ogg->sdlWindow;
+    messagebox.title = "Assertion Failed";
+    messagebox.message = "test message1";
+    messagebox.numbuttons = SDL_arraysize(buttons);
+    messagebox.buttons = buttons;
+
+//    if (SDL_ShowMessageBox(&messagebox, &selected) == 0) {
+//        SDL_Log("itz zero pretty much no matter what");
+//        SDL_Log("--- itz %d", selected);
+//    }
+
+
+    //SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
+
 
     return rootUiObject;
 }

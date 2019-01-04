@@ -13,7 +13,11 @@
 #define SIX_ACROSS_RATIO 0.16666666666667  // 1.0 / SIX_ACROSS
 
 //#define COLOR_INDEX_MAX 16581376 //  255^3 +1
-#define COLOR_INDEX_MAX 16777217 //  256^3 +1
+//#define COLOR_INDEX_MAX 16777217 //  256^3 +1
+//#define COLOR_INDEX_MAX 16843009 // 16777216 + 65536 + 256 + 1 ( this is over allocated)
+#define COLOR_INDEX_MAX 16777216 // 16711680 + 65280 + 255 + 1
+
+
 
 #define RESIZE_NOW true
 #define DO_NOT_RESIZE_NOW false

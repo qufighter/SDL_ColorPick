@@ -681,6 +681,9 @@ compatibility; this flag is ignored
 //    SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
 
 
+    // TODO recall window position?  useful possibly for desktop platforms....
+
+
     /* create window and renderer */
     window =
         SDL_CreateWindow(NULL, 0, 0, win_w, win_h,

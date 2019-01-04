@@ -693,6 +693,13 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             return;
         }
 
+        // TEMP debug the clicked color....
+//        char* resultText25char = (char*)SDL_malloc( sizeof(char) * 27 );
+//        SDL_snprintf(resultText25char, 25,  "(%d,%d,%d)", interactionObj->backgroundColor.r, interactionObj->backgroundColor.g, interactionObj->backgroundColor.b);
+//        SDL_free(resultText25char);
+//        myUxRef->defaultScoreDisplay->displayExplanation(resultText25char);
+
+
         // A couple things
         // if image is already in the pallete, we sholud probably not add it twice √ done
         // we should instead scroll to the color and animate it

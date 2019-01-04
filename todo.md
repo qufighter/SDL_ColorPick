@@ -19,12 +19,22 @@ pre-open dialogue (stock gradientz?)
 
 sort history colors "rewrite history"  (no index, pretty easy)
   sort dialogue initial text -> "Sort?"
-
+  
+  SDL_ShowMessageBox > allocate buttons once....
+  > check update policy
+  
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 ##  can do
+
+we need test colors like:
+0,7,255
+7,0,255
+0,85,255 (256*86)
+85,15,15 (256*86)
+add c test for //here is an index test, albeit in javascript:
 
 score explanation - bg for readability?
 
@@ -101,6 +111,7 @@ handle when save of history data occurs (specifically desktop plat?) (program ex
       ^ currently saving when program exits (window closed) only
 hold mouse down on scroll arrow, expect continuous scroll (also nav arrow?)
 drop image when history holder present - we should hide it (other modals should be canceled too?)
+//TODO recall window position?  useful possibly for desktop platforms....
 
 ### osx
 osx application bundle (see readme and  see   Use pbxbuild in the same directory as your .pbproj file)
