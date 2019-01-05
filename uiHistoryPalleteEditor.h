@@ -76,6 +76,8 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
         parentObj->addChild(historyPalleteHolder);// aka uiObjectItself);
 
+        uiObject *unusedObject = new uiObject(); // todo - strange convention?
+        sortChooser=new uiSortChooser(unusedObject, Float_Rect(0.0, 0.15, 1.0, 0.20));
 
         historyScroller->updateTiles();
         palleteScroller->updateTiles();
@@ -98,6 +100,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
     uiViewColor *palleteSelectionColorPreview;
     uiObject *palleteSelectionPreviewHolder; // to contain the animation
 
+    uiSortChooser *sortChooser;
 
     void resize(Float_Rect visible, Float_Rect hidden){
         Ux* uxInstance = Ux::Singleton();
@@ -574,9 +577,11 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
     void showSortConfirmationDialogue(uiObject *interactionObj, uiInteraction *delta){
         Ux* myUxRef = Ux::Singleton();
 
+        // TODO build a uiController that we can init with our new lists, that will have its own uiHueGradientScroller* and will analyze the lists... it can store a property that will tell us the total to be deleted, etc
 //        uiList<ColorList, Uint8>* tempList = myUxRef->pickHistoryList->clone();
 //        // we can determine what exactly whill occur....
-//        int oldLen = dedupeHistoryList(tempList);
+//            tempList->sort(&compareColorListItems); // we could clone it AGAIN now.. :) but we have to walk the list anyway so we can count the dupes as we go...
+//        //int oldLen = dedupeHistoryList(tempList);
 //        SDL_free(tempList);
 
 
@@ -584,6 +589,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Sort?");
         myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(sortScoringHandler);
 
+        myUxRef->defaultYesNoChoiceDialogue->displayAdditionalUiObject(sortChooser->uiObjectItself);
 
         //SDL_free(myUxRef->pickHistoryList);
         //myUxRef->pickHistoryList = tempList;
@@ -595,25 +601,14 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
     static void clickSortHistory(uiObject *interactionObj, uiInteraction *delta){
         Ux* myUxRef = Ux::Singleton();
         uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
-        // TODO: clone the list, compare them, also clear the clone....
-        //myUxRef->pickHistoryList->sort(&compareColorListItems);
 
         int oldLen = self->dedupeHistoryList(myUxRef->pickHistoryList);
-//
-//        // next: remove dupes
-//        uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = myUxRef->pickHistoryList->iterate();
-//        ColorList* hist = pickHistoryIterator->nextLast(); // loop in reverse here...
-//        SDL_Color lastColor = hist->color;
-//        hist = pickHistoryIterator->nextLast();
-//        while(hist != nullptr){
-//            if( colorEquals( &hist->color, &lastColor) ){
-//                myUxRef->pickHistoryList->remove(pickHistoryIterator->lastIndex+1);
-//            }else{
-//                lastColor = hist->color;
-//            }
-//            hist = pickHistoryIterator->nextLast();
-//        }
-//        SDL_free(pickHistoryIterator);
+
+        SDL_Color* clr = self->sortChooser->getGradientOffsetColor();
+        SDL_Log("THIS IS OUF OFFXET COLOR!!!! %i %i %i", clr->r, clr->g, clr->b);
+        // we may wish to simply add this item to our list, then sort the list???? otherwise we have to find which color has the closest hue
+        // or otherwise where in the list this color would be positioned.... if it were sorted into the list
+
         myUxRef->updatePickHistoryPreview(); // also updates teh visible pallete scroller
 
         // Achievement: rewrote history

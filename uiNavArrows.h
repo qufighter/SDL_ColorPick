@@ -1,5 +1,4 @@
 //
-//  uiScrollController.h
 //  ColorPick SDL
 //
 //  Created by Sam Larison on 1/7/18.

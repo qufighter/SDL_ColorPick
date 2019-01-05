@@ -681,6 +681,15 @@ struct uiObject
         stack_bottom=true;
     }
 
+    void empty(){
+        // lazy empty...
+        for( int x=0,l=childListIndex; x<l; x++ ){
+            childList[x]->hasParentObject=false;
+            childList[x]->hasCropParent = false;
+        }
+        childListIndex = 0;
+    }
+
     void addBottomChild(uiObject *c){
         if( this->childListIndex < this->childListMax - 1 ){
             //SDL_Log("Before %i", this->childListIndex);

@@ -194,6 +194,7 @@ static Ux* Singleton();
 #include "uiScore.h"
 #include "uiToolMenu.h"
 #include "uiRunningMan.h"
+#include "uiSortChooser.h"
 #include "uiHistoryPalleteEditor.h"
 
 #include "ux-anim.h"

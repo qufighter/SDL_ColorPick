@@ -1,5 +1,4 @@
 //
-//  uiScrollController.h
 //  ColorPick SDL
 //
 //  Created by Sam Larison on 1/7/18.
@@ -143,6 +142,7 @@ struct uiHueGradient{
     }
 
     SDL_Color* colorForPercent(float percent){
+        lastPickPercent = percent;
         return hueGradient->colorForPercent(percent);
     }
 

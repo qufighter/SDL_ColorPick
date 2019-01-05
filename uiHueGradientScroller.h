@@ -64,7 +64,6 @@ struct uiHueGradientScroller{
     bool hueSliderVisible;
 
 
-    float lastPickPercent = 0.0f;
 
     static void draggingTheGradient(uiObject *interactionObj, uiInteraction *delta){
         uiHueGradientScroller* self = ((uiHueGradientScroller*)interactionObj->myUiController);
@@ -82,9 +81,16 @@ struct uiHueGradientScroller{
         self->hueGradientHolder->updateRenderPosition();
     }
 
+    float getGradientOffsetPercentage(){ // get amount of scroll of the gradient, and we will make a color out of it...
+        return SDL_fabsf( hueGradientHolder->boundryRect.x );
+    };
+
+    SDL_Color* getGradientOffsetColor(){ // get amount of scroll of the gradient, and we will make a color out of it...
+        return colorForPercent(getGradientOffsetPercentage());
+    }
+
     SDL_Color* colorForPercent(float percent){
         Ux* uxInstance = Ux::Singleton(); // some useful helper?
-        lastPickPercent = percent;
         int clrOffset =  SDL_floorf((uxInstance->hueGradientData->totalColors-1) * percent);
         return &uxInstance->hueGradientData->manyColors[clrOffset];
     }

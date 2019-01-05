@@ -14,7 +14,9 @@ struct uiYesNoChoice{
         isDisplayed=false;
         Ux* uxInstance = Ux::Singleton(); // some useful helper?
 
+
         uiObjectItself = new uiObject();
+        additionalUiObjectContainer = new uiObject();
         addSomeMoreHolder = new uiObject();
         addSomeMore = new uiObject();
         addSomeMoreText = new uiObject();
@@ -103,6 +105,8 @@ struct uiYesNoChoice{
 
         no->is_circular = false; // easier to click no
 
+        uiObjectItself->addChild(additionalUiObjectContainer);
+
         uiObjectItself->addChild(addSomeMoreHolder);
 
         addSomeMoreHolder->addChild(addSomeMore);
@@ -172,6 +176,9 @@ struct uiYesNoChoice{
     uiObject *addSomeMore;
     uiObject *addSomeMoreText;
 
+    uiObject *additionalUiObjectContainer;
+
+
     //uiViewColor* deleteColorPreview;
 
     anInteractionFn yesClickedFn;
@@ -208,6 +215,9 @@ struct uiYesNoChoice{
         addSomeMore->hasForeground = true;
     }
 
+    void displayAdditionalUiObject(uiObject* objToShow){
+        additionalUiObjectContainer->addChild(objToShow);
+    }
 
     void displayAdditionalMessage(const char* message){
         additionalActionFn = nullptr;
@@ -228,8 +238,11 @@ struct uiYesNoChoice{
         float hw = w * 0.5;
         addSomeMoreHolder->setBoundaryRect( 0.5-hw, 0.25-hw, w,w);
         addSomeMore->setBoundaryRect( 0, 0, 1, 1);
-
-        addSomeMoreHolder->showAndAllowInteraction();
+//
+//        if( additionalActionFn != nullptr ){
+//            addSomeMoreHolder->showAndAllowInteraction();
+//        }
+        addSomeMoreHolder->show();
     }
 
 
@@ -310,6 +323,7 @@ struct uiYesNoChoice{
         last_num_delete = 1;
         isDisplayed = true;
         addSomeMoreHolder->hideAndNoInteraction();
+        additionalUiObjectContainer->empty();
 
 
         text_holder->hide();

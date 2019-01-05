@@ -23,6 +23,8 @@ sort history colors "rewrite history"  (no index, pretty easy)
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
   
+  THIS IS OUF OFFXET COLOR!!!!
+  
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
@@ -93,8 +95,8 @@ throw out of view - initial velocity maintain... if over threshold?
 
 128; //derp
   // use const static int then you don't need to derp!
-  
-  SDL_Color manyColors[totalColors];// *totalColorsPer * 6 // we really want this to be static and allocated once....
+
+
 
 # platform specific todo
 
