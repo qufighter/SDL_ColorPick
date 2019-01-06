@@ -22,8 +22,10 @@ sort history colors "rewrite history"  (no index, pretty easy)
   
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
+    
+  buildScoreDisplay()
   
-  THIS IS OUF OFFXET COLOR!!!!
+  // lets treat it as if they stopped interacting....
   
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -31,12 +33,20 @@ osx/ios jpg rotation not respected (is this exif rotation???)
 
 ##  can do
 
+this helper goes elsewhere?? static int compareColor
+
 we need test colors like:
 0,7,255
 7,0,255
 0,85,255 (256*86)
 85,15,15 (256*86)
 add c test for //here is an index test, albeit in javascript:
+
+hisotry sorted like
+#255,95,0
+#255,96,0
+#255,95,0
+does it dedupe (yes now, it sorts)
 
 score explanation - bg for readability?
 

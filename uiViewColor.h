@@ -212,7 +212,11 @@ struct uiViewColor{
             //SDL_Log("Double touched color preview......");
             uxInstance->rClickMenu->clearMenuItems();
             uxInstance->rClickMenu->addMenuItem(self->hexBg, self->getHexString("Copy "), &copyHexValueClicked);
-            uxInstance->rClickMenu->display(self->hexBg);
+            if( uxInstance->widescreen ){
+                uxInstance->rClickMenu->display(self->uiObjectItself);
+            }else{
+                uxInstance->rClickMenu->display(self->hexBg);
+            }
         }else{
             if( self->hueBtn == nullptr ){ // we are tryiing to cancel the modal....
                 uxInstance->hideHistoryPalleteIfShowing(); // panning background...
@@ -231,7 +235,7 @@ struct uiViewColor{
             uxInstance->rClickMenu->addMenuItem(self->rgbRedBg, self->getHexString("Copy "), &copyHexValueClicked);
 
             if( uxInstance->widescreen ){
-                uxInstance->rClickMenu->display(self->rgbGreenBg);
+                uxInstance->rClickMenu->display(self->uiObjectItself);
             }else{
                 uxInstance->rClickMenu->display(self->rgbRedBg);
             }

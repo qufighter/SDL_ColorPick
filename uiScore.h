@@ -11,7 +11,9 @@ struct uiScore{
 
         int_score = 0;
         int_max_score = 0;
-        maxLen = 14;
+
+        //SDL_Log("this is the biggest int %i " , SDL_MAX_SINT32); // 2147483647  ( 10 char, sign, extra)
+        maxLen = 14 + 7; //  7="points +"
         isHighScore=false;
         score_disp_char = (char*)SDL_malloc( sizeof(char) * maxLen );
 
@@ -117,6 +119,12 @@ struct uiScore{
     uiAminChain* chain5;
     uiAminChain* chain6;
 
+    uiObject* buildScoreDisplay(){
+
+        uiObject* scoreDisp = new uiObject();
+
+        return scoreDisp;
+    }
 
     void loose(uiObject *p_dispalyNearUiObject){
         loose(p_dispalyNearUiObject, SCORE_EFFECTS::DEFAULT);
@@ -137,7 +145,6 @@ struct uiScore{
 
     void display(uiObject *p_dispalyNearUiObject, int numberToDisplay, int effectNum){
 
-        //SDL_Log("this is the biggest int %i " , SDL_MAX_SINT32); // 2147483647  ( 10 char, sign, extra)
         Ux* uxInstance = Ux::Singleton();
         bool widescreen = uxInstance->widescreen;
         float bounceIntensity = -0.001;

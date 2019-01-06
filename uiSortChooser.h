@@ -59,6 +59,10 @@ struct uiSortChooser{
     uiObject* previousContainer; // the above's hueGradientHolder is hueGradientHolder, there is still hueGradient->uiObjectItself between though...
     uiObject* newContainer;
 
+    float getGradientOffsetPercentage(){ // get amount of scroll of the gradient, and we will make a color out of it...
+        return hueGradient->getGradientOffsetPercentage();
+    }
+
     SDL_Color* getGradientOffsetColor(){ // get amount of scroll of the gradient, and we will make a color out of it...
         return hueGradient->getGradientOffsetColor();
     }

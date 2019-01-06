@@ -37,6 +37,8 @@ struct uiHueGradientScroller{
             width = 1.0 / 256;
             hueGradientHolder->setBoundaryRect(0.0, 0.0, 2.0, 1.0);
             hueGradientHolder->setInteraction(&draggingTheGradient);
+
+            hueGradientHolder->boundryRect.x = -0.281250; // BGYORVI
         }
 
         while( offset < end ){

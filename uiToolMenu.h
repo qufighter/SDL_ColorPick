@@ -199,10 +199,17 @@ struct uiToolMenu{
         float xPosition = dispRect->x + (dispRect->w * 0.5);
         float yPosition = dispRect->y;
 
+
         if( uxInstance->widescreen ){
-            yPosition +=  (dispRect->h * 0.5);
+
+            yPosition +=  (dispRect->h * 0.5); // + (-menu_items->childListIndex * (menu_item_size_scaling * menu_items->boundryRect.h) * 0.5);
+
+            xPosition += (0.5*dispRect->w) + (0.5*(1.0-dispRect->w));
+
+            menu_item_size_scaling *= 1.0-dispRect->w;
+
         }else{
-            yPosition += dispRect->h;
+            yPosition += dispRect->h + 0.05;
         };
 
         menu_position->setBoundaryRect(xPosition, yPosition, menu_item_size_scaling, menu_item_size_scaling );
