@@ -103,10 +103,10 @@ struct uiScore{
     //anInteractionFn tileClicked=nullptr;
 
     uiObject* uiObjectItself; // no real inheritance here, this its the uiSqware, I would use self->
-    uiObject *score_position;
+    uiObject *score_position; // these pair could become uiText?
     uiObject *score;
     uiObject *explanation;
-    uiObject *explanation_position;
+    uiObject *explanation_position; // these pair could become uiText?
 
     uiText *scoreText;
     uiObject *scoreDisp;
@@ -137,9 +137,6 @@ struct uiScore{
         if( scoreDisp != nullptr ){
             Ux* uxInstance = Ux::Singleton();
             SDL_snprintf(score_disp_char, maxLen, "%i", int_score); // -0
-            //uxInstance->printStringToUiObject(scoreDisp, score_disp_char, DO_NOT_RESIZE_NOW);
-            //scoreDisp->updateRenderPosition();
-
             scoreText->print(score_disp_char);
         }
     }

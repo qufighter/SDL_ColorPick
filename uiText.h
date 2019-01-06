@@ -28,6 +28,9 @@ struct uiText{
 
  right now its squarified and sized based on HZ percent size starting at a provided fractional size
 
+ this is generated from uiScore but doesn't yet do all those things... quite yet - main difference is text scale is handled only once here
+ // so it is not yet having a mode where this may be auto adjusted to fit the container
+
  */
 
     uiText(uiObject* parentObj, float size){
@@ -156,8 +159,8 @@ struct uiText{
             {
                 float charsThatFit = (1.0/text_position->boundryRect.w);
                 text_itself->boundryRect.x = charsThatFit * -0.5;
-            }
                 break;
+            }
             case TEXT_ALIGN::CENTER_LEFTWARD:
                     text_itself->boundryRect.x =  -text_length + 0.5; // right aligned (center the rightmost char)
                 break;
@@ -171,8 +174,12 @@ struct uiText{
                 break;
 
             case TEXT_ALIGN::RIGHT:
-
+            {
+                float charsThatFit = (1.0/text_position->boundryRect.w);
+                // TODO: do we apply text length or only text that fit?  depends on if we apply scaling or not based on if hte text fits...
+                text_itself->boundryRect.x = (charsThatFit * 0.5) - text_length;
                 break;
+            }
         }
 
         //
