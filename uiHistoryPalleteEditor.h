@@ -58,6 +58,8 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         historyPalleteHolder->addChild(newHistoryPallete);
 
 
+        //historyPalleteScoreboard=uxInstance->defaultScoreDisplay
+
         historyPalleteCloseX = new uiObject();
         uxInstance->printCharToUiObject(historyPalleteCloseX, CHAR_CLOSE_ICON, DO_NOT_RESIZE_NOW);
         historyPalleteCloseX->hasForeground = true;
@@ -65,6 +67,11 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         Ux::setColor(&historyPalleteCloseX->foregroundColor, 255, 255, 255, 96); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         historyPalleteHolder->addChild(historyPalleteCloseX);
 
+        historyPalleteScoreboardHolder = new uiObject();
+//        historyPalleteScoreboardHolder->hasBackground = true;
+//        Ux::setColor(&historyPalleteScoreboardHolder->backgroundColor, 0, 255, 0, 128);
+        historyPalleteHolder->addChild(historyPalleteScoreboardHolder);
+        
 
         palleteSelectionColorPreview = new uiViewColor(palleteSelectionPreviewHolder, Float_Rect(0.0, 0.0, 1.0, 1.0), true); // this rect is reset next...
 
@@ -83,12 +90,19 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         palleteScroller->updateTiles();
     }
 
+    void addScoreboard(uiObject* scoreboard){
+        historyPalleteScoreboardHolder->addChild(scoreboard);
+    }
+
+
     uiObject* uiObjectItself; // no real inheritance here, this its the uiHistoryPalleteEditor, I would use self->
     uiObject *historyPalleteHolder; // AKA ^ uiObjectItself
 
     uiEdgeShadow* historyPalleteHolderTlEdgeShadow;
     uiEdgeShadow* historyPalleteHolderBrEdgeShadow;
     uiEdgeShadow* palleteScrollerEdgeShadow;
+
+    uiObject *historyPalleteScoreboardHolder;
 
     uiObject *historyPalleteCloseX;
     uiScrollController *historyScroller;
@@ -107,6 +121,8 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
         historyPalleteHolder->setBoundaryRectForAnimState(&visible,&hidden );
 
+        historyPalleteScoreboardHolder->setBoundaryRect( 0.0, 1.015, 0.5, 0.075);
+
         if( uxInstance->widescreen ){
 
 
@@ -116,6 +132,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             historyPalleteHolder->setInteraction(&Ux::interactionHorizontal);
 
             historyPalleteCloseX->setBoundaryRect( 1.01, 0.5-0.025, 0.05, 0.05);
+
 
             newHistoryFullsize->setBoundaryRect( 0.0, 0.0, 0.6, 1.0);
             // historyScroller->resize()?
@@ -148,6 +165,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             historyPalleteHolder->setInteraction(&Ux::interactionVert);
 
             historyPalleteCloseX->setBoundaryRect( 0.5-0.025, 1.01, 0.05, 0.08);
+
 
             newHistoryFullsize->setBoundaryRect( 0.0, 0.0, 1.0, 0.6);
             // historyScroller->resize()?

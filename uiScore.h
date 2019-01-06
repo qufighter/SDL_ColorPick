@@ -23,6 +23,8 @@ struct uiScore{
 
         uiObjectItself = new uiObject();
 
+        scoreDisp = nullptr; // this is externally utitilized...
+
         score = new uiObject();
         score_position = new uiObject();
 
@@ -106,6 +108,9 @@ struct uiScore{
     uiObject *explanation;
     uiObject *explanation_position;
 
+    uiText *scoreText;
+    uiObject *scoreDisp;
+
     char* score_disp_char;
     bool isHighScore;
     Sint32 int_score;
@@ -120,10 +125,23 @@ struct uiScore{
     uiAminChain* chain6;
 
     uiObject* buildScoreDisplay(){
-
-        uiObject* scoreDisp = new uiObject();
-
+        scoreDisp = new uiObject();
+        //scoreDisp->setBoundaryRect(0,0,0.1,1.0);
+        scoreText = new uiText(scoreDisp, 0.1425);
+        updateScoreDisplay();
+        //uxInstance->printCharToUiObject(scoreDisp, CHAR_CLOSE_ICON, DO_NOT_RESIZE_NOW);
         return scoreDisp;
+    }
+
+    void updateScoreDisplay(){
+        if( scoreDisp != nullptr ){
+            Ux* uxInstance = Ux::Singleton();
+            SDL_snprintf(score_disp_char, maxLen, "%i", int_score); // -0
+            //uxInstance->printStringToUiObject(scoreDisp, score_disp_char, DO_NOT_RESIZE_NOW);
+            //scoreDisp->updateRenderPosition();
+
+            scoreText->print(score_disp_char);
+        }
     }
 
     void loose(uiObject *p_dispalyNearUiObject){
@@ -227,6 +245,8 @@ struct uiScore{
             int_max_score = int_score;
             isHighScore = true;
         }
+
+        updateScoreDisplay();
 
         //displayExplanation("-Yes it work-");
         //displayExplanation("-Yes-");

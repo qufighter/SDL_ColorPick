@@ -26,12 +26,20 @@ sort history colors "rewrite history"  (no index, pretty easy)
   buildScoreDisplay()
   
   // lets treat it as if they stopped interacting....
+    -- we can zoom the scrollers?
   
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 ##  can do
+
+collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
+^ while true, when is it scaled?  we may use this sometimes before it is scaled.
+
+
+crop an edge shadow
 
 this helper goes elsewhere?? static int compareColor
 

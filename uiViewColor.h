@@ -94,6 +94,7 @@ struct uiViewColor{
         uxInstance->printStringToUiObject(rgbRedText, resultText6char, DO_NOT_RESIZE_NOW);
         rgbRedText->squarifyChildren();
         rgbRedBg->setInteractionCallback(&pickRgbValueClicked);
+        rgbRedBg->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
 
 
         rgbGreenText = new uiObject();
@@ -110,6 +111,7 @@ struct uiViewColor{
         uxInstance->printStringToUiObject(rgbGreenText, resultText6char, DO_NOT_RESIZE_NOW);
         rgbGreenText->squarifyChildren();
         rgbGreenBg->setInteractionCallback(&pickRgbValueClicked);
+        rgbGreenBg->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
 
 
         rgbBlueText = new uiObject();
@@ -126,6 +128,7 @@ struct uiViewColor{
         uxInstance->printStringToUiObject(rgbBlueText, resultText6char, DO_NOT_RESIZE_NOW);
         rgbBlueText->squarifyChildren();
         rgbBlueBg->setInteractionCallback(&pickRgbValueClicked);
+        rgbBlueBg->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
 
 
         if( topShadow ){

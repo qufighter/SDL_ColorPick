@@ -182,6 +182,7 @@ static Ux* Singleton();
 #include "ux-HueGradientData.h"
 
 #include "uiObject.h" // referrs to Ux:: which referrs to uiObject...
+#include "uiText.h"
 #include "uiEdgeShadow.h"
 #include "uiScrollController.h"
 #include "uiViewColor.h"

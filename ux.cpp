@@ -649,14 +649,19 @@ Ux::uiObject* Ux::create(void){
 
     defaultScoreDisplay = new uiScore(rootUiObject);
 
+    historyPalleteEditor->addScoreboard(defaultScoreDisplay->buildScoreDisplay());
 
 
     //uiHueGradientScroller* gradTest = new uiHueGradientScroller(rootUiObject, Float_Rect(0.0,0.0,1.0,0.035), true);
+
+    //uiText::BOTTOM;
 
 
     updateRenderPositions();
 
     readInState(); // reads saved state into lists, requires historyPalleteEditor
+
+    defaultScoreDisplay->updateScoreDisplay();
 
 
     //test cololr history
