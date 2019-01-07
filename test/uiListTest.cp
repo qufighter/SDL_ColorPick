@@ -30,8 +30,8 @@ static bool colorEquals(SDL_Color * color, SDL_Color * bcolor){
     return color->r == bcolor->r && color->g == bcolor->g && color->b == bcolor->b;
 }
 
-static int indexForColor(SDL_Color* c){ // warn if your index components return zero its all zeroes
-    return (c->r+1) * (c->g+1) * (c->b+1);
+static int indexForColor(SDL_Color* c){
+    return (c->r*65536) + (c->g*256) + (c->b);
 }
 #define COLOR_INDEX_MAX 16777217 //  256^3 +1
 

@@ -37,6 +37,8 @@ struct uiEdgeShadow{
 
         // top edge....... or just an edge...  this is double edge
 
+            shadow_container = new uiObject();
+
             top_shadow = new uiObject();
 
             //top_shadow->setBoundaryRect( 0.0, -0.05, 1.0, 0.1);
@@ -44,6 +46,8 @@ struct uiEdgeShadow{
             Ux::setColor(&top_shadow->backgroundColor,0, 0, 0, 128);
             top_shadow->setRoundedCorners(0.5, 0.5, 0, 0);
             //uiObjectItself->addChild(top_shadow);
+            shadow_container->addChild(top_shadow);
+
 
             top_shadow2 = new uiObject();
             //top_shadow2->setBoundaryRect( 0.0, 0.25, 1.0, 0.5);
@@ -56,9 +60,15 @@ struct uiEdgeShadow{
 
 
 
-        parentObj->addBottomChild(top_shadow);
+//        shadow_container->hasBackground = true;
+//        Ux::setColor(&shadow_container->backgroundColor,0, 255, 0, 128);
 
-        top_shadow->myUiController = this;
+        parentObj->addBottomChild(shadow_container);
+
+        top_shadow->setCropParentRecursive(shadow_container);
+
+        shadow_container->myUiController = this;
+
 
         current_edge = initialEdge;
 
@@ -66,6 +76,7 @@ struct uiEdgeShadow{
 
     }
 
+    uiObject* shadow_container;
     uiObject* top_shadow; // this its the uiEdgeShadow, I would use self->
     uiObject* top_shadow2;
 
@@ -80,6 +91,10 @@ struct uiEdgeShadow{
 
     void addHighlight(){
         top_shadow2->doesInFactRender = true;
+    }
+
+    void setOpacity(Uint8 newOpacity){
+        top_shadow->backgroundColor.a = newOpacity;
     }
 
 
@@ -99,28 +114,45 @@ struct uiEdgeShadow{
 
         switch(edgeToUse){
             case SQUARE_EDGE_ENUM::TOP:{
-                top_shadow->setBoundaryRect(  0.0, -halfRenderScale, 1.0, render_scale );
+
+                shadow_container->setBoundaryRect(  0.0, -halfRenderScale, 1.0, halfRenderScale );
+
+                //top_shadow->setBoundaryRect(  0.0, -halfRenderScale, 1.0, render_scale );
+                top_shadow->setBoundaryRect(  0.0, 0.0, 1.0, 2.0 );
                 top_shadow2->setBoundaryRect( 0.0,  0.25, 1.0, 0.5 );
                 top_shadow->setRoundedCorners( 0.5, 0.5, 0, 0);
                 top_shadow2->setRoundedCorners(0.5, 0.5, 0, 0);
                 break;
             }
             case SQUARE_EDGE_ENUM::BOTTOM:{
-                top_shadow->setBoundaryRect(  0.0, 1.0-halfRenderScale, 1.0, render_scale );
+
+                shadow_container->setBoundaryRect(  0.0, 1.0, 1.0, halfRenderScale );
+
+                //top_shadow->setBoundaryRect(  0.0, 1.0-halfRenderScale, 1.0, render_scale );
+                top_shadow->setBoundaryRect(  0.0, -1.0, 1.0, 2.0 );
                 top_shadow2->setBoundaryRect( 0.0,  0.25, 1.0, 0.5 );
                 top_shadow->setRoundedCorners( 0, 0, 0.5, 0.5);
                 top_shadow2->setRoundedCorners(0, 0, 0.5, 0.5);
                 break;
             }
             case SQUARE_EDGE_ENUM::RIGHT:{
-                top_shadow->setBoundaryRect(  1.0-halfRenderScale, 0.0, render_scale, 1.0);
+
+
+                shadow_container->setBoundaryRect(  1.0, 0.0, halfRenderScale, 1.0 );
+
+                //top_shadow->setBoundaryRect(  1.0-halfRenderScale, 0.0, render_scale, 1.0);
+                top_shadow->setBoundaryRect(  -1.0, 0.0, 2.0, 1.0 );
                 top_shadow2->setBoundaryRect(  0.25, 0.0, 0.5, 1.0);
                 top_shadow->setRoundedCorners(  0, 0.5, 0.5, 0);
                 top_shadow2->setRoundedCorners( 0, 0.5, 0.5, 0);
                 break;
             }
             case SQUARE_EDGE_ENUM::LEFT:{
-                top_shadow->setBoundaryRect(  -halfRenderScale, 0.0, render_scale, 1.0);
+
+                shadow_container->setBoundaryRect( -halfRenderScale, 0.0, halfRenderScale, 1.0 );
+
+                //top_shadow->setBoundaryRect(  -halfRenderScale, 0.0, render_scale, 1.0);
+                top_shadow->setBoundaryRect(  0.0, 0.0, 2.0, 1.0 );
                 top_shadow2->setBoundaryRect(  0.25, 0.0, 0.5, 1.0);
                 top_shadow->setRoundedCorners( 0.5, 0, 0, 0.5);
                 top_shadow2->setRoundedCorners(0.5, 0, 0, 0.5);

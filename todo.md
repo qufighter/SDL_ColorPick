@@ -22,9 +22,7 @@ sort history colors "rewrite history"  (no index, pretty easy)
   
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
-    
-  buildScoreDisplay()
-  
+
   // lets treat it as if they stopped interacting....
     -- we can zoom the scrollers?
   
@@ -37,9 +35,6 @@ osx/ios jpg rotation not respected (is this exif rotation???)
 
 collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
 ^ while true, when is it scaled?  we may use this sometimes before it is scaled.
-
-
-crop an edge shadow
 
 this helper goes elsewhere?? static int compareColor
 
@@ -114,8 +109,6 @@ throw out of view - initial velocity maintain... if over threshold?
 128; //derp
   // use const static int then you don't need to derp!
 
-
-
 # platform specific todo
 
 > rate it 5 stars
@@ -161,3 +154,7 @@ anything using main loop timers (processed on main loop) are not processed....
   ^ this is at least addressed / worked around.... potential for future issues though since these custom events are just not processed
 10 phone special stuffs?
   ^ there is "no clock bar" on iphone 10
+
+# tests
+test history overwrote final color in index that it is released from the index (pretty sure it is...)
+

@@ -19,8 +19,10 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         uiObjectItself = new uiObject();
         historyPalleteHolder = uiObjectItself;
 
+        Uint8 opacity = 220;
+
         historyPalleteHolder->hasBackground = true;
-        Ux::setColor(&historyPalleteHolder->backgroundColor, 0, 0, 0, 220);
+        Ux::setColor(&historyPalleteHolder->backgroundColor, 0, 0, 0, opacity);
         historyPalleteHolder->setInteractionCallback(&interactionToggleHistory); // if we dragged and released... it will animate the rest of the way because of this
         historyPalleteHolder->setInteraction(&Ux::interactionVert);
         historyPalleteHolder->setBoundsEnterFunction(&Ux::interactionHistoryEnteredView);
@@ -43,6 +45,9 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
         historyPalleteHolderTlEdgeShadow = new uiEdgeShadow(historyPalleteHolder, SQUARE_EDGE_ENUM::TOP, 0.03);
         historyPalleteHolderBrEdgeShadow = new uiEdgeShadow(historyPalleteHolder, SQUARE_EDGE_ENUM::BOTTOM, 0.03);
+
+        historyPalleteHolderTlEdgeShadow->setOpacity(opacity);
+        historyPalleteHolderBrEdgeShadow->setOpacity(opacity);
 
 
         palleteSelectionPreviewHolder = new uiObject();

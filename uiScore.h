@@ -135,9 +135,12 @@ struct uiScore{
 
     void updateScoreDisplay(){
         if( scoreDisp != nullptr ){
-            Ux* uxInstance = Ux::Singleton();
-            SDL_snprintf(score_disp_char, maxLen, "%i", int_score); // -0
-            scoreText->print(score_disp_char);
+            if( int_score > 0 ){
+                SDL_snprintf(score_disp_char, maxLen, "%i", int_score); // -0
+                scoreText->print(score_disp_char);
+            }else{
+                scoreText->print("");
+            }
         }
     }
 
