@@ -11,16 +11,19 @@ add version string somewhere (do not let it look like an IP address!)  maybe thi
  > AndroidManifest.xml
 
 achievements
+   - points threshold achievements.... (besides int overflow)
 
 settings -
-  - if we disable scoring - some or all of the displayed explanations should still be preserved.... (eg "out of space!")
-  implement: bool game_enabled = settingsScroller->getBooleanSetting(uiSettingsScroller::UI_SETTING_GAME_ON);
+  - responsive issue with scroller
+  - text rendering issues with scale/crop
+  - buttons for 
+      - goto history
+      - open image
+      - open deafult image (s)  // pre-open dialogue (stock gradientz?)
+      - reset achievements
 
 
-pre-open dialogue (stock gradientz?)
-
-sort history colors "rewrite history"  (no index, pretty easy)
-  sort dialogue initial text -> "Sort?"
+sort dialogue initial text -> "Sort?" <- add more sort choices here
   
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
