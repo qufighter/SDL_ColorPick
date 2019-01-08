@@ -208,9 +208,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
     const char* achieveAchievement(Uint8 achievementKey){
         int position = settingsList->locateIndex(achievementKey);
         if( achievementKey > UI_SETTINGS_ENUM::UI_ACHEIVEMENT_START && achievementKey < UI_SETTINGS_ENUM::UI_SETTING_LAST && position > -1 ){
-
             SettingsListObj* setting = settingsList->get(position);
-
             switch(setting->settingType){
                 case SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT:
                 {
@@ -256,6 +254,11 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
                     ((uiControlBooleanToggle*)(setting->ourTileObject->myUiController))->setValue(readSetting.value);
                     break;
                 }
+                case SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT:
+                {
+                    ((uiControlAchievementToggle*)(setting->ourTileObject->myUiController))->setValue(readSetting.value);
+                    break;
+                }
                 default:
                     break;
             }
@@ -277,6 +280,12 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
                     case SETTING_TYPES_ENUM::BOOLEAN_TOGGLE:
                     {
                         valueToWrite = ((uiControlBooleanToggle*)(setting->ourTileObject->myUiController))->value();
+                        doWrite = true;
+                        break;
+                    }
+                    case SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT:
+                    {
+                        valueToWrite = ((uiControlAchievementToggle*)(setting->ourTileObject->myUiController))->value();
                         doWrite = true;
                         break;
                     }

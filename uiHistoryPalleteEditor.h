@@ -693,8 +693,8 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         Ux* uxInstance = Ux::Singleton();
         switch(eventCode){
             case YES_NO_RESULTS::RESULT_YES_FAST:
-                uxInstance->defaultScoreDisplay->display(interactionObj, 5 * quantitySelected, SCORE_EFFECTS::MOVE_UP);
                 //uxInstance->defaultScoreDisplay->displayExplanation(" Too Quick ");
+                uxInstance->defaultScoreDisplay->display(interactionObj, 5 * quantitySelected, SCORE_EFFECTS::MOVE_UP);
                 break;
             case YES_NO_RESULTS::RESULT_YES:
                 uxInstance->defaultScoreDisplay->display(interactionObj, 2 * quantitySelected, SCORE_EFFECTS::MOVE_UP);
@@ -847,10 +847,9 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
         myUxRef->palleteList->add(ColorList(interactionObj->backgroundColor));
         if( myUxRef->palleteList->_out_of_space ){
+            myUxRef->defaultScoreDisplay->display(interactionObj, 10, SCORE_EFFECTS::NOMOVE);
             //myUxRef->defaultScoreDisplay->displayExplanation("out of space!");
             myUxRef->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_NOSPACE);
-
-            myUxRef->defaultScoreDisplay->display(interactionObj, 10, SCORE_EFFECTS::NOMOVE);
         }else{
             myUxRef->defaultScoreDisplay->display(interactionObj, 5, SCORE_EFFECTS::NOMOVE);
         }

@@ -1464,9 +1464,9 @@ void Ux::addCurrentToPickHistory(){
 
     pickHistoryList->add(ColorList(*currentlyPickedColor));
     if( pickHistoryList->_out_of_space ){
+        defaultScoreDisplay->display(historyPreview->childList[0], 2);
         //defaultScoreDisplay->displayExplanation("out of space!");
         defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_NOSPACE);
-        defaultScoreDisplay->display(historyPreview->childList[0], 2);
     }else{
         defaultScoreDisplay->display(historyPreview->childList[0], 1);
     }

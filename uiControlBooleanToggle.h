@@ -14,6 +14,8 @@ struct uiControlBooleanToggle{
 
     uiControlBooleanToggle(uiObject* parentObj, const char* labelTxt, bool defaultValue){
 
+        settingsDefaultValue = defaultValue;  // IN CASE we want a "Reset" later...
+
         Ux* uxInstance = Ux::Singleton(); // some useful helper?
 
         uiObjectItself = new uiObject();
@@ -118,6 +120,7 @@ struct uiControlBooleanToggle{
 
     uiText *labelText;
 
+    bool settingsDefaultValue;
     bool checkedState;
 
     Uint8 value(){

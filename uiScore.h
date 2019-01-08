@@ -140,7 +140,7 @@ struct uiScore{
 
     void updateScoreDisplay(){
         if( scoreDisp != nullptr ){
-            if( int_score > 0 && isGameModeEnabled() ){
+            if( int_score != 0 && isGameModeEnabled() ){
                 SDL_snprintf(score_disp_char, maxLen, "%i", int_score); // -0
                 scoreText->print(score_disp_char);
             }else{
@@ -301,6 +301,7 @@ struct uiScore{
 
     }
 
+    // PLEASE call display() first - since it may have its own explanation (intOverflow) which we want to overwrite now....
     void displayExplanation(const char* textToShow){
         // longer strings won't work... the size is critical too (since if first char goes off screen it will not render)
         Ux* uxInstance = Ux::Singleton();

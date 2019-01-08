@@ -264,12 +264,12 @@ void OpenGLContext::pickerForHue(HSV_Color* color, SDL_Color* desired_color){
 
         if( matchDistance == 0 ){
             // exact match, after moving
-            generalUx->defaultScoreDisplay->displayExplanation(" [ ] ");
             generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 13, SCORE_EFFECTS::NOMOVE);
+            generalUx->defaultScoreDisplay->displayExplanation(" [ ] ");
         }else{
+            generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, matchDistance * 14, SCORE_EFFECTS::NOMOVE);
             //generalUx->defaultScoreDisplay->displayExplanation("*in-exact!!");
             generalUx->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_INEXACT);
-            generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, matchDistance * 14, SCORE_EFFECTS::NOMOVE);
         }
         // next up - modulate scoring based on exactness... further off more points....
 
@@ -281,9 +281,9 @@ void OpenGLContext::pickerForHue(HSV_Color* color, SDL_Color* desired_color){
         if( matchDistance == 0 ){
             generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 1, SCORE_EFFECTS::NOMOVE);
         }else{
+            generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, matchDistance * 14, SCORE_EFFECTS::NOMOVE);
             //generalUx->defaultScoreDisplay->displayExplanation("*in-exact!!");
             generalUx->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_INEXACT);
-            generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, matchDistance * 14, SCORE_EFFECTS::NOMOVE);
         }
     }
 }
@@ -356,9 +356,9 @@ void OpenGLContext::prepareForHuePickerMode(bool fromHueGradient) {
                 lastSelection.fromColor(lastHue);
                 int hueDis = SDL_abs(pickedHue - lastSelection.h);
                 if( hueDis < 5 ){
+                    generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 10 * (5-hueDis), SCORE_EFFECTS::NOMOVE);
                     //generalUx->defaultScoreDisplay->displayExplanation("Right Hue're");
                     generalUx->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_RIGHT_HUE);
-                    generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 10 * (5-hueDis), SCORE_EFFECTS::NOMOVE);
                 }
             }
         }
