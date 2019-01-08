@@ -294,6 +294,10 @@ struct uiScore{
 
         // this handles the displayExplanation
         // but it will also persist the achievement
+
+        Ux* uxInstance = Ux::Singleton();
+        displayExplanation(uxInstance->settingsScroller->achieveAchievement(achievementId));
+
     }
 
     void displayExplanation(const char* textToShow){

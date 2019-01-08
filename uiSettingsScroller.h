@@ -20,7 +20,7 @@ this is really different from uiHistoryPalleteEditor in that it takes up the ful
 struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and is pretty much singleton....
 
 
-    const static int maxSettings = 12;
+    const static int maxSettings = 25;
 
     typedef enum  {
         HEADING,
@@ -57,8 +57,14 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         // OK to add some here
 
         UI_ACHEIVEMENT_START = 128, // 0x80
-        UI_ACHEIVEMENT_ONE,
-        UI_ACHEIVEMENT_TWO,
+        UI_ACHEIVEMENT_INEXACT, // "*in-exact!!"
+        UI_ACHEIVEMENT_RIGHT_HUE, // "Right Hue're"
+        UI_ACHEIVEMENT_NOSPACE, // "out of space!"
+        UI_ACHEIVEMENT_REWROTE_HISTORY, // "Wrote History"
+        UI_ACHEIVEMENT_NO_FAST, // " No Thanks "
+        UI_ACHEIVEMENT_MUCH_RISK, // " Much Risk "
+        UI_ACHEIVEMENT_INT_OVERFLOW, // "int overflow!"
+
         // OK to add some here
 
         UI_SETTING_LAST = 255  // 0xFF
@@ -69,7 +75,6 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         Uint8 key;
         Uint8 value;
     } SettingsRwObject;
-
 
     static int indexForSetting(SettingsListObj* setting){
         return setting->settingKey;
@@ -134,6 +139,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         //settingsScroller->updateTiles();
 
         uiObject* dummyContainer=new uiObject();
+        uiObject* d = dummyContainer;
 
         settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("History")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
@@ -158,7 +164,26 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
         settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("Achievements")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
-        settingsList->add(SettingsListObj((new uiControlAchievementToggle(dummyContainer, "Got +1"))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_ONE));
+        //settingsList->add(SettingsListObj((new uiControlAchievementToggle(dummyContainer, "Got +1"))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_ONE));
+
+
+        // generalUx->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_INEXACT);
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "In-exact", "*in-exact!!", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_INEXACT));
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Right Hue're", "Right Hue're", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_RIGHT_HUE));
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "No Space", "out of space!", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_NOSPACE));
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Wrote History", "Wrote History", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_REWROTE_HISTORY));
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "No Thanks", " No Thanks ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_NO_FAST));
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Much Risk", " Much Risk ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_MUCH_RISK));
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Int Overflow", "int overflow!", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_INT_OVERFLOW));
+
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("Reset")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+
+        if( settingsList->_out_of_space ){
+            SDL_Log("\n\n\nERROR: we do not have enough maxSettings for all the settings scroller items!!!\n\n\n");
+            SDL_Quit();
+            exit(1);
+        }
 
 //        int position = settingsList->locateIndex(UI_SETTINGS_ENUM::UI_SETTING_GAME_ON);
 //        SettingsListObj* s = settingsList->get(position);
@@ -179,6 +204,27 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
     uiScrollController *settingsScroller;
 
     uiObject *settingsScrollerItself; // just a ref to historyScroller's uiObjectItself
+
+    const char* achieveAchievement(Uint8 achievementKey){
+        int position = settingsList->locateIndex(achievementKey);
+        if( achievementKey > UI_SETTINGS_ENUM::UI_ACHEIVEMENT_START && achievementKey < UI_SETTINGS_ENUM::UI_SETTING_LAST && position > -1 ){
+
+            SettingsListObj* setting = settingsList->get(position);
+
+            switch(setting->settingType){
+                case SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT:
+                {
+                    return ((uiControlAchievementToggle*)(setting->ourTileObject->myUiController))->achieveAchievement();
+                    break;
+                }
+                default:
+                    return "";
+                    break;
+            }
+
+        }
+        return "";
+    }
 
     bool getBooleanSetting(Uint8 settingKey){
         int position = settingsList->locateIndex(settingKey);

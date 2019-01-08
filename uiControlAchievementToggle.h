@@ -12,7 +12,12 @@
 
 struct uiControlAchievementToggle{
 
-    uiControlAchievementToggle(uiObject* parentObj, const char* labelTxt){
+    uiControlAchievementToggle(uiObject* parentObj, const char* labelTxt, const char* achivementTxt, bool isHiddenAchievement){
+
+
+        label_chars = labelTxt;
+        achievement_chars = achivementTxt;
+        hidden = isHiddenAchievement;
 
         Ux* uxInstance = Ux::Singleton(); // some useful helper?
 
@@ -36,8 +41,7 @@ struct uiControlAchievementToggle{
 //        uxInstance->printCharToUiObject(rightSquare, CHAR_CANCEL_ICON, DO_NOT_RESIZE_NOW);
 
 
-        labelText = new uiText(uiObjectItself, 0.09);
-        labelText->print(labelTxt);
+        labelText = new uiText(uiObjectItself, 0.065);
 
         updateState(false);
 
@@ -52,6 +56,10 @@ struct uiControlAchievementToggle{
 
     uiText *labelText;
 
+    const char* label_chars;
+    const char* achievement_chars;
+
+    bool hidden;
     bool checkedState;
 
     Uint8 value(){
@@ -69,16 +77,27 @@ struct uiControlAchievementToggle{
     void updateState(bool newState){
         Ux* uxInstance = Ux::Singleton();
         if( newState ){ // enabled/checked
-            labelText->color(255, 255, 255, 255);
             Ux::setColor(&rightSquare->foregroundColor, 0, 199, 26, 255);
             uxInstance->printCharToUiObject(rightSquare, CHAR_CHECKMARK_ICON, DO_NOT_RESIZE_NOW);
-
+            labelText->color(255, 255, 255, 255);
+            labelText->print(label_chars);
         }else{
-            labelText->color(128, 128, 128, 255);
             Ux::setColor(&rightSquare->foregroundColor, 128, 128, 128, 255);
             uxInstance->printCharToUiObject(rightSquare, CHAR_CANCEL_ICON, DO_NOT_RESIZE_NOW);
+            labelText->color(128, 128, 128, 255);
+            if( hidden ){
+                labelText->print("* * * *");
+            }else{
+                labelText->print(label_chars);
+            }
         }
         checkedState = newState;
+    }
+
+    const char* achieveAchievement(){
+        Ux* uxInstance = Ux::Singleton();
+        updateState( true ); // still will need to save to disk....
+        return achievement_chars;
     }
 
 //    static void interactionToggleControl(uiObject *interactionObj, uiInteraction *delta){
