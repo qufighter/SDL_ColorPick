@@ -1200,15 +1200,29 @@ struct uiObject
         
     }
 
+    // note: this only works because we've already called updateRenderPosition on ALL child nodes before we are trying to stack anything
+    // but the limitation is stacking the children of a stacked element might not work right...
+    void applyStackingDisplacement(float xDisp, float yDisp){
+        renderRect.x += xDisp;
+        collisionRect.x  += (xDisp * 0.5);
+        renderRect.y += yDisp;
+        collisionRect.y  += (yDisp * 0.5);
+        applyStackingDisplacementToChildNodes(xDisp,yDisp);
+    }
+
+    void applyStackingDisplacementToChildNodes(float xDisp, float yDisp){
+        for( int x=0,l=childListIndex; x<l; x++ ){
+            childList[x]->applyStackingDisplacement(xDisp,yDisp);
+        }
+    }
+
     float applyStacking(Float_Rect* parentRenderRect, float stackingOffset){
 
         if( stack_right ){
             float newPosition = parentRenderRect->x + parentRenderRect->w - renderRect.w - stackingOffset;
 
             float displacement = newPosition - renderRect.x;
-            renderRect.x += displacement;
-
-            collisionRect.x  += (displacement * 0.5);
+            applyStackingDisplacement(displacement, 0.0);
 
             return stackingOffset + (renderRect.w * 2.0);
         }
@@ -1217,9 +1231,7 @@ struct uiObject
             float newPosition = parentRenderRect->y + parentRenderRect->h - renderRect.h - stackingOffset;
 
             float displacement = newPosition - renderRect.y;
-            renderRect.y += displacement;
-
-            collisionRect.y  += (displacement * 0.5);
+            applyStackingDisplacement(0.0, displacement);
 
             return stackingOffset + (renderRect.h * 2.0);
 
@@ -1227,7 +1239,14 @@ struct uiObject
 
         return 0.0;
     }
-    
+
+    void propagateTextSettings(){
+        for( int x=0,l=childListIndex; x<l; x++ ){
+            Ux::setColor(&childList[x]->backgroundColor, &backgroundColor);
+            Ux::setColor(&childList[x]->foregroundColor, &foregroundColor);
+        }
+    }
+
     void organizeChildNodesBasedOnTextDir(){
 
         int ctr=0;

@@ -93,6 +93,7 @@ Ux::Ux(void) {
 
     GetPrefPath(preferencesPath, "history.bin", &historyPath);
     GetPrefPath(preferencesPath, "pallete.bin", &palletePath);
+    GetPrefPath(preferencesPath, "setting.bin", &settingPath);
     GetPrefPath(preferencesPath, "records.bin", &scoresPath);
 
     SDL_free(preferencesPath);
@@ -151,6 +152,23 @@ void Ux::readInState(void){
     //palleteList->addAll(newPalleteList, quantityBytesRead);
     SDL_free(newPalleteList);
     updatePalleteScroller();
+
+
+
+    quantityBytesRead = 0;
+    eachElementSize = sizeof(uiSettingsScroller::SettingsRwObject);
+    int maxSettingsStorageSize = 255;
+    uiSettingsScroller::SettingsRwObject* newSettingsList = (uiSettingsScroller::SettingsRwObject*)SDL_malloc( eachElementSize * maxSettingsStorageSize );
+    readInState(settingPath, newSettingsList, maxSettingsStorageSize * eachElementSize, &quantityBytesRead);
+    memOffset = 0;
+    readOffset = 0;
+    while( memOffset < quantityBytesRead ){
+        settingsScroller->applyReadSettingsState(newSettingsList[readOffset++]);
+        memOffset+=eachElementSize;
+    }
+    SDL_free(newSettingsList);
+
+
 
 
     eachElementSize = sizeof(Sint32);
@@ -246,6 +264,7 @@ void Ux::writeOutState(void){
     SDL_free(myIterator);
     SDL_RWclose(fileref);
 
+    
 //    totalUint8s = palleteList->memorySize();
 //    memref = SDL_RWFromMem(palleteList->listItself, totalUint8s);
 //    fileref = SDL_RWFromFile(palletePath, "w");
@@ -256,6 +275,11 @@ void Ux::writeOutState(void){
 //    }
 //    if( memref != NULL ) SDL_RWclose(memref);
 //    SDL_RWclose(fileref);
+
+    fileref = SDL_RWFromFile(settingPath, "w");
+    settingsScroller->writeSettingsToFile(fileref);
+    SDL_RWclose(fileref);
+
 
     fileref = SDL_RWFromFile(scoresPath, "w");
     SDL_WriteBE32(fileref, defaultScoreDisplay->int_max_score);
@@ -328,10 +352,12 @@ void Ux::resizeUiElements(void){
             temp1= (1.0-temp)/((float)bottomBarRightStack->getChildCount());
             bottomBarRightStack->setBoundaryRect( 0.0, 1.0-temp1,
                     1.0, temp1); // max size of single stacked right component?
-                pickSourceBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
-                addHistoryBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+//                pickSourceBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+//                addHistoryBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+//                optionsGearBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
                 pickSourceBtn->stackBottom();
                 addHistoryBtn->stackBottom();
+                optionsGearBtn->stackBottom();
 
         huePicker->resize(Float_Rect(1.0-0.27777777777778, ws_clock, hue_picker, 1.0 - ws_clock ));
         returnToLastImgBtn->setBoundaryRect( 1.0-0.27777777777778 - 0.1, ws_clock, 0.1, 0.1 * screenRatio);
@@ -342,10 +368,12 @@ void Ux::resizeUiElements(void){
             historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::BTT, true);
 
         // depending on animation state rect is different....
-        historyPalleteEditor->resize(
-            Float_Rect(0.025, ws_clock, 0.92, 1.0 - ws_clock), // visible and orig
-            Float_Rect(1.0, ws_clock, 0.92, 1.0 - ws_clock) // hidden
-        );
+        Float_Rect visibleModal = Float_Rect(0.025, ws_clock, 0.92, 1.0 - ws_clock);
+        Float_Rect hiddenModal = Float_Rect(1.0, ws_clock, 0.92, 1.0 - ws_clock);
+
+        historyPalleteEditor->resize(visibleModal, hiddenModal);
+        settingsScroller->resize(visibleModal, hiddenModal);
+
 
 
         temp = 0.15;
@@ -374,10 +402,12 @@ void Ux::resizeUiElements(void){
 
             temp = (1.0 - zoomSliderHolder->boundryRect.w) / (float)bottomBarRightStack->getChildCount(); // 2 total stack right components
             bottomBarRightStack->setBoundaryRect( 1.0-temp, 0.0, temp, 1.0); // max size of single stacked right component?
-                pickSourceBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
-                addHistoryBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+//                pickSourceBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+//                addHistoryBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+//                optionsGearBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
                 pickSourceBtn->stackRight();
                 addHistoryBtn->stackRight();
+                optionsGearBtn->stackRight();
 
         huePicker->resize(Float_Rect(0.0, 0.7, 1.0, hue_picker));
         returnToLastImgBtn->setBoundaryRect( 0.0, 0.7 - 0.1, 0.1 / screenRatio, 0.1);
@@ -391,10 +421,11 @@ void Ux::resizeUiElements(void){
 
         float clocky_space = 0.032;
 
-        historyPalleteEditor->resize(
-            Float_Rect(0.0, clock_bar+clocky_space,     1.0, 0.92-clock_bar-clocky_space), // visible and orig
-            Float_Rect(0.0, clock_bar+clocky_space+1.0, 1.0, 0.92-clock_bar-clocky_space) // hidden
-        );
+        Float_Rect visibleModal = Float_Rect(0.0, clock_bar+clocky_space,     1.0, 0.92-clock_bar-clocky_space);
+        Float_Rect hiddenModal = Float_Rect(0.0, clock_bar+clocky_space+1.0, 1.0, 0.92-clock_bar-clocky_space);
+
+        historyPalleteEditor->resize(visibleModal, hiddenModal);
+        settingsScroller->resize(visibleModal, hiddenModal);
 
 
         temp = 0.27777777777778 + 0.04;
@@ -533,6 +564,16 @@ Ux::uiObject* Ux::create(void){
     addHistoryBtn->setRoundedCorners(0.5);
 
 
+    optionsGearBtn = new uiObject();
+    optionsGearBtn->hasForeground = true;
+    Ux::setColor(&optionsGearBtn->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+    //    optionsGearBtn->hasBackground = true;
+    //    Ux::setColor(&optionsGearBtn->backgroundColor, 32, 0, 0, 128);
+    //optionsGearBtn->setClickInteractionCallback(&Ux::interactionAddHistory); // TODO rename me
+    printCharToUiObject(optionsGearBtn, CHAR_GEAR_ICON, DO_NOT_RESIZE_NOW);
+    optionsGearBtn->squarify(); // "keep round"
+    optionsGearBtn->setRoundedCorners(0.5);
+
 
     bottomBarRightStack = new uiObject();
     bottomBarRightStack->testChildCollisionIgnoreBounds = true; // need to check clicks on child objects.......
@@ -544,6 +585,7 @@ Ux::uiObject* Ux::create(void){
     // stacked bottom bar elements...
     bottomBarRightStack->addChildStackedRight(addHistoryBtn);
     bottomBarRightStack->addChildStackedRight(pickSourceBtn);
+    bottomBarRightStack->addChildStackedRight(optionsGearBtn);
 
     bottomBar->addChild(bottomBarRightStack);
 
@@ -632,6 +674,10 @@ Ux::uiObject* Ux::create(void){
     historyPreviewHolder->setInteractionCallback(&historyPalleteEditor->interactionToggleHistory);
 
 
+    settingsScroller = new uiSettingsScroller(rootUiObject);
+    optionsGearBtn->setClickInteractionCallback(&Ux::interactionVisitSettings);
+
+
     defaultYesNoChoiceHolder = new uiObject();
     //defaultYesNoChoiceHolder->setBoundaryRect(0.0, -1.0, 1.0, 1.0);
     defaultYesNoChoiceHolder->setDefaultHidden();
@@ -661,6 +707,9 @@ Ux::uiObject* Ux::create(void){
 
     readInState(); // reads saved state into lists, requires historyPalleteEditor
 
+
+    bool game_enabled = settingsScroller->getBooleanSetting(uiSettingsScroller::UI_SETTING_GAME_ON);
+
     defaultScoreDisplay->updateScoreDisplay();
 
 
@@ -679,6 +728,9 @@ Ux::uiObject* Ux::create(void){
     // todo we should just chain a interactionTogglePalletePreview
     //interactionTogglePalletePreview(nullptr, nullptr);
     historyPalleteEditor->interactionToggleHistory(nullptr, nullptr);
+
+    settingsScroller->interactionToggleSettings(nullptr, nullptr);
+
 
 /*
      typedef struct
@@ -1029,7 +1081,7 @@ bool Ux::interactionComplete(uiInteraction *delta){
 
     // so in some cases, the interaction is complete even if the object changed!?!
 
-    if( isInteracting && interactionObject->hasInteractionCb ){
+    if( isInteracting && interactionObject->hasInteractionCb && interactionObject->interactionCallback != nullptr ){
         isInteracting = false;
         interactionObject->interactionCallback(interactionObject, delta);
         return true;
@@ -1084,6 +1136,13 @@ void Ux::interactionFileBrowserTime(uiObject *interactionObj, uiInteraction *del
     myUxRef->uxAnimations->scale_bounce(interactionObj, 0.001);
     OpenGLContext* ogg=OpenGLContext::Singleton();
     ogg->chooseFile();
+}
+
+//static
+void Ux::interactionVisitSettings(uiObject *interactionObj, uiInteraction *delta){
+    Ux* myUxRef = Ux::Singleton();
+    myUxRef->uxAnimations->scale_bounce(interactionObj, 0.001);
+    myUxRef->settingsScroller->interactionToggleSettings(interactionObj, delta);
 }
 
 
@@ -1227,7 +1286,7 @@ void Ux::clickZoomSliderBg(uiObject *interactionObj, uiInteraction *delta){
 //static // this seems like interactionSliderHZ ? // must have move boundary rect....
 void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
 
-
+    interactionObj->cancelCurrentAnimation();
 
     interactionObj->boundryRect.x += (delta->rx * (1.0/interactionObj->parentObject->collisionRect.w));
     /// we cannot modify the rect directly like this?

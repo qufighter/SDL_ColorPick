@@ -133,9 +133,14 @@ struct uiScore{
         return scoreDisp;
     }
 
+    bool isGameModeEnabled(){
+        Ux* uxInstance = Ux::Singleton();
+        return uxInstance->settingsScroller->getBooleanSetting(uiSettingsScroller::UI_SETTING_GAME_ON);
+    }
+
     void updateScoreDisplay(){
         if( scoreDisp != nullptr ){
-            if( int_score > 0 ){
+            if( int_score > 0 && isGameModeEnabled() ){
                 SDL_snprintf(score_disp_char, maxLen, "%i", int_score); // -0
                 scoreText->print(score_disp_char);
             }else{
@@ -149,7 +154,7 @@ struct uiScore{
     }
 
     void loose(uiObject *p_dispalyNearUiObject, int effectNum){
-        if( isHighScore && int_score > 10 ){
+        if( isHighScore && int_score > 10 && isGameModeEnabled() ){
             displayExplanation("  High Score!");
         }
         display(p_dispalyNearUiObject, -int_score, effectNum);
@@ -163,81 +168,84 @@ struct uiScore{
 
     void display(uiObject *p_dispalyNearUiObject, int numberToDisplay, int effectNum){
 
-        Ux* uxInstance = Ux::Singleton();
-        bool widescreen = uxInstance->widescreen;
-        float bounceIntensity = -0.001;
+        if( isGameModeEnabled() ){
+
+            Ux* uxInstance = Ux::Singleton();
+            bool widescreen = uxInstance->widescreen;
+            float bounceIntensity = -0.001;
 
 
-        //uiObjectItself->show();
-        //score_position->matrix = glm::mat4(1.0);
+            //uiObjectItself->show();
+            //score_position->matrix = glm::mat4(1.0);
 
-        // we had better create a new animation for EACH one we free here...
-        chain1->endAnimation();
-        chain1 = uxInstance->uxAnimations->reset_matrix(score_position)->preserveReference();
+            // we had better create a new animation for EACH one we free here...
+            chain1->endAnimation();
+            chain1 = uxInstance->uxAnimations->reset_matrix(score_position)->preserveReference();
 
-        if( int_score + numberToDisplay < SDL_MAX_SINT32 ){
+            if( int_score + numberToDisplay < SDL_MAX_SINT32 ){
 
-            if( int_score + numberToDisplay < 0 ){
-                // this is pretty special... means we overflowed Sint32...
-                // we could modulate color/ animation/ etc...
-                displayExplanation("int overflow!");
-            }
-
-            if( numberToDisplay > 0 ){
-                SDL_snprintf(score_disp_char, maxLen, "+%i", numberToDisplay);
-                handlePositioning(p_dispalyNearUiObject);
-                chain2->endAnimation();
-                chain3->endAnimation();
-                switch( effectNum ){
-                    case SCORE_EFFECTS::NOMOVE:
-                        chain2 = uxInstance->uxAnimations->spin(score_position)->preserveReference();
-                        chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
-                        break;
-                    case SCORE_EFFECTS::MOVE_UP:
-                        chain2 = uxInstance->uxAnimations->slideUpFullHeight(score_position)->preserveReference();
-                        chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
-                        break;
-                    case SCORE_EFFECTS::DEFAULT:
-                    default:
-                        chain2 = uxInstance->uxAnimations->softBounce(score_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
-                        chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
-                        break;
+                if( int_score + numberToDisplay < 0 ){
+                    // this is pretty special... means we overflowed Sint32...
+                    // we could modulate color/ animation/ etc...
+                    displayExplanation("int overflow!");
                 }
 
-            }else{
+                if( numberToDisplay > 0 ){
+                    SDL_snprintf(score_disp_char, maxLen, "+%i", numberToDisplay);
+                    handlePositioning(p_dispalyNearUiObject);
+                    chain2->endAnimation();
+                    chain3->endAnimation();
+                    switch( effectNum ){
+                        case SCORE_EFFECTS::NOMOVE:
+                            chain2 = uxInstance->uxAnimations->spin(score_position)->preserveReference();
+                            chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
+                            break;
+                        case SCORE_EFFECTS::MOVE_UP:
+                            chain2 = uxInstance->uxAnimations->slideUpFullHeight(score_position)->preserveReference();
+                            chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
+                            break;
+                        case SCORE_EFFECTS::DEFAULT:
+                        default:
+                            chain2 = uxInstance->uxAnimations->softBounce(score_position, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0)->preserveReference();
+                            chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.007, uxInstance->uxAnimations->mat_zeroscale)->preserveReference(); // TODO: inherit anim
+                            break;
+                    }
 
-                if( numberToDisplay > -1 ){
-                    SDL_snprintf(score_disp_char, maxLen, "-%i", numberToDisplay); // -0
                 }else{
-                    // "loose" condition
-                    SDL_snprintf(score_disp_char, maxLen, "%i", numberToDisplay);
+
+                    if( numberToDisplay > -1 ){
+                        SDL_snprintf(score_disp_char, maxLen, "-%i", numberToDisplay); // -0
+                    }else{
+                        // "loose" condition
+                        SDL_snprintf(score_disp_char, maxLen, "%i", numberToDisplay);
+                    }
+                    handlePositioning(p_dispalyNearUiObject);
+                    chain2->endAnimation();
+                    chain3->endAnimation();
+                    switch( effectNum ){
+                        case SCORE_EFFECTS::NOMOVE:
+                            chain2 = uxInstance->uxAnimations->spin(score_position, -1)->preserveReference();
+                            chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.005, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
+                            break;
+                        case SCORE_EFFECTS::MOVE_UP:
+                            chain2 = uxInstance->uxAnimations->slideUpFullHeight(score_position)->preserveReference();
+                            chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.005, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
+                            break;
+                        case SCORE_EFFECTS::DEFAULT:
+                        default:
+                            chain2 = uxInstance->uxAnimations->emphasizedBounce(score_position, widescreen?bounceIntensity:0, widescreen?0:bounceIntensity)->preserveReference();
+                            chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.005, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
+                            break;
+                    }
                 }
-                handlePositioning(p_dispalyNearUiObject);
-                chain2->endAnimation();
-                chain3->endAnimation();
-                switch( effectNum ){
-                    case SCORE_EFFECTS::NOMOVE:
-                        chain2 = uxInstance->uxAnimations->spin(score_position, -1)->preserveReference();
-                        chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.005, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
-                        break;
-                    case SCORE_EFFECTS::MOVE_UP:
-                        chain2 = uxInstance->uxAnimations->slideUpFullHeight(score_position)->preserveReference();
-                        chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.005, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
-                        break;
-                    case SCORE_EFFECTS::DEFAULT:
-                    default:
-                        chain2 = uxInstance->uxAnimations->emphasizedBounce(score_position, widescreen?bounceIntensity:0, widescreen?0:bounceIntensity)->preserveReference();
-                        chain3 = uxInstance->uxAnimations->scale_bounce(score_position, 0.005, uxInstance->uxAnimations->mat_zeroscale)->preserveReference();
-                        break;
-                }
+
+
+                uxInstance->printStringToUiObject(score, score_disp_char, DO_NOT_RESIZE_NOW);
+
             }
 
-
-            uxInstance->printStringToUiObject(score, score_disp_char, DO_NOT_RESIZE_NOW);
-
+            score_position->updateRenderPosition();
         }
-
-        score_position->updateRenderPosition();
 
         int_score += numberToDisplay;
 
@@ -280,6 +288,12 @@ struct uiScore{
             score_position->boundryRect.x -= hidLeftAmt; // minus a negative
         }
 
+    }
+
+    void displayAchievement(int achievementId){
+
+        // this handles the displayExplanation
+        // but it will also persist the achievement
     }
 
     void displayExplanation(const char* textToShow){

@@ -151,14 +151,20 @@ struct uiList
 
     int locate(genType item){
         if( _indexed ){
-            _tmp_index_offset = indexOffsetGen(&item);
+            return locateIndex(indexOffsetGen(&item));
+        }else{
+            // search whole array?
+            SDL_Log("Sorry locate in un-indexed list not currently supported");
+        }
+        return -1; // missing
+    }
 
-            int position = indexItself[_tmp_index_offset];
-
+    int locateIndex(int provided_index){
+        if( _indexed ){
+            int position = indexItself[provided_index];
             if( position > -1 && position < maxSize ){
                 return position;
             }
-
         }else{
             // search whole array?
             SDL_Log("Sorry locate in un-indexed list not currently supported");

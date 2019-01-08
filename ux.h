@@ -190,6 +190,8 @@ static Ux* Singleton();
 //#include "uiSqware.h"  // its because we don't really have square, and if we do we do not really need this, because squares would already be squares
 #include "uiNavArrows.h"
 #include "uiYesNoChoice.h"
+#include "uiControlBooleanToggle.h"
+#include "uiControlAchievementToggle.h"
 #include "uiHueGradientScroller.h"
 #include "uiHueGradient.h"
 #include "uiScore.h"
@@ -197,6 +199,7 @@ static Ux* Singleton();
 #include "uiRunningMan.h"
 #include "uiSortChooser.h"
 #include "uiHistoryPalleteEditor.h"
+#include "uiSettingsScroller.h"
 
 #include "ux-anim.h"
     
@@ -255,6 +258,7 @@ static Ux* Singleton();
     static void interactionFileBrowserTime(uiObject *interactionObj, uiInteraction *delta);
     static void interactionReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta);
     static void interactionBeginReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta);
+    static void interactionVisitSettings(uiObject *interactionObj, uiInteraction *delta);
     static void interactionAddHistory(uiObject *interactionObj, uiInteraction *delta);
     static void clickZoomSliderBg(uiObject *interactionObj, uiInteraction *delta);
     static void interactionHZ(uiObject *interactionObj, uiInteraction *delta);
@@ -333,6 +337,7 @@ static Ux* Singleton();
         uiObject *bottomBarRightStack;
         uiObject *pickSourceBtn;
         uiObject *addHistoryBtn;
+        uiObject *optionsGearBtn;
 
         uiObject *returnToLastImgBtn;
 
@@ -352,6 +357,7 @@ static Ux* Singleton();
         uiScore* defaultScoreDisplay;
 
         uiHistoryPalleteEditor* historyPalleteEditor;
+        uiSettingsScroller* settingsScroller;
         uiToolMenu* rClickMenu;
 
         uiObject *historyPreviewHolder;
@@ -375,6 +381,7 @@ static Ux* Singleton();
 
     char* historyPath;
     char* palletePath;
+    char* settingPath;
     char* scoresPath;
 
 private:

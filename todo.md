@@ -14,6 +14,8 @@ achievements
 
 settings -
   - if we disable scoring - some or all of the displayed explanations should still be preserved.... (eg "out of space!")
+  implement: bool game_enabled = settingsScroller->getBooleanSetting(uiSettingsScroller::UI_SETTING_GAME_ON);
+
 
 pre-open dialogue (stock gradientz?)
 

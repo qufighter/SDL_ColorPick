@@ -129,6 +129,12 @@ struct uiText{
         return this;
     }
 
+    uiText* color(Uint8 r, Uint8 g, Uint8 b, Uint8 a){
+        Ux::setColor(&text_itself->foregroundColor,r, g, b, a);
+        text_itself->propagateTextSettings();
+        return this;
+    }
+
 
     /*
 
