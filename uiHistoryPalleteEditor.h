@@ -699,12 +699,16 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             case YES_NO_RESULTS::RESULT_YES:
                 uxInstance->defaultScoreDisplay->display(interactionObj, 2 * quantitySelected, SCORE_EFFECTS::MOVE_UP);
                 // we should consider checking on quantitySelected.... to see if we really effected any change?
-                uxInstance->defaultScoreDisplay->displayExplanation("Wrote History");
+                //uxInstance->defaultScoreDisplay->displayExplanation("Wrote History");
+                uxInstance->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_REWROTE_HISTORY);
+
 
                 break;
             case YES_NO_RESULTS::RESULT_NO_FAST:
                 uxInstance->defaultScoreDisplay->display(interactionObj, 5, SCORE_EFFECTS::MOVE_UP);
-                uxInstance->defaultScoreDisplay->displayExplanation(" No Thanks ");
+                //uxInstance->defaultScoreDisplay->displayExplanation(" No Thanks ");
+                uxInstance->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_NO_FAST);
+
                 break;
             case YES_NO_RESULTS::RESULT_NO:
             default:
@@ -843,7 +847,9 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
         myUxRef->palleteList->add(ColorList(interactionObj->backgroundColor));
         if( myUxRef->palleteList->_out_of_space ){
-            myUxRef->defaultScoreDisplay->displayExplanation("out of space!");
+            //myUxRef->defaultScoreDisplay->displayExplanation("out of space!");
+            myUxRef->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_NOSPACE);
+
             myUxRef->defaultScoreDisplay->display(interactionObj, 10, SCORE_EFFECTS::NOMOVE);
         }else{
             myUxRef->defaultScoreDisplay->display(interactionObj, 5, SCORE_EFFECTS::NOMOVE);

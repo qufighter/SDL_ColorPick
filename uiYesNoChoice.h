@@ -382,14 +382,16 @@ struct uiYesNoChoice{
         switch(eventCode){
             case YES_NO_RESULTS::RESULT_YES_FAST:
                 uxInstance->defaultScoreDisplay->display(interactionObj, 10 * quantitySelected, SCORE_EFFECTS::MOVE_UP);
-                uxInstance->defaultScoreDisplay->displayExplanation(" Much Risk ");
+                //uxInstance->defaultScoreDisplay->displayExplanation(" Much Risk ");
+                uxInstance->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_MUCH_RISK);
                 break;
             case YES_NO_RESULTS::RESULT_YES:
                 uxInstance->defaultScoreDisplay->display(interactionObj, 2 * quantitySelected, SCORE_EFFECTS::MOVE_UP);
                 break;
             case YES_NO_RESULTS::RESULT_NO_FAST:
                 uxInstance->defaultScoreDisplay->display(interactionObj, 10, SCORE_EFFECTS::MOVE_UP);
-                uxInstance->defaultScoreDisplay->displayExplanation(" No Thanks ");
+                //uxInstance->defaultScoreDisplay->displayExplanation(" No Thanks ");
+                uxInstance->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_NO_FAST);
                 break;
             case YES_NO_RESULTS::RESULT_NO:
             default:

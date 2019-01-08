@@ -187,7 +187,8 @@ struct uiScore{
                 if( int_score + numberToDisplay < 0 ){
                     // this is pretty special... means we overflowed Sint32...
                     // we could modulate color/ animation/ etc...
-                    displayExplanation("int overflow!");
+                    //displayExplanation("int overflow!");
+                    displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_INT_OVERFLOW);
                 }
 
                 if( numberToDisplay > 0 ){
