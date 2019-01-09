@@ -149,7 +149,14 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         temp->squarify();
         Ux::setColor(&temp->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
 
+
         settingsList->add(SettingsListObj(temp, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+
+        settingsList->add(SettingsListObj((new uiControlButton(d, "Click Here", &interactionClickGoToHistoryBtn))->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+
+
 
         settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("Images")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
@@ -243,6 +250,8 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         return false;
     }
 
+    // low level read/write
+
     void applyReadSettingsState(SettingsRwObject readSetting){
         SDL_Log("WE had read a setting from disk, here is the enum: %d %d", readSetting.key, readSetting.value);
         int position = settingsList->locateIndex(readSetting.key);
@@ -324,9 +333,39 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
         SettingsListObj* listItem = self->settingsList->get(offset);
 
+        if( listItem == nullptr ){
+            SDL_Log("We got a nullptr");
+        }
+
+
+        if( listItem->ourTileObject->hasParentObject ){
+            listItem->ourTileObject->parentObject->empty(); // we avoid being mulitply added.... addChild could arguably help with this sort of thing....
+        }
+
         scrollerTile->empty();
         scrollerTile->addChild(listItem->ourTileObject);
         scrollerTile->show();
+
+        listItem->ourTileObject->setCropParentRecursive(self->settingsScrollerItself);
+
+
+//        SDL_Log("SOME BOUNDARIES %d %d %f %f %f %f -  %f %f %f %f",
+//                offset, scrollerTile->childListIndex,
+//                listItem->ourTileObject->boundryRect.x,
+//                listItem->ourTileObject->boundryRect.y,
+//                listItem->ourTileObject->boundryRect.w,
+//                listItem->ourTileObject->boundryRect.h,
+//                scrollerTile->boundryRect.x,
+//                scrollerTile->boundryRect.y,
+//                scrollerTile->boundryRect.w,
+//                scrollerTile->boundryRect.h
+//            );
+//
+//        myUxRef->printCharToUiObject(scrollerTile, 'Z'-offset, true);
+//
+//
+//        myUxRef->printCharToUiObject(listItem->ourTileObject, 'Z'-offset, true);
+
 
         //listItem->ourTileObject->setCropParentRecursive(scrollerTile);
         //listItem->ourTileObject->setCropParent(scrollerTile);
@@ -335,7 +374,11 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         //scrollerTile->setCropModeOrigPosition(); // influences the rendering of the X while we bounce (duplicate detected)
         //scrollerTile->setCropModeOrigPosition(); // influences the rendering of the X while we bounce (duplicate detected)
 
-        scrollerTile->setCropParentRecursive(self->settingsScrollerItself);
+       // this should be auto set....
+
+
+
+
 //        listItem->ourTileObject->setCropModeOrigPosition();
 //        listItem->ourTileObject->setCropParentRecursive(scrollerTile);
 
@@ -394,8 +437,16 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
     }
 
 
+    static void interactionClickGoToHistoryBtn(uiObject *interactionObj, uiInteraction *delta){
 
-    
+        Ux* myUxRef = Ux::Singleton();
+
+        interactionToggleSettings(nullptr, nullptr);
+
+        myUxRef->historyPalleteEditor->interactionToggleHistory(nullptr, nullptr);
+
+    }
+
 
 
 
@@ -447,7 +498,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
             historyPalleteCloseX->setBoundaryRect( 1.01, 0.5-0.025, 0.05, 0.05);
 
             settingsScrollerItself->setBoundaryRect( 0.0, 0.0, 1.0, 1.0);
-            settingsScroller->resizeTililngEngine(1, 6);
+            settingsScroller->resizeTililngEngine(1, 5);
 
         }else{
             uiObjectItself->setBoundaryRectForAnimState(

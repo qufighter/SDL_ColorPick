@@ -185,13 +185,15 @@ static Ux* Singleton();
 #include "uiText.h"
 #include "uiEdgeShadow.h"
 #include "uiScrollController.h"
-#include "uiViewColor.h"
-//#include "uiRoundedRectangle.h"
-//#include "uiSqware.h"  // its because we don't really have square, and if we do we do not really need this, because squares would already be squares
-#include "uiNavArrows.h"
-#include "uiYesNoChoice.h"
+
 #include "uiControlBooleanToggle.h"
 #include "uiControlAchievementToggle.h"
+#include "uiControlButton.h"
+#include "uiViewColor.h"
+    //#include "uiRoundedRectangle.h"
+    //#include "uiSqware.h"  // its because we don't really have square, and if we do we do not really need this, because squares would already be squares
+#include "uiNavArrows.h"
+#include "uiYesNoChoice.h"
 #include "uiHueGradientScroller.h"
 #include "uiHueGradient.h"
 #include "uiScore.h"

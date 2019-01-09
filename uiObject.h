@@ -288,6 +288,7 @@ struct uiObject
         squarify_keep_vt=false;
         squarify_keep_contained=false;
 
+        isTextParentOfTextLength=0;
         containText=false;
         containTextPadding=0.0;
         //textSpacing=0.0;
@@ -303,6 +304,7 @@ struct uiObject
     bool doesInFactRender; // child objects still will be rendered, some objects are just containers and need not render anything
     bool doesRenderChildObjects;
     bool isInBounds; // equivilent to needs render
+    int isTextParentOfTextLength;
     bool containText; // this is merely a font rendering setting.... not containsText, which is textDirection==TEXT_DIR_ENUM::NO_TEXT
     float containTextPadding;
     //float textSpacing; // don't use this, just matrix scale the parent object of the text...
@@ -686,7 +688,9 @@ struct uiObject
         for( int x=0,l=childListIndex; x<l; x++ ){
             childList[x]->hasParentObject=false;
             childList[x]->hasCropParent = false;
+            childList[x]->parentObject=nullptr;
         }
+        hasChildren=false;
         childListIndex = 0;
     }
 
@@ -1073,17 +1077,30 @@ struct uiObject
         collisionRect.w = renderRect.w;
         collisionRect.h = renderRect.h; // ok optimized?
 
-        bool wasOob = false;
-        if( hasBoundaryCb && !isInBounds ){
-            wasOob = true;
+        if( isTextParentOfTextLength > 0 ){
+            if( containText != true ){
+                if( textDirection == TEXT_DIR_ENUM::LTR ){
+                    collisionRect.w *= isTextParentOfTextLength;
+                }
+            }
         }
 
-        isInBounds = false;
-        if( collisionRect.x < 1.0f && collisionRect.x + collisionRect.w > 0.0f ){
-            if( collisionRect.y < 1.0f && collisionRect.y + collisionRect.h > 0.0f ){
-                isInBounds = true;
-                if( wasOob && boundaryEntreredCallback != nullptr ){
-                    boundaryEntreredCallback(this);
+        if( testChildCollisionIgnoreBounds ){
+            isInBounds = true; // we will let the parent or child go out of bounds on their own accord, lets assume this contains children that need to render....
+        }else{
+
+            bool wasOob = false;
+            if( hasBoundaryCb && !isInBounds ){
+                wasOob = true;
+            }
+
+            isInBounds = false;
+            if( collisionRect.x < 1.0f && collisionRect.x + collisionRect.w > 0.0f ){
+                if( collisionRect.y < 1.0f && collisionRect.y + collisionRect.h > 0.0f ){
+                    isInBounds = true;
+                    if( wasOob && boundaryEntreredCallback != nullptr ){
+                        boundaryEntreredCallback(this);
+                    }
                 }
             }
         }

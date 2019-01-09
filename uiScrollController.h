@@ -593,7 +593,7 @@ struct uiScrollController{
 
 //                    // draw letters
 //                    scrollTile->hasForeground = true;
-//                    uxInstance->printCharToUiObject(scrollTile, 'Z'-tileCounter, true);
+                    //uxInstance->printCharToUiObject(scrollTile, 'Z'-tileCounter, true);
 
                     //scrollTile->setRoundedCorners(0.1, 0.2, 0.3, 0.4);
                    // scrollTile->setRoundedCorners(0.1, 0.1, 0.1, 0.1);
@@ -619,12 +619,19 @@ struct uiScrollController{
 
         while( tileCounter < scrollChildContainer->childListIndex ){
 
-            //SDL_Log("we are hiding extra tiles...");
+//            if(  rowsTotal == 6 ){
+//                SDL_Log("we are hiding extra tiles...");
+//            }
 
             // there are MORE tiles allocated than we currently need...
             // we can hide them
             scrollTile = scrollChildContainer->childList[tileCounter];
             scrollTile->hideAndNoInteraction();
+
+
+
+            //uxInstance->printCharToUiObject(scrollTile, CHAR_ARR_UP, true);
+
 
             tileCounter++;
         }

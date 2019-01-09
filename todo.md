@@ -4,7 +4,6 @@ DEVELOPER_TEST_MODE
 
 #  todo
 
-
 movement velocity platform diffences (android) (dupe)
 
 add version string somewhere (do not let it look like an IP address!)  maybe this is plat specifc/bundle specific?
@@ -12,6 +11,10 @@ add version string somewhere (do not let it look like an IP address!)  maybe thi
 
 achievements
    - points threshold achievements.... (besides int overflow)
+   - huzzah (3rd button)
+   - 13 points 
+   
+present velocity ux feedback
 
 settings -
   - responsive issue with scroller
@@ -22,7 +25,6 @@ settings -
       - open deafult image (s)  // pre-open dialogue (stock gradientz?)
       - reset achievements
 
-
 sort dialogue initial text -> "Sort?" <- add more sort choices here
   
   SDL_ShowMessageBox > allocate buttons once....
@@ -31,6 +33,11 @@ sort dialogue initial text -> "Sort?" <- add more sort choices here
   // lets treat it as if they stopped interacting....
     -- we can zoom the scrollers?
   
+  android back button always (map to delete?)
+  
+  "deselect all" 3rd option on bulk delete
+  
+  an ad
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)

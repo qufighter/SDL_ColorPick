@@ -858,7 +858,7 @@ void Ux::printStringToUiObject(uiObject* printObj, const char* text, bool resize
         if( printObj->containText == true ){
 
 
-            // LTR default
+            // LTR default, see below - maybe we can check if we aren't TEXT_DIR_ENUM::NO_TEXT
             // move this right out of the else aboe, since we should fit any len text within, and also needs resize IF text len changed.... !?! easy compute
             letter->setBoundaryRect( firstOffset+(ctr*letterSpacing), vertOffset, letterWidth, letterWidth);  /// TODO move size components into function to calculate on window rescale bonus points for suqare?
         }
@@ -876,6 +876,11 @@ void Ux::printStringToUiObject(uiObject* printObj, const char* text, bool resize
         Ux::printCharOffsetUiObject(letter, charOffset);
         //        renderedletters[renderedLettersCtr++] = letter;
         ctr++;
+    }
+
+    printObj->isTextParentOfTextLength = ctr; // this influences how we compute the collision rect...
+    if( printObj->textDirection == TEXT_DIR_ENUM::NO_TEXT ){
+        printObj->textDirection = TEXT_DIR_ENUM::LTR;
     }
 
     // we just printed a shorter string than we did previously, hide any allocated letteres beyond current str len

@@ -79,8 +79,7 @@ struct uiControlAchievementToggle{
         if( newState ){ // enabled/checked
             Ux::setColor(&rightSquare->foregroundColor, 0, 199, 26, 255);
             uxInstance->printCharToUiObject(rightSquare, CHAR_CHECKMARK_ICON, DO_NOT_RESIZE_NOW);
-            labelText->color(255, 255, 255, 255);
-            labelText->print(label_chars);
+            labelText->color(255, 255, 255, 255)->print(label_chars);
         }else{
             Ux::setColor(&rightSquare->foregroundColor, 128, 128, 128, 255);
             uxInstance->printCharToUiObject(rightSquare, CHAR_CANCEL_ICON, DO_NOT_RESIZE_NOW);

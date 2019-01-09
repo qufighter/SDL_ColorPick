@@ -43,6 +43,7 @@ struct uiText{
         uiObjectItself = new uiObject();
 
         text_itself = new uiObject();
+        text_backgr = new uiObject();
         text_position = new uiObject();
 
         uiObjectItself->myUiController = this; // this propagates to the other child objects
@@ -67,27 +68,33 @@ struct uiText{
 
         //maths
         float w = size;
-        float hw = w * 0.5;
+        //float hw = w * 0.5;
 
         //no->setBoundaryRect( 0.0+pad, 0.5-hh, w, h);
 
         text_position->setBoundaryRect( 0.5, 0.5, w, w);
 
-//        text_position->hasBackground=true;
-//        Ux::setColor(&text_position->backgroundColor, 32, 0, 0, 128);
+        text_position->hasBackground=true;
+        Ux::setColor(&text_position->backgroundColor, 64, 0, 0, 192);
 //
 //        text_itself->hasBackground=true;
-//        Ux::setColor(&text_itself->backgroundColor, 0, 32, 0, 128);
+//        Ux::setColor(&text_itself->backgroundColor, 0, 64, 0, 128);
 
+
+        text_position->setModeWhereChildCanCollideAndOwnBoundsIgnored();
+        text_position->doesInFactRender = false;
 
         text_itself->setBoundaryRect( -0.5, -0.5, 1.0, 1.0); // on right
 
         
         uiObjectItself->addChild(text_position);
+        text_position->addChild(text_backgr);
         text_position->addChild(text_itself);
         parentObj->addChild(uiObjectItself);
 
         resize();
+
+        text_backgr->hide();
 
         text_itself->scale(1.8); // this effects the text scale / letter spacing
 
@@ -101,11 +108,14 @@ struct uiText{
     uiObject *uiObjectItself; // no real inheritance here, this its the uiSqware, I would use self->
     uiObject *text_position;
     uiObject *text_itself;
+    uiObject *text_backgr;
 
     int lastDisplayTxtLen = 0;
 
     int hzAlign;
     int vtAlign;
+
+    bool textBackground = false;
 
     uiText* print(const char* txtToShow){
         Ux* uxInstance = Ux::Singleton();
@@ -129,12 +139,35 @@ struct uiText{
         return this;
     }
 
-    uiText* color(Uint8 r, Uint8 g, Uint8 b, Uint8 a){
-        Ux::setColor(&text_itself->foregroundColor,r, g, b, a);
-        text_itself->propagateTextSettings();
+    uiText* backgroundColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a){
+        textBackground = true;
+        text_backgr->show();
+        text_backgr->hasBackground=true;
+        Ux::setColor(&text_backgr->backgroundColor,r, g, b, a);
+//        text_itself->hasBackground=true;
+//        Ux::setColor(&text_itself->backgroundColor,r, g, b, a);
         return this;
     }
 
+    uiText* backgroundRound(float radius){
+        text_backgr->setRoundedCorners(radius);
+        return this;
+    }
+
+    uiText* backgroundClickCallback(anInteractionFn tileClickedFn){
+        text_backgr->setClickInteractionCallback(tileClickedFn);
+        return this;
+    }
+
+    uiText* color(Uint8 r, Uint8 g, Uint8 b, Uint8 a){
+        Ux::setColor(&text_itself->foregroundColor,r, g, b, a);
+        //////////////text_itself->propagateTextSettings(); not needed if set before printing!!
+        return this;
+    }
+
+    void reprint(){
+        text_itself->propagateTextSettings();
+    }
 
     /*
 
@@ -151,11 +184,12 @@ struct uiText{
         if( text_itself_size_scaling > text_position->origBoundryRect.w ){ // enforce "max" (default) size:
             text_itself_size_scaling=text_position->origBoundryRect.w;
         }
-        Float_Rect* dispRect = &p_dispalyNearUiObject->collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
+        //Float_Rect* dispRect = &p_dispalyNearUiObject->collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
 //        text_position->setBoundaryRect(dispRect->x + (dispRect->w * 0.5),
 //                                        dispRect->y + (dispRect->h * 0.5),
 //                                        text_itself_size_scaling,
 //                                        text_itself_size_scaling  );
+
 
 
 
@@ -168,17 +202,20 @@ struct uiText{
                 break;
             }
             case TEXT_ALIGN::CENTER_LEFTWARD:
-                    text_itself->boundryRect.x =  -text_length + 0.5; // right aligned (center the rightmost char)
+            {
+                text_itself->boundryRect.x =  -text_length + 0.5; // right aligned (center the rightmost char)
                 break;
-
+            }
             case TEXT_ALIGN::CENTER:
-                    text_itself->boundryRect.x =  text_length * -0.5; // center
+            {
+                text_itself->boundryRect.x =  text_length * -0.5; // center
                 break;
-
+            }
             case TEXT_ALIGN::CENTER_RIGHTWARD:
+            {
                 text_itself->boundryRect.x = -0.5;
                 break;
-
+            }
             case TEXT_ALIGN::RIGHT:
             {
                 float charsThatFit = (1.0/text_position->boundryRect.w);
@@ -187,6 +224,11 @@ struct uiText{
                 break;
             }
         }
+
+        text_backgr->boundryRect.w = text_length;
+        text_backgr->boundryRect.x = text_itself->boundryRect.x;
+        text_backgr->boundryRect.h = (1.0/text_position->boundryRect.h);
+        text_backgr->boundryRect.y = text_backgr->boundryRect.h * -0.5;
 
         //
 
