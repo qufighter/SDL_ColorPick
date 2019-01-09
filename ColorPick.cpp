@@ -829,6 +829,8 @@ void OpenGLContext::triggerMovement(){
     accumulated_movement_x-=resultx * pxFactor;
     accumulated_movement_y-=resulty * pxFactor; // at least partially applied, but also a good chance result x/y is 0
 
+    generalUx->movementArrows->indicateVelocity(pixelInteraction.vx, pixelInteraction.vy);
+
     //SDL_Log("MOUSE xy %d %d", colorPickState->mmovex,colorPickState->mmovey);
     openglContext->renderShouldUpdate = true;
 
@@ -929,6 +931,8 @@ void OpenGLContext::renderScene(void) {
 
     }else if( !has_velocity ){
         renderShouldUpdate=false;
+        //generalUx->movementArrows->indicateVelocity(0, 0);
+
         //has_velocity = false;
     }
     // then re-crop our source texture properly

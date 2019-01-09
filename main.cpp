@@ -344,7 +344,7 @@ int EventFilter(void* userdata, SDL_Event* event){
         case SDL_KEYDOWN:
             //SDL_Log("1keydown %d", event->key.keysym.sym);
             //openglContext->keyDown(event->key.keysym.sym);
-            if (event->key.keysym.sym == SDLK_AC_BACK || event->key.keysym.sym == SDLK_ESCAPE){
+            if (event->key.keysym.sym == SDLK_AC_BACK || event->key.keysym.sym == SDLK_BACKSPACE || event->key.keysym.sym == SDLK_ESCAPE){
                 //SDL_Log("back/esc pressed");
                 openglContext->generalUx->endCurrentModal();
             }

@@ -14,11 +14,10 @@ achievements
    - huzzah (3rd button)
    - 13 points 
    
-present velocity ux feedback
+   //present velocity ux feedback : indicateVelocity
 
 settings -
-  - responsive issue with scroller
-  - text rendering issues with scale/crop
+  - text rendering issues with scale
   - buttons for 
       - goto history
       - open image

@@ -108,7 +108,8 @@ struct uiNavArrows{
     static void interactionDirectionalArrowClickBegin(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
         //uiNavArrows* self = ((uiNavArrows*)interactionObj->myUiController);
-        uxInstance->uxAnimations->scale_bounce(interactionObj);
+        interactionObj->identity();
+        interactionObj->setAnimation( uxInstance->uxAnimations->scale_bounce(interactionObj) );
     }
 
     static void interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteraction *delta){
@@ -119,6 +120,25 @@ struct uiNavArrows{
         self->tileClicked(interactionObj, interactionObj->forceDelta);
 
 
+    }
+
+    void indicateVelocity(float vx, float vy){
+        Ux* uxInstance = Ux::Singleton();
+        float scaler=0.0001;
+        lf->identity();
+        rt->identity();
+        up->identity();
+        dn->identity();
+        if( vx > 0 ){
+            lf->setAnimation( uxInstance->uxAnimations->scale_bounce(lf, (scaler*vx)));
+        }else if( vx < 0 ){
+            rt->setAnimation( uxInstance->uxAnimations->scale_bounce(rt, -(scaler*vx)));
+        }
+        if( vy > 0 ){
+            up->setAnimation( uxInstance->uxAnimations->scale_bounce(up, (scaler*vy)));
+        }else if( vy < 0 ){
+            dn->setAnimation( uxInstance->uxAnimations->scale_bounce(dn, -(scaler*vy)));
+        }
     }
 
     void resize(Float_Rect boundaries){
