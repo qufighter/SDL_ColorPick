@@ -117,6 +117,10 @@ struct uiText{
 
     bool textBackground = false;
 
+    uiObject* getTextFirstChar(){
+        return text_itself->childList[0];
+    }
+
     uiText* print(const char* txtToShow){
         Ux* uxInstance = Ux::Singleton();
         lastDisplayTxtLen = SDL_strlen(txtToShow);
@@ -129,6 +133,7 @@ struct uiText{
    /*The followign have no effect here - this text is simply set to "FLL" and "CENTER" on arbitrary UI object provided*/
     
 
+    
     uiText* align(int hz){
         hzAlign = hz;
         return this;
@@ -156,6 +161,7 @@ struct uiText{
 
     uiText* backgroundClickCallback(anInteractionFn tileClickedFn){
         text_backgr->setClickInteractionCallback(tileClickedFn);
+        text_backgr->setShouldCeaseInteractionChek(&Ux::bubbleInteractionIfNonClick);
         return this;
     }
 

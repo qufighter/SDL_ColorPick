@@ -148,6 +148,9 @@ public:
     void imageWasSelectedCb(SDL_Surface *myCoolSurface);
     bool restoreLastSurface();
     void loadNextTestImage();
+    void loadNextTestImageByIndex(int index);
+    void loadSpecificTestImage(const char* surfaceFilePath, int x, int y);
+    void loadSpecificTestImage(const char* surfaceFilePath);
 
 
     int huePositionX(HSV_Color* color);
@@ -175,6 +178,7 @@ private:
 
     Ux::uiObject* rootUiObject; // there is a root ui object
 
+    Ux::uiList<const char*, Uint8>* textureList;
     Ux::uiListLoopingIterator<Ux::uiList<const char*, Uint8>, const char*>* testTexturesBuiltin;
 
     bool has_velocity = false;

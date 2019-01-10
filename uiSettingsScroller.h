@@ -30,7 +30,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         ACTION_BUTTON
     } SETTING_TYPES_ENUM; // if this is unused.... well maybe we know its a boolean so it has persistence....
 
-    typedef struct SettingsListObj // cannot really use this since we do not persist ths to disk
+    typedef struct SettingsListObj // cannot really persist ths to disk
     {
         SettingsListObj(uiObject* pTile, int pType, Uint8 pkey){
             settingType= pType;
@@ -50,11 +50,10 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
     /* see SDL_EventType enum.... for inspiration?!  btw,  0xFF  is the max uInt8 */
     typedef enum  {
         // important: do not insert new items anywhere except at the end of an area, and then do not exceede the next area...
-        /* You may only add new values to the END of the enum block - even though this is int we use uint8 so do not exceede 255*/
+        /* You may only add new values to the END of the section - even though this is int we use uint8 so do not exceede 255*/
         UI_SETTING_NONE = 0,
         UI_SETTING_GAME_ON,
         UI_SETTING_GAME_ON2,
-        // OK to add some here
 
         UI_ACHEIVEMENT_START = 128, // 0x80
         UI_ACHEIVEMENT_INEXACT, // "*in-exact!!"
@@ -65,10 +64,8 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         UI_ACHEIVEMENT_MUCH_RISK, // " Much Risk "
         UI_ACHEIVEMENT_INT_OVERFLOW, // "int overflow!"
 
-        // OK to add some here
-
         UI_SETTING_LAST = 255  // 0xFF
-    } UI_SETTINGS_ENUM;
+    } UI_SETTINGS_ENUM; // settingKey enum ?
 
     typedef struct SettingsRwObject
     {
@@ -143,29 +140,33 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
         settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("History")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
-        uiObject* temp =  new uiObject();
-        uxInstance->printCharToUiObject(temp, CHAR_CLOSE_ICON, DO_NOT_RESIZE_NOW);
-        temp->hasForeground = true;
-        temp->squarify();
-        Ux::setColor(&temp->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+//        uiObject* temp =  new uiObject();
+//        uxInstance->printCharToUiObject(temp, CHAR_CLOSE_ICON, DO_NOT_RESIZE_NOW);
+//        temp->hasForeground = true;
+//        temp->squarify();
+//        Ux::setColor(&temp->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+//        settingsList->add(SettingsListObj(temp, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
-        settingsList->add(SettingsListObj(temp, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
-
-
-        settingsList->add(SettingsListObj((new uiControlButton(d, "Click Here", &interactionClickGoToHistoryBtn))->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiControlButton(d, "Browse", &interactionClickGoToHistoryBtn))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
 
 
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("Images")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("Pallets")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+
+        settingsList->add(SettingsListObj((new uiControlButton(d, "Default", &interactionGoToDefaultImageBtn))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+
+        uiControlButton* openBtn = (new uiControlButton(d, "x Open", &interactionGoToOpenImages));
+        uxInstance->printCharToUiObject(openBtn->labelText->getTextFirstChar(), CHAR_OPEN_FILES, DO_NOT_RESIZE_NOW);
+
+        settingsList->add(SettingsListObj(openBtn->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
 
-        settingsList->add(SettingsListObj((new uiControlBooleanToggle(dummyContainer, "yes", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_NONE));
-
-
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("Settings")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("Options")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
         settingsList->add(SettingsListObj((new uiControlBooleanToggle(dummyContainer, "+Points", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_GAME_ON));
 
@@ -184,6 +185,10 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Int Overflow", "int overflow!", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_INT_OVERFLOW));
 
         settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("Reset")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+
+        settingsList->add(SettingsListObj((new uiControlButton(d, "Reset Score", &interactionResetAchievementsBtn))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        //settingsList->add(SettingsListObj((new uiControlButton(d, "Score", &interactionResetAchievementsBtn))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
         if( settingsList->_out_of_space ){
@@ -448,9 +453,52 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
     }
 
 
+    static void interactionGoToDefaultImageBtn(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        myUxRef->loadTestImageByIndex(0);
+        interactionToggleSettings(nullptr, nullptr);
+    }
+
+    static void interactionGoToOpenImages(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        myUxRef->interactionFileBrowserTime(interactionObj, delta);
+        interactionToggleSettings(nullptr, nullptr);
+    }
+
+    static void interactionResetAchievementsBtn(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+
+        myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &interactionFactoryDefaults, nullptr);
+        myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Reset Score?");
+        myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(nullptr);
+        //myUxRef->defaultYesNoChoiceDialogue->displayAdditionalUiObject(sortChooser->uiObjectItself);
+    }
 
 
+    static void interactionFactoryDefaults(uiObject *interactionObj, uiInteraction *delta){
+        interactionResetAchievements(interactionObj, delta);
+        Ux* myUxRef = Ux::Singleton();
+        myUxRef->defaultScoreDisplay->resetAll();
+    }
 
+    static void interactionResetAchievements(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        uiSettingsScroller* self = myUxRef->settingsScroller;
+        int achievementStart = UI_SETTINGS_ENUM::UI_ACHEIVEMENT_START;
+        while(++achievementStart < UI_SETTINGS_ENUM::UI_SETTING_LAST){
+            int position = self->settingsList->locateIndex(achievementStart);
+            if( position > -1 ){
+                SettingsListObj* setting = self->settingsList->get(position);
+                switch(setting->settingType){
+                    case SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT:
+                    {
+                        ((uiControlAchievementToggle*)(setting->ourTileObject->myUiController))->updateState(false);
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
 
 

@@ -255,6 +255,8 @@ static Ux* Singleton();
     bool interactionUpdate(uiInteraction *delta);
     bool interactionComplete(uiInteraction *delta);
 
+    static void loadTestImageByIndex(int index);
+
     static void interactionHistoryEnteredView(uiObject *interactionObj);
     static void interactionNoOp(uiObject *interactionObj, uiInteraction *delta);
     static void interactionFileBrowserTime(uiObject *interactionObj, uiInteraction *delta);

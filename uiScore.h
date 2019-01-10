@@ -162,6 +162,12 @@ struct uiScore{
         isHighScore = false;
     }
 
+    void resetAll(){
+        int_score = 0;
+        int_max_score = 0;
+        isHighScore = true;
+    }
+
     void display(uiObject *p_dispalyNearUiObject, int numberToDisplay){
         display(p_dispalyNearUiObject, numberToDisplay, SCORE_EFFECTS::DEFAULT);
     }

@@ -1080,7 +1080,7 @@ struct uiObject
         if( isTextParentOfTextLength > 0 ){
             if( containText != true ){
                 if( textDirection == TEXT_DIR_ENUM::LTR ){
-                    collisionRect.w *= isTextParentOfTextLength;
+                    collisionRect.w *= isTextParentOfTextLength; // * isParentOfTextOfScale ?? ??  since we will space this 
                 }
             }
         }

@@ -1136,6 +1136,12 @@ void Ux::interactionBeginReturnToPreviousSurface(uiObject *interactionObj, uiInt
 }
 
 
+void Ux::loadTestImageByIndex(int index){
+    Ux* myUxRef = Ux::Singleton();
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    ogg->loadNextTestImageByIndex(index);
+}
+
 void Ux::interactionFileBrowserTime(uiObject *interactionObj, uiInteraction *delta){
     Ux* myUxRef = Ux::Singleton();
     myUxRef->uxAnimations->scale_bounce(interactionObj, 0.001);

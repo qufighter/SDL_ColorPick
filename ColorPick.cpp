@@ -171,17 +171,27 @@ void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
 }
 
 void OpenGLContext:: loadNextTestImage(){
+    loadSpecificTestImage(*testTexturesBuiltin->next());
+}
+
+void OpenGLContext:: loadNextTestImageByIndex(int index){
+    const char*  result = *textureList->get(index);
+    if( result != nullptr ){
+        loadSpecificTestImage(result);
+    }
+}
+
+void OpenGLContext:: loadSpecificTestImage(const char* surfaceFilePath){
 
     if( lastHue!=nullptr ) SDL_free(lastHue);
     lastHue = nullptr;
     //SDL_Log("an image was selected !!!!");
 
-    SDL_Surface *myCoolSurface = textures->LoadSurface(*testTexturesBuiltin->next());
+    SDL_Surface *myCoolSurface = textures->LoadSurface(surfaceFilePath);
     if( myCoolSurface == NULL ) return;
 
     // free previous surface
-    position_x = 0;
-    position_y = 0;
+
     SDL_FreeSurface(fullPickImgSurface);
     if( lastTrueFullPickImgSurface != nullptr ){
         SDL_FreeSurface(lastTrueFullPickImgSurface);
@@ -193,6 +203,9 @@ void OpenGLContext:: loadNextTestImage(){
 
     // at least for ios we shold standardize this format now using textures->ConvertSurface
     fullPickImgSurface = textures->ConvertSurface(myCoolSurface);
+
+    position_x = 0;
+    position_y= (fullPickImgSurface->h * 0.5) - 513;
 
     if( fullPickImgSurface == NULL ) return;
 
@@ -425,7 +438,7 @@ void OpenGLContext::setupScene(void) {
 //    *** Incorrect guard value: 4448617117
 //    ColorPick SDL(4046,0x10d290380) malloc: *** set a breakpoint in malloc_error_break to debug
     // todo: wrong number of items in list -> crash simulator
-    Ux::uiList<const char*, Uint8>* textureList = new Ux::uiList<const char*, Uint8>(128);
+    textureList = new Ux::uiList<const char*, Uint8>(25);
     textureList->add("textures/intro-image.png");
     //textureList->add("textures/4.png");
 

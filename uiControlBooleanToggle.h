@@ -86,7 +86,11 @@ struct uiControlBooleanToggle{
         controlTog->setInteractionCallback(&interactionToggleControl);
         controlTog->setMovementBoundaryRect( 0.0, 0, 1.0, 0.0);
 
-        controlBg->setInteractionCallback(&interactionToggleControl);
+        //controlBg->setShouldCeaseInteractionChek(&Ux::bubbleInteractionIfNonClick);
+
+
+        controlBg->setClickInteractionCallback(&interactionToggleControl);
+        controlBg->setShouldCeaseInteractionChek(&Ux::bubbleInteractionIfNonClick);
 
 
         labelText = new uiText(uiObjectItself, 0.09);

@@ -14,27 +14,32 @@ achievements
    - huzzah (3rd button)
    - 13 points 
    
-   //present velocity ux feedback : indicateVelocity
+
 
 settings -
-  - text rendering issues with scale
+  - text rendering issues with scale / responsive
   - buttons for 
-      - goto history
-      - open image
-      - open deafult image (s)  // pre-open dialogue (stock gradientz?)
-      - reset achievements
+      - goto history style
+      - open imgs style
+      - button feedbacks
+      - means to disable arrows ?
+      
+//present velocity ux feedback : indicateVelocity
+   fix arrow ceiling/min impact of velocity ?  don't use pixel velocity ? (android huge arrows bug)
 
-sort dialogue initial text -> "Sort?" <- add more sort choices here
+
+sort dialogue initial text -> "Sort?" <- add more sort choices here 
+      goto history style
   
-  SDL_ShowMessageBox > allocate buttons once....
-  > check update policy
 
   // lets treat it as if they stopped interacting....
-    -- we can zoom the scrollers?
+    -- we can zoom the scrollers?   
   
   android back button always (map to delete?)
   
-  "deselect all" 3rd option on bulk delete
+  
+  SDL_ShowMessageBox > allocate buttons once....
+  > check update policy
   
   an ad
 
@@ -44,6 +49,18 @@ osx/ios jpg rotation not respected (is this exif rotation???)
 
 ##  can do
 
+"deselect all" 3rd option on bulk delete (restart app to deselect all)
+
+myUxRef -> uxInstance
+defaultScoreDisplay -> scoreDisplay
+uiSettingsScroller -> uiSettings
+settingsScroller -> settings ?
+
+use something better (a struct) rather than raw char* ? new Ux::uiList<const char*, Uint8>(25); 
+   ^ could include default position?
+   eg // position_y= (fullPickImgSurface->h * 0.5) - 513;
+   
+   
 collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
 ^ while true, when is it scaled?  we may use this sometimes before it is scaled.
 

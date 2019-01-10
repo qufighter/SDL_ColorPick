@@ -648,7 +648,6 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickSortHistory, &clickCancelSortHistory);
         myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Sort?");
         myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(sortScoringHandler);
-
         myUxRef->defaultYesNoChoiceDialogue->displayAdditionalUiObject(sortChooser->uiObjectItself);
 
         //SDL_free(myUxRef->pickHistoryList);
