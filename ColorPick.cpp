@@ -376,12 +376,14 @@ void OpenGLContext::prepareForHuePickerMode(bool fromHueGradient) {
             }
         }
 
-        if( position_x > 0 ){
-            position_x = 0;
-        }
-        if( position_y < 0 ){
-            position_y = 0;
-        }
+        // 50 cutofff (when entering hsv) not dark/light enough
+//        if( position_x > 0 ){
+//            position_x = 0;
+//        }
+//        if( position_y < 0 ){
+//            position_y = 0;
+//        }
+
         if( fishEyeScalePct > 0.1 ){
             setFishScalePerentage(nullptr, 0.1);
         }

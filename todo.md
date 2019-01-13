@@ -15,8 +15,6 @@ achievements
    - huzzah (3rd button)
    - 13 points 
    
-
-
 settings -
   - text rendering issues with scale / responsive
   - buttons for 
@@ -28,11 +26,9 @@ settings -
 //present velocity ux feedback : indicateVelocity
    fix arrow ceiling/min impact of velocity ?  don't use pixel velocity ? (android huge arrows bug)
 
-
 sort dialogue initial text -> "Sort?" <- add more sort choices here 
       goto history style
   
-
   // lets treat it as if they stopped interacting....
     -- we can zoom the scrollers?   
   
@@ -42,9 +38,9 @@ sort dialogue initial text -> "Sort?" <- add more sort choices here
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
   
-  50 cutofff (when entering hsv) not dark/light enough
   
-
+  animate out of view history via hsv button - cannot drag scroller to cancel animation (animation assigned to wrong obj?) (any time you catch the HSV preview pane instead of the bg...)
+  
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
