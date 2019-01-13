@@ -125,18 +125,23 @@ struct uiNavArrows{
     void indicateVelocity(float vx, float vy){
         Ux* uxInstance = Ux::Singleton();
         float scaler=0.0001;
+        float cap = 50;
         lf->identity();
         rt->identity();
         up->identity();
         dn->identity();
         if( vx > 0 ){
+            if( vx > cap ){vx = cap;}
             lf->setAnimation( uxInstance->uxAnimations->scale_bounce(lf, (scaler*vx)));
         }else if( vx < 0 ){
+            if( vx < -cap ){vx = -cap;}
             rt->setAnimation( uxInstance->uxAnimations->scale_bounce(rt, -(scaler*vx)));
         }
         if( vy > 0 ){
+            if( vy > cap ){vy = cap;}
             up->setAnimation( uxInstance->uxAnimations->scale_bounce(up, (scaler*vy)));
         }else if( vy < 0 ){
+            if( vy < -cap ){vy = -cap;}
             dn->setAnimation( uxInstance->uxAnimations->scale_bounce(dn, -(scaler*vy)));
         }
     }

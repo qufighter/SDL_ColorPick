@@ -23,9 +23,6 @@ settings -
       - button feedbacks
       - means to disable arrows ?
       
-//present velocity ux feedback : indicateVelocity
-   fix arrow ceiling/min impact of velocity ?  don't use pixel velocity ? (android huge arrows bug)
-
 sort dialogue initial text -> "Sort?" <- add more sort choices here 
       goto history style
   
