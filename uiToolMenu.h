@@ -99,27 +99,41 @@ struct uiToolMenu{
         if( index < menu_items->childListIndex ){
             return menu_items->childList[index];
         }else{
-            uiObject* new_menu_item = new uiObject();
-            uiObject* new_menu_item_bg = new uiObject();
-            uiObject* new_menu_item_txt = new uiObject();
 
-            new_menu_item->setBoundaryRect(0,index * 1.25, 1,1 );
 
-            new_menu_item_bg->hasBackground=true;
-            Ux::setColor(&new_menu_item_bg->backgroundColor, 255, 255, 255, 192);
-            new_menu_item_txt->hasForeground=true;
-            Ux::setColor(&new_menu_item_txt->foregroundColor, 64, 64, 64, 255);
+            uiText* text = new uiText(menu_items, 1.0);
 
-            new_menu_item->testChildCollisionIgnoreBounds = true;
 
-            new_menu_item->addChild(new_menu_item_bg);
-            new_menu_item->addChild(new_menu_item_txt);
-            menu_items->addChild(new_menu_item);
+            text->backgroundClickCallback(&touchMenuChoice)
+                ->backgroundColor(255, 255, 255, 192)
+                ->color(64, 64, 64, 255)
+                ->scale(1.21);
+
+            text->uiObjectItself->setBoundaryRect(0,index * 1.25, 1,1 );
+
+//            uiObject* new_menu_item = new uiObject();
+//            uiObject* new_menu_item_bg = new uiObject();
+//            uiObject* new_menu_item_txt = new uiObject();
+
+            //new_menu_item->setBoundaryRect(0,index * 1.25, 1,1 );
+
+//            new_menu_item_bg->hasBackground=true;
+//            Ux::setColor(&new_menu_item_bg->backgroundColor, 255, 255, 255, 192);
+//            new_menu_item_txt->hasForeground=true;
+//            Ux::setColor(&new_menu_item_txt->foregroundColor, 64, 64, 64, 255);
+
+            //new_menu_item->testChildCollisionIgnoreBounds = true;
+            text->uiObjectItself->testChildCollisionIgnoreBounds = true;
+
+//            new_menu_item->addChild(new_menu_item_bg);
+//            new_menu_item->addChild(new_menu_item_txt);
+            //menu_items->addChild(new_menu_item);
 
             //new_menu_item->matrixInheritedByDescendants=true;
-            new_menu_item_bg->setInteractionBegin(&touchMenuChoice);
+            //new_menu_item_bg->setInteractionBegin(&touchMenuChoice);
 
-            return new_menu_item;
+//            return new_menu_item;
+            return text->uiObjectItself;
         }
     }
 
@@ -130,22 +144,48 @@ struct uiToolMenu{
 
         // WE ARE USING menu_item as a TEMP reference here.....
         uiObject* menu_item = getOrCreateMenuItem(lastMenuItemIndex);
-        uiObject* menu_item_bg = menu_item->childList[0];
-        uiObject* menu_item_txt = menu_item->childList[1];
+//        uiObject* menu_item_bg = menu_item->childList[0];
+//        uiObject* menu_item_txt = menu_item->childList[1];
+
+
+        uiText* text = (uiText*)menu_item->myUiController;
+
 
         menu_item->showAndAllowInteraction();
 
-        uxInstance->printStringToUiObject(menu_item_txt, menuText, DO_NOT_RESIZE_NOW);
-        int menuItemLen = SDL_strlen(menuText);
-        menu_item_bg->boundryRect.w = menuItemLen * 1.0;
-        menu_item_bg->setClickInteractionCallback(p_interactionCallback);
-        menu_item_bg->doesNotCollide = false;
-        menu_item_bg->interactionProxy = p_cbUiObject;
+
+        text->print(menuText);
+        //uxInstance->printStringToUiObject(menu_item_txt, menuText, DO_NOT_RESIZE_NOW);
+        int menuItemLen = text->length();// SDL_strlen(menuText);
+        
+        text->backgroundClickCallback(p_interactionCallback)->backgroundClickProxy(p_cbUiObject);
+
+        text->handlePositioning(p_cbUiObject); // maths redundant handle posiitonoing
+
+
+//        menu_item_bg->boundryRect.w = menuItemLen * 1.0;
+//        menu_item_bg->setClickInteractionCallback(p_interactionCallback);
+//        menu_item_bg->doesNotCollide = false;
+//        menu_item_bg->interactionProxy = p_cbUiObject;
 
         if( menuItemLen > longestMenuItemLen ){
             longestMenuItemLen=menuItemLen;
         }
+
     }
+
+    int count(){
+        return lastMenuItemIndex+1;
+    }
+
+    int lastIndex(){
+        return lastMenuItemIndex;
+    }
+
+    uiObject* lastUiObject(){
+        return getOrCreateMenuItem(lastMenuItemIndex);
+    }
+
 
     void display(uiObject *p_dispalyNearUiObject){
 

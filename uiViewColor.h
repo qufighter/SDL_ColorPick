@@ -175,15 +175,36 @@ struct uiViewColor{
     SDL_Color last_color;
     float alphaMulitiplier;
 
-
     char* getHexString(const char* prefix){
-        SDL_snprintf(resultText25char, 25,  "%s#%02x%02x%02x", prefix, last_color.r, last_color.g, last_color.b);
+        return getHexString(prefix, false);
+    }
+
+    char* getHexString(const char* prefix, bool omitHash){
+        const char* hash="#";
+        if( omitHash ){
+            hash = "";
+        }
+        SDL_snprintf(resultText25char, 25,  "%s%s%02x%02x%02x", prefix, hash, last_color.r, last_color.g, last_color.b);
+        return resultText25char;
+    }
+
+    char* getVanillaRgbString(const char* prefix){
+        SDL_snprintf(resultText25char, 25,  "%s%d,%d,%d", prefix, last_color.r, last_color.g, last_color.b);
         return resultText25char;
     }
 
     char* getRgbString(const char* prefix){
         SDL_snprintf(resultText25char, 25,  "%srgb(%d,%d,%d)", prefix, last_color.r, last_color.g, last_color.b);
         return resultText25char;
+    }
+
+    static void copyHexValueOmitHashClicked(uiObject *interactionObj, uiInteraction *delta){
+        Ux* uxInstance = Ux::Singleton();
+        uiViewColor* self = ((uiViewColor*)interactionObj->interactionProxy->myUiController);
+        SDL_SetClipboardText(self->getHexString("", true));
+        uxInstance->defaultScoreDisplay->displayExplanation(" Paste Ready ");
+        uxInstance->rClickMenu->hide();
+
     }
 
     static void copyHexValueClicked(uiObject *interactionObj, uiInteraction *delta){
@@ -194,6 +215,16 @@ struct uiViewColor{
         uxInstance->defaultScoreDisplay->displayExplanation(" Paste Ready ");
         uxInstance->rClickMenu->hide();
     }
+
+    static void copyVanillaRgbValueClicked(uiObject *interactionObj, uiInteraction *delta){
+        Ux* uxInstance = Ux::Singleton();
+        uiViewColor* self = ((uiViewColor*)interactionObj->interactionProxy->myUiController);
+        //SDL_Log("REACHED COPY RGB CALLBACK");
+        SDL_SetClipboardText(self->getVanillaRgbString(""));
+        uxInstance->defaultScoreDisplay->displayExplanation(" Paste Ready ");
+        uxInstance->rClickMenu->hide();
+    }
+
 
     static void copyRgbValueClicked(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
@@ -208,13 +239,27 @@ struct uiViewColor{
         SDL_Log("REACHED COPY HSV CALLBACK"); // HSV_Color
     }
 
+    static void showPaperClippy(){
+        Ux* uxInstance = Ux::Singleton();
+        // last menu item....lastIndex()
+        uiText* text = (uiText*)uxInstance->rClickMenu->lastUiObject()->myUiController;
+        uxInstance->printCharToUiObject(text->getTextFirstChar()->identity()->rotate(45), CHAR_PAPERCLIP, DO_NOT_RESIZE_NOW);
+        uxInstance->printCharToUiObject(text->getTextChar(1)->identity()->rotate(45), CHAR_PAPERCLIP, DO_NOT_RESIZE_NOW);
+    }
+
+#define ECOPY_PREFIX "ee"
+
     static void pickHexValueClicked(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
         uiViewColor* self = ((uiViewColor*)interactionObj->myUiController);
         if( delta->isSecondInteraction ){
             //SDL_Log("Double touched color preview......");
             uxInstance->rClickMenu->clearMenuItems();
-            uxInstance->rClickMenu->addMenuItem(self->hexBg, self->getHexString("Copy "), &copyHexValueClicked);
+            uxInstance->rClickMenu->addMenuItem(self->hexBg, self->getHexString(ECOPY_PREFIX"  ", true), &copyHexValueOmitHashClicked);
+            showPaperClippy();
+            uxInstance->rClickMenu->addMenuItem(self->hexBg, self->getHexString(ECOPY_PREFIX" "), &copyHexValueClicked);
+            showPaperClippy();
+
             if( uxInstance->widescreen ){
                 uxInstance->rClickMenu->display(self->uiObjectItself);
             }else{
@@ -233,9 +278,17 @@ struct uiViewColor{
         if( delta->isSecondInteraction ){
             //SDL_Log("Double touched rgb color preview......");
             uxInstance->rClickMenu->clearMenuItems();
-            uxInstance->rClickMenu->addMenuItem(self->rgbRedBg, "Copy rgb(,,)" /*self->getRgbString("Copy ")*/, &copyRgbValueClicked);
+
+            uxInstance->rClickMenu->addMenuItem(self->rgbRedBg, self->getVanillaRgbString(ECOPY_PREFIX" "), &copyVanillaRgbValueClicked);
+            showPaperClippy();
+
+            uxInstance->rClickMenu->addMenuItem(self->rgbRedBg, ECOPY_PREFIX" rgb(,,)" /*self->getRgbString("Copy ")*/, &copyRgbValueClicked);
+            showPaperClippy();
             //uxInstance->rClickMenu->addMenuItem("Copy hsv(0,0,0)", &copyHsvValueClicked);
-            uxInstance->rClickMenu->addMenuItem(self->rgbRedBg, self->getHexString("Copy "), &copyHexValueClicked);
+            uxInstance->rClickMenu->addMenuItem(self->rgbRedBg, self->getHexString(ECOPY_PREFIX" "), &copyHexValueClicked);
+            showPaperClippy();
+            uxInstance->rClickMenu->addMenuItem(self->hexBg, self->getHexString(ECOPY_PREFIX"  ", true), &copyHexValueOmitHashClicked);
+            showPaperClippy();
 
             if( uxInstance->widescreen ){
                 uxInstance->rClickMenu->display(self->uiObjectItself);

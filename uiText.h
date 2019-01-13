@@ -121,6 +121,10 @@ struct uiText{
         return text_itself->childList[0];
     }
 
+    uiObject* getTextChar(int index){
+        return text_itself->childList[index];
+    }
+
     uiText* print(const char* txtToShow){
         Ux* uxInstance = Ux::Singleton();
         lastDisplayTxtLen = SDL_strlen(txtToShow);
@@ -132,7 +136,11 @@ struct uiText{
 
    /*The followign have no effect here - this text is simply set to "FLL" and "CENTER" on arbitrary UI object provided*/
     
-
+    uiText* scale(float sc){
+        text_itself->identity();
+        text_itself->scale(sc);
+        return this;
+    }
     
     uiText* align(int hz){
         hzAlign = hz;
@@ -165,6 +173,11 @@ struct uiText{
         return this;
     }
 
+    uiText* backgroundClickProxy(uiObject* pobj){
+        text_backgr->interactionProxy = pobj;
+        return this;
+    }
+
     uiText* color(Uint8 r, Uint8 g, Uint8 b, Uint8 a){
         Ux::setColor(&text_itself->foregroundColor,r, g, b, a);
         //////////////text_itself->propagateTextSettings(); not needed if set before printing!!
@@ -173,6 +186,10 @@ struct uiText{
 
     void reprint(){
         text_itself->propagateTextSettings();
+    }
+
+    int length(){
+        return lastDisplayTxtLen;
     }
 
     /*

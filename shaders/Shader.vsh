@@ -2,7 +2,7 @@
 //  Shader.vsh
 //
 //  Created by Sam Larison on 4/16/12.
-//  Copyright 2012 Vidsbee All rights reserved.
+//  Copyright 2019 Vidsbee All rights reserved.
 //
 
 attribute vec4 position;

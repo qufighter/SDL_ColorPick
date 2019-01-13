@@ -11,6 +11,7 @@ add version string somewhere (do not let it look like an IP address!)  maybe thi
 
 achievements
    - points threshold achievements.... (besides int overflow)
+   - greater "out of space"
    - huzzah (3rd button)
    - 13 points 
    
@@ -41,7 +42,8 @@ sort dialogue initial text -> "Sort?" <- add more sort choices here
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
   
-  an ad
+  50 cutofff (when entering hsv) not dark/light enough
+  
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -49,18 +51,22 @@ osx/ios jpg rotation not respected (is this exif rotation???)
 
 ##  can do
 
+show alpha value when < 255, rgba hex too?ååå
+
 "deselect all" 3rd option on bulk delete (restart app to deselect all)
 
 myUxRef -> uxInstance
 defaultScoreDisplay -> scoreDisplay
 uiSettingsScroller -> uiSettings
 settingsScroller -> settings ?
+myUiController -<>
 
 use something better (a struct) rather than raw char* ? new Ux::uiList<const char*, Uint8>(25); 
    ^ could include default position?
-   eg // position_y= (fullPickImgSurface->h * 0.5) - 513;
+   eg // position_y= (fullPickImgSurface->h * 0.5) - 513; <<< replicated code btw...
    
-   
+   blend transparency????? (no?)
+
 collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
 ^ while true, when is it scaled?  we may use this sometimes before it is scaled.
 

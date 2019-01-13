@@ -2,7 +2,7 @@
 //  Shader.vsh
 //
 //  Created by Sam Larison on 4/16/12.
-//  Copyright 2012 Vidsbee All rights reserved.
+//  Copyright 2019 Vidsbee All rights reserved.
 //
 
 attribute vec4 position; // one of 4 sq verticies (-1,-1, 1,-1, 1,1, -1,1)
@@ -126,7 +126,7 @@ void main()
 
         // rotate will move these coords completely so you won't be able to rely on this to detect if the corner has left when rotation is occuring.
         // it is probably better off to do nothing wrt crop when rotating than this approach to it... we could still crop in the FSH but not cheap (unless we use depth buffer????)
-        // so what field in modelMatrix is our rotation?
+        // so what field in modelMatrix is our rotation?  we could still resolve the coord and move the pixel along the edge.
 
         //    float crop_positionx=ui_crop.r;
         //    float crop_positiony=ui_crop.g;
