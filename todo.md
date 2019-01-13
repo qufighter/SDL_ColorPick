@@ -32,15 +32,14 @@ sort dialogue initial text -> "Sort?" <- add more sort choices here
   // lets treat it as if they stopped interacting....
     -- we can zoom the scrollers?   
   
-  android back button always (map to delete?)
-  
   
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
   
-  
-  animate out of view history via hsv button - cannot drag scroller to cancel animation (animation assigned to wrong obj?) (any time you catch the HSV preview pane instead of the bg...)
-  
+
+widescreen copy paste from pallete preview - menu goes off screen!
+
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)

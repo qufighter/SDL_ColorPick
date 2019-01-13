@@ -139,6 +139,7 @@ struct uiViewColor{
             hueBtn->squarifyKeepVt();
             hueBtn->setInteractionBegin(&pickFromHueTouched);
             hueBtn->setClickInteractionCallback(&pickFromHueClicked);
+            hueBtn->setShouldCeaseInteractionChek(Ux::bubbleWhenHidden);
             uiObjectItself->addChild(hueBtn);
             hueBtn->myUiController = this;
         }else{

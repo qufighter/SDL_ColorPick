@@ -1381,6 +1381,14 @@ bool Ux::bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *de
     return true;
 }
 
+bool Ux::bubbleWhenHidden(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
+    Ux* self = Ux::Singleton();
+    if( interactionObj->isInHiddenState() /*|| interactionObj->isInAnimation()*/ ){
+        return self->bubbleCurrentInteraction();
+    }
+    return true;
+}
+
 // this really means when swiping left far enough we disable scrolling
 // other conditions we should bubble (if it seems like scrolling)
 // this is also becomming rather specific to scroller tiles, and probably belongs in the scroller....

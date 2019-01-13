@@ -51,6 +51,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
 
         palleteSelectionPreviewHolder = new uiObject();
+        palleteSelectionPreviewHolder->setShouldCeaseInteractionChek(&bubbleInteractionIfPalletePreviewHidden);
         palleteSelectionPreviewHolder->setInteractionCallback(&interactionTogglePalletePreview); // if we dragged and released... it will animate the rest of the way because of this
         palleteSelectionPreviewHolder->setInteraction(&Ux::interactionVert);
         palleteSelectionPreviewHolder->setCropParentRecursive(historyPalleteHolder);
@@ -1023,6 +1024,16 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
     }
 
+    // why not just use Ux::bubbleWhenHidden instead of this??/ this works tho obviously...
+    static bool bubbleInteractionIfPalletePreviewHidden(uiObject *interactionObj, uiInteraction *delta){
+        // return true always, unless the interaction should be dropped and not bubble for some reason....
+        Ux* myUxRef = Ux::Singleton();
+        uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
+        if( !self->historyPalleteHolder->is_being_viewed_state ){
+            return myUxRef->bubbleCurrentInteraction();
+        }
+        return true;
+    }
 
 
     static void interactionTogglePalletePreview(uiObject *interactionObj, uiInteraction *delta){
