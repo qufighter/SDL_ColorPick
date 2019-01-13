@@ -37,7 +37,7 @@ sort dialogue initial text -> "Sort?" <- add more sort choices here
   > check update policy
   
 
-widescreen copy paste from pallete preview - menu goes off screen!
+rclick menu is not responsive
 
 
 ## bugs

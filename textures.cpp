@@ -673,7 +673,7 @@ bool Textures::colorFromSurface(SDL_Surface *newSurface, int x, int y, SDL_Color
     //Uint32 temp;
     Uint8 red, green, blue, alpha;
 
-    if( x < 0 || y < 0 || x > newSurface->w || y > newSurface->h ){
+    if( x < 0 || y < 0 || x >= newSurface->w || y >= newSurface->h ){
         SDL_Log("ERROR/WARNING: Getting OOB pixel");
         return false;
     }

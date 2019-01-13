@@ -160,9 +160,6 @@ struct uiToolMenu{
         
         text->backgroundClickCallback(p_interactionCallback)->backgroundClickProxy(p_cbUiObject);
 
-        text->handlePositioning(p_cbUiObject); // maths redundant handle posiitonoing
-
-
 //        menu_item_bg->boundryRect.w = menuItemLen * 1.0;
 //        menu_item_bg->setClickInteractionCallback(p_interactionCallback);
 //        menu_item_bg->doesNotCollide = false;
@@ -244,9 +241,10 @@ struct uiToolMenu{
 
             yPosition +=  (dispRect->h * 0.5); // + (-menu_items->childListIndex * (menu_item_size_scaling * menu_items->boundryRect.h) * 0.5);
 
-            xPosition += (0.5*dispRect->w) + (0.5*(1.0-dispRect->w));
+            //xPosition += (0.5*dispRect->w) + (0.5*(1.0-dispRect->w));
 
-            menu_item_size_scaling *= 1.0-dispRect->w;
+            //menu_item_size_scaling *= 1.0-dispRect->w;
+            menu_item_size_scaling *=0.5;
 
         }else{
             yPosition += dispRect->h + 0.05;
