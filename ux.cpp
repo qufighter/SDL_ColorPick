@@ -571,7 +571,7 @@ Ux::uiObject* Ux::create(void){
 
     optionsGearBtn = new uiObject();
     optionsGearBtn->hasForeground = true;
-    Ux::setColor(&optionsGearBtn->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+    Ux::setColor(&optionsGearBtn->foregroundColor, 240, 240, 240, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
     //    optionsGearBtn->hasBackground = true;
     //    Ux::setColor(&optionsGearBtn->backgroundColor, 32, 0, 0, 128);
     //optionsGearBtn->setClickInteractionCallback(&Ux::interactionAddHistory); // TODO rename me

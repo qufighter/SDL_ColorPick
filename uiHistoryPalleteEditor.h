@@ -694,6 +694,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = myUxRef->pickHistoryList->iterate();
         ColorList* hist = pickHistoryIterator->nextLast(); // loop in reverse here...
         int addedCounter = 0;
+        int foundVis = 0;
         while(hist != nullptr){
 //            if( hist->is_delete_state ){
 //                // we could skip these... right????
@@ -702,10 +703,14 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             if( existingLocation > -1 ){
                 // its taken... cannot add this to the pallete....
                 Uint8 palleteOffset = existingLocation; // pointless var
-                //self->palleteScroller->scrollToItemByIndex(palleteOffset);
                 uiObject* visibleTile = self->palleteScroller->getVisibleTileForOffsetOrNull(palleteOffset);
                 if( visibleTile != nullptr ){
                     myUxRef->uxAnimations->rvbounce(visibleTile);
+                    foundVis++;
+                }else{
+                    if( addedCounter < 1 && foundVis < 1 ){
+                        self->palleteScroller->scrollToItemByIndex(palleteOffset);
+                    }
                 }
             }else{
                 self->addColorToPallete(interactionObj, hist->color, false );

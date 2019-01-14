@@ -12,7 +12,7 @@ add version string somewhere (do not let it look like an IP address!)  maybe thi
 achievements
 can only achieve when points enabled?
    - points threshold achievements.... (besides int overflow)  *for easy/hard* ?
-   - huzzah (3rd button)
+   - huzzah (3rd button) meh achievement?  training achievement?
    - 13 points 5d5a4b
    
 settings -
@@ -21,9 +21,9 @@ settings -
       - goto history style
       - open imgs style
       - button feedbacks
-- means to disable arrows ?
-  - easy mode setting? (only one way to loose)?
-      
+    - means to disable arrows ?
+    - easy mode setting? (only one way to loose)?  ( see the following subsequent call to loose :   if( existingLocation > -1 ){
+          
 sort dialogue initial text -> "Sort?" <- add more sort choices here 
       goto history style
   
