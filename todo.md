@@ -10,10 +10,10 @@ add version string somewhere (do not let it look like an IP address!)  maybe thi
  > AndroidManifest.xml
 
 achievements
-   - points threshold achievements.... (besides int overflow)
-   - greater "out of space"
+can only achieve when points enabled?
+   - points threshold achievements.... (besides int overflow)  *for easy/hard* ?
    - huzzah (3rd button)
-   - 13 points 
+   - 13 points 5d5a4b
    
 settings -
   - text rendering issues with scale / responsive
@@ -21,7 +21,8 @@ settings -
       - goto history style
       - open imgs style
       - button feedbacks
-      - means to disable arrows ?
+- means to disable arrows ?
+  - easy mode setting? (only one way to loose)?
       
 sort dialogue initial text -> "Sort?" <- add more sort choices here 
       goto history style
@@ -29,13 +30,10 @@ sort dialogue initial text -> "Sort?" <- add more sort choices here
   // lets treat it as if they stopped interacting....
     -- we can zoom the scrollers?   
   
-  
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
   
-
 rclick menu is not responsive
-
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -70,6 +68,9 @@ we need test colors like:
 0,85,255 (256*86)
 85,15,15 (256*86)
 add c test for //here is an index test, albeit in javascript:
+
+good test color:
+10,11,13  0a0b0d (hsv picker scan crash fixed...) test all possible color?
 
 hisotry sorted like
 #255,95,0

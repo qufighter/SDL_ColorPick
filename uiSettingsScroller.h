@@ -63,6 +63,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         UI_ACHEIVEMENT_NO_FAST, // " No Thanks "
         UI_ACHEIVEMENT_MUCH_RISK, // " Much Risk "
         UI_ACHEIVEMENT_INT_OVERFLOW, // "int overflow!"
+        UI_ACHEIVEMENT_GREATER_NOSPACE,
 
         UI_SETTING_LAST = 255  // 0xFF
     } UI_SETTINGS_ENUM; // settingKey enum ?
@@ -179,6 +180,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "In-exact HSV", "*in-exact!!", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_INEXACT));
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Right Hue're", "Right Hue're", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_RIGHT_HUE));
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "No Space", "out of space!", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_NOSPACE));
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "No Space 2", "out of space!", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_GREATER_NOSPACE));
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Wrote History", "Wrote History", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_REWROTE_HISTORY));
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "No Thanks", " No Thanks ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_NO_FAST));
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Much Risk", " Much Risk ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_MUCH_RISK));

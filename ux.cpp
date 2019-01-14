@@ -1485,7 +1485,7 @@ void Ux::addCurrentToPickHistory(){
     if( pickHistoryList->_out_of_space ){
         defaultScoreDisplay->display(historyPreview->childList[0], 2);
         //defaultScoreDisplay->displayExplanation("out of space!");
-        defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_NOSPACE);
+        defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_GREATER_NOSPACE);
     }else{
         defaultScoreDisplay->display(historyPreview->childList[0], 1);
     }
@@ -1493,6 +1493,7 @@ void Ux::addCurrentToPickHistory(){
 
     updatePickHistoryPreview();
 
+    // move logic into historyPalleteEditor
     if( historyPalleteEditor->historyPalleteHolder->isInBounds ){
         historyPalleteEditor->historyScroller->scrollToItemByIndex(0);
     }else{
