@@ -106,6 +106,15 @@ void mouseDownEvent(SDL_Event* event);
 void mouseMoveEvent(SDL_Event* event);
 void mouseUpEvent(SDL_Event* event);
 
+void beginInteraction(bool isStart){
+    SDL_GetMouseState(&tx, &ty);
+    //SDL_Log("MOUSE xy %d %d", tx,ty);
+    openglContext->pixelInteraction.begin(tx, ty);
+    openglContext->generalUx->currentInteraction.begin( (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h );
+    //SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
+    didInteract = openglContext->generalUx->triggerInteraction(isStart);
+}
+
 void mouseDownEvent(SDL_Event* event){
     mousStateDown += 1;
     //SDL_Log("finger count %i", event->tfinger.);
@@ -123,12 +132,7 @@ void mouseDownEvent(SDL_Event* event){
     //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
     // SDL_TouchFingerEvent event->tfinger
     //SDL_GetRelativeMouseState(&tx, &ty);
-    SDL_GetMouseState(&tx, &ty);
-    //SDL_Log("MOUSE xy %d %d", tx,ty);
-    openglContext->pixelInteraction.begin(tx, ty);
-    openglContext->generalUx->currentInteraction.begin( (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h );
-    //SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
-    didInteract = openglContext->generalUx->triggerInteraction();
+    beginInteraction(true);
     openglContext->renderShouldUpdate = true; // android??
 }
 
@@ -300,9 +304,19 @@ int EventFilter(void* userdata, SDL_Event* event){
         case SDL_MOUSEWHEEL:
             SDL_Log("Hello Wheel!!");
 
-            openglContext->clearVelocity();
-            openglContext->renderShouldUpdate = true;
-            openglContext->setFishScale(event->wheel.y, 0.10f);
+            if( openglContext->generalUx->hasCurrentModal() ){
+
+                // we may need to see what item is under our pointer....
+                // only trouble comes if we are already clicked when scrolling ?
+
+                beginInteraction(false);  // we can see if the last interaction is complete first????
+                openglContext->generalUx->wheelOrPinchInteraction(event->wheel.y);
+
+            }else{
+                openglContext->clearVelocity();
+                openglContext->renderShouldUpdate = true;
+                openglContext->setFishScale(event->wheel.y, 0.10f);
+            }
 
             return 0;
 #endif

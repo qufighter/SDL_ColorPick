@@ -39,6 +39,8 @@ struct uiScrollController{
 
         scrollBarVertHolder->setBoundaryRect( 1.0 - SCROLLY_WIDTH, 0.0, SCROLLY_WIDTH, 1.0);
 
+        uiObjectItself->setInteractionWheel(&this->interactionWheel);
+
 
         scrollUp->hasForeground = true;
         //uxInstance->printCharToUiObject(scrollUp, '^', true);
@@ -240,6 +242,17 @@ struct uiScrollController{
 //        }
         // if object can dismiss from bottom (swip out of view upwards) then we should also return false next...
         return true;
+    }
+
+    static void interactionWheel(uiObject *interactionObj, uiInteraction *delta){
+        uiScrollController* self = interactionObj->myScrollController;
+        // the "wheel" will be in "lines" as per os configuration...
+        // rowsToShow
+        float offset = delta->wheel;
+        if( SDL_fabsf(delta->wheel) > self->rowsToShow ){
+            offset *= self->rowsToShow / SDL_fabsf(delta->wheel);
+        }
+        self->animateScrollXyAbsolute(0, self->scrolly + (offset * self->tileHeight));
     }
 
     static void interactionScrollUp(uiObject *interactionObj, uiInteraction *delta){

@@ -271,6 +271,7 @@ struct uiObject
         boundaryEntreredCallback=nullptr;
         shouldCeaseInteractionChecker=nullptr;
         interactionBeginCallback=nullptr;
+        interactionWheelCallback=nullptr;
         myScrollController=nullptr; // not genric enough... remove it
         myUiController = nullptr;
         myIntegerIndex = -1;
@@ -366,6 +367,7 @@ struct uiObject
     anInteractionFn interactionCallback;
 
     anInteractionFn interactionBeginCallback; // effectively mousedown
+    anInteractionFn interactionWheelCallback;
 
     bool hasAnimCb;
     anAnimationPercentCallback animationPercCallback;
@@ -552,6 +554,11 @@ struct uiObject
     void setInteractionBegin( anInteractionFn p_interactionBegin ){
         this->canCollide = true; // so for click functions we are just setting this automatically nnow!
         interactionBeginCallback = p_interactionBegin;
+    }
+
+    void setInteractionWheel( anInteractionFn p_interactionWheel ){
+        this->canCollide = true; // so for click functions we are just setting this automatically nnow!
+        interactionWheelCallback = p_interactionWheel;
     }
 
     void setInteraction( anInteractionFn p_interactionFn ){
@@ -830,6 +837,14 @@ struct uiObject
 
     bool hasParentObject;
     uiObject *parentObject;
+
+    uiObject* findWheelOrPinchInteractionObject(){
+        if( interactionWheelCallback != nullptr ) return this;
+        if( hasParentObject ){
+            return parentObject->findWheelOrPinchInteractionObject();
+        }
+        return nullptr;
+    }
 
     bool isInHiddenState(){ // check obj itself and parent objects to see if we are hidden...
         if( !is_being_viewed_state ) return true;

@@ -56,12 +56,17 @@ void Ux::endModal(uiObject *oldModal){
     }
 }
 void Ux::endCurrentModal(){
-    if( currentModal != rootUiObject && currentModal != nullptr ){
+    if( hasCurrentModal() ){
         // NOTE: just using  currentInteraction here could have SIDE EFFECTS (key presses could reset those???)
         currentModal->modalDismissal(currentModal, &currentInteraction);
         // endModal(currentModal); // the modal dismissal SHOULD call end modal automatically!  if not you probably did it wrong
     }
 }
+
+bool Ux::hasCurrentModal(){
+    return currentModal != rootUiObject && currentModal != nullptr;
+}
+
 
 
 void Ux::GetPrefPath(char* preferencesPath, const char* filename, char** resultDest){
@@ -1056,6 +1061,14 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
     // reset that translation
 
     return collides;
+}
+
+void Ux::wheelOrPinchInteraction(float delta){
+    uiObject* wheelIntObj = interactionObject->findWheelOrPinchInteractionObject();
+    if( wheelIntObj != nullptr ){
+        currentInteraction.wheel = delta;
+        wheelIntObj->interactionWheelCallback(wheelIntObj, &currentInteraction);
+    }
 }
 
 // todo investigate dropping this function?  much of this should be split into a different file otherwise

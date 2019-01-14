@@ -233,6 +233,7 @@ static Ux* Singleton();
     void updateModal(uiObject *newModal, anInteractionFn modalDismissal);
     void endModal(uiObject *oldModal); // this is to be called AFTER modal is hidden
     void endCurrentModal();
+    bool hasCurrentModal();
 
     int renderObject(uniformLocationStruct* uniformLocations);
     int renderObjects(uniformLocationStruct* uniformLocations, uiObject* renderObj, glm::mat4 inheritMat);
@@ -248,6 +249,8 @@ static Ux* Singleton();
 
     bool triggerInteraction(); // mouseup, mouse didn't move
     bool triggerInteraction(bool isStart); // mouseup, mouse didn't move
+
+    void wheelOrPinchInteraction(float delta);
 
     void doOpenURL(char* url);
 
