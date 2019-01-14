@@ -51,6 +51,10 @@ struct uiControlButton{
 
         labelText->color(255, 255, 255, 255);
 
+        //labelText->scale(1.0); //
+        //labelText->pad(0.5,0.25); //
+        labelText->pad(0.5,0.05); //
+
         labelText->align(uiText::CENTER)->print(labelTxt);
 
         uiObjectItself->hasBackground=false;

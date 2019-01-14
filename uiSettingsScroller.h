@@ -139,7 +139,9 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         uiObject* dummyContainer=new uiObject();
         uiObject* d = dummyContainer;
 
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("History")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        float headingWidth = 0.1325;
+
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("History")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 //        uiObject* temp =  new uiObject();
 //        uxInstance->printCharToUiObject(temp, CHAR_CLOSE_ICON, DO_NOT_RESIZE_NOW);
@@ -154,7 +156,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
 
 
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("Pallets")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("Pallets")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
         settingsList->add(SettingsListObj((new uiControlButton(d, "Default", &interactionGoToDefaultImageBtn))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
@@ -167,11 +169,11 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
 
 
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("Options")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("Options")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
         settingsList->add(SettingsListObj((new uiControlBooleanToggle(dummyContainer, "+Points", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_GAME_ON));
 
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("Achievements")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("Achievements")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
         //settingsList->add(SettingsListObj((new uiControlAchievementToggle(dummyContainer, "Got +1"))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_ONE));
 
@@ -186,7 +188,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Much Risk", " Much Risk ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_MUCH_RISK));
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Int Overflow", "int overflow!", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_INT_OVERFLOW));
 
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, 0.1425))->print("Reset")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("Reset")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
         settingsList->add(SettingsListObj((new uiControlButton(d, "Reset Score", &interactionResetAchievementsBtn))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));

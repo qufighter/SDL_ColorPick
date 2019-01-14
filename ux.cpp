@@ -823,10 +823,42 @@ void Ux::printStringToUiObject(uiObject* printObj, const char* text, bool resize
     float letterSpacing = letterWidth; //((1.0 - printObj->containTextPadding - printObj->containTextPadding + printObj->textSpacing) / len);
     float firstOffset = printObj->containTextPadding;// - ((printObj->textSpacing * 0.5));
     float vertOffset = 0.5 - (letterWidth*0.5);
+    float letterHeight = letterWidth;
 
 //    if( letterSpacing > SDL_fabsf(printObj->textSpacing) ){
 //        letterSpacing += printObj->textSpacing;
 //    }
+
+    if( !printObj->containText ){
+        letterWidth = ((1.0 * len) - (printObj->textPadding.x * 2.0)) / len;
+
+        firstOffset = printObj->textPadding.x;
+
+        vertOffset = printObj->textPadding.y;
+
+        // we want to keep width/height the same so we keep our square (if we are already square)
+
+        letterHeight = 1.0 - (printObj->textPadding.y * 2);
+
+        if( letterHeight < letterWidth ){
+//            float scaler = letterHeight / letterWidth;
+//            letterWidth *= scaler; // this really just made teh width equal the height...
+            letterWidth = letterHeight;
+            firstOffset = ((1.0 * len) - (letterWidth*len)) * 0.5;
+
+        }else if(letterHeight > letterWidth){
+            letterHeight = letterWidth;
+            vertOffset = (1.0 - letterHeight) * 0.5;
+        }
+
+        letterSpacing = letterWidth;
+
+//        if( printObj->textPadding.x > 0 ){
+//            SDL_Log("Leter width %f %f", letterWidth, letterHeight);
+//        }
+    }
+
+
 
     printObj->doesNotCollide = !printObj->containText;
     printObj->doesInFactRender = printObj->containText; // the container is never the size to render.. unless contains text?!
@@ -848,19 +880,16 @@ void Ux::printStringToUiObject(uiObject* printObj, const char* text, bool resize
             if( !printObj->containText ){
                 //letter->squarify();
                 // LTR default - after text is printed you can change this!
-                letter->setBoundaryRect( (ctr*1.0), 0, 1, 1);  /// TODO move size components into function to calculate on window rescale bonus points
+                letter->setBoundaryRect( firstOffset+(ctr*letterSpacing), vertOffset, letterWidth, letterHeight);  /// TODO move size components into function to calculate on window rescale bonus points
             }
-
 
             printObj->addChild(letter);
         }
 
         if( printObj->containText == true ){
-
-
             // LTR default, see below - maybe we can check if we aren't TEXT_DIR_ENUM::NO_TEXT
             // move this right out of the else aboe, since we should fit any len text within, and also needs resize IF text len changed.... !?! easy compute
-            letter->setBoundaryRect( firstOffset+(ctr*letterSpacing), vertOffset, letterWidth, letterWidth);  /// TODO move size components into function to calculate on window rescale bonus points for suqare?
+            letter->setBoundaryRect( firstOffset+(ctr*letterSpacing), vertOffset, letterWidth, letterHeight);  /// TODO move size components into function to calculate on window rescale bonus points for suqare?
         }
 
         letter->hasForeground = true; // printObj->hasForeground;

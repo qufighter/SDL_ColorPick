@@ -291,6 +291,8 @@ struct uiObject
         isTextParentOfTextLength=0;
         containText=false;
         containTextPadding=0.0;
+        textPadding = glm::vec2(0.0, 0.0);
+
         //textSpacing=0.0;
         textDirection=TEXT_DIR_ENUM::NO_TEXT; // this is really child node direction... we can print the child nodes in some pre-defined ways
     }
@@ -307,7 +309,10 @@ struct uiObject
     int isTextParentOfTextLength;
     bool containText; // this is merely a font rendering setting.... not containsText, which is textDirection==TEXT_DIR_ENUM::NO_TEXT
     float containTextPadding;
-    //float textSpacing; // don't use this, just matrix scale the parent object of the text...
+
+    glm::vec2 textPadding;
+
+    //float textSpacing; // don't use this, just matrix scale the parent object of the text... or fix this...
     uint8_t textDirection;
     bool testChildCollisionIgnoreBounds = false;
 

@@ -152,6 +152,12 @@ struct uiText{
         return this;
     }
 
+    uiText* pad(float px, float py){
+        text_itself->textPadding.x = px;
+        text_itself->textPadding.y = py;
+        return this;
+    }
+
     uiText* backgroundColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a){
         textBackground = true;
         text_backgr->show();
