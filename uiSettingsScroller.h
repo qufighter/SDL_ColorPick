@@ -139,7 +139,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         uiObject* dummyContainer=new uiObject();
         uiObject* d = dummyContainer;
 
-        float headingWidth = 0.1325;
+        float headingWidth = 0.0925;
 
         settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("History")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
@@ -159,13 +159,21 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("Pallets")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
-        settingsList->add(SettingsListObj((new uiControlButton(d, "Default", &interactionGoToDefaultImageBtn))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
-
-
-        uiControlButton* openBtn = (new uiControlButton(d, "x Open", &interactionGoToOpenImages));
+        uiObject* row = new uiObject();
+        uiObject* left = new uiObject();
+        left->setBoundaryRect(0, 0, 0.5, 1.0);
+        uiObject* right = new uiObject();
+        right->setBoundaryRect(0.5, 0, 0.5, 1.0);
+        row->addChild(left);
+        row->addChild(right);
+        uiControlButton* defaultBtn = (new uiControlButton(left, "Default", &interactionGoToDefaultImageBtn))->size(0.065 * 2);
+        uiControlButton* openBtn = (new uiControlButton(right, "x Other", &interactionGoToOpenImages))->size(0.065 * 2);
         uxInstance->printCharToUiObject(openBtn->labelText->getTextFirstChar(), CHAR_OPEN_FILES, DO_NOT_RESIZE_NOW);
 
-        settingsList->add(SettingsListObj(openBtn->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+        settingsList->add(SettingsListObj(row, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        //settingsList->add(SettingsListObj(defaultBtn->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        //settingsList->add(SettingsListObj(openBtn->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
 

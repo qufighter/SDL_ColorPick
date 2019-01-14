@@ -41,7 +41,7 @@ struct uiControlAchievementToggle{
 //        uxInstance->printCharToUiObject(rightSquare, CHAR_CANCEL_ICON, DO_NOT_RESIZE_NOW);
 
 
-        labelText = new uiText(uiObjectItself, 0.065);
+        labelText = new uiText(uiObjectItself, 0.061);
 
         updateState(false);
 

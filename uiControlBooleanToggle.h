@@ -93,7 +93,7 @@ struct uiControlBooleanToggle{
         controlBg->setShouldCeaseInteractionChek(&Ux::bubbleInteractionIfNonClick);
 
 
-        labelText = new uiText(uiObjectItself, 0.09);
+        labelText = new uiText(uiObjectItself, 0.061);
         labelText->print(labelTxt);
 
 

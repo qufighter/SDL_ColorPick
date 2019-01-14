@@ -23,6 +23,10 @@ struct uiControlButton{
 
         uiObjectItself->myUiController = this; // this propagates to the other child objects
 
+        float margin = 0.05;
+        margins = new uiObject();
+        margins->setBoundaryRect(margin, margin, 1.0 - margin - margin, 1.0 - margin - margin);
+        uiObjectItself->addChild(margins);
 
 //        uiObjectItself->hasBackground=true;
 //        Ux::setColor(&uiObjectItself->backgroundColor, 255, 128, 128, 128);
@@ -41,13 +45,15 @@ struct uiControlButton{
 //        Ux::setColor(&rightSquare->backgroundColor, 255, 0, 0, 255);
 //        uxInstance->printCharToUiObject(rightSquare, CHAR_CANCEL_ICON, DO_NOT_RESIZE_NOW);
 
-        labelText = new uiText(uiObjectItself, 0.065);
+        labelText = new uiText(margins, 0.065);
 
         labelText->backgroundColor(255, 0, 255, 96);
 
         labelText->backgroundRound(0.2);
 
         labelText->backgroundClickCallback(tileClickedFn);
+
+        labelText->backgroundTouchBeginCallback(&interactionButtonTouched);
 
         labelText->color(255, 255, 255, 255);
 
@@ -57,7 +63,7 @@ struct uiControlButton{
 
         labelText->align(uiText::CENTER)->print(labelTxt);
 
-        uiObjectItself->hasBackground=false;
+        //uiObjectItself->hasBackground=false;
         //Ux::setColor(&uiObjectItself->backgroundColor, 255, 128, 128, 128);
 
         //uiObjectItself->setClickInteractionCallback(tileClickedFn);
@@ -72,7 +78,7 @@ struct uiControlButton{
     }
 
     uiObject* uiObjectItself; // no real inheritance here, this its the uiSqware, I would use self->
-
+    uiObject* margins;
 //    uiObject* rightSquare;
 
     uiText *labelText;
@@ -91,6 +97,18 @@ struct uiControlButton{
         }else{
             updateState(false);
         }
+    }
+
+    uiControlButton* size(float size){
+        labelText->size(size);
+        return this;
+    }
+
+    static void interactionButtonTouched(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+//        uiText* textObj = (uiText*)interactionObj->myUiController;
+//        myUxRef->uxAnimations->scale_bounce(textObj->uiObjectItself, 0.006);
+        myUxRef->uxAnimations->scale_bounce(interactionObj, 0.006);
     }
 
     void updateState(bool newState){

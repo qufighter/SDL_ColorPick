@@ -42,6 +42,8 @@ struct uiText{
 
         uiObjectItself = new uiObject();
 
+        //uiObjectItself->matrixInheritedByDescendants = true;
+
         text_itself = new uiObject();
         text_backgr = new uiObject();
         text_position = new uiObject();
@@ -67,12 +69,12 @@ struct uiText{
         text_itself->squarifyKeepHz();
 
         //maths
-        float w = size;
+        //float w = size;
         //float hw = w * 0.5;
 
         //no->setBoundaryRect( 0.0+pad, 0.5-hh, w, h);
 
-        text_position->setBoundaryRect( 0.5, 0.5, w, w);
+        text_position->setBoundaryRect( 0.5, 0.5, size, size);
 
         text_position->hasBackground=true;
         Ux::setColor(&text_position->backgroundColor, 64, 0, 0, 192);
@@ -134,14 +136,20 @@ struct uiText{
         return this;
     }
 
-   /*The followign have no effect here - this text is simply set to "FLL" and "CENTER" on arbitrary UI object provided*/
-    
+    uiText* size(float size){
+        text_position->setBoundaryRect( 0.5, 0.5, size, size);
+        handlePositioning(uiObjectItself);
+        return this;
+    }
+
     uiText* scale(float sc){
         text_itself->identity();
         text_itself->scale(sc);
         return this;
     }
-    
+
+
+    /*The followign have no effect here - this text is simply set to "FLL" and "CENTER" on arbitrary UI object provided*/
     uiText* align(int hz){
         hzAlign = hz;
         return this;
@@ -170,6 +178,11 @@ struct uiText{
 
     uiText* backgroundRound(float radius){
         text_backgr->setRoundedCorners(radius);
+        return this;
+    }
+
+    uiText* backgroundTouchBeginCallback(anInteractionFn tileClickedFn){
+        text_backgr->setInteractionBegin(tileClickedFn);
         return this;
     }
 
