@@ -123,6 +123,11 @@
 // ^ glm possibly not needed for such simple project
 
 
+#ifndef COLORPICK_PLATFORM_DESKTOP
+#define OMIT_SCROLLBAR_ARROWS
+#endif
+
+//#define OMIT_SCROLLY_ARROWS
 
 
 

@@ -28,11 +28,7 @@ using namespace std;
 //#include <vector>
 
 
-#ifndef COLORPICK_PLATFORM_DESKTOP
-#define OMIT_SCROLLBAR_ARROWS
-#endif
 
-//#define OMIT_SCROLLY_ARROWS
 
 
 
@@ -361,7 +357,9 @@ static Ux* Singleton();
         uiYesNoChoice* defaultYesNoChoiceDialogue;
         uiObject* defaultYesNoChoiceHolder;
         uiHueGradient* huePicker;
+#ifndef OMIT_SCROLLY_ARROWS
         uiNavArrows* movementArrows;
+#endif
         uiScore* defaultScoreDisplay;
 
         uiHistoryPalleteEditor* historyPalleteEditor;

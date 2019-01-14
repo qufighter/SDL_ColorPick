@@ -844,9 +844,11 @@ void OpenGLContext::triggerMovement(){
     accumulated_movement_x-=resultx * pxFactor;
     accumulated_movement_y-=resulty * pxFactor; // at least partially applied, but also a good chance result x/y is 0
 
+#ifndef OMIT_SCROLLY_ARROWS
     generalUx->movementArrows->indicateVelocity(pixelInteraction.vx, pixelInteraction.vy);
     //generalUx->movementArrows->indicateVelocity(openglContext->generalUx->currentInteraction.vx, openglContext->generalUx->currentInteraction.vy);
-
+#endif
+    
     //SDL_Log("MOUSE xy %d %d", colorPickState->mmovex,colorPickState->mmovey);
     openglContext->renderShouldUpdate = true;
 

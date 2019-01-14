@@ -23,6 +23,7 @@ settings -
       - button feedbacks
     - means to disable arrows ?
     - easy mode setting? (only one way to loose)?  ( see the following subsequent call to loose :   if( existingLocation > -1 ){
+    see:    any view that is influenced by settings - we should update those now.... arguably this should be unified someplace....
           
 sort dialogue initial text -> "Sort?" <- add more sort choices here 
       goto history style
@@ -33,13 +34,14 @@ sort dialogue initial text -> "Sort?" <- add more sort choices here
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
   
-rclick menu is not responsive (its only sized once)
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 ##  can do
+
+rclick menu is not responsive (its only sized once)
 
 show alpha value when < 255, rgba hex too?ååå
 

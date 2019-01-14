@@ -53,7 +53,8 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         /* You may only add new values to the END of the section - even though this is int we use uint8 so do not exceede 255*/
         UI_SETTING_NONE = 0,
         UI_SETTING_GAME_ON,
-        UI_SETTING_GAME_ON2,
+        UI_SETTING_GAME_EASY_MODE,
+        UI_SETTING_SHOW_NAV_ARROWS,
 
         UI_ACHEIVEMENT_START = 128, // 0x80
         UI_ACHEIVEMENT_INEXACT, // "*in-exact!!"
@@ -87,7 +88,6 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 //        SDL_Log("NOise output about enums: %d %d %d %d %d %d %d",
 //                UI_SETTING_NONE,
 //                UI_SETTING_GAME_ON,
-//                UI_SETTING_GAME_ON2,
 //                UI_ACHEIVEMENT_START,
 //                UI_ACHEIVEMENT_ONE,
 //                UI_ACHEIVEMENT_TWO,
@@ -179,7 +179,18 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
         settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("Options")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
-        settingsList->add(SettingsListObj((new uiControlBooleanToggle(dummyContainer, "+Points", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_GAME_ON));
+        settingsList->add(SettingsListObj((new uiControlBooleanToggle(dummyContainer, "+1 Points", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_GAME_ON));
+
+        settingsList->add(SettingsListObj((new uiControlBooleanToggle(dummyContainer, " Easy Mode", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_GAME_EASY_MODE));
+
+        // consider testing with OMIT_SCROLLY_ARROWS .... (it will work though )... for the most part....
+#ifndef OMIT_SCROLLY_ARROWS
+        uiControlBooleanToggle* toggle_arrows = new uiControlBooleanToggle(dummyContainer, "x x Arrows", true);
+        uxInstance->printCharToUiObject(toggle_arrows->labelText->getTextChar(0), CHAR_ARR_LEFT, DO_NOT_RESIZE_NOW);
+        uxInstance->printCharToUiObject(toggle_arrows->labelText->getTextChar(2), CHAR_ARR_RIGHT, DO_NOT_RESIZE_NOW);
+        settingsList->add(SettingsListObj(toggle_arrows->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_SHOW_NAV_ARROWS));
+#endif
+
 
         settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("Achievements")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
