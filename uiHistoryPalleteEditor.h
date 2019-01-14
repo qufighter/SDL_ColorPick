@@ -358,6 +358,24 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
                 }
 
                 //if this is an optional button it should always be LAST
+                if(offset == myUxRef->pickHistoryList->total() + BUTTON_ADD_ALL_HISTORY ){
+                    historyTile->show();
+                    removeButton->hide(); // it still collides..... so we set the rect above!
+                    iconBtn->show();
+                    Ux::setColor(&historyTile->backgroundColor, 0, 0, 0, 255);
+
+                    myUxRef->printCharToUiObject(iconBtn, CHAR_ADD_ALL_DUDE, DO_NOT_RESIZE_NOW);
+
+                    historyTile->myIntegerIndex = BTN_NEGATIVE_START - BUTTON_ADD_ALL_HISTORY; //awkward but using negative space beyond -1 for codes
+
+                    historyTile->hasInteraction = false; // disable animations which are default for this scroll controller....
+
+                    historyTile->interactionProxy=nullptr;
+
+                    return true;
+                }
+
+                //if this is an optional button it should always be LAST
                 if(offset == myUxRef->pickHistoryList->total() + BUTTON_SORT_HISTORY ){
                     historyTile->show();
                     removeButton->hide(); // it still collides..... so we set the rect above!
@@ -635,6 +653,70 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         SDL_free(tempList);
     }
 
+    static void addAllScoringHandler(uiObject *interactionObj, int eventCode, int quantityAdded){
+        Ux* uxInstance = Ux::Singleton();
+        switch(eventCode){
+            case YES_NO_RESULTS::RESULT_YES_FAST:
+                //uxInstance->defaultScoreDisplay->displayExplanation(" Too Quick ");
+                uxInstance->defaultScoreDisplay->display(interactionObj, 5 * quantityAdded, SCORE_EFFECTS::MOVE_UP);
+                break;
+            case YES_NO_RESULTS::RESULT_YES:
+                uxInstance->defaultScoreDisplay->display(interactionObj, 3 * quantityAdded, SCORE_EFFECTS::MOVE_UP);
+                // we should consider checking on quantityAdded.... to see if we really effected any change?
+                //uxInstance->defaultScoreDisplay->displayExplanation("Wrote History");
+                //uxInstance->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_REWROTE_HISTORY);
+                break;
+            case YES_NO_RESULTS::RESULT_NO_FAST:
+                uxInstance->defaultScoreDisplay->display(interactionObj, 5, SCORE_EFFECTS::MOVE_UP);
+                //uxInstance->defaultScoreDisplay->displayExplanation(" No Thanks ");
+                uxInstance->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_NO_FAST);
+
+                break;
+            case YES_NO_RESULTS::RESULT_NO:
+            default:
+                uxInstance->defaultScoreDisplay->display(interactionObj, 1, SCORE_EFFECTS::MOVE_UP);
+                break;
+        }
+    }
+
+    void showAddAllConfirmationDialogue(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickAddAllHistoryToPallete, &clickCancelNoOp);
+        myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Add All?");
+        myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(addAllScoringHandler);
+        //myUxRef->defaultYesNoChoiceDialogue->displayAdditionalUiObject(sortChooser->uiObjectItself);
+
+    }
+
+    static void clickAddAllHistoryToPallete(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
+        uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = myUxRef->pickHistoryList->iterate();
+        ColorList* hist = pickHistoryIterator->nextLast(); // loop in reverse here...
+        int addedCounter = 0;
+        while(hist != nullptr){
+//            if( hist->is_delete_state ){
+//                // we could skip these... right????
+//            }
+            int existingLocation = myUxRef->palleteList->locate(*hist);
+            if( existingLocation > -1 ){
+                // its taken... cannot add this to the pallete....
+                Uint8 palleteOffset = existingLocation; // pointless var
+                //self->palleteScroller->scrollToItemByIndex(palleteOffset);
+                uiObject* visibleTile = self->palleteScroller->getVisibleTileForOffsetOrNull(palleteOffset);
+                if( visibleTile != nullptr ){
+                    myUxRef->uxAnimations->rvbounce(visibleTile);
+                }
+            }else{
+                self->addColorToPallete(interactionObj, hist->color, false );
+                addedCounter++;
+            }
+            hist = pickHistoryIterator->nextLast();
+        }
+        SDL_free(pickHistoryIterator);
+        myUxRef->defaultYesNoChoiceDialogue->updateNumberToEffectWhenYes(addedCounter);
+    }
+
     void showSortConfirmationDialogue(uiObject *interactionObj, uiInteraction *delta){
         Ux* myUxRef = Ux::Singleton();
 
@@ -646,7 +728,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 //        SDL_free(tempList);
 
 
-        myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickSortHistory, &clickCancelSortHistory);
+        myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickSortHistory, &clickCancelNoOp);
         myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Sort?");
         myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(sortScoringHandler);
         myUxRef->defaultYesNoChoiceDialogue->displayAdditionalUiObject(sortChooser->uiObjectItself);
@@ -683,11 +765,6 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         myUxRef->defaultYesNoChoiceDialogue->updateNumberToEffectWhenYes((oldLen) - myUxRef->pickHistoryList->total());
     }
 
-    static void clickCancelSortHistory(uiObject *interactionObj, uiInteraction *delta){
-        //        Ux* myUxRef = Ux::Singleton();
-        //        uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
-    }
-
     // default scoreDisplayFn
     static void sortScoringHandler(uiObject *interactionObj, int eventCode, int quantitySelected){
         Ux* uxInstance = Ux::Singleton();
@@ -717,7 +794,11 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         }
     }
 
-    
+    static void clickCancelNoOp(uiObject *interactionObj, uiInteraction *delta){
+        //        Ux* myUxRef = Ux::Singleton();
+        //        uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
+    }
+
     static void clickHistoryColor(uiObject *interactionObj, uiInteraction *delta){ // see also updateUiObjectFromHistory
 
 
@@ -763,6 +844,14 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
                 myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickClearHistory, &clickCancelClearHistory, myUxRef->pickHistoryList->total());
 
+
+            }else if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_ADD_ALL_HISTORY ){
+
+                if( myUxRef->defaultYesNoChoiceDialogue->isDisplayed ){ return; }
+
+                myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
+
+                self->showAddAllConfirmationDialogue(interactionObj, delta);
 
             }else if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_SORT_HISTORY ){
 
@@ -843,20 +932,23 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             return;
         }
 
+        self->addColorToPallete(interactionObj, interactionObj->backgroundColor, true);
+    }
 
-
-        myUxRef->palleteList->add(ColorList(interactionObj->backgroundColor));
+    void addColorToPallete(uiObject* interactionObj, SDL_Color color, bool standardScoring){
+        Ux* myUxRef = Ux::Singleton();
+        myUxRef->palleteList->add(ColorList(color));
         if( myUxRef->palleteList->_out_of_space ){
-            myUxRef->defaultScoreDisplay->display(interactionObj, 10, SCORE_EFFECTS::NOMOVE);
+            if( standardScoring ) myUxRef->defaultScoreDisplay->display(interactionObj, 10, SCORE_EFFECTS::NOMOVE);
             //myUxRef->defaultScoreDisplay->displayExplanation("out of space!");
             myUxRef->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_NOSPACE);
         }else{
-            myUxRef->defaultScoreDisplay->display(interactionObj, 5, SCORE_EFFECTS::NOMOVE);
+           if( standardScoring )  myUxRef->defaultScoreDisplay->display(interactionObj, 5, SCORE_EFFECTS::NOMOVE);
         }
 
         myUxRef->updatePalleteScroller();
 
-        self->palleteScroller->scrollToItemByIndex(myUxRef->palleteList->previousIndex());
+        palleteScroller->scrollToItemByIndex(myUxRef->palleteList->previousIndex());
     }
 
 

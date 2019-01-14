@@ -33,7 +33,7 @@ sort dialogue initial text -> "Sort?" <- add more sort choices here
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
   
-rclick menu is not responsive
+rclick menu is not responsive (its only sized once)
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
