@@ -935,12 +935,20 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             //            myUxRef->uxAnimations->rvbounce(removeButton);
             //        }
 
-            myUxRef->defaultScoreDisplay->loose(interactionObj, SCORE_EFFECTS::NOMOVE);
+            // if in easy mode don't loose :)
+            if( self->isGameModeHardMode() ){
+                myUxRef->defaultScoreDisplay->loose(interactionObj, SCORE_EFFECTS::NOMOVE);
+            }
 
             return;
         }
 
         self->addColorToPallete(interactionObj, interactionObj->backgroundColor, true);
+    }
+
+    bool isGameModeHardMode(){
+        Ux* uxInstance = Ux::Singleton();
+        return !uxInstance->settingsScroller->getBooleanSetting(uiSettingsScroller::UI_SETTING_GAME_EASY_MODE);
     }
 
     void addColorToPallete(uiObject* interactionObj, SDL_Color color, bool standardScoring){

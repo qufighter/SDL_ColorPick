@@ -24,6 +24,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
     typedef enum  {
         HEADING,
+        SUBHEADING,
         SPACE,
         BOOLEAN_TOGGLE,
         BOOLEAN_ACHIEVEMENT,
@@ -140,6 +141,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         uiObject* d = dummyContainer;
 
         float headingWidth = 0.0925;
+        float subWidth = 0.0525;
 
         settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("History")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
@@ -207,11 +209,21 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Much Risk", " Much Risk ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_MUCH_RISK));
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Int Overflow", "int overflow!", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_INT_OVERFLOW));
 
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("Reset")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("Score")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
-        settingsList->add(SettingsListObj((new uiControlButton(d, "Reset Score", &interactionResetAchievementsBtn))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        // ANY time we show settings, then this could have changed too.... so we have to manage this internally or by requesting an object from the hter
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, subWidth))->print("High Score:")->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+        highScoreText = new uiText(dummyContainer, subWidth); /// todo auto adjust width for this one too! ( SDL_MAX_SINT32 )
+        settingsList->add(SettingsListObj(highScoreText->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+
+        settingsList->add(SettingsListObj((new uiControlButton(d, "Reset Score + Achievements", &interactionResetAchievementsBtn))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
         //settingsList->add(SettingsListObj((new uiControlButton(d, "Score", &interactionResetAchievementsBtn))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+
+
 
 
         if( settingsList->_out_of_space ){
@@ -239,6 +251,20 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
     uiScrollController *settingsScroller;
 
     uiObject *settingsScrollerItself; // just a ref to historyScroller's uiObjectItself
+
+    uiText *highScoreText;
+
+    // maybe this moves to Ux::
+    void updateSettingsEffectedProgramElements(){
+        Ux* myUxRef = Ux::Singleton();
+        myUxRef->movementArrows->displayOrHideBasedOnSettings();
+        myUxRef->defaultScoreDisplay->updateScoreDisplay();
+    }
+
+    void updateSettingsPaneBeforeDisplayed(){
+        Ux* myUxRef = Ux::Singleton();
+        highScoreText->print(myUxRef->defaultScoreDisplay->getHighScore());
+    }
 
     const char* achieveAchievement(Uint8 achievementKey){
         int position = settingsList->locateIndex(achievementKey);
@@ -444,11 +470,8 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
             self->uiObjectItself->is_being_viewed_state = false;
             myUxRef->endModal(self->uiObjectItself);
 
-            /*
-             any view that is influenced by settings - we should update those now.... arguably this should be unified someplace....
-             */
-
-            myUxRef->defaultScoreDisplay->updateScoreDisplay();
+            /*any view that is influenced by settings - we should update those now....*/
+            self->updateSettingsEffectedProgramElements();
 
         }else{
             self->uiObjectItself->isInBounds = true; // nice hack
@@ -461,8 +484,11 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
             //self->historyScroller->allowUp = true;
             myUxRef->updateModal(self->uiObjectItself, &interactionToggleSettings);
 
+            self->updateSettingsPaneBeforeDisplayed();
+
         }
     }
+
 
 
     static void interactionClickGoToHistoryBtn(uiObject *interactionObj, uiInteraction *delta){
@@ -501,7 +527,9 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
     static void interactionFactoryDefaults(uiObject *interactionObj, uiInteraction *delta){
         interactionResetAchievements(interactionObj, delta);
         Ux* myUxRef = Ux::Singleton();
+        uiSettingsScroller* self = myUxRef->settingsScroller;
         myUxRef->defaultScoreDisplay->resetAll();
+        self->updateSettingsPaneBeforeDisplayed();
     }
 
     static void interactionResetAchievements(uiObject *interactionObj, uiInteraction *delta){

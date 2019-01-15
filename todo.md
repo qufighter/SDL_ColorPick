@@ -17,6 +17,7 @@ can only achieve when points enabled?
    
 settings -
   - text rendering issues with scale / responsive
+  - widescreen vertical text boundaries for in bounds checks - text dissaspears early when scrolling off edge
   - buttons for 
       - goto history style
       - open imgs style
@@ -40,6 +41,7 @@ low risk mode for some YS/NO chioces.... (one)
     
   when color is selected in pallete - indicate in history view if visible??????? 
       (really only good for first 2 -3 rows of history..... has to be reset any time the view color is hidden, more of a can do)
+      
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)

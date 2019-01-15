@@ -149,6 +149,11 @@ struct uiScore{
         }
     }
 
+    char* getHighScore(){
+        SDL_snprintf(score_disp_char, maxLen, "%i", int_max_score);
+        return score_disp_char;
+    }
+
     void loose(uiObject *p_dispalyNearUiObject){
         loose(p_dispalyNearUiObject, SCORE_EFFECTS::DEFAULT);
     }

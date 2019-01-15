@@ -112,6 +112,8 @@ void main()
 //        oPos.y=parPos.y + parPos.a;
 //    }
 
+    vec4 effectiveScale = modelMatrix * ui_scale;
+
     vec4 objPosition = (modelMatrix * position * ui_scale) + ui_position;
 
 
@@ -182,9 +184,9 @@ void main()
             }
 
             // now we move our texure coord, which is for btm right/left
-            ui_texture_y -= ui_texture_yscale * (lostY / ui_scale.y) * 0.5;
+            ui_texture_y -= ui_texture_yscale * (lostY / effectiveScale.y) * 0.5;
 
-            // sorry but these units may be random and need calculation... we can compare ui_scale with crop_scale to possibly compute these values
+            // sorry but these units may be random and need calculation... we can compare ui_scale (effectiveScale) with crop_scale to possibly compute these values
             //^ the above likely only works because all fonts are scaled down
 
             // this modifies rounding corners somehow? needs work
@@ -237,7 +239,7 @@ void main()
 
                 // position of textre will almost certainly have to be a function of scale
             //TexCoordOut.y += (lostY / 2.0);
-            ui_texture_y += ui_texture_yscale * (lostY / ui_scale.y) * 0.5;
+            ui_texture_y += ui_texture_yscale * (lostY / effectiveScale.y) * 0.5;
            // ui_texture_yscale *=  1.0 / lostY;
          //   ui_texture_yscale -= lostY;
 

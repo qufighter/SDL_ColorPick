@@ -712,9 +712,6 @@ Ux::uiObject* Ux::create(void){
 
     readInState(); // reads saved state into lists, requires historyPalleteEditor
 
-
-    bool game_enabled = settingsScroller->getBooleanSetting(uiSettingsScroller::UI_SETTING_GAME_ON);
-
     defaultScoreDisplay->updateScoreDisplay();
 
 

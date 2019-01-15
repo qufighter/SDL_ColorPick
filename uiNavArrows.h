@@ -122,6 +122,19 @@ struct uiNavArrows{
 
     }
 
+    void displayOrHideBasedOnSettings(){
+        if( isSettingNavArrowDisplayed() ){
+            uiObjectItself->showAndAllowInteraction();
+        }else{
+            uiObjectItself->hideAndNoInteraction();
+        }
+    }
+
+    bool isSettingNavArrowDisplayed(){
+        Ux* uxInstance = Ux::Singleton();
+        return uxInstance->settingsScroller->getBooleanSetting(uiSettingsScroller::UI_SETTING_SHOW_NAV_ARROWS);
+    }
+
     void indicateVelocity(float vx, float vy){
         Ux* uxInstance = Ux::Singleton();
         float scaler=0.0001;
