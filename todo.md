@@ -12,7 +12,7 @@ add version string somewhere (do not let it look like an IP address!)  maybe thi
 achievements
 can only achieve when points enabled?
    - points threshold achievements.... (besides int overflow)  *for easy/hard* ?
-   - huzzah (3rd button) meh achievement?  training achievement?
+   - huzzah (3rd button) meh achievement?  training achievement?  need ponts for clicking button though...,
    - 13 points 5d5a4b
    
 settings -
@@ -34,12 +34,19 @@ sort dialogue initial text -> "Sort?" <- add more sort choices here
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
   
+  when addall is no-op..... why confirm dialogue?
+  
+low risk mode for some YS/NO chioces.... (one)
+    
+  when color is selected in pallete - indicate in history view if visible??????? 
+      (really only good for first 2 -3 rows of history..... has to be reset any time the view color is hidden, more of a can do)
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 ##  can do
+
 
 rclick menu is not responsive (its only sized once)
 
@@ -138,6 +145,7 @@ throw out of view - initial velocity maintain... if over threshold?
 128; //derp
   // use const static int then you don't need to derp!
 
+
 # platform specific todo
 
 > rate it 5 stars
@@ -186,4 +194,4 @@ anything using main loop timers (processed on main loop) are not processed....
 
 # tests
 test history overwrote final color in index that it is released from the index (pretty sure it is...)
-
+test with vanilla (renamed) settings files

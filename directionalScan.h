@@ -153,6 +153,8 @@ struct DirectionalScan
     bool* bitmap;
     float* distances;
 
+    dimensonalType lastCoordinateReturned;
+
     DirectionalVector* possible_vectors;
     int _possible_vector_total;
 
@@ -341,7 +343,8 @@ struct DirectionalScan
 
          */
 
-        SDL_Point result = {0,0}; // hopefully we find a good result below....
+        //dimensonalType result = {0,0}; // hopefully we find a good result below....
+        // lastCoordinateReturned
 
         VectorValidity* search_area = (VectorValidity*)SDL_malloc( sizeof(VectorValidity)*_possible_vector_total );
         SDL_memcpy(search_area, default_search_area, sizeof(VectorValidity)*_possible_vector_total);
@@ -372,9 +375,9 @@ struct DirectionalScan
                 if( dist == 0.0){
 
                     // we found it
-                    result = de->coordinate;
+                    lastCoordinateReturned = de->coordinate;
                     lastBestDistance = 0; // exact match!
-                    return result;
+                    return lastCoordinateReturned;
                 }else{
 
                     if( dist < bestDist ){
@@ -410,8 +413,8 @@ struct DirectionalScan
         }
 
         lastBestDistance = bestDist;
-        result = bestDe->coordinate;
-        return result;
+        lastCoordinateReturned = bestDe->coordinate;
+        return lastCoordinateReturned;
     }
 
     int indexGet2d(int x, int y){

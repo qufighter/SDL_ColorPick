@@ -695,6 +695,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         ColorList* hist = pickHistoryIterator->nextLast(); // loop in reverse here...
         int addedCounter = 0;
         int foundVis = 0;
+        int lastFoundInvisibleOffset = 0;
         while(hist != nullptr){
 //            if( hist->is_delete_state ){
 //                // we could skip these... right????
@@ -708,15 +709,17 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
                     myUxRef->uxAnimations->rvbounce(visibleTile);
                     foundVis++;
                 }else{
-                    if( addedCounter < 1 && foundVis < 1 ){
-                        self->palleteScroller->scrollToItemByIndex(palleteOffset);
-                    }
+                    lastFoundInvisibleOffset = palleteOffset;
                 }
             }else{
                 self->addColorToPallete(interactionObj, hist->color, false );
                 addedCounter++;
             }
             hist = pickHistoryIterator->nextLast();
+        }
+        if( addedCounter < 1 && foundVis < 1 ){
+            // need of scroll to bounce....
+            self->palleteScroller->scrollToItemByIndex(lastFoundInvisibleOffset);
         }
         SDL_free(pickHistoryIterator);
         myUxRef->defaultYesNoChoiceDialogue->updateNumberToEffectWhenYes(addedCounter);

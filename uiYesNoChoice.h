@@ -277,9 +277,18 @@ struct uiYesNoChoice{
             uxInstance->printStringToUiObject(text, message, DO_NOT_RESIZE_NOW);
             text->boundryRect.x =  text_length * -0.5;
             text_holder->show();
+
+            // this is to possibly be some optional flag... to reset next time... not sure about this really  xQTY or xDELETE-COUNT
+//            if( text_length > 1 && *message == 'x' ){
+//                uxInstance->printCharToUiObject(text->childList[0], CHAR_CLOSE_ICON, DO_NOT_RESIZE_NOW);
+//            }
         }
         resize();
     }
+
+//    uiObject* getStringNearOkButton(){
+//        return text;
+//    }
 
     char* convertIntegerToString(int inputInt){
         return convertIntegerToString(inputInt, 'x');

@@ -274,10 +274,12 @@ void OpenGLContext::pickerForHue(HSV_Color* color, SDL_Color* desired_color){
 //
 //        }
         float matchDistance = textures->directionalScan->lastBestDistance;
+        SDL_Point lastOffset = textures->directionalScan->lastCoordinateReturned;
+        float movementDist = glm::distance(glm::vec2(0,0) , glm::vec2(lastOffset.x,lastOffset.y));
 
         if( matchDistance == 0 ){
             // exact match, after moving
-            generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 13, SCORE_EFFECTS::NOMOVE);
+            generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, movementDist, SCORE_EFFECTS::NOMOVE);
             generalUx->defaultScoreDisplay->displayExplanation(" [ ] ");
         }else{
             generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, matchDistance * 14, SCORE_EFFECTS::NOMOVE);
@@ -848,7 +850,7 @@ void OpenGLContext::triggerMovement(){
     generalUx->movementArrows->indicateVelocity(pixelInteraction.vx, pixelInteraction.vy);
     //generalUx->movementArrows->indicateVelocity(openglContext->generalUx->currentInteraction.vx, openglContext->generalUx->currentInteraction.vy);
 #endif
-    
+
     //SDL_Log("MOUSE xy %d %d", colorPickState->mmovex,colorPickState->mmovey);
     openglContext->renderShouldUpdate = true;
 
