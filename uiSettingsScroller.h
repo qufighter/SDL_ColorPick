@@ -20,7 +20,7 @@ this is really different from uiHistoryPalleteEditor in that it takes up the ful
 struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and is pretty much singleton....
 
 
-    const static int maxSettings = 25;
+    const static int maxSettings = 40;
 
     typedef enum  {
         HEADING,
@@ -48,6 +48,16 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         Uint8 settingKey; // if applicable, this will be set....
     } SettingsListObj;
 
+/*
+
+2,147,483,647
+1,000,000,000 1 Billion
+1,000,000 1 Million
+100,000 100K
+10,000 10K
+
+ */
+
     /* see SDL_EventType enum.... for inspiration?!  btw,  0xFF  is the max uInt8 */
     typedef enum  {
         // important: do not insert new items anywhere except at the end of an area, and then do not exceede the next area...
@@ -66,6 +76,14 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         UI_ACHEIVEMENT_MUCH_RISK, // " Much Risk "
         UI_ACHEIVEMENT_INT_OVERFLOW, // "int overflow!"
         UI_ACHEIVEMENT_GREATER_NOSPACE,
+        UI_ACHEIVEMENT_10K_EASY,
+        UI_ACHEIVEMENT_100K_EASY,
+        UI_ACHEIVEMENT_1M_EASY,
+        UI_ACHEIVEMENT_1B_EASY,
+        UI_ACHEIVEMENT_10K_HARD,
+        UI_ACHEIVEMENT_100K_HARD,
+        UI_ACHEIVEMENT_1M_HARD,
+        UI_ACHEIVEMENT_1B_HARD,
 
         UI_SETTING_LAST = 255  // 0xFF
     } UI_SETTINGS_ENUM; // settingKey enum ?
@@ -143,7 +161,10 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         float headingWidth = 0.0925;
         float subWidth = 0.0525;
 
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("History")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        uiText* aHeading = (new uiText(dummyContainer, headingWidth))->pad(0.4,0.001)->print("x History");
+        settingsList->add(SettingsListObj(aHeading->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        uxInstance->printCharToUiObject(aHeading->getTextFirstChar(), CHAR_CIRCLE_PLUSS, DO_NOT_RESIZE_NOW);
+
 
 //        uiObject* temp =  new uiObject();
 //        uxInstance->printCharToUiObject(temp, CHAR_CLOSE_ICON, DO_NOT_RESIZE_NOW);
@@ -158,7 +179,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
 
 
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("Pallets")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->pad(0.4,0.001)->print("Pallets")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
         uiObject* row = new uiObject();
@@ -178,8 +199,8 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         //settingsList->add(SettingsListObj(openBtn->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
-
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("Options")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiObject()), SETTING_TYPES_ENUM::SPACE, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->pad(0.4,0.001)->print("Options")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
         settingsList->add(SettingsListObj((new uiControlBooleanToggle(dummyContainer, "+1 Points", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_GAME_ON));
 
@@ -193,8 +214,8 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         settingsList->add(SettingsListObj(toggle_arrows->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_SHOW_NAV_ARROWS));
 #endif
 
-
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("Achievements")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiObject()), SETTING_TYPES_ENUM::SPACE, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->pad(0.4,0.001)->print("Achievements")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
         //settingsList->add(SettingsListObj((new uiControlAchievementToggle(dummyContainer, "Got +1"))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_ONE));
 
@@ -207,22 +228,42 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Wrote History", "Wrote History", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_REWROTE_HISTORY));
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "No Thanks", " No Thanks ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_NO_FAST));
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Much Risk", " Much Risk ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_MUCH_RISK));
+
+
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Easy 10K", " 10,0000 ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_10K_EASY));
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Easy 100K", " 100,000 ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_100K_EASY));
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Easy Million", " 1 Million ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_1M_EASY));
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Easy Billion", " 1 Billion ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_1B_EASY));
+
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Hard 10K", " 10,0000 ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_10K_HARD));
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Hard 100K", " 100,000 ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_100K_HARD));
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Hard Million", " 1 Million ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_1M_HARD));
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Hard Billion", " 1 Billion ", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_1B_HARD));
+
+
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Int Overflow", "int overflow!", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_INT_OVERFLOW));
 
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->print("Score")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiControlButton(d, "Reset", &interactionResetAchievementsBtn))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
+
+        settingsList->add(SettingsListObj((new uiObject()), SETTING_TYPES_ENUM::SPACE, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->pad(0.4,0.001)->print("Score")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+        scoreText = (new uiText(dummyContainer, subWidth))->marginLeft(0.05);
+        settingsList->add(SettingsListObj(scoreText->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
         // ANY time we show settings, then this could have changed too.... so we have to manage this internally or by requesting an object from the hter
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, subWidth))->print("High Score:")->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, subWidth))->color(128,128,128,255)->marginLeft(0.05)->print("High Score")->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
-        highScoreText = new uiText(dummyContainer, subWidth); /// todo auto adjust width for this one too! ( SDL_MAX_SINT32 )
+        highScoreText = (new uiText(dummyContainer, subWidth))->marginLeft(0.05); /// todo auto adjust width for this one too! ( SDL_MAX_SINT32 )
         settingsList->add(SettingsListObj(highScoreText->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
-        settingsList->add(SettingsListObj((new uiControlButton(d, "Reset Score + Achievements", &interactionResetAchievementsBtn))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiControlButton(d, "Reset", &interactionResetScoreBtn))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
         //settingsList->add(SettingsListObj((new uiControlButton(d, "Score", &interactionResetAchievementsBtn))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
+        settingsList->add(SettingsListObj((new uiObject()), SETTING_TYPES_ENUM::SPACE, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
 
@@ -252,6 +293,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
     uiObject *settingsScrollerItself; // just a ref to historyScroller's uiObjectItself
 
+    uiText *scoreText;
     uiText *highScoreText;
 
     // maybe this moves to Ux::
@@ -264,6 +306,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
     void updateSettingsPaneBeforeDisplayed(){
         Ux* myUxRef = Ux::Singleton();
         highScoreText->print(myUxRef->defaultScoreDisplay->getHighScore());
+        scoreText->print(myUxRef->defaultScoreDisplay->getScore());
     }
 
     const char* achieveAchievement(Uint8 achievementKey){
@@ -514,18 +557,25 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         interactionToggleSettings(nullptr, nullptr);
     }
 
-    static void interactionResetAchievementsBtn(uiObject *interactionObj, uiInteraction *delta){
+    static void interactionResetScoreBtn(uiObject *interactionObj, uiInteraction *delta){
         Ux* myUxRef = Ux::Singleton();
-
-        myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &interactionFactoryDefaults, nullptr);
+        myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &interactionResetScore, nullptr);
         myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Reset Score?");
         myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(nullptr);
         //myUxRef->defaultYesNoChoiceDialogue->displayAdditionalUiObject(sortChooser->uiObjectItself);
     }
 
 
-    static void interactionFactoryDefaults(uiObject *interactionObj, uiInteraction *delta){
-        interactionResetAchievements(interactionObj, delta);
+    static void interactionResetAchievementsBtn(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &interactionResetAchievements, nullptr);
+        myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("0 Achievement?");
+        myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(nullptr);
+        //myUxRef->defaultYesNoChoiceDialogue->displayAdditionalUiObject(sortChooser->uiObjectItself);
+    }
+
+
+    static void interactionResetScore(uiObject *interactionObj, uiInteraction *delta){
         Ux* myUxRef = Ux::Singleton();
         uiSettingsScroller* self = myUxRef->settingsScroller;
         myUxRef->defaultScoreDisplay->resetAll();
@@ -549,6 +599,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
                 }
             }
         }
+        self->updateSettingsPaneBeforeDisplayed();
     }
 
 

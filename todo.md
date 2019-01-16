@@ -13,7 +13,7 @@ achievements
 can only achieve when points enabled?
    - points threshold achievements.... (besides int overflow)  *for easy/hard* ?
    - huzzah (3rd button) meh achievement?  training achievement?  need ponts for clicking button though...,
-   - 13 points 5d5a4b
+   - 13 points 5d5a4b - its improved....
    
 settings -
   - text rendering issues with scale / responsive
@@ -21,10 +21,7 @@ settings -
   - buttons for 
       - goto history style
       - open imgs style
-      - button feedbacks
-    - means to disable arrows ?
-    - easy mode setting? (only one way to loose)?  ( see the following subsequent call to loose :   if( existingLocation > -1 ){
-    see:    any view that is influenced by settings - we should update those now.... arguably this should be unified someplace....
+
           
 sort dialogue initial text -> "Sort?" <- add more sort choices here 
       goto history style
@@ -35,13 +32,13 @@ sort dialogue initial text -> "Sort?" <- add more sort choices here
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
   
-  when addall is no-op..... why confirm dialogue?
-  
+when addall is no-op..... why confirm dialogue?
 low risk mode for some YS/NO chioces.... (one)
     
   when color is selected in pallete - indicate in history view if visible??????? 
       (really only good for first 2 -3 rows of history..... has to be reset any time the view color is hidden, more of a can do)
       
+- URL shorteners - how friendly with location hash ?
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)

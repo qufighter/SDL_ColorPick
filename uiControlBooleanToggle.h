@@ -94,6 +94,7 @@ struct uiControlBooleanToggle{
 
 
         labelText = new uiText(uiObjectItself, 0.061);
+        labelText->marginLeft(0.05);
         labelText->print(labelTxt);
 
 

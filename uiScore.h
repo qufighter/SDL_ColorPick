@@ -138,15 +138,24 @@ struct uiScore{
         return uxInstance->settingsScroller->getBooleanSetting(uiSettingsScroller::UI_SETTING_GAME_ON);
     }
 
+    bool isGameModeHardMode(){
+        Ux* uxInstance = Ux::Singleton();
+        return !uxInstance->settingsScroller->getBooleanSetting(uiSettingsScroller::UI_SETTING_GAME_EASY_MODE);
+    }
+
     void updateScoreDisplay(){
         if( scoreDisp != nullptr ){
             if( int_score != 0 && isGameModeEnabled() ){
-                SDL_snprintf(score_disp_char, maxLen, "%i", int_score); // -0
-                scoreText->print(score_disp_char);
+                scoreText->print(getScore());
             }else{
                 scoreText->print("");
             }
         }
+    }
+
+    char* getScore(){
+        SDL_snprintf(score_disp_char, maxLen, "%i", int_score);
+        return score_disp_char;
     }
 
     char* getHighScore(){
@@ -259,6 +268,8 @@ struct uiScore{
             score_position->updateRenderPosition();
         }
 
+        processScoreAchievements(numberToDisplay);
+
         int_score += numberToDisplay;
 
         if( int_score > int_max_score ){
@@ -272,6 +283,60 @@ struct uiScore{
         //displayExplanation("-Yes-");
         //myUxRef->defaultScoreDisplay->displayExplanation("-Yes-");
     }
+
+#define TEN_THOUSAND 10000
+#define HUNDRED_THOUSAND 100000
+#define ONE_MILLION 1000000
+#define ONE_BILLION 1000000000
+
+/*
+
+ UI_ACHEIVEMENT_10K_EASY,
+ UI_ACHEIVEMENT_100K_EASY,
+ UI_ACHEIVEMENT_1M_EASY,
+ UI_ACHEIVEMENT_1B_EASY,
+ UI_ACHEIVEMENT_10K_HARD,
+ UI_ACHEIVEMENT_100K_HARD,
+ UI_ACHEIVEMENT_1M_HARD,
+ UI_ACHEIVEMENT_1B_HARD,
+
+
+ */
+
+    void processScoreAchievements(int modulateScoreBy){
+        if( modulateScoreBy < 1 ) return;
+        if( testScoreAchieved(modulateScoreBy, TEN_THOUSAND) ){
+            displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_10K_EASY);
+            if( isGameModeHardMode() ){
+                displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_10K_HARD);
+            }
+        }else if ( testScoreAchieved(modulateScoreBy, HUNDRED_THOUSAND) ){
+            displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_100K_EASY);
+            if( isGameModeHardMode() ){
+                displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_100K_HARD);
+            }
+        }else if ( testScoreAchieved(modulateScoreBy, ONE_MILLION) ){
+            displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_1M_EASY);
+            if( isGameModeHardMode() ){
+                displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_1M_HARD);
+            }
+        }else if ( testScoreAchieved(modulateScoreBy, ONE_BILLION) ){
+            displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_1B_EASY);
+            if( isGameModeHardMode() ){
+                displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_1B_HARD);
+            }
+        }
+    }
+
+    bool testScoreAchieved(int modulateScoreBy, int threshold){
+        if( int_score < threshold ){
+            if( int_score + modulateScoreBy >= threshold ){
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     void handlePositioning(uiObject *p_dispalyNearUiObject){
         // we need to handle positioning of the main "score_position" element before animation starts, but after we know the text...

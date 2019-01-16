@@ -1097,13 +1097,13 @@ struct uiObject
         collisionRect.w = renderRect.w;
         collisionRect.h = renderRect.h; // ok optimized?
 
-        if( isTextParentOfTextLength > 0 ){
-            if( containText != true ){
-                if( textDirection == TEXT_DIR_ENUM::LTR ){
-                    collisionRect.w *= isTextParentOfTextLength; // * isParentOfTextOfScale ?? ??  since we will space this 
-                }
-            }
-        }
+//        if( isTextParentOfTextLength > 0 ){
+//            if( containText != true ){
+//                if( textDirection == TEXT_DIR_ENUM::LTR ){
+//                    collisionRect.w *= isTextParentOfTextLength; // * isParentOfTextOfScale ?? ??  since we will space this 
+//                }
+//            }
+//        }
 
         if( testChildCollisionIgnoreBounds ){
             isInBounds = true; // we will let the parent or child go out of bounds on their own accord, lets assume this contains children that need to render....

@@ -54,7 +54,7 @@
 
 #else
 #include "SDL_opengl.h"
-#include <OpenGL/gl.h>
+//#include <OpenGL/gl.h>
 #include <OpenGL/gl3.h>
 #endif
 

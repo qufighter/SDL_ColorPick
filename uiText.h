@@ -76,15 +76,21 @@ struct uiText{
 
         text_position->setBoundaryRect( 0.5, 0.5, size, size);
 
-        text_position->hasBackground=true;
-        Ux::setColor(&text_position->backgroundColor, 64, 0, 0, 192);
+//        uiObjectItself->hasBackground=true;
+//        Ux::setColor(&uiObjectItself->backgroundColor, 0, 0, 64, 192);
+
+//        text_position->hasBackground=true;
+//        Ux::setColor(&text_position->backgroundColor, 64, 0, 0, 192);
+
 //
 //        text_itself->hasBackground=true;
 //        Ux::setColor(&text_itself->backgroundColor, 0, 64, 0, 128);
 
-
+        //uiObjectItself->setModeWhereChildCanCollideAndOwnBoundsIgnored();
         text_position->setModeWhereChildCanCollideAndOwnBoundsIgnored();
         text_position->doesInFactRender = false;
+
+        text_itself->setModeWhereChildCanCollideAndOwnBoundsIgnored();
 
         text_itself->setBoundaryRect( -0.5, -0.5, 1.0, 1.0); // on right
 
@@ -141,6 +147,29 @@ struct uiText{
         handlePositioning(uiObjectItself);
         return this;
     }
+
+    uiText* move(float x, float y, float w, float h){
+        uiObjectItself->setBoundaryRect( x, y, w, h);
+        return this;
+    }
+
+    uiText* moveRelative(float x, float y){
+        uiObjectItself->setBoundaryRect( uiObjectItself->boundryRect.x + x, uiObjectItself->boundryRect.y + y, uiObjectItself->boundryRect.w, uiObjectItself->boundryRect.h);
+        return this;
+    }
+
+    uiText* margins(float top, float right, float bottom, float left){
+        uiObjectItself->setBoundaryRect( uiObjectItself->boundryRect.x + left,
+                                        uiObjectItself->boundryRect.y + top,
+                                        uiObjectItself->boundryRect.w - left - right,
+                                        uiObjectItself->boundryRect.h - top - bottom);
+        return this;
+    }
+
+    uiText* marginLeft(float left){
+        return margins(0,0,0,left);
+    }
+
 
     uiText* scale(float sc){
         text_itself->identity();

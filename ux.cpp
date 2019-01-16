@@ -209,6 +209,7 @@ void Ux::readInState(void){
         SDL_Log("File appears to be corrupted, resetting score");
     }
 
+    //defaultScoreDisplay->int_score = 1000000000 - 1;
     //defaultScoreDisplay->int_score = SDL_MAX_SINT32; // 2147483647  = 26,214 full history (8192x10 "out of space!") "Much Risk" to reach....
     //defaultScoreDisplay->int_max_score = 0;
 
