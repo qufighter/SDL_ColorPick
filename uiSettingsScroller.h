@@ -305,8 +305,13 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
     void updateSettingsPaneBeforeDisplayed(){
         Ux* myUxRef = Ux::Singleton();
-        highScoreText->print(myUxRef->defaultScoreDisplay->getHighScore());
-        scoreText->print(myUxRef->defaultScoreDisplay->getScore());
+        if( myUxRef->defaultScoreDisplay->isGameModeEnabled() ){
+            highScoreText->print(myUxRef->defaultScoreDisplay->getHighScore());
+            scoreText->print(myUxRef->defaultScoreDisplay->getScore());
+        }else{
+            highScoreText->print("-");
+            scoreText->print("-");
+        }
     }
 
     const char* achieveAchievement(Uint8 achievementKey){

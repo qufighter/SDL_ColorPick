@@ -10,19 +10,16 @@ add version string somewhere (do not let it look like an IP address!)  maybe thi
  > AndroidManifest.xml
 
 achievements
-can only achieve when points enabled?
+can only achieve when points enabled? (at least for points based achievements...)
    - points threshold achievements.... (besides int overflow)  *for easy/hard* ?
    - huzzah (3rd button) meh achievement?  training achievement?  need ponts for clicking button though...,
    - 13 points 5d5a4b - its improved....
    
 settings -
-  - text rendering issues with scale / responsive
-  - widescreen vertical text boundaries for in bounds checks - text dissaspears early when scrolling off edge
   - buttons for 
       - goto history style
       - open imgs style
 
-          
 sort dialogue initial text -> "Sort?" <- add more sort choices here 
       goto history style
   

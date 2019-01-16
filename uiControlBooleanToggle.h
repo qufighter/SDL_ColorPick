@@ -153,6 +153,7 @@ struct uiControlBooleanToggle{
             Ux::setColor(&controlBgR->foregroundColor, 128, 128, 128, 255);
         }
         checkedState = newState;
+
     }
 
     static void interactionToggleControl(uiObject *interactionObj, uiInteraction *delta){
@@ -167,6 +168,9 @@ struct uiControlBooleanToggle{
             if( !self->checkedState ) resultChecked = true;
         }
         self->updateState(resultChecked);
+
+        Ux* myUxRef = Ux::Singleton();
+        myUxRef->settingsScroller->updateSettingsPaneBeforeDisplayed(); // this should be configurable.... the callback for a user triggered change....
     }
 
 

@@ -266,9 +266,9 @@ struct uiScore{
             }
 
             score_position->updateRenderPosition();
-        }
 
-        processScoreAchievements(numberToDisplay);
+            processScoreAchievements(numberToDisplay);
+        }
 
         int_score += numberToDisplay;
 
