@@ -684,6 +684,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickAddAllHistoryToPallete, &clickCancelNoOp);
         myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Add All?");
         myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(addAllScoringHandler);
+        myUxRef->defaultYesNoChoiceDialogue->allowFastYes();
         //myUxRef->defaultYesNoChoiceDialogue->displayAdditionalUiObject(sortChooser->uiObjectItself);
 
     }
@@ -740,6 +741,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Sort?");
         myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(sortScoringHandler);
         myUxRef->defaultYesNoChoiceDialogue->displayAdditionalUiObject(sortChooser->uiObjectItself);
+        myUxRef->defaultYesNoChoiceDialogue->allowFastYes();
 
         //SDL_free(myUxRef->pickHistoryList);
         //myUxRef->pickHistoryList = tempList;

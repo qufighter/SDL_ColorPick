@@ -28,10 +28,7 @@ sort dialogue initial text -> "Sort?" <- add more sort choices here
   
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
-  
-when addall is no-op..... why confirm dialogue?
-low risk mode for some YS/NO chioces.... (one)
-    
+      
   when color is selected in pallete - indicate in history view if visible??????? 
       (really only good for first 2 -3 rows of history..... has to be reset any time the view color is hidden, more of a can do)
       

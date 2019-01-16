@@ -191,6 +191,7 @@ struct uiYesNoChoice{
     float text_length;
     int last_num_delete;  // we should rename this, number to effect really... and influences scoring.
     bool isDisplayed; // only one
+    bool fastYesAllowed;
     /// we should consider a yes/no ID of current ticks,.....
 
     // GENERICS - GENRAL PURPOSE use for whatever
@@ -217,6 +218,11 @@ struct uiYesNoChoice{
 
     void displayAdditionalUiObject(uiObject* objToShow){
         additionalUiObjectContainer->addChild(objToShow);
+    }
+
+    uiYesNoChoice* allowFastYes(){
+        fastYesAllowed = true;
+        return this;
     }
 
     void displayAdditionalMessage(const char* message){
@@ -331,6 +337,7 @@ struct uiYesNoChoice{
         if( isDisplayed ) return;
         last_num_delete = 1;
         isDisplayed = true;
+        fastYesAllowed=false;
         addSomeMoreHolder->hideAndNoInteraction();
         additionalUiObjectContainer->empty();
 
@@ -415,7 +422,7 @@ struct uiYesNoChoice{
         uiYesNoChoice* self = ((uiYesNoChoice*)interactionObj->myUiController);
         int resultCode = YES_NO_RESULTS::RESULT_YES;
 
-        if( self->uiObjToAnimate->isAnimating() ){
+        if( self->uiObjToAnimate->isAnimating() && !self->fastYesAllowed ){
             // yes is too easy to click right now by accident, we are not done animating in.... this should be based on which choice is dangerous, default yes
 
             /// this is worth 50 points easily though... and can cancel the dialogue?!!

@@ -310,7 +310,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
             scoreText->print(myUxRef->defaultScoreDisplay->getScore());
         }else{
             highScoreText->print("-");
-            scoreText->print("-");
+            scoreText->print("points disabled");
         }
     }
 
