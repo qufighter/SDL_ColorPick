@@ -196,6 +196,7 @@ void Ux::readInState(void){
         SDL_Log("File appears to be corrupted, resetting high score");
     }
 
+    tempRead = 0;
     if( currentPosition < filesize && currentPosition < maxReads ){
         defaultScoreDisplay->int_score = SDL_ReadBE32(fileref);
         currentPosition++;
@@ -209,8 +210,23 @@ void Ux::readInState(void){
         SDL_Log("File appears to be corrupted, resetting score");
     }
 
+    tempRead = 0;
+    if( currentPosition < filesize && currentPosition < maxReads ){
+        defaultScoreDisplay->combo_chain = SDL_ReadBE32(fileref);
+        currentPosition++;
+    }
+    if( currentPosition < filesize && currentPosition < maxReads ){
+        tempRead = SDL_ReadLE32(fileref);
+        currentPosition++;
+    }
+    if( defaultScoreDisplay->combo_chain != tempRead ){
+        defaultScoreDisplay->combo_chain = 0; // corrupted file!
+        SDL_Log("File appears to be corrupted, resetting chain multiplier");
+    }
+
+
     //defaultScoreDisplay->int_score = 1000000000 - 1;
-    //defaultScoreDisplay->int_score = SDL_MAX_SINT32; // 2147483647  = 26,214 full history (8192x10 "out of space!") "Much Risk" to reach....
+    //defaultScoreDisplay->int_score = SDL_MAX_SINT32; // 2147483647  = 26,214 full history (8192x10 "out of space!") "Much Risk" to reach.... with max chain its as low as 262.14
     //defaultScoreDisplay->int_max_score = 0;
 
     SDL_RWclose(fileref);
@@ -292,6 +308,8 @@ void Ux::writeOutState(void){
     SDL_WriteLE32(fileref, defaultScoreDisplay->int_max_score);
     SDL_WriteBE32(fileref, defaultScoreDisplay->int_score);
     SDL_WriteLE32(fileref, defaultScoreDisplay->int_score);
+    SDL_WriteBE32(fileref, defaultScoreDisplay->combo_chain);
+    SDL_WriteLE32(fileref, defaultScoreDisplay->combo_chain);
     SDL_RWclose(fileref);
 
 }
@@ -365,6 +383,8 @@ void Ux::resizeUiElements(void){
                 addHistoryBtn->stackBottom();
                 optionsGearBtn->stackBottom();
 
+                optionsGearBtn->setInteraction(&Ux::interactionHorizontal);
+
         huePicker->resize(Float_Rect(1.0-0.27777777777778, ws_clock, hue_picker, 1.0 - ws_clock ));
         returnToLastImgBtn->setBoundaryRect( 1.0-0.27777777777778 - 0.1, ws_clock, 0.1, 0.1 * screenRatio);
         returnToLastImgBtn->setRoundedCorners(0.5, 0.0, 0.5, 0.5);
@@ -414,6 +434,8 @@ void Ux::resizeUiElements(void){
                 pickSourceBtn->stackRight();
                 addHistoryBtn->stackRight();
                 optionsGearBtn->stackRight();
+
+                optionsGearBtn->setInteraction(&Ux::interactionVert);
 
         huePicker->resize(Float_Rect(0.0, 0.7, 1.0, hue_picker));
         returnToLastImgBtn->setBoundaryRect( 0.0, 0.7 - 0.1, 0.1 / screenRatio, 0.1);
@@ -681,7 +703,11 @@ Ux::uiObject* Ux::create(void){
 
 
     settingsScroller = new uiSettingsScroller(rootUiObject);
-    optionsGearBtn->setClickInteractionCallback(&Ux::interactionVisitSettings);
+//    optionsGearBtn->setClickInteractionCallback(&Ux::interactionVisitSettings);
+    // to make this dragable.... you disable the above, and use this instead....
+    optionsGearBtn->setInteractionCallback(&Ux::interactionVisitSettings);
+    optionsGearBtn->setInteraction(&Ux::interactionVert); // todo: not responsive
+    optionsGearBtn->interactionProxy = settingsScroller->uiObjectItself;
 
 
     defaultYesNoChoiceHolder = new uiObject();

@@ -14,25 +14,16 @@ can only achieve when points enabled? (at least for points based achievements...
    - points threshold achievements.... (besides int overflow)  *for easy/hard* ?
    - huzzah (3rd button) meh achievement?  training achievement?  need ponts for clicking button though...,
    - 13 points 5d5a4b - its improved....
-   
-settings -
-  - buttons for 
-      - goto history style
-      - open imgs style
 
-sort dialogue initial text -> "Sort?" <- add more sort choices here 
-      goto history style
-  
-  // lets treat it as if they stopped interacting....
-    -- we can zoom the scrollers?   
-  
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
-      
+
   when color is selected in pallete - indicate in history view if visible??????? 
       (really only good for first 2 -3 rows of history..... has to be reset any time the view color is hidden, more of a can do)
-      
+
 - URL shorteners - how friendly with location hash ?
+
+we shall have chains and mulitpliers for combos....
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -40,6 +31,15 @@ osx/ios jpg rotation not respected (is this exif rotation???)
 
 ##  can do
 
+sort dialogue initial text -> "Sort?" <- add more sort choices here 
+goto history style
+
+// lets treat it as if they stopped interacting....
+-- we can zoom the scrollers?   
+
+settings -
+- goto history style
+- open imgs style
 
 rclick menu is not responsive (its only sized once)
 

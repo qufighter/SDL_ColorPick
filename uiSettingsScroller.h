@@ -252,10 +252,16 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         scoreText = (new uiText(dummyContainer, subWidth))->marginLeft(0.05);
         settingsList->add(SettingsListObj(scoreText->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
+
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, subWidth))->color(128,128,128,255)->marginLeft(0.05)->print("Chain Multiplier")->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+        scoreMultiplierText = (new uiText(dummyContainer, subWidth))->marginLeft(0.05);
+        settingsList->add(SettingsListObj(scoreMultiplierText->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
         // ANY time we show settings, then this could have changed too.... so we have to manage this internally or by requesting an object from the hter
         settingsList->add(SettingsListObj((new uiText(dummyContainer, subWidth))->color(128,128,128,255)->marginLeft(0.05)->print("High Score")->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
-        highScoreText = (new uiText(dummyContainer, subWidth))->marginLeft(0.05); /// todo auto adjust width for this one too! ( SDL_MAX_SINT32 )
+        highScoreText = (new uiText(dummyContainer, subWidth))->marginLeft(0.05);
         settingsList->add(SettingsListObj(highScoreText->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
@@ -295,6 +301,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
     uiText *scoreText;
     uiText *highScoreText;
+    uiText *scoreMultiplierText;
 
     // maybe this moves to Ux::
     void updateSettingsEffectedProgramElements(){
@@ -307,9 +314,11 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         Ux* myUxRef = Ux::Singleton();
         if( myUxRef->defaultScoreDisplay->isGameModeEnabled() ){
             highScoreText->print(myUxRef->defaultScoreDisplay->getHighScore());
+            scoreMultiplierText->print(myUxRef->defaultScoreDisplay->getChainMultiplier());
             scoreText->print(myUxRef->defaultScoreDisplay->getScore());
         }else{
             highScoreText->print("-");
+            scoreMultiplierText->print("-");
             scoreText->print("points disabled");
         }
     }

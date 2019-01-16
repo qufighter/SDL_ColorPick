@@ -11,6 +11,7 @@ struct uiScore{
 
         int_score = 0;
         int_max_score = 0;
+        combo_chain = 0;
 
         //SDL_Log("this is the biggest int %i " , SDL_MAX_SINT32); // 2147483647  ( 10 char, sign, extra)
         maxLen = 14 + 7; //  7="points +"
@@ -117,6 +118,8 @@ struct uiScore{
     Sint32 int_max_score;
     int maxLen;
 
+    int combo_chain;
+
     uiAminChain* chain1;
     uiAminChain* chain2;
     uiAminChain* chain3;
@@ -158,6 +161,11 @@ struct uiScore{
         return score_disp_char;
     }
 
+    char* getChainMultiplier(){
+        SDL_snprintf(score_disp_char, maxLen, "x%i", (combo_chain > 0 ? combo_chain : 1));
+        return score_disp_char;
+    }
+
     char* getHighScore(){
         SDL_snprintf(score_disp_char, maxLen, "%i", int_max_score);
         return score_disp_char;
@@ -173,13 +181,15 @@ struct uiScore{
         }
         display(p_dispalyNearUiObject, -int_score, effectNum);
         int_score = 0; // this is sort of redundant probably....
+        combo_chain = 0;
         isHighScore = false;
     }
 
     void resetAll(){
         int_score = 0;
         int_max_score = 0;
-        isHighScore = true;
+        combo_chain = 0;
+        isHighScore = false;
     }
 
     void display(uiObject *p_dispalyNearUiObject, int numberToDisplay){
@@ -188,7 +198,9 @@ struct uiScore{
 
     void display(uiObject *p_dispalyNearUiObject, int numberToDisplay, int effectNum){
 
-        if( isGameModeEnabled() ){
+        bool gameModeOn = isGameModeEnabled();
+
+        if( gameModeOn ){
 
             Ux* uxInstance = Ux::Singleton();
             bool widescreen = uxInstance->widescreen;
@@ -267,10 +279,24 @@ struct uiScore{
 
             score_position->updateRenderPosition();
 
-            processScoreAchievements(numberToDisplay);
         }
 
-        int_score += numberToDisplay;
+        if( numberToDisplay > 0 ){
+            combo_chain += 1;
+            if( combo_chain > 100 ){
+                combo_chain = 100;
+            }
+        }else{
+            combo_chain = 1;
+        }
+
+        int effectiveNumberToAdd = numberToDisplay * combo_chain;
+
+        if( gameModeOn ){
+            processScoreAchievements(effectiveNumberToAdd);
+        }
+
+        int_score += effectiveNumberToAdd;
 
         if( int_score > int_max_score ){
             int_max_score = int_score;
