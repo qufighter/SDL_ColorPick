@@ -222,7 +222,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
         // generalUx->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_INEXACT);
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "In-exact HSV", "*in-exact!!", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_INEXACT));
-        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Right Hue're", "Right Hue're", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_RIGHT_HUE));
+        settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Right Hue", "Right Hue're", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_RIGHT_HUE));
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "No Space", "out of space!", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_NOSPACE));
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "No Space 2", "out of space!", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_GREATER_NOSPACE));
         settingsList->add(SettingsListObj((new uiControlAchievementToggle(d, "Wrote History", "Wrote History", false))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_ACHIEVEMENT, UI_SETTINGS_ENUM::UI_ACHEIVEMENT_REWROTE_HISTORY));

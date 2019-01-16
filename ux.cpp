@@ -101,6 +101,13 @@ Ux::Ux(void) {
     GetPrefPath(preferencesPath, "setting.bin", &settingPath);
     GetPrefPath(preferencesPath, "records.bin", &scoresPath);
 
+
+//    GetPrefPath(preferencesPath, "shistory.bin", &historyPath);
+//    GetPrefPath(preferencesPath, "spallete.bin", &palletePath);
+//    GetPrefPath(preferencesPath, "ssetting.bin", &settingPath);
+//    GetPrefPath(preferencesPath, "srecords.bin", &scoresPath);
+
+
     SDL_free(preferencesPath);
 }
 
