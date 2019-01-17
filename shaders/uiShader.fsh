@@ -37,47 +37,6 @@ uniform vec4 ui_corner_radius;
 const float fuzz = 0.025;
 const float hfuzz =(fuzz * 0.5);
 
-/*
-float dist(vec2 a, vec2 b){
-
-
-	float dis = sqrt((a.y - b.y) * 
-                     (a.y - b.y)
-					+(a.x - b.x) * 
-                     (a.x - b.x)
-		    );
-	return dis;
-
-
-//	vec2 result = a.xy - b.xy;
-//	float result2 = dot(result, result);
-//	float dis = inversesqrt(result2);
-//	return dis;
-}
-*/
-/*
-void main()
-{
-	vec2 ctr=vec2(0.5,0.5);
-	vec2 agl=(TexCoordOut.xy - ctr.xy);
-	float dis=dist(ctr,TexCoordOut);
-	//if(dis < 0.5 ){
-		//gl_FragColor = texture2D(texture1, ctr);
-		//gl_FragColor = texture2D(texture1, ctr + (agl * dis));
-		gl_FragColor = texelFetch2D(texture1, ivec2((ctr + (agl * dis)) * 255.0) , 0);
-	//}else {
-	//	gl_FragColor = texture2D(texture1, TexCoordOut);
-	//}
-
-    
-	//
-}
-*/
-
-//
-//vec2 roundvec2(vec2 in){
-//	return floor(in + 0.5);
-//}
 
 void roundCorner(vec2 OrigTexCoordOut, vec2 center, float radius, float fuzz) {
 
@@ -125,6 +84,8 @@ void main()
             gl_FragColor = ui_foreground_color;
         }
     }
+    /// IF YOU SEE ARTIFACTS - its because you are moving dragged item on sub-pixel increments
+    // we should try to keep the level of drag matching full pixels but use hi-dpi pixels if available.
 
 
     float tl_radius = ui_corner_radius.r;
@@ -132,15 +93,13 @@ void main()
     float br_radius = ui_corner_radius.b;
     float bl_radius = ui_corner_radius.a;
 
-
     //gl_PointCoord
     //The location within a point primitive that defines the position of the fragment relative to the side of the point. Points are effectively rasterized as window-space squares of a certain pixel size. Since points are defined by a single vertex, the only way to tell where in that square a particular fragment is is with gl_PointCoord.
     //The values of gl_PointCoord's coordinates range from [0, 1]. OpenGL uses a upper-left origin for point-coordinates by default, so (0, 0) is the upper-left. However, the origin can be switched to a bottom-left origin by calling glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
 
 
 
-    /// IF YOU SEE ARTIFACTS - its because you are moving dragged item on sub-pixel increments
-    // we should try to keep the level of drag matching full pixels but use hi-dpi pixels if available.
+
     if( tl_radius > 0.0 ) {
         float radius = tl_radius;
         //float rradius = 1.0 - radius;

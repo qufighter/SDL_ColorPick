@@ -79,39 +79,6 @@ void main()
 
 
 
-//    vec4 tempPos = ui_position;
-//
-//    if( tempPos.y < ui_crop.y ){
-//        tempPos.y = ui_crop.y ;
-//    }
-//
-//    if( tempPos.y > ui_crop.y + ui_crop.a ){
-//        tempPos.y = ui_crop.y + ui_crop.a ;
-//    }
-
-    //vec4 oPos = ui_position;
-
-//    if( oPos.x < ui_crop.x){
-//        oPos.x = ui_crop.x;
-//    }
-//    if( oPos.y < ui_crop.y){
-//        oPos.y = ui_crop.y;
-//    }
-
-    //vec4 oPos =(position * ui_scale) + ui_position;
-
- // not always needed
-    //vec4 parPos = (vec4(ui_crop.b,ui_crop.a,1.0,1.0)) + vec4(ui_crop.x,-ui_crop.y,0.0,0.0);
-//    vec4 parPos = ui_crop;
-//
-//    if( oPos.y < parPos.y ){
-//        oPos.y=parPos.y;
-//    }
-
-//    if( oPos.y > parPos.y + parPos.a ){
-//        oPos.y=parPos.y + parPos.a;
-//    }
-
     vec4 effectiveScale = modelMatrix * ui_scale;
 
     vec4 objPosition = (modelMatrix * position * ui_scale) + ui_position;
@@ -127,8 +94,9 @@ void main()
     if( ui_crop.b != 0.0 || ui_crop.a != 0.0 ){
 
         // rotate will move these coords completely so you won't be able to rely on this to detect if the corner has left when rotation is occuring.
-        // it is probably better off to do nothing wrt crop when rotating than this approach to it... we could still crop in the FSH but not cheap (unless we use depth buffer????)
-        // so what field in modelMatrix is our rotation?  we could still resolve the coord and move the pixel along the edge.
+        // it is probably better off to do nothing wrt crop when rotating than this approach to it... we could still crop in the FSH but not as cheap (unless we use depth buffer????)
+        // so what field in modelMatrix is our rotation?  we could still resolve the coord and move the pixel along the edge another way.
+        // you can't split a vertex though... don't crop rotations...
 
         //    float crop_positionx=ui_crop.r;
         //    float crop_positiony=ui_crop.g;

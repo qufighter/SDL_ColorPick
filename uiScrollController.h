@@ -117,8 +117,8 @@ struct uiScrollController{
        // allocateChildTiles(); // this should just allocate 2 tiles....  WHY DO WE DO THIS .... its a good deafult but they don't have the click events added....
     }
 
-    typedef bool (*updateTileFunction)(uiObject *tile, int offset);
-    typedef int (*getTotalFunction)();
+    typedef bool (*updateTileFunction)(uiScrollController* scroller, uiObject *tile, int offset);
+    typedef int (*getTotalFunction)(uiScrollController* scroller);
 
 
     uiObject* uiObjectItself; // no real inheritance here, this its the uiScrollObject, I would use self->
@@ -129,6 +129,7 @@ struct uiScrollController{
     uiObject* scrollVtDrag;
     uiObject* scrollDown;
 
+    void* ownerController;
 
     bool allowUp;
     bool allowDown;
@@ -348,7 +349,7 @@ struct uiScrollController{
     }
 
     void updateTotalScrollRows(){
-        totalObjects = getTotal();
+        totalObjects = getTotal(this);
 
         totalScrollRows = (int(ceil(totalObjects / (float)childObjectsPerRow))) - rowsToShow;
         if( totalScrollRows < 1 ){
@@ -531,7 +532,7 @@ struct uiScrollController{
 
         bool result;
         for( int x=0,l=childObjectsToRender; x<l; x++ ){
-            result = getTile(scrollChildContainer->childList[x], offset++); // see updateUiObjectFromHistory
+            result = getTile(this, scrollChildContainer->childList[x], offset++); // see updateUiObjectFromHistory
             //if( !result) break; // no point continuing to update them?  there is a point if they have been rendered previously
         }
 

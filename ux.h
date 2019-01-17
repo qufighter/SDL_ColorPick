@@ -195,6 +195,7 @@ static Ux* Singleton();
 #include "uiScore.h"
 #include "uiToolMenu.h"
 #include "uiRunningMan.h"
+#include "uiHistoryPreviewScroller.h"
 #include "uiSortChooser.h"
 #include "uiHistoryPalleteEditor.h"
 #include "uiSettingsScroller.h"
@@ -389,6 +390,10 @@ static Ux* Singleton();
     char* palletePath;
     char* settingPath;
     char* scoresPath;
+
+
+    static const int max_print_here = 128;
+    char* print_here;
 
 private:
 

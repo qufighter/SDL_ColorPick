@@ -1,7 +1,6 @@
 # notes
 DEVELOPER_TEST_MODE
 
-
 #  todo
 
 movement velocity platform diffences (android) (dupe)
@@ -15,6 +14,8 @@ can only achieve when points enabled? (at least for points based achievements...
    - huzzah (3rd button) meh achievement?  training achievement?  need ponts for clicking button though...,
    - 13 points 5d5a4b - its improved....
 
+when points disabled, they still accumulate and yuou can still loose yer points....
+
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
 
@@ -23,13 +24,18 @@ can only achieve when points enabled? (at least for points based achievements...
 
 - URL shorteners - how friendly with location hash ?
 
-we shall have chains and mulitpliers for combos....
+maybe instead of scrolling... rep history from end to end, top 25 last 25 and omit?
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
+veloclity ALWAYS triggers in fast mode!!
+
 ##  can do
+
+
+// so if we are showing removeButton and our color changed, we know that something changed and we should hide our deleteX simple as that 
 
 sort dialogue initial text -> "Sort?" <- add more sort choices here 
 goto history style
@@ -47,16 +53,17 @@ show alpha value when < 255, rgba hex too?ååå
 
 "deselect all" 3rd option on bulk delete (restart app to deselect all)
 
+renames:
 myUxRef -> uxInstance
 defaultScoreDisplay -> scoreDisplay
 uiSettingsScroller -> uiSettings
 settingsScroller -> settings ?
-myUiController -<>
+myUiController -<> no change?
 
 use something better (a struct) rather than raw char* ? new Ux::uiList<const char*, Uint8>(25); 
    ^ could include default position?
    eg // position_y= (fullPickImgSurface->h * 0.5) - 513; <<< replicated code btw...
-   
+
    blend transparency????? (no?)
 
 collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
@@ -120,9 +127,9 @@ fix crop of rounded corners in scrollers (see cleanup shader code)
 maths keyworkd
 leak / leaking keyword (done 2019)
     ^  "maybe we should copy it instead "
-    
+
  lookup trilinear or aniostropic filteirng (better texture scaling??)
- 
+
  main thread animations for less jitter see MAIN_THREAD_ANIMATIONS (meh?)
 
 cleanup shader code
@@ -138,7 +145,6 @@ throw out of view - initial velocity maintain... if over threshold?
 128; //derp
   // use const static int then you don't need to derp!
 
-
 # platform specific todo
 
 > rate it 5 stars
@@ -148,7 +154,7 @@ throw out of view - initial velocity maintain... if over threshold?
 > hide scrolly arrows on touchy devices OMIT_SCROLLY_ARROWS OMIT_SCROLLBAR_ARROWS
 
 ## desktop any
-desktop scroll wheel in pallete (modal)
+desktop scroll wheel in pallete (modal)  - scroll wheel improvements possible
 other keypress support (modal confirm enter, ...)
 clock bar hide (enabled now for dev) (dev cleanup) (seperate testing constant to trigger it? DEVELOPER_TEST_MODE )
 SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK < - do we want a right click menu?
@@ -188,3 +194,32 @@ anything using main loop timers (processed on main loop) are not processed....
 # tests
 test history overwrote final color in index that it is released from the index (pretty sure it is...)
 test with vanilla (renamed) settings files
+
+
+
+
+# sotry
+
+I remember the good old days
+when all the colors were vibrant
+the hues were saturated with luminosity
+and I could pick all the colors I ever wanted
+with zero consequences.
+
+Now the world has changed, and
+You can't double pick the same color twice anymore
+this might not be such a big deal
+but my entire life I have double clicked to pick colors
+this change has been devestating.
+
+There are still vibrante hues out there
+waiting to be discovered and shared with the world;
+a world that has become bitter
+and obsessed with points... as if that even matters.
+The discovery of color, tantalizes.
+
+I will bring color to the world
+And in doing so will strive to teach the truth.
+That points are not reality.
+That the score does not matter.
+I will find the hue you seek and set us free...

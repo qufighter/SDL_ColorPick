@@ -860,8 +860,8 @@ struct uiObject
     uiObject *cropParentObject;
 
     int childListIndex = 0;
-    int childListMax = 128; //derp
-    uiObject* childList[128]; // ui object may have a max of 128 child objects each
+    const static int childListMax = 128;
+    uiObject* childList[childListMax]; // ui object may have a max of 128 child objects each
 
     uiObject* modalParent; // not all objecrts use this but all objects that become modals should specify their modal parent, even if its only rootUiObject
     anInteractionFn modalDismissal;

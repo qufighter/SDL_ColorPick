@@ -225,6 +225,13 @@ struct uiYesNoChoice{
         return this;
     }
 
+    void showAdditionalMessageCharAtLocation(int character, int location){
+        Ux* uxInstance = Ux::Singleton();
+        if( location < addSomeMoreText->childListIndex ){
+            uxInstance->printCharToUiObject(addSomeMoreText->childList[location], character, DO_NOT_RESIZE_NOW);
+        }
+    }
+
     void displayAdditionalMessage(const char* message){
         additionalActionFn = nullptr;
         Ux* uxInstance = Ux::Singleton();
@@ -232,7 +239,7 @@ struct uiYesNoChoice{
         setFontForMessageText();
         addSomeMoreText->containTextPadding=0.0;
         uxInstance->printStringToUiObject(addSomeMoreText, message, DO_NOT_RESIZE_NOW);
-        // containText should possibly have some other settings about margins?
+        // containText should possibly have some other settings about margins?  (just use uiText
 
         Ux::setColor(&addSomeMore->foregroundColor, 200, 200, 200, 192);
 
@@ -251,6 +258,13 @@ struct uiYesNoChoice{
         addSomeMoreHolder->show();
     }
 
+    void displayAdditionalMessageBottom(const char* message){
+        displayAdditionalMessage(message);
+        float w = 0.5;
+        float hw = w * 0.5;
+        addSomeMoreHolder->setBoundaryRect( 0.5-hw, 0.75-hw, w,w);
+    }
+
 
     void displayAdditionalAction(anInteractionFn p_additionalYesClickedFn, int numberToShow){
         additionalActionFn = p_additionalYesClickedFn;
@@ -260,10 +274,8 @@ struct uiYesNoChoice{
         setFontForMessageText();
         addSomeMoreText->containTextPadding=0.18;///15;
         // just scale matrix up and be done with text spacing....
-        char* total_pluss = convertIntegerToString(numberToShow, '+');
-        uxInstance->printStringToUiObject(addSomeMoreText, total_pluss, DO_NOT_RESIZE_NOW);
+        uxInstance->printStringToUiObject(addSomeMoreText, convertIntegerToString(numberToShow, '+'), DO_NOT_RESIZE_NOW);
         // containText should possibly have some other settings about margins?
-        SDL_free(total_pluss);
 
         resetFontAdtlButtonApperance();
 
@@ -300,15 +312,13 @@ struct uiYesNoChoice{
         return convertIntegerToString(inputInt, 'x');
     }
     char* convertIntegerToString(int inputInt, char xcode){
-        int maxLen = 5;
-        char* total_del = (char*)SDL_malloc( sizeof(char) * maxLen );
-        if( inputInt < 1000 ){
-            SDL_snprintf(total_del, maxLen, "%c%i", xcode, inputInt);
+        Ux* myUxRef = Ux::Singleton();
+        if( inputInt < 10000 ){
+            SDL_snprintf(myUxRef->print_here, myUxRef->max_print_here, "%c%i", xcode, inputInt);
         }else{
-            SDL_snprintf(total_del, maxLen, "%cAll", xcode);
+            SDL_snprintf(myUxRef->print_here, myUxRef->max_print_here, "%cAll", xcode);
         }
-        //SDL_free(total_del); - if you call this please free the result...
-        return total_del;
+        return myUxRef->print_here;
     }
 
     void updateNumberToEffectWhenYes(int numberToEffectWhenYes){
@@ -318,10 +328,8 @@ struct uiYesNoChoice{
     void display(uiObject *p_myTriggeringUiObject, anInteractionFn p_yesClickedFn, anInteractionFn p_noClickedFn, int numberToEffectWhenYes){
         if( isDisplayed ) return;
         if( numberToEffectWhenYes > 1 ){
-            char* total_del = convertIntegerToString(numberToEffectWhenYes);
-            display( p_myTriggeringUiObject,  p_yesClickedFn,  p_noClickedFn, total_del);
+            display( p_myTriggeringUiObject,  p_yesClickedFn,  p_noClickedFn, convertIntegerToString(numberToEffectWhenYes));
             last_num_delete = numberToEffectWhenYes;
-            SDL_free(total_del);
         }else{
             display( p_myTriggeringUiObject,  p_yesClickedFn,  p_noClickedFn);
         }
@@ -385,9 +393,7 @@ struct uiYesNoChoice{
 
         self->last_num_delete = self->additional_number_to_show + 1;
 
-        char* tmp = self->convertIntegerToString(self->last_num_delete);
-        self->showStringNearOkButton(tmp);
-        SDL_free(tmp);
+        self->showStringNearOkButton(self->convertIntegerToString(self->last_num_delete));
 
         self->yesClickedFn = self->additionalActionFn;
     }

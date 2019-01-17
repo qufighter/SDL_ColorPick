@@ -429,11 +429,11 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
     // **** SETTINGS ****
 
 
-    static bool updateUiObjectFromSettings(uiObject *scrollerTile, int offset){
+    static bool updateUiObjectFromSettings(uiScrollController* scroller, uiObject *scrollerTile, int offset){
         Ux* myUxRef = Ux::Singleton();
         uiSettingsScroller* self = myUxRef->settingsScroller;
 
-        if( offset > getSettingsTotalCount() - 1 || offset < 0 ){
+        if( offset > getSettingsTotalCount(nullptr) - 1 || offset < 0 ){
             scrollerTile->empty();
             scrollerTile->hide();
             scrollerTile->myIntegerIndex = -1;
@@ -501,7 +501,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         return true;
     }
 
-    static int getSettingsTotalCount(){
+    static int getSettingsTotalCount(uiScrollController* scroller){
         Ux* myUxRef = Ux::Singleton();
         uiSettingsScroller* self = myUxRef->settingsScroller;
         int total = self->settingsList->total();

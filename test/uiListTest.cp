@@ -140,5 +140,59 @@ main(int argc, char *argv[])
     SDL_free(myColorListIterator);
     SDL_free(myColorList);
 
+
+    // non indexed....
+    myColorList = new uiList<SDL_Color, Uint8>(254);
+
+    if(myColorList->total() != 0){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected total(): %i\n",
+                     myColorList->total() );
+        return 1;
+    }
+
+    myColorList->add(blue);
+    myColorList->add(red);
+    myColorList->add(green);
+
+    if(myColorList->total() != 3){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected total(): %i\n",
+                     myColorList->total() );
+        return 1;
+    }
+
+
+    uiList<SDL_Color, Uint8>* myListClone = myColorList->clone();
+
+    if(myListClone->total() != 3){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected total(): %i\n",
+                     myListClone->total() );
+        return 1;
+    }
+
+    tmp = myListClone->get(0);
+    if( !colorEquals(tmp, &blue) ){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected color, expected blue: %i %i %i\n",
+                     tmp->r, tmp->g, tmp->b );
+        return 1;
+    }
+
+    tmp = myListClone->get(1);
+    if( !colorEquals(tmp, &red) ){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected color, expected red: %i %i %i\n",
+                     tmp->r, tmp->g, tmp->b );
+        return 1;
+    }
+
+    tmp = myListClone->get(2);
+    if( !colorEquals(tmp, &green) ){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected color, expected green: %i %i %i\n",
+                     tmp->r, tmp->g, tmp->b );
+        return 1;
+    }
+
+    SDL_free(myColorList);
+    SDL_free(myListClone);
+
+
     SDL_Log("All list tests passed.");
 }

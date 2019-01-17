@@ -80,6 +80,8 @@ void Ux::GetPrefPath(char* preferencesPath, const char* filename, char** resultD
  */
 Ux::Ux(void) {
 
+    print_here = (char*)SDL_malloc( sizeof(char) * max_print_here );
+
     hueGradientData = new uxHueGradientData();
 
     lastHue = new HSV_Color();
@@ -751,7 +753,7 @@ Ux::uiObject* Ux::create(void){
 
     //test cololr history
 #ifdef DEVELOPER_TEST_MODE
-    for( int q=0; q<64; q++ ){
+    for( int q=0; q<8192; q++ ){
         currentlyPickedColor = new SDL_Color();
         setColor(currentlyPickedColor, randomInt(0,44), randomInt(0,185), randomInt(0,44), 0);
         addCurrentToPickHistory();
@@ -1662,7 +1664,7 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
     //textMatrix = glm::translate(textMatrix, screenToWorldSpace(1000.0,500.0,450.1));  // just try screen coord like -512??
 
 
-    if( renderObj->doesInFactRender ){
+    if( renderObj->doesInFactRender && (renderObj->hasBackground || renderObj->hasForeground) ){
         glUniform4f(uniformLocations->ui_position,
                     renderObj->renderRect.x,
                     -renderObj->renderRect.y,
@@ -1801,8 +1803,11 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 
         }else{
             glUniform4f(uniformLocations->ui_foreground_color, 0.0,0.0,0.0,0.0);
-
         }
+
+//        if( !renderObj->hasBackground && !renderObj->hasForeground ){
+//            SDL_Log("This object is being rendered but it has no foreground or background!!!");
+//        }
 
         // see updateStageDimension and consider SDL_RenderSetClipRect
         glDrawArrays(GL_TRIANGLES, 0, 6); // hmmm

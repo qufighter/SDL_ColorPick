@@ -206,7 +206,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
     void updatePalleteScroller(){
         Ux* uxInstance = Ux::Singleton();
 
-        int palleteIconsTotal = getPalleteTotalCount();
+        int palleteIconsTotal = getPalleteTotalCount(nullptr);
         if( uxInstance->widescreen ){
             if( palleteIconsTotal > 5 ){
                 palleteScroller->resizeTililngEngine(2, 4);
@@ -327,7 +327,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
     // **** HISTORY ****
 
 
-    static bool updateUiObjectFromHistory(uiObject *historyTile, int offset){ // see also clickHistoryColor
+    static bool updateUiObjectFromHistory(uiScrollController* scroller, uiObject *historyTile, int offset){ // see also clickHistoryColor
         Ux* myUxRef = Ux::Singleton();
         //uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
 
@@ -436,7 +436,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         return true;
     }
 
-    static int getHistoryTotalCount(){
+    static int getHistoryTotalCount(uiScrollController* scroller){
         Ux* myUxRef = Ux::Singleton();
         //uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
         int total = myUxRef->pickHistoryList->total();
@@ -583,75 +583,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         }
     }
 
-    // this helper goes elsewhere??
-    static int compareColor(SDL_Color *a, SDL_Color *b){
-        HSV_Color A, B;
-        A.fromColor(a);
-        B.fromColor(b);
-        int result = A.h - B.h;
-        if( result == 0 ) result = A.s - B.s;
-        if( result == 0 ) result = A.v - B.v;
-        if( result == 0 ){
-            result =  a->r - b->r;
-            if( result == 0 ) result =  a->g - b->g;
-            if( result == 0 ) result =  a->b - b->b;
-//            if( result == 0 ){
-//                SDL_Log("WHA THE");
-//            }
-        }
-        return result;
-    }
 
-    static int compareColorListItems(ColorList *a, ColorList *b){
-        return compareColor(&a->color, &b->color);
-    }
-
-    int dedupeHistoryList(uiList<ColorList, Uint8>* listToSort){
-        int oldLen = listToSort->total(); // if we return some scoring info... we could reveal that here??? (should probably return a struct tho)
-        listToSort->sort(&compareColorListItems);
-        // next: remove dupes
-        uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = listToSort->iterate();
-        ColorList* hist = pickHistoryIterator->nextLast(); // loop in reverse here...
-        SDL_Color lastColor = hist->color;
-        hist = pickHistoryIterator->nextLast();
-        while(hist != nullptr){
-            if( colorEquals( &hist->color, &lastColor) ){
-                listToSort->remove(pickHistoryIterator->lastIndex+1);
-            }else{
-                lastColor = hist->color;
-            }
-            hist = pickHistoryIterator->nextLast();
-        }
-        SDL_free(pickHistoryIterator);
-        return oldLen;
-    }
-
-    void offsetHistoryList(uiList<ColorList, Uint8>* listToOffset, SDL_Color* clr_to_seek_and_begin_rainbow_at){
-        uiList<ColorList, Uint8>* tempList = new uiList<ColorList, Uint8>(listToOffset->total());
-        uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = listToOffset->iterate();
-        ColorList* hist = pickHistoryIterator->nextLast(); // loop in reverse here...
-        while(hist != nullptr){
-            if( compareColor( &hist->color, clr_to_seek_and_begin_rainbow_at) > 0 ){
-                //SDL_Log("our color is > 0 %i %i %i", hist->color.r, hist->color.g, hist->color.b);
-            }else{
-                //SDL_Log("our color is <= 0 %i %i %i", hist->color.r, hist->color.g, hist->color.b);
-                tempList->add(*hist);
-                listToOffset->remove(pickHistoryIterator->lastIndex+1);
-
-            }
-            hist = pickHistoryIterator->nextLast();
-        }
-        SDL_free(pickHistoryIterator);
-        // add them back in reverse
-        pickHistoryIterator = tempList->iterate();
-        hist = pickHistoryIterator->nextLast();
-        while(hist != nullptr){
-            listToOffset->add(*hist);
-            hist = pickHistoryIterator->nextLast();
-        }
-        SDL_free(pickHistoryIterator);
-        SDL_free(tempList);
-    }
 
     static void addAllScoringHandler(uiObject *interactionObj, int eventCode, int quantityAdded){
         Ux* uxInstance = Ux::Singleton();
@@ -681,8 +613,30 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
     void showAddAllConfirmationDialogue(uiObject *interactionObj, uiInteraction *delta){
         Ux* myUxRef = Ux::Singleton();
+
+        // first things - figure out how many will be added.....
+        uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = myUxRef->pickHistoryList->iterate();
+        ColorList* hist = pickHistoryIterator->nextLast(); // loop in reverse here...
+        int addCounter = 0;
+        while(hist != nullptr){
+            int existingLocation = myUxRef->palleteList->locate(*hist);
+            if( existingLocation < 0 ){
+                addCounter++;
+            }
+            hist = pickHistoryIterator->nextLast();
+        }
+        SDL_free(pickHistoryIterator);
+
+        if( addCounter < 2 ){
+            SDL_snprintf(myUxRef->print_here, myUxRef->max_print_here, "+ %i?", addCounter);//"Add All?"
+
+        }else{
+            SDL_snprintf(myUxRef->print_here, myUxRef->max_print_here, "+ <%i?", addCounter+1);//"Add All?"
+        }
+
         myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickAddAllHistoryToPallete, &clickCancelNoOp);
-        myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Add All?");
+        myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessageBottom(myUxRef->print_here);
+        myUxRef->defaultYesNoChoiceDialogue->showAdditionalMessageCharAtLocation(CHAR_CIRCLE_PLUSS, 0);
         myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(addAllScoringHandler);
         myUxRef->defaultYesNoChoiceDialogue->allowFastYes();
         //myUxRef->defaultYesNoChoiceDialogue->displayAdditionalUiObject(sortChooser->uiObjectItself);
@@ -736,12 +690,16 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 //        //int oldLen = dedupeHistoryList(tempList);
 //        SDL_free(tempList);
 
+        sortChooser->setPreivewListToNewClone();
+
 
         myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickSortHistory, &clickCancelNoOp);
         myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Sort?");
         myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(sortScoringHandler);
         myUxRef->defaultYesNoChoiceDialogue->displayAdditionalUiObject(sortChooser->uiObjectItself);
         myUxRef->defaultYesNoChoiceDialogue->allowFastYes();
+
+        sortChooser->update();
 
         //SDL_free(myUxRef->pickHistoryList);
         //myUxRef->pickHistoryList = tempList;
@@ -754,7 +712,11 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         Ux* myUxRef = Ux::Singleton();
         uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
 
-        int oldLen = self->dedupeHistoryList(myUxRef->pickHistoryList);
+        if( myUxRef->pickHistoryList->total() < 1 ) return;
+
+        SDL_Color oldFirst = myUxRef->pickHistoryList->get(0)->color;
+
+        int oldLen = self->sortChooser->dedupeHistoryList(myUxRef->pickHistoryList);
 //
 //        float pct = self->sortChooser->getGradientOffsetPercentage();
 //        SDL_Color* clr = self->sortChooser->getGradientOffsetColor();
@@ -763,7 +725,17 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         // or otherwise where in the list this color would be positioned.... if it were sorted into the list
 
 
-        self->offsetHistoryList(myUxRef->pickHistoryList, self->sortChooser->getGradientOffsetColor());
+        int numberRemoved = (oldLen) - myUxRef->pickHistoryList->total();
+
+        self->sortChooser->offsetHistoryList(myUxRef->pickHistoryList, self->sortChooser->getGradientOffsetColor());
+
+        if( numberRemoved < 1 ){
+            SDL_Color newFirst = myUxRef->pickHistoryList->get(0)->color;
+            if( !colorEquals(&oldFirst, &newFirst) ){
+                numberRemoved = 1; // as long as we moved at least one item, lets not reset their great chain multiplier...
+            }
+        }
+
 
 
         myUxRef->updatePickHistoryPreview(); // also updates teh visible pallete scroller
@@ -772,7 +744,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         // some custom score bonus???  right now the default one is being applied....
         // todo: scored based on how much effect it had?
 
-        myUxRef->defaultYesNoChoiceDialogue->updateNumberToEffectWhenYes((oldLen) - myUxRef->pickHistoryList->total());
+        myUxRef->defaultYesNoChoiceDialogue->updateNumberToEffectWhenYes(numberRemoved);
     }
 
     // default scoreDisplayFn
@@ -1017,7 +989,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
     // **** PALLETTE ****
 
 
-    static bool updateUiObjectFromPallete(uiObject *historyTile, int offset){  // see also clickPalleteColor
+    static bool updateUiObjectFromPallete(uiScrollController* scroller, uiObject *historyTile, int offset){  // see also clickPalleteColor
         Ux* myUxRef = Ux::Singleton();
         //uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
 
@@ -1121,7 +1093,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         return true;
     }
 
-    static int getPalleteTotalCount(){
+    static int getPalleteTotalCount(uiScrollController* scroller){
         Ux* myUxRef = Ux::Singleton();
         //return self->palleteList->largestIndex() + 1;
         int total = myUxRef->palleteList->total();

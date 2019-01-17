@@ -90,6 +90,9 @@ struct uiText{
         text_position->setModeWhereChildCanCollideAndOwnBoundsIgnored();
         text_position->doesInFactRender = false;
 
+        uiObjectItself->doesInFactRender = false;
+
+
         text_itself->setModeWhereChildCanCollideAndOwnBoundsIgnored();
 
         text_itself->setBoundaryRect( -0.5, -0.5, 1.0, 1.0); // on right

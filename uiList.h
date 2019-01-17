@@ -112,12 +112,12 @@ struct uiList
         }
         uiList<genType, indexType>* newList = new uiList<genType, indexType>(maxSize);
 
-        SDL_memcpy(newList->listItself, listItself, sizeof(genType)*total()-1);
+        SDL_memcpy(newList->listItself, listItself, sizeof(genType)*total());
 
         newList->indexOffsetGen = indexOffsetGen;
-        newList->_nextIndex = _nextIndex-1;
-        newList->_previousIndex = _previousIndex-1;
-        newList->_largestIndex = _largestIndex-1;
+        newList->_nextIndex = _nextIndex;
+        newList->_previousIndex = _previousIndex;
+        newList->_largestIndex = _largestIndex;
         newList->_out_of_space = _out_of_space;
 
         return newList;
