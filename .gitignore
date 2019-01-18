@@ -6,3 +6,5 @@ android-project/app/jni/SDL*
 android-project/Android
 android-project/app/.externalNativeBuild
 android-project/.gradle/3.3/taskArtifacts/*
+android-project/keystore.properties
+
