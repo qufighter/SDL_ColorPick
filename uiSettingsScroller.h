@@ -364,7 +364,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
     // low level read/write
 
     void applyReadSettingsState(SettingsRwObject readSetting){
-        SDL_Log("WE had read a setting from disk, here is the enum: %d %d", readSetting.key, readSetting.value);
+        //SDL_Log("WE had read a setting from disk, here is the enum: %d %d", readSetting.key, readSetting.value);
         int position = settingsList->locateIndex(readSetting.key);
         if( position > -1 ){
             SettingsListObj* setting = settingsList->get(position);

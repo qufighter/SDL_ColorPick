@@ -30,14 +30,14 @@ struct uxHueGradientData{
 
         // 6 chunks of 0-255 rainbow
 
-        SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
+        //SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
 
         while( counter < totalColorsPer ){
             Ux::setColor(&manyColors[counter], current_r, current_g, current_b, 255);
             current_b+=1;
             counter++;
         }
-        SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
+        //SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
 
         stopPoint = totalColorsPer * 2;
         while( counter < stopPoint ){
@@ -45,7 +45,7 @@ struct uxHueGradientData{
             current_r-=1;
             counter++;
         }
-        SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
+        //SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
 
         stopPoint = totalColorsPer * 3;
         while( counter < stopPoint ){
@@ -53,7 +53,7 @@ struct uxHueGradientData{
             current_g+=1;
             counter++;
         }
-        SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
+        //SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
 
         stopPoint = totalColorsPer * 4;
         while( counter < stopPoint ){
@@ -61,7 +61,7 @@ struct uxHueGradientData{
             current_b-=1;
             counter++;
         }
-        SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
+        //SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
 
         stopPoint = totalColorsPer * 5;
         while( counter < stopPoint ){
@@ -69,7 +69,7 @@ struct uxHueGradientData{
             current_r+=1;
             counter++;
         }
-        SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
+        //SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
 
         stopPoint = totalColorsPer * 6;
         while( counter < stopPoint ){
@@ -77,7 +77,7 @@ struct uxHueGradientData{
             current_g-=1;
             counter++;
         }
-        SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
+        //SDL_Log("SPLIT %i %i %i", current_r, current_g, current_b);
     }
 
 };

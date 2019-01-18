@@ -26,6 +26,8 @@ when points disabled, they still accumulate and yuou can still loose yer points.
 
 maybe instead of scrolling... rep history from end to end, top 25 last 25 and omit?
 
+when 0 in pallete list - show message above instead of below.... 0_o ?
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)

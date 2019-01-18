@@ -636,7 +636,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
         myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickAddAllHistoryToPallete, &clickCancelNoOp);
         myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessageBottom(myUxRef->print_here);
-        myUxRef->defaultYesNoChoiceDialogue->showAdditionalMessageCharAtLocation(CHAR_CIRCLE_PLUSS, 0);
+        myUxRef->defaultYesNoChoiceDialogue->showAdditionalMessageCharAtLocation(CHAR_ADD_ALL_DUDE, 0);
         myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(addAllScoringHandler);
         myUxRef->defaultYesNoChoiceDialogue->allowFastYes();
         //myUxRef->defaultYesNoChoiceDialogue->displayAdditionalUiObject(sortChooser->uiObjectItself);
@@ -658,13 +658,12 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             int existingLocation = myUxRef->palleteList->locate(*hist);
             if( existingLocation > -1 ){
                 // its taken... cannot add this to the pallete....
-                Uint8 palleteOffset = existingLocation; // pointless var
-                uiObject* visibleTile = self->palleteScroller->getVisibleTileForOffsetOrNull(palleteOffset);
+                uiObject* visibleTile = self->palleteScroller->getVisibleTileForOffsetOrNull(existingLocation);
                 if( visibleTile != nullptr ){
                     myUxRef->uxAnimations->rvbounce(visibleTile);
                     foundVis++;
                 }else{
-                    lastFoundInvisibleOffset = palleteOffset;
+                    lastFoundInvisibleOffset = existingLocation;
                 }
             }else{
                 self->addColorToPallete(interactionObj, hist->color, false );
@@ -886,11 +885,10 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
         if( existingLocation > -1 ){
             // this color is already taken then
-            Uint8 palleteOffset = existingLocation; // pointless var
 
-            self->palleteScroller->scrollToItemByIndex(palleteOffset);
+            self->palleteScroller->scrollToItemByIndex(existingLocation);
 
-            uiObject* visibleTile = self->palleteScroller->getVisibleTileForOffsetOrNull(palleteOffset);
+            uiObject* visibleTile = self->palleteScroller->getVisibleTileForOffsetOrNull(existingLocation);
 
             //uxAnimations->rvbounce(historyPreview);
 
