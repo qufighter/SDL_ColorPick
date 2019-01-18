@@ -68,7 +68,7 @@ use something better (a struct) rather than raw char* ? new Ux::uiList<const cha
 collisionRect; // this rect has good w/h that we can use (its scaled to boundary space)
 ^ while true, when is it scaled?  we may use this sometimes before it is scaled.
 
-this helper goes elsewhere?? static int compareColor
+this helper goes elsewhere?? static int compareColor (it was once moved....) probably not to final place
 
 we need test colors like:
 0,7,255
@@ -117,7 +117,7 @@ pallete swatch color -> huePicker for adjustment ( see cp_set_from_hsv )
 sort pallete colors
 ^ (web interface? / later - watch out for index?)
 
-dedupe history (when out of space?)
+dedupe history (when out of space?) (occurs on sort)
 
 remove myScrollController just use myUiController instead of the 1off (not necessarily removable when child elements have different controllers)
 remove hasInteraction hasInteractionCb just use nullptr check... (meh)

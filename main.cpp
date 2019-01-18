@@ -302,7 +302,7 @@ int EventFilter(void* userdata, SDL_Event* event){
         }
 #ifdef COLORPICK_PLATFORM_DESKTOP
         case SDL_MOUSEWHEEL:
-            SDL_Log("Hello Wheel!!");
+            //SDL_Log("Hello Wheel!!");
 
             if( openglContext->generalUx->hasCurrentModal() ){
 
@@ -321,7 +321,7 @@ int EventFilter(void* userdata, SDL_Event* event){
             return 0;
 #endif
         case SDL_MULTIGESTURE: // http://lazyfoo.net/tutorials/SDL/55_multitouch/index.php
-            SDL_Log("Hello Gesture!!");
+            //SDL_Log("Hello Gesture!!");
 
             openglContext->clearVelocity();
             openglContext->renderShouldUpdate = true;
