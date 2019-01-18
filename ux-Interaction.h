@@ -53,6 +53,7 @@ struct uiInteraction
         //this->update(x, y, 0, 0); // tell me why update on mouse up....  they dont wanna move anymore
         rx =0;
         ry =0; // reset these so we can keep calling update?  not always needed... plus sometimes rx and ry are needed!
+        this->update();
     }
     void update(float x, float y){ // todo pass delta and relative
         rx = x - px;

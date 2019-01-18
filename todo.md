@@ -10,7 +10,6 @@ add version string somewhere (do not let it look like an IP address!)  maybe thi
 
 achievements
 can only achieve when points enabled? (at least for points based achievements...)
-   - points threshold achievements.... (besides int overflow)  *for easy/hard* ?
    - huzzah (3rd button) meh achievement?  training achievement?  need ponts for clicking button though...,
    - 13 points 5d5a4b - its improved....
 
@@ -21,18 +20,16 @@ when points disabled, they still accumulate and yuou can still loose yer points.
 
   when color is selected in pallete - indicate in history view if visible??????? 
       (really only good for first 2 -3 rows of history..... has to be reset any time the view color is hidden, more of a can do)
+      IMO this become part of ColorList item itself?  but we don't need to scan the full color list except to reset it?
+      Arguably we should have an index of our list just to help find this....
 
 - URL shorteners - how friendly with location hash ?
 
-maybe instead of scrolling... rep history from end to end, top 25 last 25 and omit?
-
-when 0 in pallete list - show message above instead of below.... 0_o ?
+add some automatic test to verify each color can be viewed in the HSV?
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
-
-veloclity ALWAYS triggers in fast mode!!
 
 ##  can do
 

@@ -14,6 +14,8 @@ struct uiHueGradientScroller{
 
     uiHueGradientScroller(uiObject* parentObj, Float_Rect boundaries, bool allowScrolling){
 
+        changeCallback = nullptr;
+
         Ux* uxInstance = Ux::Singleton(); // some useful helper?
 
         uiObjectItself = new uiObject();
@@ -30,14 +32,12 @@ struct uiHueGradientScroller{
         hueGradientHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
         uiObjectItself->addChild(hueGradientHolder); // add first so controller proagates
 
-
         if( allowScrolling ){
             increment = 24;
             end = end * 2;
             width = 1.0 / 256;
             hueGradientHolder->setBoundaryRect(0.0, 0.0, 2.0, 1.0);
             hueGradientHolder->setInteraction(&draggingTheGradient);
-
             hueGradientHolder->boundryRect.x = -0.281250; // BGYORVI
         }
 
@@ -53,7 +53,18 @@ struct uiHueGradientScroller{
             counter++;
         }
 
-
+        if( allowScrolling ){
+            arrowIndicatorL = new uiObject();
+            arrowIndicatorL->setBoundaryRect(0.0, 0.0, 0.15, 1.0);
+            uxInstance->printCharToUiObject(arrowIndicatorL, CHAR_ARR_LEFT, DO_NOT_RESIZE_NOW);
+            arrowIndicatorL->setClickInteractionCallback(&interactionLClicked);
+            uiObjectItself->addChild(arrowIndicatorL);
+            arrowIndicatorR = new uiObject();
+            arrowIndicatorR->setBoundaryRect(1.0-0.15, 0.0, 0.15, 1.0);
+            uxInstance->printCharToUiObject(arrowIndicatorR, CHAR_ARR_RIGHT, DO_NOT_RESIZE_NOW);
+            arrowIndicatorR->setClickInteractionCallback(&interactionRClicked);
+            uiObjectItself->addChild(arrowIndicatorR);
+        }
 
         //uiObjectItself->setInteractionCallback(Ux::interactionNoOp);
         parentObj->addChild(uiObjectItself);
@@ -65,22 +76,56 @@ struct uiHueGradientScroller{
     uiObject* hueGradientHolder;
     bool hueSliderVisible;
 
+    uiObject* arrowIndicatorL; // the above's hueGradientHolder is hueGradientHolder, there is still hueGradient->uiObjectItself between though...
+    uiObject* arrowIndicatorR;
 
+    anInteractionFn changeCallback;
+
+    void addChangeCallback(anInteractionFn p_interactionCallback){
+        changeCallback = p_interactionCallback;
+    }
+
+    static void interactionLClicked(uiObject *interactionObj, uiInteraction *delta){
+        Ux* uxInstance = Ux::Singleton();
+        uiHueGradientScroller* self = ((uiHueGradientScroller*)interactionObj->myUiController);
+        self->hueGradientHolder->boundryRect.x-=1.0 / uxInstance->hueGradientData->totalColors;
+        self->handleWrapping();
+        self->hueGradientHolder->updateRenderPosition();
+        if( self->changeCallback!=nullptr ){
+            self->changeCallback(interactionObj, delta);
+        }
+    }
+
+    static void interactionRClicked(uiObject *interactionObj, uiInteraction *delta){
+        Ux* uxInstance = Ux::Singleton();
+        uiHueGradientScroller* self = ((uiHueGradientScroller*)interactionObj->myUiController);
+        self->hueGradientHolder->boundryRect.x+=1.0 / uxInstance->hueGradientData->totalColors;
+        self->handleWrapping();
+        self->hueGradientHolder->updateRenderPosition();
+        if( self->changeCallback!=nullptr ){
+            self->changeCallback(interactionObj, delta);
+        }
+    }
+
+    void handleWrapping(){
+        if( hueGradientHolder->boundryRect.x > 0.0 ){
+            hueGradientHolder->boundryRect.x-=1.0;
+        }else if( hueGradientHolder->boundryRect.x < -1.0 ){
+            hueGradientHolder->boundryRect.x+=1.0;
+        }
+    }
 
     static void draggingTheGradient(uiObject *interactionObj, uiInteraction *delta){
         uiHueGradientScroller* self = ((uiHueGradientScroller*)interactionObj->myUiController);
         self->hueGradientHolder->boundryRect.x += delta->rx;
-
-
-        if( self->hueGradientHolder->boundryRect.x > 0.0 ){
-            self->hueGradientHolder->boundryRect.x-=1.0;
-        }else if( self->hueGradientHolder->boundryRect.x < -1.0 ){
-            self->hueGradientHolder->boundryRect.x+=1.0;
-        }
-
+        self->handleWrapping();
         //SDL_Log("self->hueGradientHolder->boundryRect.x %f", self->hueGradientHolder->boundryRect.x);
-
         self->hueGradientHolder->updateRenderPosition();
+
+        // we could process the events this way, but we need to throttle them....
+//        if( self->changeCallback!=nullptr ){
+//            self->changeCallback(interactionObj, delta);
+//        }
     }
 
     float getGradientOffsetPercentage(){ // get amount of scroll of the gradient, and we will make a color out of it...

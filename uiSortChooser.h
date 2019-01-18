@@ -42,7 +42,8 @@ struct uiSortChooser{
 //        hueGradientHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
 //        uiObjectItself->addChild(hueGradientHolder); // add first so controller proagates
         hueGradient = new uiHueGradientScroller(uiObjectItself, Float_Rect(0.0,0.25,1.0,0.5), true);
-
+        hueGradient->addChangeCallback(&theHueGradientChanged);
+        hueGradient->hueGradientHolder->setInteractionCallback(&theHueGradientChanged);
 
 //        previousContainer = new uiObject();
 //        previousContainer->setBoundaryRect(0.0, 0.0, 1.0, 0.25);
@@ -54,18 +55,17 @@ struct uiSortChooser{
 //        uxInstance->printCharToUiObject(newContainer, CHAR_ARR_UP, DO_NOT_RESIZE_NOW);
 //        uiObjectItself->addChild(newContainer);
 
-        arrowIndicatorL = new uiObject();
-        arrowIndicatorL->setBoundaryRect(0.0, 0.25, 0.15, 0.5);
-        uxInstance->printCharToUiObject(arrowIndicatorL, CHAR_ARR_LEFT, DO_NOT_RESIZE_NOW);
-        uiObjectItself->addChild(arrowIndicatorL);
+//        arrowIndicatorL = new uiObject();
+//        arrowIndicatorL->setBoundaryRect(0.0, 0.25, 0.15, 0.5);
+//        uxInstance->printCharToUiObject(arrowIndicatorL, CHAR_ARR_LEFT, DO_NOT_RESIZE_NOW);
+//        uiObjectItself->addChild(arrowIndicatorL);
+//
+//        arrowIndicatorR = new uiObject();
+//        arrowIndicatorR->setBoundaryRect(1.0-0.15, 0.25, 0.15, 0.5);
+//        uxInstance->printCharToUiObject(arrowIndicatorR, CHAR_ARR_RIGHT, DO_NOT_RESIZE_NOW);
+//        uiObjectItself->addChild(arrowIndicatorR);
 
-        arrowIndicatorR = new uiObject();
-        arrowIndicatorR->setBoundaryRect(1.0-0.15, 0.25, 0.15, 0.5);
-        uxInstance->printCharToUiObject(arrowIndicatorR, CHAR_ARR_RIGHT, DO_NOT_RESIZE_NOW);
-        uiObjectItself->addChild(arrowIndicatorR);
 
-
-        hueGradient->hueGradientHolder->setInteractionCallback(&theHueGradientChanged);
 
 
         previewColorList = new uiList<ColorList, Uint8>(1);
@@ -83,8 +83,8 @@ struct uiSortChooser{
     uiObject* uiObjectItself; // no real inheritance here, this its the uiSqware, I would use self->
     uiHueGradientScroller* hueGradient;
 
-    uiObject* arrowIndicatorL; // the above's hueGradientHolder is hueGradientHolder, there is still hueGradient->uiObjectItself between though...
-    uiObject* arrowIndicatorR;
+//    uiObject* arrowIndicatorL; // the above's hueGradientHolder is hueGradientHolder, there is still hueGradient->uiObjectItself between though...
+//    uiObject* arrowIndicatorR;
 
     uiObject* previousContainer; // the above's hueGradientHolder is hueGradientHolder, there is still hueGradient->uiObjectItself between though...
     uiObject* newContainer;
