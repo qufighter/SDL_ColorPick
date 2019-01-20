@@ -938,6 +938,8 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         }
 
         myUxRef->updatePalleteScroller();
+
+        // note we do not perform auto scrolling here... since this might be called in bulk... do not risk running out of animation chains.
     }
 
 

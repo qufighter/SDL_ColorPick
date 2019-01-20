@@ -33,7 +33,7 @@ osx/ios jpg rotation not respected (is this exif rotation???)
 
 ##  can do
 
-running out of animation chains can break some ux expectations.... (dismisssal of modals, etc...)
+running out of animation chains can break some ux expectations.... (dismisssal of modals, etc...)... git show 772a29a4a46f66c9fc689d2c61f2535cc9478baf
 
 // so if we are showing removeButton and our color changed, we know that something changed and we should hide our deleteX simple as that 
 
