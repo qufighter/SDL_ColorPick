@@ -674,6 +674,8 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         if( addedCounter < 1 && foundVis < 1 ){
             // need of scroll to bounce....
             self->palleteScroller->scrollToItemByIndex(lastFoundInvisibleOffset);
+        }else{
+            self->palleteScroller->scrollToItemByIndex(myUxRef->palleteList->previousIndex());
         }
         SDL_free(pickHistoryIterator);
         myUxRef->defaultYesNoChoiceDialogue->updateNumberToEffectWhenYes(addedCounter);
@@ -916,6 +918,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         }
 
         self->addColorToPallete(interactionObj, interactionObj->backgroundColor, true);
+        self->palleteScroller->scrollToItemByIndex(myUxRef->palleteList->previousIndex());
     }
 
     bool isGameModeHardMode(){
@@ -935,8 +938,6 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         }
 
         myUxRef->updatePalleteScroller();
-
-        palleteScroller->scrollToItemByIndex(myUxRef->palleteList->previousIndex());
     }
 
 
