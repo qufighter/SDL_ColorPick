@@ -35,6 +35,9 @@ reveal animation (delete x) very subtle in widescreen mode on pallete items
 
 ##  can do
 
+// TODO - if you use setAnimation on the ui object then you will automatically track and cancel the chains
+/// so there is no need to track ANY chain in this file :)
+
 ERROR::: Max Animation Chains 128 Exceeded !!!!!!!!
 
 add all button cannot achieve achievement (due to mulitple achievement of achievement...)

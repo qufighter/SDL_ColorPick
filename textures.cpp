@@ -657,6 +657,8 @@ bool Textures::searchSurfaceForColor(SDL_Surface *newSurface, SDL_Color* seekClr
     scanSurface = newSurface;
     SDL_Point result = directionalScan->getOffsetForBestMatch(dest, &Textures::getDistanceForVec3s, &Textures::getVec3ColorForPoint);
 
+    //SDL_Point result = {1,1};
+
     *outx = x - result.x;
     *outy = y - result.y;
 
@@ -674,7 +676,7 @@ bool Textures::colorFromSurface(SDL_Surface *newSurface, int x, int y, SDL_Color
     Uint8 red, green, blue, alpha;
 
     if( x < 0 || y < 0 || x >= newSurface->w || y >= newSurface->h ){
-        SDL_Log("ERROR/WARNING: Getting OOB pixel");
+        //SDL_Log("ERROR/WARNING: Getting OOB pixel");
         return false;
     }
 

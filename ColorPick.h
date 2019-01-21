@@ -165,6 +165,7 @@ public:
     bool renderShouldUpdate = true;
 
 
+
 private:
 
     int textureSize = SHD_TEXTURE_SIZE;
@@ -216,6 +217,13 @@ protected:
     OpenGLContext(void); // Default constructor
     ~OpenGLContext(void); // Destructor for cleaning up our application
 
+
+#ifdef DEVELOPER_TEST_MODE
+    // the test functions can be removed from runtime codes...
+    static void TEST_BEGIN(void);
+    static Uint32 TEST_CALLBACK(Uint32 interval, void* parm);
+    static void TEST_CAN_VIEW_ANY_COLOR(void);
+#endif
     
 };
 

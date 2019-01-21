@@ -207,6 +207,11 @@ struct uiScore{
             float bounceIntensity = -0.001;
 
 
+            // TODO - if you use setAnimation on the ui object then you will automatically track and cancel the chains
+            /// so there is no need to track ANY chain in this file :)
+            // the above would only be true if a single object can have multiple chains... setAnimations(chain1, chain2, ...) ??
+            // which would stop all the current ones??? and assing up to N new ones???  sounds nice...
+
             //uiObjectItself->show();
             //score_position->matrix = glm::mat4(1.0);
 

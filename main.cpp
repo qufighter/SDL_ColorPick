@@ -803,6 +803,13 @@ compatibility; this flag is ignored
                             //SDL_FlushEvent(SDL_USEREVENT);
                             break;//return 0;
                         }
+                        case USER_EVENT_ENUM::GENERIC_ARBITRARY_CALL:
+                        {
+                            SDL_Log("USER EVENT GENERIC_ARBITRARY_CALL");
+                            void (*p) (void*) = (voidvoidp)event.user.data1;
+                            p(event.user.data2);
+                            break;//return 0;
+                        }
                         case USER_EVENT_ENUM::VIEW_RECENTLY_ROTATED:
                         {
                             SDL_Log("USER EVENT 2 - rotation delayted update");

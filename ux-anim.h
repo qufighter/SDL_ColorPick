@@ -529,6 +529,18 @@ struct UxAnim
     Uint32 currentTime;
     SDL_TimerID my_timer_id;
 
+    // maybe this can just be a helper on the chain itself?  .free() ??
+    void freeAnimationChain(uiAminChain* myAnimChain){
+        if( myAnimChain->autoFree ){
+            // WE GET AN EXCEPTION HERE SOMETIMES>>>>>
+            // malloc: *** error for object 0x7fbb4330: pointer being freed was not allocated
+            // sometimes this is caused by adding an animation chain while updating another animation perhaps?  (I think this is mostly caused by the debugger... a breakpoint at "ERROR::: Max Animation" will ultimiately cause exceptins here)
+            SDL_free(myAnimChain); // GARBAGE COLLECTION ?! (we may mark a chain to not auto delete in the future, for reusing it?)
+        }else{
+            myAnimChain->chainCompleted = true; // the only way the garbage can be otherwise collected
+        }
+    }
+
     bool updateAnimations(float elapsedMs){
         /// hmmm begs question if timer thread will multi fire....
 
@@ -544,14 +556,7 @@ struct UxAnim
             result_done = animChains[x]->update(elapsedMs);
 
             if( result_done ){
-                if( animChains[x]->autoFree ){
-                    // WE GET AN EXCEPTION HERE SOMETIMES>>>>>
-                    // malloc: *** error for object 0x7fbb4330: pointer being freed was not allocated
-                    // sometimes this is caused by adding an animation chain while updating another animation perhaps?  (I think this is mostly caused by the debugger... a breakpoint at "ERROR::: Max Animation" will ultimiately cause exceptins here)
-                    SDL_free(animChains[x]); // GARBAGE COLLECTION ?! (we may mark a chain to not auto delete in the future, for reusing it?)
-                }else{
-                    animChains[x]->chainCompleted = true; // the only way the garbage can be otherwise collected
-                }
+                freeAnimationChain(animChains[x]);
                 // we wish to drop this chain from the array of chains, so all subsequent chains move down by N index based on how many we have subtracted thus far
                 animChainsDeletedCount++;
             }
@@ -630,6 +635,8 @@ struct UxAnim
                 newChains[newChainIndex++] = myAnimChain;
             }else{
                 SDL_Log("ERROR::: Max Animation Chains -newChains- %d Exceeded !!!!!!!!", animChainsMax);
+                //freeAnimationChain(myAnimChain);
+                // todo: in cases like these, we should always do something to advance the animations to completion
             }
             SDL_Log("WARNING: adding animation is currently being updated from the update thread... safely...");
             return;
@@ -645,7 +652,9 @@ struct UxAnim
             }
         }else{
             SDL_Log("ERROR::: Max Animation Chains %d Exceeded !!!!!!!!", animChainsMax);
-            // todo: in cases like these, we should always do something to advance the animations to completion to (hopefully) free up some chains...
+            //freeAnimationChain(myAnimChain); // this one is troubling.... we won't know its not been pushed.... we don't know if the reference is preserved yet...
+            // todo: in cases like these, we should always do something to advance the animations to completion
+            // JUST COMPLETE THESE ANIMATIONS IMMEDIATELY???
         }
 
         lastTimerTime = SDL_GetTicks();

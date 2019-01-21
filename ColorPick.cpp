@@ -254,7 +254,6 @@ void OpenGLContext::pickerForHue(HSV_Color* color, SDL_Color* desired_color){
     //    position_x = 0;
     //    position_y = 0;
 
-
     if( textures->searchSurfaceForColor(fullPickImgSurface, desired_color, position_x, position_y, &position_x, &position_y) ){
 
             // this is a little overkill we just need to move the position....
@@ -654,6 +653,9 @@ void OpenGLContext::setupScene(void) {
     debugGLerror("setupScene nearly done");
 
 
+#ifdef DEVELOPER_TEST_MODE
+//    TEST_BEGIN();
+#endif
 
     debugGLerror("setupScene completely done");
 
@@ -1072,7 +1074,45 @@ void OpenGLContext::renderScene(void) {
     debugGLerror("generalUx->renderObject ending");
 
 }
+#ifdef DEVELOPER_TEST_MODE
+void OpenGLContext::TEST_BEGIN(void) {
+    int my_timer_id = SDL_AddTimer(6000, TEST_CALLBACK, nullptr);
+}
 
+Uint32 OpenGLContext::TEST_CALLBACK(Uint32 interval, void* parm){
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    SDL_Log("WE GOT THE CALLBACK");
+    ogg->TEST_CAN_VIEW_ANY_COLOR();
+    return 0; // callback won't fire at same interval exactly... we cancel it here
+}
+
+// this may just trigger the test?????  a thread should run this though....
+void OpenGLContext::TEST_CAN_VIEW_ANY_COLOR(void) {
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    SDL_Color aColor;
+    for( int r=1; r<256; r+=5 ){
+        for( int g=0; g<256; g+=5 ){
+            for( int b=0; b<256; b+=5 ){
+                aColor.r=r;
+                aColor.g=g;
+                aColor.b=b;
+
+                SDL_Event event;
+                SDL_UserEvent userevent;
+                userevent.type = SDL_USEREVENT;
+                userevent.code = USER_EVENT_ENUM::GENERIC_ARBITRARY_CALL;
+                userevent.data1 = (void*)&ogg->generalUx->hueClickedPickerHsv;
+                userevent.data2 = &aColor;
+                event.type = SDL_USEREVENT;
+                event.user = userevent;
+                SDL_PushEvent(&event);
+                //ogg->generalUx->hueClickedPickerHsv(&aColor);
+                SDL_Delay(100);
+            }
+        }
+    }
+}
+#endif
 
 void OpenGLContext::createSquare(void) {
     float *vertices = new float[18];	// Vertices for our square

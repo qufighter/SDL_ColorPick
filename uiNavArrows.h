@@ -136,6 +136,7 @@ struct uiNavArrows{
     }
 
     void indicateVelocity(float vx, float vy){
+        if( !uiObjectItself->doesRenderChildObjects ) return;  // we are hidden, no cycles wasted
         Ux* uxInstance = Ux::Singleton();
         float scaler=0.0001;
         float cap = 50;
