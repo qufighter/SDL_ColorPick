@@ -377,6 +377,7 @@ struct DirectionalScan
                     // we found it
                     lastCoordinateReturned = de->coordinate;
                     lastBestDistance = 0; // exact match!
+                    SDL_free(search_area);
                     return lastCoordinateReturned;
                 }else{
 
@@ -414,6 +415,7 @@ struct DirectionalScan
 
         lastBestDistance = bestDist;
         lastCoordinateReturned = bestDe->coordinate;
+        SDL_free(search_area);
         return lastCoordinateReturned;
     }
 
