@@ -31,7 +31,18 @@ add some automatic test to verify each color can be viewed in the HSV?
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
+reveal animation (delete x) very subtle in widescreen mode on pallete items
+
 ##  can do
+
+ERROR::: Max Animation Chains 128 Exceeded !!!!!!!!
+
+add all button cannot achieve achievement (due to mulitple achievement of achievement...)
+    addColorToPallete 
+    if( standardScoring ) myUxRef->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_NOSPACE);
+    we could handle the scoring a single time outside of this function... wehn  !standardScoring
+    see TODO handle scoring todo note here...
+
 
 running out of animation chains can break some ux expectations.... (dismisssal of modals, etc...)... git show 772a29a4a46f66c9fc689d2c61f2535cc9478baf
 

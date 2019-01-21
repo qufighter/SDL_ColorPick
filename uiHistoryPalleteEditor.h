@@ -671,11 +671,13 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             }
             hist = pickHistoryIterator->nextLast();
         }
+        myUxRef->updatePalleteScroller();
         if( addedCounter < 1 && foundVis < 1 ){
             // need of scroll to bounce....
             self->palleteScroller->scrollToItemByIndex(lastFoundInvisibleOffset);
         }else{
             self->palleteScroller->scrollToItemByIndex(myUxRef->palleteList->previousIndex());
+            // TODO handle scoring todo note here...
         }
         SDL_free(pickHistoryIterator);
         myUxRef->defaultYesNoChoiceDialogue->updateNumberToEffectWhenYes(addedCounter);
@@ -932,12 +934,12 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         if( myUxRef->palleteList->_out_of_space ){
             if( standardScoring ) myUxRef->defaultScoreDisplay->display(interactionObj, 10, SCORE_EFFECTS::NOMOVE);
             //myUxRef->defaultScoreDisplay->displayExplanation("out of space!");
-            myUxRef->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_NOSPACE);
+            if( standardScoring ) myUxRef->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_NOSPACE);
         }else{
            if( standardScoring )  myUxRef->defaultScoreDisplay->display(interactionObj, 5, SCORE_EFFECTS::NOMOVE);
         }
 
-        myUxRef->updatePalleteScroller();
+        if( standardScoring ) myUxRef->updatePalleteScroller();
 
         // note we do not perform auto scrolling here... since this might be called in bulk... do not risk running out of animation chains.
     }

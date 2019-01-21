@@ -547,7 +547,7 @@ struct UxAnim
                 if( animChains[x]->autoFree ){
                     // WE GET AN EXCEPTION HERE SOMETIMES>>>>>
                     // malloc: *** error for object 0x7fbb4330: pointer being freed was not allocated
-                    // sometimes this is caused by adding an animation chain while updating another animation perhaps?
+                    // sometimes this is caused by adding an animation chain while updating another animation perhaps?  (I think this is mostly caused by the debugger... a breakpoint at "ERROR::: Max Animation" will ultimiately cause exceptins here)
                     SDL_free(animChains[x]); // GARBAGE COLLECTION ?! (we may mark a chain to not auto delete in the future, for reusing it?)
                 }else{
                     animChains[x]->chainCompleted = true; // the only way the garbage can be otherwise collected
@@ -645,6 +645,7 @@ struct UxAnim
             }
         }else{
             SDL_Log("ERROR::: Max Animation Chains %d Exceeded !!!!!!!!", animChainsMax);
+            // todo: in cases like these, we should always do something to advance the animations to completion to (hopefully) free up some chains...
         }
 
         lastTimerTime = SDL_GetTicks();
