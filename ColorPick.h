@@ -87,6 +87,8 @@ public:
     void reshapeWindow(int w, int h); // Method to get our window width and height on resize
     //void updateFrame(Uint32 elapsedMs);
     void renderScene(void); // Render scene (display method from previous OpenGL tutorials)
+    void render3dScene(void);
+
     void chooseFile(void);
 
     SDL_Window* getSdlWindow(void);
@@ -106,6 +108,7 @@ public:
 //    bool downkeys[1073742052]; // SDL tends to fire the keydown event more than once...
 //    bool kkeys[1073742052];	// use this to keep track of keys...hopefully keyboard doesn't have more than this! (it does!)
 
+    Shader *shader_3d; // Our GLSL shader
     Shader *shader_lit_detail; // Our GLSL shader
     Shader *shader_ui_shader_default;
 
@@ -207,7 +210,9 @@ private:
 //    glm::mat4 modelMatrix; // Store the model matrix
 //    glm::mat4 projectionMatrix; // Store the projection matrix
 
-
+    glm::mat4 matrixModel;
+    glm::mat4 matrixViews;
+    glm::mat4 matrixPersp;
 
 protected:
     static bool ms_bInstanceCreated;

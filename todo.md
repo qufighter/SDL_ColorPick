@@ -21,11 +21,11 @@ when points disabled, they still accumulate and yuou can still loose yer points.
   when color is selected in pallete - indicate in history view if visible??????? 
       (really only good for first 2 -3 rows of history..... has to be reset any time the view color is hidden, more of a can do)
       IMO this become part of ColorList item itself?  but we don't need to scan the full color list except to reset it?
-      Arguably we should have an index of our list just to help find this....
+      Arguably we should have an index of our list just to help find this.... - or shader bool ikr
 
 - URL shorteners - how friendly with location hash ?
 
-add some automatic test to verify each color can be viewed in the HSV?
+add some automatic test to verify each color can be viewed in the HSV? (done)
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)

@@ -64,10 +64,4 @@ void main()
 
 
 
-    //gl_Position=position;
-    //gl_Position=position * vec4(1.0,widthHeightRatio,1.0,1.0);
-
-    //*viewMatrix;
-	//gl_Position=position*(projectionMatrix*modelMatrix*viewMatrix);
-    //colorVarying = color;
 }

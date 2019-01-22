@@ -411,6 +411,9 @@ void OpenGLContext::setupScene(void) {
     createUI();
     setFishScale(0.0, 1.0);
 
+    matrixModel = glm::mat4(1.0f);
+    matrixViews = glm::mat4(1.0f);
+    matrixPersp = glm::mat4(1.0f);
 
     textures = Textures::Singleton();
  //glEnable (GL_DEPTH_TEST);
@@ -665,13 +668,12 @@ void OpenGLContext::loadShaders(void){
     GLuint _glVaoID;// shaders wont validate on osx unless we bind a VAO: Validation Failed: No vertex array object bound.
     glGenVertexArrays(1, &_glVaoID );	glBindVertexArray( _glVaoID );
 
-//#ifdef COLORPICK_PLATFORM_DESKTOP
-//    shader_lit_detail = new Shader("shaders/Shader.vsh", "shaders/Shader.fsh");
-//#else
+    // shader names need work...
     shader_lit_detail = new Shader("shaders/Shader.vsh", "shaders/ShaderGLES.fsh");
-//#endif
 
     shader_ui_shader_default = new Shader("shaders/uiShader.vsh", "shaders/uiShader.fsh");
+
+    shader_3d = new Shader("shaders/3dShader.vsh", "shaders/3dShader.fsh");
 
     glDeleteVertexArrays(1, &_glVaoID );	_glVaoID = 0;
 }
@@ -680,6 +682,7 @@ void OpenGLContext::reloadShaders(void){
     // reload just doesn't work - because the build files are not in teh same location
     shader_lit_detail->reload();
     shader_ui_shader_default->reload();
+    shader_3d->reload();
 }
 
 /**
@@ -1046,6 +1049,15 @@ void OpenGLContext::renderScene(void) {
     debugGLerror("renderScene our renderinng done");
 
 
+    glEnable(GL_BLEND);  //this enables alpha blending
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    debugGLerror("renderScene glEnable GL_BLEND");
+
+
+    //render3dScene();
+
+
     /* NEXT UP: RENDER UI */
     uniformLocations = shader_ui_shader_default->bind(); // Bind our shader
 
@@ -1065,15 +1077,58 @@ void OpenGLContext::renderScene(void) {
 
     debugGLerror("renderScene ui textureId_fonts bound");
 
-    glEnable(GL_BLEND);  //this enables alpha blending
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    debugGLerror("renderScene glEnable GL_BLEND");
+
 
     generalUx->renderObject(uniformLocations); // renders all obj
     debugGLerror("generalUx->renderObject ending");
 
 }
+
+
+void OpenGLContext::render3dScene(void) {
+
+    glDisable(GL_CULL_FACE);
+
+    uniformLocations = shader_3d->bind(); // Bind our shader
+
+    glUniform1i(uniformLocations->textureSampler, 0);
+
+    glActiveTexture( GL_TEXTURE0 + 0);
+    glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
+
+    matrixModel = glm::mat4(1.0f);
+//    matrixViews = glm::mat4(1.0f);
+//    matrixPersp = glm::mat4(1.0f);
+
+    float rotation = (SDL_GetTicks() * 1.0f) / 100.0f;
+
+    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
+    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(1.0f, 0.0f, 0.0f));
+    // try translating Z.. compare with matrixViews eye
+
+
+    // TODO: Lots of matrix math can move out of here....
+    matrixPersp = glm::perspective(60.0f, (float)colorPickState->windowWidth / (float)colorPickState->windowHeight, 0.0000000001f, 1000.0f);  // Create our perspective projection matrix
+    //matrixPersp = glm::infinitePerspective(60.0f, (float)colorPickState->windowWidth / (float)colorPickState->windowHeight, -0.1f); // this one works....
+    //matrixPersp = glm::perspectiveFov(60.0f, (float)colorPickState->windowHeight, (float)colorPickState->windowWidth, 0.0000000001f, 1000.0f);  // Create our perspective projection matrix
+    //matrixPersp = glm::ortho(-1.0f,-1.0f,1.0f,1.0f);
+    //matrixPersp = glm::ortho(1.0f,1.0f,-1.0f,-1.0f);
+    matrixViews = glm::lookAt(glm::vec3(0.0,0.0,3.0), glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0)); // eye, center, up
+
+    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
+    glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
+    glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glEnable(GL_CULL_FACE);
+
+    renderShouldUpdate=true; // TODO < bad
+
+    debugGLerror("render3dScene ending");
+}
+
 #ifdef DEVELOPER_TEST_MODE
 void OpenGLContext::TEST_BEGIN(void) {
     int my_timer_id = SDL_AddTimer(6000, TEST_CALLBACK, nullptr);
