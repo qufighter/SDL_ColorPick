@@ -106,7 +106,8 @@ void main()
 //    int halfTexWidthInt = int(halfTexWidth); //1023 255 127;
 
 
-    int halfTexWidthInt = int(halfTexWidth); // int cannot be output of vsh
+    // floor breaks ios... maybe we can hardcode it to 1023 anyway...
+    int halfTexWidthInt = int(ceil(halfTexWidth)); // int cannot be output of vsh
 
 
 
@@ -120,7 +121,7 @@ void main()
 
 
 
-    vec2 regTexCoord = TexCoordOut;// * vec2(1.0,1.3);
+//    vec2 regTexCoord = TexCoordOut;// * vec2(1.0,1.3);
 //    regTexCoord.y -= 0.15;
 //    if( regTexCoord.y < 0.0 ){
 //        regTexCoord.y = 0.0;

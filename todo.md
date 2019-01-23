@@ -11,7 +11,8 @@ add version string somewhere (do not let it look like an IP address!)  maybe thi
 achievements
 can only achieve when points enabled? (at least for points based achievements...)
    - huzzah (3rd button) meh achievement?  training achievement?  need ponts for clicking button though...,
-   - 13 points 5d5a4b - its improved....
+   - 13 points from color 5d5a4b - its improved.... but not an achievement
+   - the +1 "no scope"  mathmagical
 
 when points disabled, they still accumulate and yuou can still loose yer points....
 
@@ -25,7 +26,8 @@ when points disabled, they still accumulate and yuou can still loose yer points.
 
 - URL shorteners - how friendly with location hash ?
 
-add some automatic test to verify each color can be viewed in the HSV? (done)
+freepik tou
+
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -34,6 +36,8 @@ osx/ios jpg rotation not respected (is this exif rotation???)
 reveal animation (delete x) very subtle in widescreen mode on pallete items
 
 ##  can do
+
+todo: keep moving (non int) stuff to vsh???
 
 // TODO - if you use setAnimation on the ui object then you will automatically track and cancel the chains
 /// so there is no need to track ANY chain in this file :)
@@ -208,7 +212,7 @@ anything using main loop timers (processed on main loop) are not processed....
 # tests
 test history overwrote final color in index that it is released from the index (pretty sure it is...)
 test with vanilla (renamed) settings files
-
+add some automatic test to verify each color can be viewed in the HSV? (done)
 
 
 

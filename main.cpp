@@ -702,7 +702,7 @@ compatibility; this flag is ignored
     window =
         SDL_CreateWindow(NULL, 0, 0, win_w, win_h,
                          SDL_WINDOW_OPENGL
-#ifndef TARGET_OS_SIMULATOR
+#if !TARGET_OS_SIMULATOR
                          | SDL_WINDOW_ALLOW_HIGHDPI
 #endif
                          //| SDL_WINDOW_ALLOW_HIGHDPI
