@@ -21,6 +21,7 @@ LOCAL_SRC_FILES := \
 	../../../../ux.cpp \
 	../../../../textures.cpp \
 	../../../../shader.cpp \
+    ../../../../meshes.cpp \
 	../../../../Platform/Android/FileChooser.cpp
 
 

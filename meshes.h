@@ -70,7 +70,8 @@ typedef void (*aFloatAssignmentFn)(VertexMeta* self, float i);
 
 typedef struct TypedRead{
 
-    typedef enum : Uint8 {
+
+    typedef enum {
         INTEGER,
         FLOAT
     } READ_DATA_TYPES;
@@ -81,9 +82,9 @@ typedef struct TypedRead{
         destArr = nullptr;
         floatValueAssigner=nullptr;
         if( SDL_strcmp(readFmt, "%f") == 0 ){
-            readType = FLOAT;
+            readType = READ_DATA_TYPES::FLOAT;
         }else if( SDL_strcmp(readFmt, "%i") == 0 ){
-            readType = INTEGER;
+            readType = READ_DATA_TYPES::INTEGER;
         }
     }
     void resolveSetter(aFloatAssignmentFn p){
@@ -105,9 +106,9 @@ typedef struct TypedRead{
         int anInt;
         int status;
         // float read format....
-        if( readType == FLOAT ){
+        if( readType == READ_DATA_TYPES::FLOAT ){
             status = SDL_sscanf(&charData[read_offset], readFmt, &aFloat);
-        }else if( readType == INTEGER ){
+        }else if( readType == READ_DATA_TYPES::INTEGER ){
             status = SDL_sscanf(&charData[read_offset], readFmt, &anInt);
             aFloat = anInt / 255.0f;
         }
