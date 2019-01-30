@@ -207,6 +207,9 @@ void OpenGLContext:: loadSpecificTestImage(const char* surfaceFilePath){
     position_x = 0;
     position_y= (fullPickImgSurface->h * 0.5) - 513;
 
+    // play animation for htis img...
+    begin3dDropperAnimation();
+
     if( fullPickImgSurface == NULL ) return;
 
     loadedImageMaxSize = SDL_max(fullPickImgSurface->clip_rect.w, fullPickImgSurface->clip_rect.h);
@@ -407,6 +410,12 @@ void OpenGLContext::createUI(void) {
 }
 
 void OpenGLContext::setupScene(void) {
+//
+//    glEnable(GL_DEPTH_TEST);
+//    glDepthMask(GL_TRUE);
+
+
+
 
     createUI();
     setFishScale(0.0, 1.0);
@@ -415,20 +424,53 @@ void OpenGLContext::setupScene(void) {
     matrixViews = glm::mat4(1.0f);
     matrixPersp = glm::mat4(1.0f);
 
+    matrixViews = glm::lookAt(glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0)); // eye, center, up
+
+    meshes = Meshes::Singleton();
+
     textures = Textures::Singleton();
  //glEnable (GL_DEPTH_TEST);
     // we may need to dynamify our shader paths too in case its in the bundle [[NSBundle mainBundle] pathForResource:@"Shader" ofType:@"vsh"];
 
+
+
     loadShaders();
     debugGLerror("shaders completely loaded");
 
-
-
     createSquare();
-
     debugGLerror("createSquare completely done");
 
+//    eyedropper_bulb=meshes->LoadObjectSTL("textures/models/eyedropper_bulb.stl");
+//    eyedropper_stem=meshes->LoadObjectSTL("textures/models/eyedropper_stem.stl");
 
+//    eyedropper_bulb = meshes->LoadObjectPLY("textures/models/eyedroppe_bulb.ply");
+//    eyedropper_stem = meshes->LoadObjectPLY("textures/models/eyedroppe_stem.ply");
+
+    eyedropper_bulb = meshes->LoadObjectPLY("textures/models/eyedropper2.0_bulb.ply");
+    eyedropper_stem = meshes->LoadObjectPLY("textures/models/eyedropper2.0_stem.ply");
+
+//    eyedropper_bulb->color_additive = glm::vec4(0.0,0.0,0.0,1.0);
+//    //eyedropper_stem->color_additive = glm::vec4(0.0,0.0,1.0,0.25);
+//    eyedropper_stem->color_additive = glm::vec4(0.0,0.0,0.0,0.25);
+
+    eyedropper_bulb->color_additive = glm::vec4(0.1,0.1,0.1,1.0);
+    eyedropper_stem->color_additive = glm::vec4(1.0,1.0,1.0,0.5);
+
+    debugGLerror("meshes load completely done");
+
+
+ //   glBindVertexArray(rect_vaoID[0]);
+//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rect_triangleStripIndexBuffer);
+
+//glBindVertexArray(rect_vaoID[0]);
+
+    debugGLerror("square bound now");
+
+    //glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[SHADER_POSITION]);
+    //glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[SHADER_TEXTURE]);
+
+    //glBindVertexArray(0);
+    
     // todo - store texture paths and possibly resolve using [NSBundle mainBundle] pathForResource:@"256" ofType:@"png"]
 
 //    textureId_default = textures->LoadTexture("textures/4.png"); // NOT SQUARE IMAGE WILL NOT WORK
@@ -642,6 +684,9 @@ void OpenGLContext::setupScene(void) {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
+    //glDisable(GL_DEPTH_TEST);
+
+
     //projectionMatrix = glm::perspective(60.0f, (float)windowWidth / (float)windowHeight, 0.1f, (float)VIEW_MAX_CLIP_DISTANCE);  // Create our perspective projection matrix
 
 
@@ -662,6 +707,7 @@ void OpenGLContext::setupScene(void) {
 
     debugGLerror("setupScene completely done");
 
+    begin3dDropperAnimation(); // gets the ticks....
 }
 
 void OpenGLContext::loadShaders(void){
@@ -675,7 +721,11 @@ void OpenGLContext::loadShaders(void){
 
     shader_3d = new Shader("shaders/3dShader.vsh", "shaders/3dShader.fsh");
 
-    glDeleteVertexArrays(1, &_glVaoID );	_glVaoID = 0;
+    shader_3d_Glass = new Shader("shaders/3dShaderGlass.vsh", "shaders/3dShaderGlass.fsh");
+
+    glBindVertexArray( 0 );
+
+    glDeleteVertexArrays(1, &_glVaoID );    _glVaoID = 0;
 }
 
 void OpenGLContext::reloadShaders(void){
@@ -683,6 +733,7 @@ void OpenGLContext::reloadShaders(void){
     shader_lit_detail->reload();
     shader_ui_shader_default->reload();
     shader_3d->reload();
+    shader_3d_Glass->reload();
 }
 
 /**
@@ -700,6 +751,8 @@ void OpenGLContext::reshapeWindow(int w, int h) {
 
     glViewport(0, 0, windowWidth, windowHeight); // Set the viewport size to fill the window
 
+    /// hmm... drawable width is passed in.... same ratio though right?
+    matrixPersp = glm::perspective(60.0f, (float)colorPickState->windowWidth / (float)colorPickState->windowHeight, 0.5f, 100.0f);  // Create our perspective projection matrix
 
     generalUx->updateStageDimension(windowWidth, windowHeight);
 
@@ -966,7 +1019,11 @@ void OpenGLContext::renderScene(void) {
 
 
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+//    glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT);
+//    glDisable(GL_DEPTH_TEST);
     debugGLerror("renderScene glClear");
 
     uniformLocations = shader_lit_detail->bind(); // Bind our shader
@@ -1030,19 +1087,23 @@ void OpenGLContext::renderScene(void) {
     debugGLerror("renderScene glDisable(GL_BLEND");
 
 
-#ifndef COLORPICK_PLATFORM_DESKTOP
+//#ifndef COLORPICK_PLATFORM_DESKTOP
 //#ifdef __ANDROID__  // also needed on IOS!!
     // there is probably a better ifdef we can use for EGL OES or something like that... its not a "core" context ??? or just forgets we bound this??? not sure...
     glBindVertexArray(rect_vaoID[0]); // Bind our Vertex Array Object GL_INVALID_OPERATION (except android?)
     debugGLerror("renderScene glBindVertexArray(rect_vaoID");
-    /// maybe itz caused by SDL_GL_SwapWindow
+    /// maybe itz caused by SDL_GL_SwapWindow\
+    // it was fixed by using core context...
 //#endif
-#endif
+//#endif
 //
 //        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rect_triangleStripIndexBuffer); // its already bound ?
 //        debugGLerror("renderScene glBindBuffer(GL_ELEMENT_ARRAY_BUFFER");
 //
 
+
+//    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[0]);
+//    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[2]);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -1056,6 +1117,7 @@ void OpenGLContext::renderScene(void) {
 
 
     //render3dScene();
+    render3dDropperAnimation();
 
 
     /* NEXT UP: RENDER UI */
@@ -1085,44 +1147,347 @@ void OpenGLContext::renderScene(void) {
 
 }
 
+void OpenGLContext::begin3dDropperAnimation(void) {
+    animation3dStartTime = SDL_GetTicks();
+}
+
+void OpenGLContext::render3dDropperAnimation(void) {
+    // presumably this/each animation knows when it's done... based on some duration of the specified animation..... for now we will say 4 seconds
+    float progress = (SDL_GetTicks() - animation3dStartTime) / 8000.0f;
+    if( progress < 2.0 ){
+
+
+        glFrontFace(GL_CCW);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        // TODO ^ fix face culling....
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE); // GL_TRUE enables writes to depth buffer....
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        debugGLerror("render3dDropperAnimation glDisable glEnable");
+
+
+
+
+
+        matrixModel = glm::mat4(1.0f);
+        //    matrixViews = glm::mat4(1.0f);
+        //    matrixPersp = glm::mat4(1.0f);
+
+        float rotation = progress * 90.0f;
+
+        float position = progress * 10.0f;
+
+        float scale = 1.0 - progress;
+
+
+
+        // try translating Z.. compare with matrixViews eye
+ //       matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
+        // so +z moves towards screen..
+        matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
+        //
+
+        //    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
+
+
+
+        //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, 0.5));
+        //   matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
+
+        // matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -1.0f)); // in bulb
+
+        //    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 0.0f)); // base
+
+
+        //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 1.0f));
+
+
+        //matrixModel = glm::rotate(matrixModel, 180.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // pointed at camera
+        //  matrixModel = glm::rotate(matrixModel, -90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // vertical (point down)
+
+
+        //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, scale)); // if we are already looking down the stem, this collapses the stem.... if we rotated it first we will see this from the side...
+        //    SDL_Log("scale %f " , scale);
+
+
+        matrixModel = glm::rotate(matrixModel, rotation*4.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+        matrixModel = glm::rotate(matrixModel, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // upside down (point up)
+        matrixModel = glm::rotate(matrixModel, -rotation*4, glm::vec3(1.0f, 0.0f, 0.0f));
+//        matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 1.0f, 0.0f));
+
+
+      //  matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 8.0f));
+
+        matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 9.0f));
+
+
+        // TODO: Lots of matrix math can move out of here....
+        //matrixPersp = glm::infinitePerspective(60.0f, (float)colorPickState->windowWidth / (float)colorPickState->windowHeight, -0.1f); // this one works....
+        //matrixPersp = glm::perspectiveFov(60.0f, (float)colorPickState->windowHeight, (float)colorPickState->windowWidth, 0.0000000001f, 1000.0f);  // Create our perspective projection matrix
+        //matrixPersp = glm::ortho(-1.0f,-1.0f,1.0f,1.0f);
+        //matrixPersp = glm::ortho(1.0f,1.0f,-1.0f,-1.0f);
+
+//        matrixPersp = glm::perspective(60.0f, (float)colorPickState->windowWidth / (float)colorPickState->windowHeight, 0.5f, 100.0f);  // Create our perspective projection matrix
+//        matrixViews = glm::lookAt(glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0)); // eye, center, up
+
+
+
+
+
+        uniformLocations = shader_3d->bind(); // Bind our shader
+        //eyedropper_bulb->shader->bind();
+
+        //    glUniform1i(uniformLocations->textureSampler, 0);
+        //    glActiveTexture( GL_TEXTURE0 + 0);
+        //    glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
+        //
+        //    glUniform1i(uniformLocations->textureSampler, 1);
+        //    glActiveTexture( GL_TEXTURE0 + 1);
+        //    glBindTexture(GL_TEXTURE_2D,  textureId_pickImage);
+
+        glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
+        glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
+        glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
+
+
+        eyedropper_bulb->applyUniforms(uniformLocations);
+        glBindVertexArray(eyedropper_bulb->vertex_array[0]);
+        glDrawArrays(GL_TRIANGLES, 0, eyedropper_bulb->vertex_count );
+
+        uniformLocations = shader_3d_Glass->bind(); // Bind our shader
+        //eyedropper_bulb->shader->bind();
+
+        glUniform1i(uniformLocations->textureSampler, 0);
+        glActiveTexture( GL_TEXTURE0 + 0);
+        glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
+
+        glUniform1i(uniformLocations->textureSampler, 1);
+        glActiveTexture( GL_TEXTURE0 + 1);
+        glBindTexture(GL_TEXTURE_2D,  textureId_pickImage);
+
+        glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
+        glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
+        glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
+
+
+        glDepthMask(GL_FALSE); // GL_TRUE enables writes to depth buffer....
+        glDisable(GL_CULL_FACE);
+
+        eyedropper_stem->applyUniforms(uniformLocations);
+        glBindVertexArray(eyedropper_stem->vertex_array[0]);
+        glDrawArrays(GL_TRIANGLES, 0, eyedropper_stem->vertex_count );
+
+
+
+        // reset this???
+        glBindVertexArray(rect_vaoID[0]); // back to rect....
+
+        //    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        //glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CW); // we should fix our square instead
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+
+        //    glDepthMask(GL_FALSE);
+
+        glDisable(GL_DEPTH_TEST);
+
+        //    glEnable(GL_BLEND);
+
+        //    glDepthMask(GL_FALSE);
+
+
+        renderShouldUpdate=true; // TODO < bad
+
+        debugGLerror("render3dDropperAnimation ending");
+
+
+    }else{
+        // animation is "done"
+    }
+}
 
 void OpenGLContext::render3dScene(void) {
 
-    glDisable(GL_CULL_FACE);
+   // glDisable(GL_CULL_FACE);
 
-    uniformLocations = shader_3d->bind(); // Bind our shader
+    glFrontFace(GL_CCW);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
-    glUniform1i(uniformLocations->textureSampler, 0);
 
-    glActiveTexture( GL_TEXTURE0 + 0);
-    glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
+    // TODO ^ fix face culling....
+
+
+//    glDepthMask(GL_FALSE);
+
+
+//    glDisable(GL_BLEND);
+
+
+//    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+//
+//    glDepthMask(GL_FALSE);
+//    glDepthMask(GL_TRUE);
+
+//    glDepthMask(GL_FALSE);
+//    glEnable(GL_DEPTH_TEST);
+//    glDepthMask(GL_TRUE);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE); // GL_TRUE enables writes to depth buffer....
+
+//    glClearDepth(1.0);
+//    glDepthRange(1000, 0);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+  //glDepthMask(GL_FALSE); // GL_TRUE enables writes to depth buffer....
+
+    //the fragment's depth N, while the framebuffer's depth P. The conditional test is of the form (N FUNC P), where FUNC is specified by this function:
+//   glDepthFunc(GL_GREATER);
+//   glDepthFunc(GL_LESS);
+
+//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+    debugGLerror("renderScene4d glDisable glEnable");
+
+
+
+
 
     matrixModel = glm::mat4(1.0f);
 //    matrixViews = glm::mat4(1.0f);
 //    matrixPersp = glm::mat4(1.0f);
 
-    float rotation = (SDL_GetTicks() * 1.0f) / 100.0f;
+    float rotation = (SDL_GetTicks() * 1.0f) / 50.0f;
 
-    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
-    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(1.0f, 0.0f, 0.0f));
+    float position = (SDL_GetTicks() * 1.0f) / 500.0f;
+
+    float scale = 1.0 - (((SDL_GetTicks() % 2000) * 1.0f) / 2000.0f); // from 1.0 -> 0.0 every 2 seconds
+
+
+
     // try translating Z.. compare with matrixViews eye
+    //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
+    // so +z moves towards screen..
+    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
+//
+
+//    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
+
+
+
+    //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, 0.5));
+ //   matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
+
+   // matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -1.0f)); // in bulb
+
+//    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 0.0f)); // base
+
+
+    //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 1.0f));
+
+
+    //matrixModel = glm::rotate(matrixModel, 180.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // pointed at camera
+ //  matrixModel = glm::rotate(matrixModel, -90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // vertical (point down)
+
+
+//    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, scale)); // if we are already looking down the stem, this collapses the stem.... if we rotated it first we will see this from the side...
+//    SDL_Log("scale %f " , scale);
+
+
+    matrixModel = glm::rotate(matrixModel, rotation*2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+    matrixModel = glm::rotate(matrixModel, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // upside down (point up)
+    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(1.0f, 0.0f, 0.0f));
+    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 1.0f, 0.0f));
 
 
     // TODO: Lots of matrix math can move out of here....
-    matrixPersp = glm::perspective(60.0f, (float)colorPickState->windowWidth / (float)colorPickState->windowHeight, 0.0000000001f, 1000.0f);  // Create our perspective projection matrix
-    //matrixPersp = glm::infinitePerspective(60.0f, (float)colorPickState->windowWidth / (float)colorPickState->windowHeight, -0.1f); // this one works....
-    //matrixPersp = glm::perspectiveFov(60.0f, (float)colorPickState->windowHeight, (float)colorPickState->windowWidth, 0.0000000001f, 1000.0f);  // Create our perspective projection matrix
-    //matrixPersp = glm::ortho(-1.0f,-1.0f,1.0f,1.0f);
-    //matrixPersp = glm::ortho(1.0f,1.0f,-1.0f,-1.0f);
-    matrixViews = glm::lookAt(glm::vec3(0.0,0.0,3.0), glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0)); // eye, center, up
+//    matrixPersp = glm::perspective(60.0f, (float)colorPickState->windowWidth / (float)colorPickState->windowHeight, 0.5f, 100.0f);  // Create our perspective projection matrix
+//    //matrixPersp = glm::infinitePerspective(60.0f, (float)colorPickState->windowWidth / (float)colorPickState->windowHeight, -0.1f); // this one works....
+//    //matrixPersp = glm::perspectiveFov(60.0f, (float)colorPickState->windowHeight, (float)colorPickState->windowWidth, 0.0000000001f, 1000.0f);  // Create our perspective projection matrix
+//    //matrixPersp = glm::ortho(-1.0f,-1.0f,1.0f,1.0f);
+//    //matrixPersp = glm::ortho(1.0f,1.0f,-1.0f,-1.0f);
+//    matrixViews = glm::lookAt(glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0)); // eye, center, up
+
+
+
+
+
+    uniformLocations = shader_3d->bind(); // Bind our shader
+    //eyedropper_bulb->shader->bind();
+
+//    glUniform1i(uniformLocations->textureSampler, 0);
+//    glActiveTexture( GL_TEXTURE0 + 0);
+//    glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
+//
+//    glUniform1i(uniformLocations->textureSampler, 1);
+//    glActiveTexture( GL_TEXTURE0 + 1);
+//    glBindTexture(GL_TEXTURE_2D,  textureId_pickImage);
 
     glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
     glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
     glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
 
-    glDrawArrays(GL_TRIANGLES, 0, 6);
 
+
+
+
+    eyedropper_bulb->applyUniforms(uniformLocations);
+    glBindVertexArray(eyedropper_bulb->vertex_array[0]);
+    glDrawArrays(GL_TRIANGLES, 0, eyedropper_bulb->vertex_count );
+
+
+
+    
+    uniformLocations = shader_3d_Glass->bind(); // Bind our shader
+    //eyedropper_bulb->shader->bind();
+
+    glUniform1i(uniformLocations->textureSampler, 0);
+    glActiveTexture( GL_TEXTURE0 + 0);
+    glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
+
+    glUniform1i(uniformLocations->textureSampler, 1);
+    glActiveTexture( GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D,  textureId_pickImage);
+
+    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
+    glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
+    glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
+
+
+    glDepthMask(GL_FALSE); // GL_TRUE enables writes to depth buffer....
+    glDisable(GL_CULL_FACE);
+
+    eyedropper_stem->applyUniforms(uniformLocations);
+    glBindVertexArray(eyedropper_stem->vertex_array[0]);
+    glDrawArrays(GL_TRIANGLES, 0, eyedropper_stem->vertex_count );
+
+
+
+
+// reset this???
+    glBindVertexArray(rect_vaoID[0]); // back to rect....
+
+//    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    //glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CW); // we should fix our square instead
     glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+//    glDepthMask(GL_FALSE);
+
+    glDisable(GL_DEPTH_TEST);
+
+//    glEnable(GL_BLEND);
+
+//    glDepthMask(GL_FALSE);
+
 
     renderShouldUpdate=true; // TODO < bad
 
@@ -1187,12 +1552,12 @@ void OpenGLContext::createSquare(void) {
     squareTriangleIndicies[2]=3;
     squareTriangleIndicies[3]=2;
 
-    glGenBuffers(1, &rect_triangleStripIndexBuffer); // when using glDrawElements on a "core" context you can't store the indicies in ram
-    debugGLerror("new square - glGenBuffers");
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rect_triangleStripIndexBuffer);
-    debugGLerror("new square - glBindBuffer");
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(squareTriangleIndicies), squareTriangleIndicies, GL_STATIC_DRAW);
-    debugGLerror("new square - glBufferData");
+//    glGenBuffers(1, &rect_triangleStripIndexBuffer); // when using glDrawElements on a "core" context you can't store the indicies in ram
+//    debugGLerror("new square - glGenBuffers");
+//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rect_triangleStripIndexBuffer);
+//    debugGLerror("new square - glBindBuffer");
+//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(squareTriangleIndicies), squareTriangleIndicies, GL_STATIC_DRAW);
+//    debugGLerror("new square - glBufferData");
 
     int n=-1;
     float sq_size = 0.725;
@@ -1261,7 +1626,7 @@ void OpenGLContext::createSquare(void) {
 //    glEnableVertexAttribArray(SHADER_NORMAL); // Enable the second vertex attribute array
 
 
-    
+    //glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0); // Disable our Vertex Buffer Object
     delete [] vertices; // Delete our vertices from memory
     delete [] colors; // Delete our vertices from memory 

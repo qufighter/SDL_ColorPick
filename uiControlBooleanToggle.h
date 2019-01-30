@@ -163,9 +163,9 @@ struct uiControlBooleanToggle{
 
         bool resultChecked = self->controlTog->boundryRect.x >= 0.25;
         if( self->controlTog->boundryRect.x >= 0.5 ){
-            if( self->checkedState ) resultChecked = false;
+            if( self->checkedState && delta->wasStationary() ) resultChecked = false;
         }else if( self->controlTog->boundryRect.x <= 0.0 ){
-            if( !self->checkedState ) resultChecked = true;
+            if( !self->checkedState && delta->wasStationary() ) resultChecked = true;
         }
         self->updateState(resultChecked);
 

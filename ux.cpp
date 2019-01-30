@@ -186,7 +186,7 @@ void Ux::readInState(void){
 
 
     eachElementSize = sizeof(Sint32);
-    int maxReads = 2 * eachElementSize;
+    int maxReads = 6 * eachElementSize; // TOTAL SETTINGS NUMBER!
     Sint32 tempRead = 0;
     SDL_RWops* fileref = SDL_RWFromFile(scoresPath, "r");
     if( fileref == NULL ) return;
@@ -208,11 +208,11 @@ void Ux::readInState(void){
     tempRead = 0;
     if( currentPosition < filesize && currentPosition < maxReads ){
         defaultScoreDisplay->int_score = SDL_ReadBE32(fileref);
-        currentPosition++;
+        currentPosition+=eachElementSize;
     }
     if( currentPosition < filesize && currentPosition < maxReads ){
         tempRead = SDL_ReadLE32(fileref);
-        currentPosition++;
+        currentPosition+=eachElementSize;
     }
     if( defaultScoreDisplay->int_score != tempRead ){
         defaultScoreDisplay->int_score = 0; // corrupted file!
@@ -222,11 +222,11 @@ void Ux::readInState(void){
     tempRead = 0;
     if( currentPosition < filesize && currentPosition < maxReads ){
         defaultScoreDisplay->combo_chain = SDL_ReadBE32(fileref);
-        currentPosition++;
+        currentPosition+=eachElementSize;
     }
     if( currentPosition < filesize && currentPosition < maxReads ){
         tempRead = SDL_ReadLE32(fileref);
-        currentPosition++;
+        currentPosition+=eachElementSize;
     }
     if( defaultScoreDisplay->combo_chain != tempRead ){
         defaultScoreDisplay->combo_chain = 0; // corrupted file!

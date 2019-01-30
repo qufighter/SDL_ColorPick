@@ -6,37 +6,7 @@
 #define SHD_TEXTURE_SIZE 2048
 
 
-struct uniformLocationStruct
-{
-	GLint   globalLightLocation,
-            ambientLightLoc,
-            projectionMatrixLocation,
-            viewMatrixLocation,
-            modelMatrixLocation,
-            textureSampler,
-            textureSampler2,
-            textureSampler3,
-            ui_scale,
-            ui_position,
-            ui_color,
-            ui_foreground_color,
-            ui_crop,
-            ui_crop2,
-            ui_corner_radius,
-            widthHeightRatio,
-            fishScale,
-            fishScalePct,
-            textureWidth,
-            positionOffset,
-            textureCoord,
-            texture_crop,
-            normalLightingMat,
-            outalpha,
-            textOffset;
-	uniformLocationStruct(){
-		//constructor (set all to -1, however this occurs naturally)
-	}
-};
+
 
 /**
 	Shader is a class designed to allow us to load and use a GLSL shader program in

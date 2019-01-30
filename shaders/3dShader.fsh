@@ -7,17 +7,46 @@
 
 
 varying vec2 TexCoordOut; // New
+varying vec4 colorOut;
+varying vec4 normalOut;
+//varying vec3 PositionOut;
 
 uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform sampler2D texture3;
 
+uniform vec4 color_additive;
+
 void main()
 {
 
-	vec4 ocolor=texture2D(texture1, TexCoordOut);
+    float globalLightAmt = 0.15;
+    vec3 globalLight = vec3(globalLightAmt,globalLightAmt,globalLightAmt);
+    float ambient_light = 0.005;
+
+    // can we look at the depth?  gl_FragDepth
+
+    vec4 ocolor; //=texture2D(texture1, TexCoordOut);
+    //if(out_Color.a < 0.99)discard;
+
+    ocolor =  colorOut;
+
+    ocolor.rgb += color_additive.rgb;
+
+    ocolor.a = min( color_additive.a, ocolor.a );
+
+    float nNdotL = max(dot(globalLight,normalOut.xyz),ambient_light);
+
+    ocolor.rgb *= nNdotL;
 
     gl_FragColor = ocolor;
 
+    //gl_FragColor = vec4(vec3(gl_FragCoord.z), 1.0);
+
+
+//    gl_FragColor.a = gl_FragDepth;
+
+
+    //gl_FragColor.a = 0.25;
 }
 

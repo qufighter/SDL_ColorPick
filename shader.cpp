@@ -18,12 +18,13 @@ static string textFileRead(const char *fileName) {
 
 //    ifstream file(fileName); // Open an input stream with the selected file
 
+    fileString.append("#version 100\n");
 
     // IF its an FSH and we are on IOS we should prepend the amazing
     // precision mediump float;
     // which is requird by ios in at least some cases but banned on osx
     // cannot fathom it but highp works and is in fact required by our shader.... in order for 2048 size to "work right" on true device.... mediump leaves us off by a whole pixel!
-#ifndef COLORPICK_PLATFORM_DESKTOP
+//#ifndef COLORPICK_PLATFORM_DESKTOP
     //if( SHD_TEXTURE_SIZE > 1024 ){
         // todo veerify platform really supports this size?
 
@@ -36,7 +37,7 @@ static string textFileRead(const char *fileName) {
     //}else{
      //   fileString.append("precision mediump float;\n");
     //}
-#endif
+//#endif
 
 //    if (file.is_open()) { // If the file opened successfully
 //        while (!file.eof()) { // While we are not at the end of the file
@@ -148,7 +149,7 @@ void Shader::reload() {
 
     //SDL_Log("SHADER FILE CONTENTS (first blob) %s", vsText.c_str());
 
-	const char *vertexText = vsText.c_str();
+    const char *vertexText = vsText.c_str();
 	const char *fragmentText = fsText.c_str();
 
     if (vertexText == NULL || fragmentText == NULL) { // If either the vertex or fragment shader wouldn't load
@@ -169,9 +170,9 @@ void Shader::reload() {
 
 
     glBindAttribLocation(shader_id, SHADER_POSITION, "position");
-    //glBindAttribLocation(shader_id, SHADER_COLOR, "colorVarying");
+    glBindAttribLocation(shader_id, SHADER_COLOR, "color");
     glBindAttribLocation(shader_id, SHADER_TEXTURE, "TexCoordIn");
-    //glBindAttribLocation(shader_id, SHADER_NORMAL, "normalAAA");
+    glBindAttribLocation(shader_id, SHADER_NORMAL, "normal");
 
 
 //    glBindAttribLocation(shader_id, ATTRIB_VERTEX, "position");
@@ -211,6 +212,8 @@ void Shader::reload() {
     uniformLocations->ui_crop2 = glGetUniformLocation(shader_id, "ui_crop2");
     uniformLocations->ui_corner_radius = glGetUniformLocation(shader_id, "ui_corner_radius");
 
+    uniformLocations->color_additive = glGetUniformLocation(shader_id, "color_additive");
+
     uniformLocations->modelMatrixLocation = glGetUniformLocation(shader_id, "modelMatrix");
     uniformLocations->viewMatrixLocation = glGetUniformLocation(shader_id, "viewMatrix");
     uniformLocations->projectionMatrixLocation = glGetUniformLocation(shader_id, "projectionMatrix");
@@ -232,6 +235,7 @@ void Shader::reload() {
     // not exactly free ?
     vsText.clear();
     fsText.clear();
+
 }
 
 /**

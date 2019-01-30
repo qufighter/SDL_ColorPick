@@ -22,6 +22,8 @@
 
 #include "textures.h"
 
+#include "meshes.h"
+
 #include "ux.h"
 //
 //#include "ux-anim.h"
@@ -89,6 +91,10 @@ public:
     void renderScene(void); // Render scene (display method from previous OpenGL tutorials)
     void render3dScene(void);
 
+    void render3dDropperAnimation(void);
+    void begin3dDropperAnimation(void);
+
+
     void chooseFile(void);
 
     SDL_Window* getSdlWindow(void);
@@ -109,6 +115,7 @@ public:
 //    bool kkeys[1073742052];	// use this to keep track of keys...hopefully keyboard doesn't have more than this! (it does!)
 
     Shader *shader_3d; // Our GLSL shader
+    Shader *shader_3d_Glass;
     Shader *shader_lit_detail; // Our GLSL shader
     Shader *shader_ui_shader_default;
 
@@ -123,6 +130,10 @@ public:
             tex2_id;
 
     Textures *textures;
+
+    Meshes *meshes;
+    Mesh *eyedropper_bulb;
+    Mesh *eyedropper_stem;
 
     Ux *generalUx;
 
@@ -213,6 +224,8 @@ private:
     glm::mat4 matrixModel;
     glm::mat4 matrixViews;
     glm::mat4 matrixPersp;
+
+    Uint32 animation3dStartTime;
 
 protected:
     static bool ms_bInstanceCreated;

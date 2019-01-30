@@ -37,6 +37,8 @@ struct uiInteraction
         ry=0;
         dx=0; // difference
         dy=0;
+        tx=0;
+        ty=0;
         vx=0; // velocity
         vy=0;
         wheel = 0;
@@ -55,9 +57,12 @@ struct uiInteraction
         ry =0; // reset these so we can keep calling update?  not always needed... plus sometimes rx and ry are needed!
         this->update();
     }
-    void update(float x, float y){ // todo pass delta and relative
+    void update(float x, float y){ // todo pass delta and relative?
         rx = x - px;
         ry = y - py;
+
+        tx += SDL_fabsf(rx);
+        ty += SDL_fabsf(ry);
 
         px=x;
         py=y;
@@ -97,6 +102,12 @@ struct uiInteraction
         // velocity should be measured per unit time?
 
         lastUpdate=thisUpdate;
+    }
+
+    bool wasStationary(){
+        // we didn't move at all (let alone move and move back)
+        // really not sure if this works good... float == 0 not exactly great
+        return tx == 0 && ty == 0;
     }
 
     void fixX(Float_Rect r, Float_Rect p){
@@ -144,6 +155,8 @@ struct uiInteraction
     float ry;
     float dx; // delta not distance - difference
     float dy;
+    float tx; // total (direction independent)
+    float ty;
     float vx; // velocity
     float vy;
 

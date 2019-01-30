@@ -698,9 +698,27 @@ compatibility; this flag is ignored
     // TODO recall window position?  useful possibly for desktop platforms....
 
 
+//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+
+#ifndef __ANDROID__
+    // OES is already core?? (ish?)
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+#endif
+//    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+    int win_pos_x=0;
+    int win_pos_y=0;
+#ifdef COLORPICK_PLATFORM_DESKTOP
+    // BAD!!!!  check SDL_WINDOWEVENT_MOVED maybe and store this?  or forget it...
+    win_pos_x=512;
+    win_pos_y=512;
+#endif
+
     /* create window and renderer */
     window =
-        SDL_CreateWindow(NULL, 0, 0, win_w, win_h,
+        SDL_CreateWindow(NULL, win_pos_x, win_pos_y, win_w, win_h,
                          SDL_WINDOW_OPENGL
 #if !TARGET_OS_SIMULATOR
                          | SDL_WINDOW_ALLOW_HIGHDPI
@@ -752,7 +770,7 @@ compatibility; this flag is ignored
 
 #if __IPHONEOS__
 
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+//    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
     SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
 
     //SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256);

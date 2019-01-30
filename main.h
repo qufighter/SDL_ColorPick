@@ -51,6 +51,7 @@
 #define glGenVertexArrays glGenVertexArraysOES
 #define glDeleteVertexArrays glDeleteVertexArraysOES
 #define glBindVertexArray glBindVertexArrayOES
+#define glIsVertexArray glIsVertexArrayOES
 
 #else
 #include "SDL_opengl.h"
@@ -118,6 +119,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/fast_square_root.hpp"
 #include "glm/gtx/perpendicular.hpp"
+#include "glm/gtx/normal.hpp"
 
 
 // ^ glm possibly not needed for such simple project
@@ -149,6 +151,41 @@ typedef enum  {
     VIEW_RECENTLY_ROTATED,
     ANIMATE_MAIN_THREAD,
 } USER_EVENT_ENUM; // these may not be supported as of now on IOS ... ??
+
+
+struct uniformLocationStruct
+{
+    GLint   globalLightLocation,
+    ambientLightLoc,
+    projectionMatrixLocation,
+    viewMatrixLocation,
+    modelMatrixLocation,
+    textureSampler,
+    textureSampler2,
+    textureSampler3,
+    ui_scale,
+    ui_position,
+    ui_color,
+    ui_foreground_color,
+    ui_crop,
+    ui_crop2,
+    ui_corner_radius,
+    widthHeightRatio,
+    color_additive,
+    fishScale,
+    fishScalePct,
+    textureWidth,
+    positionOffset,
+    textureCoord,
+    texture_crop,
+    normalLightingMat,
+    outalpha,
+    textOffset;
+    uniformLocationStruct(){
+        //constructor (set all to -1, however this occurs naturally)
+    }
+};
+
 
 /// these are hi-dpi sizes
 #ifdef COLORPICK_PLATFORM_DESKTOP

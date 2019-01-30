@@ -28,6 +28,9 @@ when points disabled, they still accumulate and yuou can still loose yer points.
 
 freepik tou
 
+android - when storage permission missing
+
+ios - loading image progress bar ?  no refresh?
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -37,12 +40,17 @@ reveal animation (delete x) very subtle in widescreen mode on pallete items
 
 ##  can do
 
+// TODO ^ fix face culling....
+
+Uint32 getpixel - non member of textures?
+
 todo: keep moving (non int) stuff to vsh???
 
 // TODO - if you use setAnimation on the ui object then you will automatically track and cancel the chains
 /// so there is no need to track ANY chain in this file :)
 
 ERROR::: Max Animation Chains 128 Exceeded !!!!!!!!
+  ^ simply do not allow this to occur?
 
 add all button cannot achieve achievement (due to mulitple achievement of achievement...)
     addColorToPallete 
@@ -185,7 +193,7 @@ handle when save of history data occurs (specifically desktop plat?) (program ex
       ^ currently saving when program exits (window closed) only
 hold mouse down on scroll arrow, expect continuous scroll (also nav arrow?)
 drop image when history holder present - we should hide it (other modals should be canceled too?)
-//TODO recall window position?  useful possibly for desktop platforms....
+//TODO recall window position?  useful possibly for desktop platforms.... ( dubious ) see win_pos_x
 
 ### osx
 osx application bundle (see readme and  see   Use pbxbuild in the same directory as your .pbproj file)

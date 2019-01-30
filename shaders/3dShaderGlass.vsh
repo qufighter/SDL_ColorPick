@@ -20,7 +20,9 @@ varying vec2 TexCoordOut;
 
 varying vec4 colorOut;
 varying vec4 normalOut;
-//varying vec3 PositionOut;
+varying vec4 unprojNormalOut;
+
+varying vec3 PositionOut;
 
 
 void main()
@@ -34,8 +36,9 @@ void main()
 
     normalOut = projectionMatrix * modelMatrix * normalize(normal);
 
+    unprojNormalOut = modelMatrix * normalize(normal);
 
-    //PositionOut = vec3(modelMatrix * position);
+    PositionOut = vec3(modelMatrix * position);
 
     //gl_FragDepth = gl_Position.z; // really the fsh should set this if any...
 }
