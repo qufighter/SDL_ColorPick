@@ -791,12 +791,16 @@ struct UxAnim
         return myAnimChain;
 
     }
-    uiAminChain* rvbounce(Ux::uiObject *uiObject){ // orig soft bounce
+
+    uiAminChain* rvbounce(Ux::uiObject *uiObject){ // orig soft bounce "reverse" bounce...
+        return rvbounce(uiObject, 0.001);
+    }
+    uiAminChain* rvbounce(Ux::uiObject *uiObject, float intensity){ // orig soft bounce
 
         uiAminChain* myAnimChain = new uiAminChain();
         //->addAnim( (new uiAnimation(uiObject))->moveRelative(-0.1667, 0) );
 
-        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialMoveVelocity(-0.001, 0) );
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->initialMoveVelocity(-intensity, 0) );
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->initialMoveVelocity(0.001, 0) );
 
         //myAnimChain->addAnim( (new uiAnimation(uiObject))->initialRotationVelocity(5) );

@@ -680,8 +680,9 @@ void OpenGLContext::setupScene(void) {
 
     textureId_fonts = textures->LoadTexture("textures/ascii.png");
 
-    glFrontFace(GL_CW);
+
     glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
 
     //glDisable(GL_DEPTH_TEST);
@@ -1087,23 +1088,9 @@ void OpenGLContext::renderScene(void) {
     debugGLerror("renderScene glDisable(GL_BLEND");
 
 
-//#ifndef COLORPICK_PLATFORM_DESKTOP
-//#ifdef __ANDROID__  // also needed on IOS!!
-    // there is probably a better ifdef we can use for EGL OES or something like that... its not a "core" context ??? or just forgets we bound this??? not sure...
     glBindVertexArray(rect_vaoID[0]); // Bind our Vertex Array Object GL_INVALID_OPERATION (except android?)
     debugGLerror("renderScene glBindVertexArray(rect_vaoID");
-    /// maybe itz caused by SDL_GL_SwapWindow\
-    // it was fixed by using core context...
-//#endif
-//#endif
-//
-//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rect_triangleStripIndexBuffer); // its already bound ?
-//        debugGLerror("renderScene glBindBuffer(GL_ELEMENT_ARRAY_BUFFER");
-//
 
-
-//    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[0]);
-//    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[2]);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -1156,11 +1143,6 @@ void OpenGLContext::render3dDropperAnimation(void) {
     float progress = (SDL_GetTicks() - animation3dStartTime) / 8000.0f;
     if( progress < 2.0 ){
 
-
-        glFrontFace(GL_CCW);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-        // TODO ^ fix face culling....
 
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE); // GL_TRUE enables writes to depth buffer....
@@ -1287,10 +1269,7 @@ void OpenGLContext::render3dDropperAnimation(void) {
 
         //    glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        //glEnable(GL_CULL_FACE);
-        glFrontFace(GL_CW); // we should fix our square instead
         glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
 
         //    glDepthMask(GL_FALSE);
 
@@ -1313,14 +1292,6 @@ void OpenGLContext::render3dDropperAnimation(void) {
 
 void OpenGLContext::render3dScene(void) {
 
-   // glDisable(GL_CULL_FACE);
-
-    glFrontFace(GL_CCW);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-
-
-    // TODO ^ fix face culling....
 
 
 //    glDepthMask(GL_FALSE);
@@ -1475,10 +1446,7 @@ void OpenGLContext::render3dScene(void) {
 
 //    glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    //glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CW); // we should fix our square instead
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
 
 //    glDepthMask(GL_FALSE);
 
@@ -1565,34 +1533,39 @@ void OpenGLContext::createSquare(void) {
     //sq_size = 0.998;
     sq_size = 1.0;
 
-    vertices[0] = -sq_size; vertices[1] = -sq_size; vertices[2] = c1; // Bottom left corner
-    colors[0] = 1.0; colors[1] = 1.0; colors[2] = 1.0; // Bottom left corner
-    texCoord[0] = 0.0; texCoord[1] = 1.0;
+    int vIdx = 0;
+    int cIdx = 0;
+    int tIdx = 0;
+
+
+    vertices[vIdx++] = -sq_size; vertices[vIdx++] = -sq_size; vertices[vIdx++] = c1; // Bottom left corner
+    colors[cIdx++] = 1.0; colors[cIdx++] = 1.0; colors[cIdx++] = 1.0; // Bottom left corner
+    texCoord[tIdx++] = 0.0; texCoord[tIdx++] = 1.0;
     normals[++n] = 0.0;normals[++n] = 0.0;normals[++n] = -1.0;
 
-    vertices[3] = -sq_size; vertices[4] = sq_size; vertices[5] = c3; // Top left corner
-    colors[3] = 1.0; colors[4] = 0.0; colors[5] = 0.0; // Top left corner
-    texCoord[2] = 0.0; texCoord[3] = 0.0;
+    vertices[vIdx++] = sq_size; vertices[vIdx++] = sq_size; vertices[vIdx++] = c2; // Top Right corner
+    colors[cIdx++] = 0.0; colors[cIdx++] = 1.0; colors[cIdx++] = 0.0; // Top Right corner
+    texCoord[tIdx++] = 1.0; texCoord[tIdx++] = 0.0;
     normals[++n] = 0.0;normals[++n] = 0.0;normals[++n] = -1.0;
 
-    vertices[6] = sq_size; vertices[7] = sq_size; vertices[8] = c2; // Top Right corner
-    colors[6] = 0.0; colors[7] = 1.0; colors[8] = 0.0; // Top Right corner
-    texCoord[4] = 1.0; texCoord[5] = 0.0;
+    vertices[vIdx++] = -sq_size; vertices[vIdx++] = sq_size; vertices[vIdx++] = c3; // Top left corner
+    colors[cIdx++] = 1.0; colors[cIdx++] = 0.0; colors[cIdx++] = 0.0; // Top left corner
+    texCoord[tIdx++] = 0.0; texCoord[tIdx++] = 0.0;
     normals[++n] = 0.0;normals[++n] = 0.0;normals[++n] = -1.0;
 
-    vertices[9] = sq_size; vertices[10] = -sq_size; vertices[11] = c4; // Bottom right corner
-    colors[9] = 0.0; colors[10] = 0.0; colors[11] = 1.0; // Bottom right corner
-    texCoord[6] = 1.0; texCoord[7] = 1.0;
+    vertices[vIdx++] = -sq_size; vertices[vIdx++] = -sq_size; vertices[vIdx++] = c1; // Bottom left corner
+    colors[cIdx++] = 1.0; colors[cIdx++] = 1.0; colors[cIdx++] = 1.0; // Bottom left corner
+    texCoord[tIdx++] = 0.0; texCoord[tIdx++] = 1.0;
     normals[++n] = 0.0;normals[++n] = 0.0;normals[++n] = -1.0;
 
-    vertices[12] = -sq_size; vertices[13] = -sq_size; vertices[14] = c1; // Bottom left corner
-    colors[12] = 1.0; colors[13] = 1.0; colors[14] = 1.0; // Bottom left corner
-    texCoord[8] = 0.0; texCoord[9] = 1.0;
+    vertices[vIdx++] = sq_size; vertices[vIdx++] = -sq_size; vertices[vIdx++] = c4; // Bottom right corner
+    colors[cIdx++] = 0.0; colors[cIdx++] = 0.0; colors[cIdx++] = 1.0; // Bottom right corner
+    texCoord[tIdx++] = 1.0; texCoord[tIdx++] = 1.0;
     normals[++n] = 0.0;normals[++n] = 0.0;normals[++n] = -1.0;
 
-    vertices[15] = sq_size; vertices[16] = sq_size; vertices[17] = c2; // Top Right corner
-    colors[15] = 0.0; colors[16] = 1.0; colors[17] = 0.0; // Top Right corner
-    texCoord[10] = 1.0; texCoord[11] = 0.0;
+    vertices[vIdx++] = sq_size; vertices[vIdx++] = sq_size; vertices[vIdx++] = c2; // Top Right corner
+    colors[cIdx++] = 0.0; colors[cIdx++] = 1.0; colors[cIdx++] = 0.0; // Top Right corner
+    texCoord[tIdx++] = 1.0; texCoord[tIdx++] = 0.0;
     normals[++n] = 0.0;normals[++n] = 0.0;normals[++n] = -1.0;
 
 

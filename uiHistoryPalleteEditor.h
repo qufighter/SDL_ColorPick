@@ -897,7 +897,13 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             //uxAnimations->rvbounce(historyPreview);
 
             if( visibleTile != nullptr ){
-                myUxRef->uxAnimations->rvbounce(visibleTile);
+
+                if( myUxRef->widescreen ){
+                    myUxRef->uxAnimations->rvbounce(visibleTile,0.005);
+                }else{
+                    myUxRef->uxAnimations->rvbounce(visibleTile,0.002);
+                }
+
                 //historyTile->childList[0]
                 //            uiObject * palleteRemoveButton = visibleTile->getChildOrNullPtr(0);
                 //            if( palleteRemoveButton != nullptr ){

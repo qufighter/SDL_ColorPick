@@ -12,9 +12,9 @@ achievements
 can only achieve when points enabled? (at least for points based achievements...)
    - huzzah (3rd button) meh achievement?  training achievement?  need ponts for clicking button though...,
    - 13 points from color 5d5a4b - its improved.... but not an achievement
-   - the +1 "no scope"  mathmagical
+   - the +1 "no scope"  mathmagical (color exact found without scan?)
 
-when points disabled, they still accumulate and yuou can still loose yer points....
+when points disabled, they still accumulate and yuou can still loose yer points.... (is this a bug?)
 
   SDL_ShowMessageBox > allocate buttons once....
   > check update policy
@@ -32,17 +32,15 @@ android - when storage permission missing
 
 ios - loading image progress bar ?  no refresh?
 
+hide announcmenet texts (achivements ?)
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
-reveal animation (delete x) very subtle in widescreen mode on pallete items
-
 ##  can do
 
-// TODO ^ fix face culling....
-
-Uint32 getpixel - non member of textures?
+Uint32 getpixel - non member of textures?  similar fn's in meshes...
 
 todo: keep moving (non int) stuff to vsh???
 
