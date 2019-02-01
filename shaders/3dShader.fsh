@@ -22,7 +22,7 @@ void main()
 
     float globalLightAmt = 0.15;
     vec3 globalLight = vec3(globalLightAmt,globalLightAmt,globalLightAmt);
-    float ambient_light = 0.05;
+    float ambient_light = 0.005;
 
     // can we look at the depth?  gl_FragDepth
 

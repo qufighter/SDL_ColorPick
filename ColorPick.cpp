@@ -450,7 +450,7 @@ void OpenGLContext::setupScene(void) {
 //    eyedropper_bulb = meshes->LoadObjectPLY("textures/models/eyedroppe_bulb.ply");
 //    eyedropper_stem = meshes->LoadObjectPLY("textures/models/eyedroppe_stem.ply");
 
-    eyedropper_bulb = meshes->LoadObjectPLY("textures/models/eyedropper2.1_bulb.ply");
+    eyedropper_bulb = meshes->LoadObjectPLY("textures/models/eyedropper2.2_bulb.ply");
     eyedropper_stem = meshes->LoadObjectPLY("textures/models/eyedropper2.2_stem.ply");
     eyedropper_fill = meshes->LoadObjectPLY("textures/models/eyedropper2.2_fill.ply");
 
@@ -1195,7 +1195,7 @@ void OpenGLContext::eyedropperTestMatrix(float progress){
     matrixModel = glm::rotate(matrixModel, rotation*4.0f, glm::vec3(0.0f, 0.0f, 1.0f));
     matrixModel = glm::rotate(matrixModel, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // upside down (point up)
     matrixModel = glm::rotate(matrixModel, -rotation*4, glm::vec3(1.0f, 0.0f, 0.0f));
-    //        matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 1.0f, 0.0f));
+           matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 1.0f, 0.0f));
 
 
     //  matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 8.0f));

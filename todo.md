@@ -39,6 +39,8 @@ pass light to shaders
 disable light or fix lighting for color sample (color history add)
 fix scale of refraction by passing in fish eye scale to the glass shader and applying it
 
+SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256); // see this string in todo
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 images can have a color space????
@@ -106,10 +108,13 @@ we need test colors like:
 7,0,255
 0,85,255 (256*86)
 85,15,15 (256*86)
-add c test for //here is an index test, albeit in javascript:
+// as far as platform android seek color differences...
+// why not try out SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256);
+
 
 good test color:
 10,11,13  0a0b0d (hsv picker scan crash fixed...) test all possible color?
+add c test for //here is an index test, albeit in javascript:
 
 hisotry sorted like
 #255,95,0
