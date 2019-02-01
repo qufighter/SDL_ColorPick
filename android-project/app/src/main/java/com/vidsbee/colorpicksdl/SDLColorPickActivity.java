@@ -44,7 +44,9 @@ public class SDLColorPickActivity extends SDLActivity {
     }
 
     public static String checkForImageSelectorCompleted(){
-
+        if( lastResult == null ){
+            return ""; // good luck opening this path ;)  but the error handling should kick in...
+        }
         if( lastResult.equals("WAITING")){
             return null;
         }
