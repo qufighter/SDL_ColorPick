@@ -131,7 +131,11 @@ void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
     lastHue = nullptr;
     //SDL_Log("an image was selected !!!!");
 
-    if( myCoolSurface == NULL ) return;
+    if( myCoolSurface == NULL ){
+        generalUx->defaultScoreDisplay->displayExplanation("  Read Error");
+        generalUx->printCharToUiObject(generalUx->defaultScoreDisplay->explanation->childList[0], CHAR_CANCEL_ICON, DO_NOT_RESIZE_NOW);
+        return;
+    }
 
     // free previous surface
     position_x = 0;
@@ -446,8 +450,9 @@ void OpenGLContext::setupScene(void) {
 //    eyedropper_bulb = meshes->LoadObjectPLY("textures/models/eyedroppe_bulb.ply");
 //    eyedropper_stem = meshes->LoadObjectPLY("textures/models/eyedroppe_stem.ply");
 
-    eyedropper_bulb = meshes->LoadObjectPLY("textures/models/eyedropper2.0_bulb.ply");
-    eyedropper_stem = meshes->LoadObjectPLY("textures/models/eyedropper2.0_stem.ply");
+    eyedropper_bulb = meshes->LoadObjectPLY("textures/models/eyedropper2.1_bulb.ply");
+    eyedropper_stem = meshes->LoadObjectPLY("textures/models/eyedropper2.2_stem.ply");
+    eyedropper_fill = meshes->LoadObjectPLY("textures/models/eyedropper2.2_fill.ply");
 
 //    eyedropper_bulb->color_additive = glm::vec4(0.0,0.0,0.0,1.0);
 //    //eyedropper_stem->color_additive = glm::vec4(0.0,0.0,1.0,0.25);
@@ -456,21 +461,9 @@ void OpenGLContext::setupScene(void) {
     eyedropper_bulb->color_additive = glm::vec4(0.1,0.1,0.1,1.0);
     eyedropper_stem->color_additive = glm::vec4(1.0,1.0,1.0,0.5);
 
+
     debugGLerror("meshes load completely done");
 
-
- //   glBindVertexArray(rect_vaoID[0]);
-//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rect_triangleStripIndexBuffer);
-
-//glBindVertexArray(rect_vaoID[0]);
-
-    debugGLerror("square bound now");
-
-    //glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[SHADER_POSITION]);
-    //glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[SHADER_TEXTURE]);
-
-    //glBindVertexArray(0);
-    
     // todo - store texture paths and possibly resolve using [NSBundle mainBundle] pathForResource:@"256" ofType:@"png"]
 
 //    textureId_default = textures->LoadTexture("textures/4.png"); // NOT SQUARE IMAGE WILL NOT WORK
@@ -722,6 +715,8 @@ void OpenGLContext::loadShaders(void){
 
     shader_3d = new Shader("shaders/3dShader.vsh", "shaders/3dShader.fsh");
 
+    shader_3d_unlit = new Shader("shaders/3dShader.vsh", "shaders/3dShader.fsh.Unlit.fsh");
+
     shader_3d_Glass = new Shader("shaders/3dShaderGlass.vsh", "shaders/3dShaderGlass.fsh");
 
     glBindVertexArray( 0 );
@@ -735,6 +730,7 @@ void OpenGLContext::reloadShaders(void){
     shader_ui_shader_default->reload();
     shader_3d->reload();
     shader_3d_Glass->reload();
+    shader_3d_unlit->reload();
 }
 
 /**
@@ -1023,7 +1019,7 @@ void OpenGLContext::renderScene(void) {
 
 
 //    glEnable(GL_DEPTH_TEST);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);//  | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 //    glDisable(GL_DEPTH_TEST);
     debugGLerror("renderScene glClear");
 
@@ -1128,201 +1124,276 @@ void OpenGLContext::renderScene(void) {
 
 
 
-
+    glBindVertexArray(rect_vaoID[0]);
     generalUx->renderObject(uniformLocations); // renders all obj
     debugGLerror("generalUx->renderObject ending");
 
 }
 
-void OpenGLContext::begin3dDropperAnimation(void) {
-    animation3dStartTime = SDL_GetTicks();
+void OpenGLContext::begin3dDropperAnimation(int aDropperAnimation, SDL_Color* aColor){
+    animationDropper3dStartTime = SDL_GetTicks();
+    animationDropper3dId = aDropperAnimation; // see DROPPER_ANIMATION_ENUM
+    if( aColor != nullptr ){
+        animationDropper3dColor = *aColor; // todo rm unneeded var animationDropper3dColor ?
+        eyedropper_fill->color_additive = glm::vec4(aColor->r / 255.0,
+                                                    aColor->g / 255.0,
+                                                    aColor->b / 255.0,
+                                                    1.0);
+    }
 }
 
+void OpenGLContext::begin3dDropperAnimation(int aDropperAnimation) {
+    begin3dDropperAnimation(aDropperAnimation, nullptr);
+}
+
+void OpenGLContext::begin3dDropperAnimation(void) {
+    begin3dDropperAnimation(DROPPER_ANIMATION_ENUM::ANIMATION_ZOOM_INTO_DROPPER);
+}
+
+void OpenGLContext::eyedropperTestMatrix(float progress){
+    matrixModel = glm::mat4(1.0f);
+    //    matrixViews = glm::mat4(1.0f);
+    //    matrixPersp = glm::mat4(1.0f);
+
+    float rotation = progress * 90.0f;
+
+    float position = progress * 10.0f;
+
+    float scale = 1.0 - progress;
+
+
+
+    // try translating Z.. compare with matrixViews eye
+    //       matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
+    // so +z moves towards screen..
+    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
+    //
+
+    //    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
+
+
+
+    //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, 0.5));
+    //   matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
+
+    // matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -1.0f)); // in bulb
+
+    //    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 0.0f)); // base
+
+
+    //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 1.0f));
+
+
+    //matrixModel = glm::rotate(matrixModel, 180.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // pointed at camera
+    //  matrixModel = glm::rotate(matrixModel, -90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // vertical (point down)
+
+
+    //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, scale)); // if we are already looking down the stem, this collapses the stem.... if we rotated it first we will see this from the side...
+    //    SDL_Log("scale %f " , scale);
+
+
+    matrixModel = glm::rotate(matrixModel, rotation*4.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+    matrixModel = glm::rotate(matrixModel, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // upside down (point up)
+    matrixModel = glm::rotate(matrixModel, -rotation*4, glm::vec3(1.0f, 0.0f, 0.0f));
+    //        matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 1.0f, 0.0f));
+
+
+    //  matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 8.0f));
+
+    //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 9.0f));
+
+
+}
+
+void OpenGLContext::eyedropperAddColorMatrix(float progress){
+    matrixModel = glm::mat4(1.0f);
+    float rotation = progress * 90.0f;
+    float position = progress * 10.0f;
+    float scale = 1.0 - progress;
+
+    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
+    matrixModel = glm::rotate(matrixModel, 45.0f, glm::vec3(1.0f, 1.0f, 0.0f)); // upside down (point up)
+    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
+
+    //matrixModel = glm::rotate(matrixModel, -rotation*0.25f, glm::vec3(1.0f, 0.0f, 0.0f));
+    matrixModel = glm::rotate(matrixModel, -progress*25.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+
+}
+
+
+
 void OpenGLContext::render3dDropperAnimation(void) {
+    if( animationDropper3dId == DROPPER_ANIMATION_ENUM::NO_ANIMATION ){return;}
     // presumably this/each animation knows when it's done... based on some duration of the specified animation..... for now we will say 4 seconds
-    float progress = (SDL_GetTicks() - animation3dStartTime) / 8000.0f;
-    if( progress < 2.0 ){
+
+    float progress=1.0;
+
+    if( animationDropper3dId == ANIMATION_ADD_COLOR ){
+
+        progress = (SDL_GetTicks() - animationDropper3dStartTime) / 1000.0f;
+        eyedropperAddColorMatrix(progress);
+        render3dDropper(progress);
+
+    } else {
+        SDL_Log("Default debug animation rendering...");
+        progress = (SDL_GetTicks() - animationDropper3dStartTime) / 8000.0f;
+        if( progress < 8.0 ){
+            eyedropperTestMatrix(progress);
+            render3dDropper(0.0f);
+        }else{
+            // animation is "done" lets mark it as such
+            animationDropper3dId = DROPPER_ANIMATION_ENUM::NO_ANIMATION;
+        }
+        return;
+    }
+
+    if( progress > 1.0 ){
+        animationDropper3dId = DROPPER_ANIMATION_ENUM::NO_ANIMATION;
+    }
+}
+
+void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg is going to be unneded I think...
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE); // GL_TRUE enables writes to depth buffer....
+    glClear(GL_DEPTH_BUFFER_BIT); // THIS SHOULD MOVE OUT OF HERE FOR SURE JUST ABOUT>>>>> (we can't clear the depth buffer though when GL_DEPTH_TEST is not enabled - perhaps we should always have it on though and set the prop where we don't write to the buffer?
+
+    uniformLocations = shader_3d->bind(); // Bind our shader
+
+    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
+    glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
+    glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
+
+    if( colorFillPercent > 0.00001 ){
+        // we make some preliminary write op to the stencil buffer...
+
+        glUniform4f(uniformLocations->color_additive, 0.0,0,0,0.0); // transparent draw so no visible output....  to debug you might use  eyedropper_stem->applyUniforms(uniformLocations);  (glass default)
+        glBindVertexArray(eyedropper_stem->vertex_array[0]);
+        glDrawArrays(GL_TRIANGLES, 0, eyedropper_stem->vertex_count );
+        //we write the depth buffer only ^
+
+        glEnable(GL_STENCIL_TEST);
+        glStencilFunc(GL_ALWAYS, 1, 0xFF); // to clear buffer, we need something like this....
+        glStencilMask(0xFF);
+        glClear(GL_STENCIL_BUFFER_BIT);
+        //glStencilMask(0x00); // disables writes to stencil buffer
+        //glStencilFunc(GL_EQUAL, 1, 0xFF);  // only where our buffer is filled in...
+       // glStencilFunc(GL_EQUAL, 1, 0xFF);  // only where our buffer is filled in...
 
 
-        glEnable(GL_DEPTH_TEST);
-        glDepthMask(GL_TRUE); // GL_TRUE enables writes to depth buffer....
-        glClear(GL_DEPTH_BUFFER_BIT);
+        glDepthMask(GL_FALSE); // GL_TRUE enables writes to depth buffer....
+        glDepthFunc(GL_GREATER);  // we only want to draw parts of the dropper that are on the INSIDE
 
-        debugGLerror("render3dDropperAnimation glDisable glEnable");
+        glStencilMask(0xFF); // enable writes to stencil buffer
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // really write to the stencil buffer?
+        //glStencilFunc(GL_ALWAYS, 1, 0xFF); // all fragments should update the stencil buffer
 
+        glUniform4f(uniformLocations->color_additive, 1.0,0,0,0.0); // transparent draw so no visilble output (we write to stencil only right now) you might try red to visualize/debug the stencil buffer... 1.0,0,0,1.0
+        glUniform4f(uniformLocations->color_additive, 1.0,0,0,1.0);
+        glBindVertexArray(eyedropper_stem->vertex_array[0]);
+        glDrawArrays(GL_TRIANGLES, 0, eyedropper_stem->vertex_count );
 
+        glStencilMask(0x00); // disables writes to stencil buffer
+        glDisable(GL_STENCIL_TEST);
 
+        //our use of depth buffer wass temporary...
+        glDepthFunc(GL_LESS);  // set defaults
+        glDepthMask(GL_TRUE);
+        glClear(GL_DEPTH_BUFFER_BIT); // our use was temporary....
 
+        // this is test stuff so lets reset/exit now..
+//        glEnable(GL_CULL_FACE);
+//        glDisable(GL_DEPTH_TEST);
+//        renderShouldUpdate=true; // keep animation going...
+//        return;
+    }
 
-        matrixModel = glm::mat4(1.0f);
-        //    matrixViews = glm::mat4(1.0f);
-        //    matrixPersp = glm::mat4(1.0f);
+    //debugGLerror("render3dDropperAnimation glDisable glEnable");
 
-        float rotation = progress * 90.0f;
+    eyedropper_bulb->applyUniforms(uniformLocations);
+    glBindVertexArray(eyedropper_bulb->vertex_array[0]);
+    glDrawArrays(GL_TRIANGLES, 0, eyedropper_bulb->vertex_count );
 
-        float position = progress * 10.0f;
+    uniformLocations = shader_3d_Glass->bind(); // Bind our shader
 
-        float scale = 1.0 - progress;
+    glUniform1i(uniformLocations->textureSampler, 0);
+    glActiveTexture( GL_TEXTURE0 + 0);
+    glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
 
+    glUniform1i(uniformLocations->textureSampler, 1);
+    glActiveTexture( GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D,  textureId_pickImage);
 
+    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
+    glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
+    glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
 
-        // try translating Z.. compare with matrixViews eye
- //       matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
-        // so +z moves towards screen..
-        matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
-        //
+    glDepthMask(GL_FALSE); // GL_TRUE enables writes to depth buffer....
+    glDisable(GL_CULL_FACE);
 
-        //    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
+    eyedropper_stem->applyUniforms(uniformLocations);
+    glBindVertexArray(eyedropper_stem->vertex_array[0]);
+    glDrawArrays(GL_TRIANGLES, 0, eyedropper_stem->vertex_count );
 
+    if( colorFillPercent > 0.00001 ){
 
+        glEnable(GL_CULL_FACE); // no sense rendering back of our clolr block....
 
-        //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, 0.5));
-        //   matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
+        glEnable(GL_STENCIL_TEST);  // our stencil shows the "inside" of the dropper
+        glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // not modifying buffer
+        glStencilMask(0x00); // disables writes to stencil buffer
+        glStencilFunc(GL_EQUAL, 1, 0xFF);  // only where our buffer is filled in...
 
-        // matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -1.0f)); // in bulb
+        uniformLocations = shader_3d_unlit->bind(); // Bind our shader
 
-        //    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 0.0f)); // base
+        matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, colorFillPercent * 1.0));
 
+        glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
+        glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
+        glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
 
-        //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 1.0f));
-
-
-        //matrixModel = glm::rotate(matrixModel, 180.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // pointed at camera
-        //  matrixModel = glm::rotate(matrixModel, -90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // vertical (point down)
-
-
-        //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, scale)); // if we are already looking down the stem, this collapses the stem.... if we rotated it first we will see this from the side...
-        //    SDL_Log("scale %f " , scale);
-
-
-        matrixModel = glm::rotate(matrixModel, rotation*4.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-        matrixModel = glm::rotate(matrixModel, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // upside down (point up)
-        matrixModel = glm::rotate(matrixModel, -rotation*4, glm::vec3(1.0f, 0.0f, 0.0f));
-//        matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 1.0f, 0.0f));
-
-
-      //  matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 8.0f));
-
-        matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 9.0f));
-
-
-        // TODO: Lots of matrix math can move out of here....
-        //matrixPersp = glm::infinitePerspective(60.0f, (float)colorPickState->windowWidth / (float)colorPickState->windowHeight, -0.1f); // this one works....
-        //matrixPersp = glm::perspectiveFov(60.0f, (float)colorPickState->windowHeight, (float)colorPickState->windowWidth, 0.0000000001f, 1000.0f);  // Create our perspective projection matrix
-        //matrixPersp = glm::ortho(-1.0f,-1.0f,1.0f,1.0f);
-        //matrixPersp = glm::ortho(1.0f,1.0f,-1.0f,-1.0f);
-
-//        matrixPersp = glm::perspective(60.0f, (float)colorPickState->windowWidth / (float)colorPickState->windowHeight, 0.5f, 100.0f);  // Create our perspective projection matrix
-//        matrixViews = glm::lookAt(glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0)); // eye, center, up
-
+        eyedropper_fill->applyUniforms(uniformLocations);
+        glBindVertexArray(eyedropper_fill->vertex_array[0]);
+        glDrawArrays(GL_TRIANGLES, 0, eyedropper_fill->vertex_count );
 
 
 
 
         uniformLocations = shader_3d->bind(); // Bind our shader
-        //eyedropper_bulb->shader->bind();
-
-        //    glUniform1i(uniformLocations->textureSampler, 0);
-        //    glActiveTexture( GL_TEXTURE0 + 0);
-        //    glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
-        //
-        //    glUniform1i(uniformLocations->textureSampler, 1);
-        //    glActiveTexture( GL_TEXTURE0 + 1);
-        //    glBindTexture(GL_TEXTURE_2D,  textureId_pickImage);
 
         glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
         glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
         glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
-
-
-        eyedropper_bulb->applyUniforms(uniformLocations);
-        glBindVertexArray(eyedropper_bulb->vertex_array[0]);
-        glDrawArrays(GL_TRIANGLES, 0, eyedropper_bulb->vertex_count );
-
-        uniformLocations = shader_3d_Glass->bind(); // Bind our shader
-        //eyedropper_bulb->shader->bind();
-
-        glUniform1i(uniformLocations->textureSampler, 0);
-        glActiveTexture( GL_TEXTURE0 + 0);
-        glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
-
-        glUniform1i(uniformLocations->textureSampler, 1);
-        glActiveTexture( GL_TEXTURE0 + 1);
-        glBindTexture(GL_TEXTURE_2D,  textureId_pickImage);
-
-        glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
-        glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
-        glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
-
 
         glDepthMask(GL_FALSE); // GL_TRUE enables writes to depth buffer....
         glDisable(GL_CULL_FACE);
 
-        eyedropper_stem->applyUniforms(uniformLocations);
+        //eyedropper_stem->applyUniforms(uniformLocations);
+        //eyedropper_fill->applyUniforms(uniformLocations);
+        glUniform4f(uniformLocations->color_additive,
+                    eyedropper_fill->color_additive.r,
+                    eyedropper_fill->color_additive.g,
+                    eyedropper_fill->color_additive.b,
+                    0.1);
         glBindVertexArray(eyedropper_stem->vertex_array[0]);
         glDrawArrays(GL_TRIANGLES, 0, eyedropper_stem->vertex_count );
 
 
 
-        // reset this???
-        glBindVertexArray(rect_vaoID[0]); // back to rect....
 
-        //    glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDisable(GL_STENCIL_TEST);
 
-        glEnable(GL_CULL_FACE);
-
-        //    glDepthMask(GL_FALSE);
-
-        glDisable(GL_DEPTH_TEST);
-
-        //    glEnable(GL_BLEND);
-
-        //    glDepthMask(GL_FALSE);
-
-
-        renderShouldUpdate=true; // TODO < bad
-
-        debugGLerror("render3dDropperAnimation ending");
-
-
-    }else{
-        // animation is "done"
     }
+
+    // "reset" the following (arguably this should just move out of here?)
+    glEnable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+
+    renderShouldUpdate=true; // keep animation going...
+    debugGLerror("render3dDropperAnimation ending");
 }
 
-void OpenGLContext::render3dScene(void) {
+void OpenGLContext::render3dScene(void) { // TODO: delete this prelim test fn....
 
-
-
-//    glDepthMask(GL_FALSE);
-
-
-//    glDisable(GL_BLEND);
-
-
-//    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-//
-//    glDepthMask(GL_FALSE);
-//    glDepthMask(GL_TRUE);
-
-//    glDepthMask(GL_FALSE);
-//    glEnable(GL_DEPTH_TEST);
-//    glDepthMask(GL_TRUE);
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE); // GL_TRUE enables writes to depth buffer....
-
-//    glClearDepth(1.0);
-//    glDepthRange(1000, 0);
-    glClear(GL_DEPTH_BUFFER_BIT);
-
-  //glDepthMask(GL_FALSE); // GL_TRUE enables writes to depth buffer....
-
-    //the fragment's depth N, while the framebuffer's depth P. The conditional test is of the form (N FUNC P), where FUNC is specified by this function:
-//   glDepthFunc(GL_GREATER);
-//   glDepthFunc(GL_LESS);
-
-//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
     debugGLerror("renderScene4d glDisable glEnable");
 
@@ -1346,27 +1417,15 @@ void OpenGLContext::render3dScene(void) {
     //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
     // so +z moves towards screen..
     matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
-//
 
 //    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
-
-
-
     //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, 0.5));
  //   matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
-
    // matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -1.0f)); // in bulb
-
 //    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 0.0f)); // base
-
-
     //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 1.0f));
-
-
     //matrixModel = glm::rotate(matrixModel, 180.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // pointed at camera
  //  matrixModel = glm::rotate(matrixModel, -90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // vertical (point down)
-
-
 //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, scale)); // if we are already looking down the stem, this collapses the stem.... if we rotated it first we will see this from the side...
 //    SDL_Log("scale %f " , scale);
 
@@ -1376,90 +1435,7 @@ void OpenGLContext::render3dScene(void) {
     matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(1.0f, 0.0f, 0.0f));
     matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 1.0f, 0.0f));
 
-
-    // TODO: Lots of matrix math can move out of here....
-//    matrixPersp = glm::perspective(60.0f, (float)colorPickState->windowWidth / (float)colorPickState->windowHeight, 0.5f, 100.0f);  // Create our perspective projection matrix
-//    //matrixPersp = glm::infinitePerspective(60.0f, (float)colorPickState->windowWidth / (float)colorPickState->windowHeight, -0.1f); // this one works....
-//    //matrixPersp = glm::perspectiveFov(60.0f, (float)colorPickState->windowHeight, (float)colorPickState->windowWidth, 0.0000000001f, 1000.0f);  // Create our perspective projection matrix
-//    //matrixPersp = glm::ortho(-1.0f,-1.0f,1.0f,1.0f);
-//    //matrixPersp = glm::ortho(1.0f,1.0f,-1.0f,-1.0f);
-//    matrixViews = glm::lookAt(glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0)); // eye, center, up
-
-
-
-
-
-    uniformLocations = shader_3d->bind(); // Bind our shader
-    //eyedropper_bulb->shader->bind();
-
-//    glUniform1i(uniformLocations->textureSampler, 0);
-//    glActiveTexture( GL_TEXTURE0 + 0);
-//    glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
-//
-//    glUniform1i(uniformLocations->textureSampler, 1);
-//    glActiveTexture( GL_TEXTURE0 + 1);
-//    glBindTexture(GL_TEXTURE_2D,  textureId_pickImage);
-
-    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
-    glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
-    glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
-
-
-
-
-
-    eyedropper_bulb->applyUniforms(uniformLocations);
-    glBindVertexArray(eyedropper_bulb->vertex_array[0]);
-    glDrawArrays(GL_TRIANGLES, 0, eyedropper_bulb->vertex_count );
-
-
-
-    
-    uniformLocations = shader_3d_Glass->bind(); // Bind our shader
-    //eyedropper_bulb->shader->bind();
-
-    glUniform1i(uniformLocations->textureSampler, 0);
-    glActiveTexture( GL_TEXTURE0 + 0);
-    glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
-
-    glUniform1i(uniformLocations->textureSampler, 1);
-    glActiveTexture( GL_TEXTURE0 + 1);
-    glBindTexture(GL_TEXTURE_2D,  textureId_pickImage);
-
-    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
-    glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
-    glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
-
-
-    glDepthMask(GL_FALSE); // GL_TRUE enables writes to depth buffer....
-    glDisable(GL_CULL_FACE);
-
-    eyedropper_stem->applyUniforms(uniformLocations);
-    glBindVertexArray(eyedropper_stem->vertex_array[0]);
-    glDrawArrays(GL_TRIANGLES, 0, eyedropper_stem->vertex_count );
-
-
-
-
-// reset this???
-    glBindVertexArray(rect_vaoID[0]); // back to rect....
-
-//    glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    glEnable(GL_CULL_FACE);
-
-//    glDepthMask(GL_FALSE);
-
-    glDisable(GL_DEPTH_TEST);
-
-//    glEnable(GL_BLEND);
-
-//    glDepthMask(GL_FALSE);
-
-
-    renderShouldUpdate=true; // TODO < bad
-
-    debugGLerror("render3dScene ending");
+    render3dDropper(0.0f);
 }
 
 #ifdef DEVELOPER_TEST_MODE

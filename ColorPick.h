@@ -73,9 +73,19 @@ static const GLubyte squareTexCoords[] = {
 };
 
 
+
 class OpenGLContext {
 
 public:
+
+    typedef enum  {
+        NO_ANIMATION,
+        ANIMATION_ZOOM_INTO_DROPPER,
+        ANIMATION_ZOOM_INTO_BULB,
+        ANIMATION_ADD_COLOR,
+        ANIMATION_FAILED_ADD_COLOR,
+    } DROPPER_ANIMATION_ENUM;
+
     static OpenGLContext* Singleton();
 
     SDL_GLContext gl;
@@ -91,9 +101,19 @@ public:
     void renderScene(void); // Render scene (display method from previous OpenGL tutorials)
     void render3dScene(void);
 
+
+    void eyedropperTestMatrix(float progress);
+    void render3dDropper(float colorFillPercent);
+
+
+    void eyedropperAddColorMatrix(float progress);
+
+
+
     void render3dDropperAnimation(void);
     void begin3dDropperAnimation(void);
-
+    void begin3dDropperAnimation(int aDropperAnimation); // one of DROPPER_ANIMATION_ENUM
+    void begin3dDropperAnimation(int aDropperAnimation, SDL_Color* aColor);
 
     void chooseFile(void);
 
@@ -116,6 +136,7 @@ public:
 
     Shader *shader_3d; // Our GLSL shader
     Shader *shader_3d_Glass;
+    Shader *shader_3d_unlit;
     Shader *shader_lit_detail; // Our GLSL shader
     Shader *shader_ui_shader_default;
 
@@ -134,6 +155,7 @@ public:
     Meshes *meshes;
     Mesh *eyedropper_bulb;
     Mesh *eyedropper_stem;
+    Mesh *eyedropper_fill;
 
     Ux *generalUx;
 
@@ -225,7 +247,10 @@ private:
     glm::mat4 matrixViews;
     glm::mat4 matrixPersp;
 
-    Uint32 animation3dStartTime;
+    Uint32 animationDropper3dStartTime;
+    int animationDropper3dId;
+    SDL_Color animationDropper3dColor;
+
 
 protected:
     static bool ms_bInstanceCreated;

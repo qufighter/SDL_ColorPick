@@ -218,8 +218,6 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
     float* normals = new float[vertex_items*2];
     float* texCoords = new float[uv_items*2];
 
-    bool isFace4 = false;
-
     int vIdx =0;
     int nIdx =0;
     int cIdx =0;
@@ -364,7 +362,6 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
         if( faces == 4 ){
             // push 2 triangles to make face complete.....
             // we need to resize our allocations :/ (we doubled them already)
-            isFace4 = true;
 
             // p2 (second triangle)
             //if( v[0]->gotVertex ){ // ply always has vertex....
@@ -414,11 +411,11 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
         next_data_start = fileString->find("\n", last_row_position_start+1);
     }
 
-
-    if( isFace4 ){
-        vertex_items *= 2; // too simplistic??? depends on how its initally set though... would be ok now
-       // vertex_items = (( faceCount * 3 ) * 3) * 2; // we could always run this....
-    }
+    // we can have combined face4 and face3.....
+//    if( isFace4 ){
+//        vertex_items *= 2; // too simplistic??? depends on how its initally set though... would be ok now
+//       // vertex_items = (( faceCount * 3 ) * 3) * 2; // we could always run this....
+//    }
 
 
 
@@ -433,7 +430,7 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
 
     headerString.clear(); // not really free?
 
-    buildMesh(mesh, vertex_items,
+    buildMesh(mesh, vIdx,
               vertices,
               normals,
               cIdx > 0 ? colors : nullptr,

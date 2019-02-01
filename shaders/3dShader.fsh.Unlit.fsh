@@ -20,10 +20,6 @@ uniform vec4 color_additive;
 void main()
 {
 
-    float globalLightAmt = 0.15;
-    vec3 globalLight = vec3(globalLightAmt,globalLightAmt,globalLightAmt);
-    float ambient_light = 0.05;
-
     // can we look at the depth?  gl_FragDepth
 
     vec4 ocolor; //=texture2D(texture1, TexCoordOut);
@@ -34,10 +30,6 @@ void main()
     ocolor.rgb += color_additive.rgb;
 
     ocolor.a = min( color_additive.a, ocolor.a );
-
-    float nNdotL = max(dot(globalLight,normalOut.xyz),ambient_light);
-
-    ocolor.rgb *= nNdotL;
 
     gl_FragColor = ocolor;
 

@@ -482,8 +482,8 @@ int EventFilter(void* userdata, SDL_Event* event){
                 SDL_Surface *myCoolSurface = openglContext->textures->LoadSurface(event->drop.file);
                 if( myCoolSurface != NULL ){ // todo something should really accept file path? openglContext->imageWasSelectedCb
                     myCoolSurface = openglContext->textures->ConvertSurface(myCoolSurface);
-                    openglContext->imageWasSelectedCb(myCoolSurface);
                 }
+                openglContext->imageWasSelectedCb(myCoolSurface);
                 fileDropsAllowed--;
             }
             SDL_free(event->drop.file);
@@ -707,6 +707,7 @@ compatibility; this flag is ignored
 #endif
 //    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     int win_pos_x=0;
     int win_pos_y=0;

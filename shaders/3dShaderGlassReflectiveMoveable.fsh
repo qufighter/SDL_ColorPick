@@ -83,9 +83,9 @@ void main()
 //    //vec3 I = (PositionOut) * 0.5;
     //vec3 I = normalize(vec3(screenSpaceCoord.x, screenSpaceCoord.y, 0.0));
 
-// TODO fix camPos ??? (note if the model moves from 0x 0y then the refract really is only compatible with a cubemap texture me thinks....
-// we moved the model so the dropper tip is where it needs to be so we won't need to move xy and refraction works...
-    vec3 CamPos = vec3(0.0,0.0,0.0);
+// TODO fix camPos ???
+
+    vec3 CamPos = vec3(0.0,0.0,PositionOut.z-1.0);
 
     //vec3 I = normalize(vec3(-PositionOut.x, -PositionOut.y, PositionOut.z) -CamPos);
     vec3 I = normalize(PositionOut -CamPos);

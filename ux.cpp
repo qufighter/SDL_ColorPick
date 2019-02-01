@@ -1528,6 +1528,7 @@ void Ux::addCurrentToPickHistory(){
     // IMPORTANT remember ot text with pickHistoryMax = <5
     // IMPORTANT remember to check more than 10 colors
 
+    OpenGLContext* ogg=OpenGLContext::Singleton();
 
     float bounceIntensity = -0.001;
 
@@ -1555,6 +1556,8 @@ void Ux::addCurrentToPickHistory(){
     }else{
         uxAnimations->softBounce(historyPreview, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0);
     }
+
+    ogg->begin3dDropperAnimation(OpenGLContext::ANIMATION_ADD_COLOR, currentlyPickedColor);
 
     pickHistoryList->add(ColorList(*currentlyPickedColor));
     if( pickHistoryList->_out_of_space ){

@@ -26,16 +26,22 @@ when points disabled, they still accumulate and yuou can still loose yer points.
 
 - URL shorteners - how friendly with location hash ?
 
-freepik tou
+freepik tou- really check it carefully ?
 
-android - when storage permission missing
+android - when storage permission missing - and we open an image
+    - see "Cannot find file %s"
 
 ios - loading image progress bar ?  no refresh?
 
-hide announcmenet texts (achivements ?)
+hide announcmenet texts (achivements ?) option
+
+pass light to shaders
+disable light or fix lighting for color sample (color history add)
+fix scale of refraction by passing in fish eye scale to the glass shader and applying it
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
+images can have a color space????
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 ##  can do
