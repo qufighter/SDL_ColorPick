@@ -611,8 +611,15 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         }
     }
 
-    void showAddAllConfirmationDialogue(uiObject *interactionObj, uiInteraction *delta){
+    void showAddAllConfirmationDialogue(uiObject *interactionObj, uiInteraction *delta){ // broker
         Ux* myUxRef = Ux::Singleton();
+
+
+        if( myUxRef->palleteList->_out_of_space ){
+            myUxRef->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_NOSPACE);
+            return;
+        }
+
 
         // first things - figure out how many will be added.....
         uiListIterator<uiList<ColorList, Uint8>, ColorList>* pickHistoryIterator = myUxRef->pickHistoryList->iterate();
@@ -640,6 +647,10 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(addAllScoringHandler);
         myUxRef->defaultYesNoChoiceDialogue->allowFastYes();
         //myUxRef->defaultYesNoChoiceDialogue->displayAdditionalUiObject(sortChooser->uiObjectItself);
+
+        if( myUxRef->palleteList->_out_of_space ){
+            myUxRef->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_NOSPACE);
+        }
 
     }
 

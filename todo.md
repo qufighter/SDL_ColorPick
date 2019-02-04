@@ -38,10 +38,6 @@ slow announcments texts option
 
 SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256); // see this string in todo
 
-254 items in pick history breaks indexing???
-    when we delete one color, the second to last item is still replaced! (should be fixed)
-or just breaks broker guy ??? there is no "out of space" messaging showing up
-
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 images can have a color space????
@@ -239,7 +235,11 @@ test history overwrote final color in index that it is released from the index (
 test with vanilla (renamed) settings files
 add some automatic test to verify each color can be viewed in the HSV? (done)
 
-
+full history list (8192) out of space achieved
+- before adding a color observe the last color in the history (topmost color)
+- and final color in history (bottom color)
+- then delete any colory, the top and bottom most  should not change, all colors should be in position
+- add new color to history, it should appear at the top and the colors should all shift by one, all colors should be in position
 
 # sotry
 
