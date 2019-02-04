@@ -19,12 +19,16 @@ uniform sampler2D texture3;
 
 uniform vec4 color_additive;
 
+uniform vec4 global_ambient;
+
+uniform float fishEyeScale;
+uniform float fishEyeScalePercent;
+
 void main()
 {
 
-    float globalLightAmt = 0.3;
-    vec3 globalLight = vec3(globalLightAmt,globalLightAmt,globalLightAmt);
-    float ambient_light = 0.005;
+    vec3 globalLight = global_ambient.rgb;
+    float ambient_light = global_ambient.a;
 
     // can we look at the depth?  gl_FragDepth
 
@@ -100,23 +104,28 @@ void main()
     /// fish scale thats missing... so maybe the texture is just wrong....
 
 
-    /// R is for a cube map, which means the x coordinate is *4
+    /// R is for a cube map, which means the x coordinate is *4 ??
     //R.x *= 2.0;
     //R.x += 2.0;
 
     //R.x *= 2.0;
     //R.y *= 0.5;
 
-    // seems to only work for EVEN NUMBERS
+
+    float scale = floor(fishEyeScalePercent * 128.0) * 2.0;
+
+    // seems to only work for EVEN NUMBERS, hence the * 2.0 above...
     //vec2 upScale = vec2(64.0,64.0);
-    vec2 upScale = vec2(64.0,64.0);
-    //vec2 upScale = vec2(48.0,48.0);
+    if( scale > 1.0 ){
+        vec2 upScale = vec2(scale,scale);
+        //vec2 upScale = vec2(48.0,48.0);
 
-    R.x *= 1.0 / upScale.x;
-    R.y *= 1.0 / upScale.y;
+        R.x *= 1.0 / upScale.x;
+        R.y *= 1.0 / upScale.y;
 
-    R.x += upScale.x * 0.5;
-    R.y += upScale.y * 0.5;
+        R.x += upScale.x * 0.5;
+        R.y += upScale.y * 0.5;
+    }
 
     
 

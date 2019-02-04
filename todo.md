@@ -35,11 +35,8 @@ ios - loading image progress bar ?  no refresh?
 
 hide announcmenet texts (achivements ?) option
 
-pass light to shaders
-disable light or fix lighting for color sample (color history add)
-fix scale of refraction by passing in fish eye scale to the glass shader and applying it
-
 SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256); // see this string in todo
+
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -47,6 +44,13 @@ images can have a color space????
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 ##  can do
+
+send accumulated_movement_x/pxFactor  accumulated_movement_y/pxFactor to the shader
+  this represents the approach to 1.0 in each cardinal direction before we move a full pixel over....
+
+stencil dropper bulb when viewed from bottom, so it may be removed from refraction?  the stencil is scaled up?
+
+interactionAddHistory -> animation scale_bounce - how about squeeze?
 
 Uint32 getpixel - non member of textures?  similar fn's in meshes...
 

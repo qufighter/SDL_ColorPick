@@ -1243,13 +1243,29 @@ void OpenGLContext::render3dDropperAnimation(void) {
         }else{
             // animation is "done" lets mark it as such
             animationDropper3dId = DROPPER_ANIMATION_ENUM::NO_ANIMATION;
+
+            // bounce the add icon
+            generalUx->uxAnimations->scale_bounce(generalUx->addHistoryBtn, 0.005);
         }
-        return;
+        return; // custom progress handling....
     }
 
     if( progress > 1.0 ){
         animationDropper3dId = DROPPER_ANIMATION_ENUM::NO_ANIMATION;
     }
+}
+
+void OpenGLContext::setLight(){
+    // we could pass in our own uniformLocations (this is using the class member OpenGLContext::uniformLocations )
+    // we could pass in our own vec3 for global light
+    if( uniformLocations->globalAmbientLight < 0 ){ return; } // even when it is zero, many times its not needed....
+    float globalLightAmt = 0.15;
+    float ambient_light = 0.00005;
+    glUniform4f(uniformLocations->globalAmbientLight,
+                globalLightAmt, // x
+                globalLightAmt, // y
+                globalLightAmt, // z
+                ambient_light); // ambient
 }
 
 void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg is going to be unneded I think...
@@ -1258,6 +1274,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
     glClear(GL_DEPTH_BUFFER_BIT); // THIS SHOULD MOVE OUT OF HERE FOR SURE JUST ABOUT>>>>> (we can't clear the depth buffer though when GL_DEPTH_TEST is not enabled - perhaps we should always have it on though and set the prop where we don't write to the buffer?
 
     uniformLocations = shader_3d->bind(); // Bind our shader
+    setLight();
 
     glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
     glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
@@ -1309,11 +1326,16 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
 
     //debugGLerror("render3dDropperAnimation glDisable glEnable");
 
+//    glUniform1i(uniformLocations->textureSampler, 0);
+//    glActiveTexture( GL_TEXTURE0 + 0);
+//    glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
+
     eyedropper_bulb->applyUniforms(uniformLocations);
     glBindVertexArray(eyedropper_bulb->vertex_array[0]);
     glDrawArrays(GL_TRIANGLES, 0, eyedropper_bulb->vertex_count );
 
     uniformLocations = shader_3d_Glass->bind(); // Bind our shader
+    setLight();
 
     glUniform1i(uniformLocations->textureSampler, 0);
     glActiveTexture( GL_TEXTURE0 + 0);
@@ -1326,6 +1348,11 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
     glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
     glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
     glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
+
+    //SDL_Log("FISHY SCALE %f %f", fishEyeScale, fishEyeScalePct);
+    // the refraction of textureId_pickImage is variable.... TODO rename these uniforms to be generic... or if it is fish scale be fishy about it (not linear)
+    glUniform1f(uniformLocations->fishScale, fishEyeScale);
+    glUniform1f(uniformLocations->fishScalePct, fishEyeScalePct);
 
     glDepthMask(GL_FALSE); // GL_TRUE enables writes to depth buffer....
     glDisable(GL_CULL_FACE);
@@ -1357,15 +1384,19 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
 
 
 
+        // now we are still rendering the stenciled glass that is over top of our color sample.....
+        // with the depth check...  see the alpha value below?  fix this... and maybe light too...
 
         uniformLocations = shader_3d->bind(); // Bind our shader
+        setLight();
 
         glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
         glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
         glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
 
-        glDepthMask(GL_FALSE); // GL_TRUE enables writes to depth buffer....
-        glDisable(GL_CULL_FACE);
+        // depth mask already off...
+        //glDepthMask(GL_FALSE); // GL_TRUE enables writes to depth buffer....
+        //glDisable(GL_CULL_FACE);
 
         //eyedropper_stem->applyUniforms(uniformLocations);
         //eyedropper_fill->applyUniforms(uniformLocations);
@@ -1376,9 +1407,6 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
                     0.1);
         glBindVertexArray(eyedropper_stem->vertex_array[0]);
         glDrawArrays(GL_TRIANGLES, 0, eyedropper_stem->vertex_count );
-
-
-
 
         glDisable(GL_STENCIL_TEST);
 
@@ -1391,52 +1419,52 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
     renderShouldUpdate=true; // keep animation going...
     debugGLerror("render3dDropperAnimation ending");
 }
-
-void OpenGLContext::render3dScene(void) { // TODO: delete this prelim test fn....
-
-
-    debugGLerror("renderScene4d glDisable glEnable");
-
-
-
-
-
-    matrixModel = glm::mat4(1.0f);
-//    matrixViews = glm::mat4(1.0f);
-//    matrixPersp = glm::mat4(1.0f);
-
-    float rotation = (SDL_GetTicks() * 1.0f) / 50.0f;
-
-    float position = (SDL_GetTicks() * 1.0f) / 500.0f;
-
-    float scale = 1.0 - (((SDL_GetTicks() % 2000) * 1.0f) / 2000.0f); // from 1.0 -> 0.0 every 2 seconds
-
-
-
-    // try translating Z.. compare with matrixViews eye
-    //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
-    // so +z moves towards screen..
-    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
-
-//    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
-    //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, 0.5));
- //   matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
-   // matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -1.0f)); // in bulb
-//    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 0.0f)); // base
-    //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 1.0f));
-    //matrixModel = glm::rotate(matrixModel, 180.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // pointed at camera
- //  matrixModel = glm::rotate(matrixModel, -90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // vertical (point down)
-//    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, scale)); // if we are already looking down the stem, this collapses the stem.... if we rotated it first we will see this from the side...
-//    SDL_Log("scale %f " , scale);
-
-
-    matrixModel = glm::rotate(matrixModel, rotation*2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-    matrixModel = glm::rotate(matrixModel, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // upside down (point up)
-    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(1.0f, 0.0f, 0.0f));
-    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 1.0f, 0.0f));
-
-    render3dDropper(0.0f);
-}
+//
+//void OpenGLContext::render3dScene(void) { // TODO: delete this prelim test fn....
+//
+//
+//    debugGLerror("renderScene4d glDisable glEnable");
+//
+//
+//
+//
+//
+//    matrixModel = glm::mat4(1.0f);
+////    matrixViews = glm::mat4(1.0f);
+////    matrixPersp = glm::mat4(1.0f);
+//
+//    float rotation = (SDL_GetTicks() * 1.0f) / 50.0f;
+//
+//    float position = (SDL_GetTicks() * 1.0f) / 500.0f;
+//
+//    float scale = 1.0 - (((SDL_GetTicks() % 2000) * 1.0f) / 2000.0f); // from 1.0 -> 0.0 every 2 seconds
+//
+//
+//
+//    // try translating Z.. compare with matrixViews eye
+//    //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
+//    // so +z moves towards screen..
+//    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
+//
+////    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
+//    //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, 0.5));
+// //   matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
+//   // matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -1.0f)); // in bulb
+////    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 0.0f)); // base
+//    //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 1.0f));
+//    //matrixModel = glm::rotate(matrixModel, 180.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // pointed at camera
+// //  matrixModel = glm::rotate(matrixModel, -90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // vertical (point down)
+////    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, scale)); // if we are already looking down the stem, this collapses the stem.... if we rotated it first we will see this from the side...
+////    SDL_Log("scale %f " , scale);
+//
+//
+//    matrixModel = glm::rotate(matrixModel, rotation*2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+//    matrixModel = glm::rotate(matrixModel, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // upside down (point up)
+//    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(1.0f, 0.0f, 0.0f));
+//    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 1.0f, 0.0f));
+//
+//    render3dDropper(0.0f);
+//}
 
 #ifdef DEVELOPER_TEST_MODE
 void OpenGLContext::TEST_BEGIN(void) {

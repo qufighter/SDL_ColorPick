@@ -17,12 +17,13 @@ uniform sampler2D texture3;
 
 uniform vec4 color_additive;
 
+uniform vec4 global_ambient;
+
 void main()
 {
 
-    float globalLightAmt = 0.15;
-    vec3 globalLight = vec3(globalLightAmt,globalLightAmt,globalLightAmt);
-    float ambient_light = 0.005;
+    vec3 globalLight = global_ambient.rgb;
+    float ambient_light = global_ambient.a;
 
     // can we look at the depth?  gl_FragDepth
 

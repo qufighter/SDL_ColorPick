@@ -27,6 +27,9 @@ void main()
 {
     colorOut = color;
     TexCoordOut = TexCoordIn;
+
+
+
 	//gl_Position=position*(modelMatrix*(projectionMatrix*viewMatrix));
     //gl_Position=viewMatrix * projectionMatrix * modelMatrix * position;
 

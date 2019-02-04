@@ -102,6 +102,8 @@ public:
     void render3dScene(void);
 
 
+    void setLight(void);
+
     void eyedropperTestMatrix(float progress);
     void render3dDropper(float colorFillPercent);
 

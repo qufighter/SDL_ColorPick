@@ -200,6 +200,8 @@ void Shader::reload() {
 //	uniformLocations->ambientLightLoc =				glGetUniformLocation(shader_id, "ambient_light"); // Get the location of our model matrix in the shader
 //	uniformLocations->textOffset =					glGetUniformLocation(shader_id, "letter_offset"); // Get the location of our model matrix in the shader
 
+    uniformLocations->globalAmbientLight = glGetUniformLocation(shader_id, "global_ambient");
+
     uniformLocations->widthHeightRatio = glGetUniformLocation(shader_id, "widthHeightRatio");
 
 

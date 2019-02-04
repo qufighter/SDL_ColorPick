@@ -156,7 +156,7 @@ typedef enum  {
 struct uniformLocationStruct
 {
     GLint   globalLightLocation,
-    ambientLightLoc,
+    globalAmbientLight,
     projectionMatrixLocation,
     viewMatrixLocation,
     modelMatrixLocation,
