@@ -1250,7 +1250,7 @@ void OpenGLContext::render3dDropperAnimation(void) {
         render3dDropper(progress);
 
     } else {
-        SDL_Log("Default debug animation rendering...");
+        //SDL_Log("Default debug animation rendering...");
         progress = (SDL_GetTicks() - animationDropper3dStartTime) / 8000.0f;
         if( progress < 8.0 ){
             eyedropperTestMatrix(progress);
@@ -1301,8 +1301,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
         // we make some preliminary write op to the stencil buffer...
 
         glUniform4f(uniformLocations->color_additive, 0.0,0,0,0.0); // transparent draw so no visible output....  to debug you might use  eyedropper_stem->applyUniforms(uniformLocations);  (glass default)
-        glBindVertexArray(eyedropper_stem->vertex_array[0]);
-        glDrawArrays(GL_TRIANGLES, 0, eyedropper_stem->vertex_count );
+        eyedropper_stem->render();
         //we write the depth buffer only ^
 
         glEnable(GL_STENCIL_TEST);
@@ -1323,8 +1322,8 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
 
         glUniform4f(uniformLocations->color_additive, 1.0,0,0,0.0); // transparent draw so no visilble output (we write to stencil only right now) you might try red to visualize/debug the stencil buffer... 1.0,0,0,1.0
         glUniform4f(uniformLocations->color_additive, 1.0,0,0,1.0);
-        glBindVertexArray(eyedropper_stem->vertex_array[0]);
-        glDrawArrays(GL_TRIANGLES, 0, eyedropper_stem->vertex_count );
+        eyedropper_stem->render();
+
 
         glStencilMask(0x00); // disables writes to stencil buffer
         glDisable(GL_STENCIL_TEST);
@@ -1348,8 +1347,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
 //    glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
 
     eyedropper_bulb->applyUniforms(uniformLocations);
-    glBindVertexArray(eyedropper_bulb->vertex_array[0]);
-    glDrawArrays(GL_TRIANGLES, 0, eyedropper_bulb->vertex_count );
+    eyedropper_bulb->render();
 
     uniformLocations = shader_3d_Glass->bind(); // Bind our shader
     setLight();
@@ -1375,8 +1373,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
     glDisable(GL_CULL_FACE);
 
     eyedropper_stem->applyUniforms(uniformLocations);
-    glBindVertexArray(eyedropper_stem->vertex_array[0]);
-    glDrawArrays(GL_TRIANGLES, 0, eyedropper_stem->vertex_count );
+    eyedropper_stem->render();
 
     if( colorFillPercent > fill_requirement ){
 
@@ -1396,9 +1393,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
         glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
 
         eyedropper_fill->applyUniforms(uniformLocations);
-        glBindVertexArray(eyedropper_fill->vertex_array[0]);
-        glDrawArrays(GL_TRIANGLES, 0, eyedropper_fill->vertex_count );
-
+        eyedropper_fill->render();
 
 
         // now we are still rendering the stenciled glass that is over top of our color sample.....
@@ -1422,8 +1417,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
                     eyedropper_fill->color_additive.g,
                     eyedropper_fill->color_additive.b,
                     0.1);
-        glBindVertexArray(eyedropper_stem->vertex_array[0]);
-        glDrawArrays(GL_TRIANGLES, 0, eyedropper_stem->vertex_count );
+        eyedropper_stem->render();
 
         glDisable(GL_STENCIL_TEST);
 

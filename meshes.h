@@ -138,6 +138,7 @@ typedef struct Mesh
 
     void defaults(){
         color_additive = glm::vec4(0.0, 0.0, 0.0, 1.0);
+        is_fully_loaded = false;
         //shader=nullptr;
     }
 
@@ -161,6 +162,15 @@ typedef struct Mesh
                                         color_additive.a);
     }
 
+    void render(){
+        if( is_fully_loaded ){
+            glBindVertexArray(vertex_array[0]);
+            glDrawArrays(GL_TRIANGLES, 0, vertex_count);
+        }else{
+            SDL_Log("Mesh not yet loaded... cannot render it!");
+        }
+    }
+
     // we could store a ref to the shader
     // we can store bindings related to material
 
@@ -171,6 +181,8 @@ typedef struct Mesh
     unsigned int vertex_array[1];
     unsigned int buffers[4];
     unsigned int vertex_count;
+
+    bool is_fully_loaded;
 
 } Mesh;
 

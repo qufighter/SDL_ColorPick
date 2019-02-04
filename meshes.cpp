@@ -72,7 +72,6 @@ void logLoadingMessage(const char* filename){
 
 void buildMesh(Mesh* mesh, int vertex_items, float* vertices, float* normals, float* colors, float* texCoords){
 
-
     glGenVertexArrays(1, &mesh->vertex_array[0]); // Create our Vertex Array Object
     debugGLerror("mesh glGenVertexArrays");
 
@@ -111,7 +110,7 @@ void buildMesh(Mesh* mesh, int vertex_items, float* vertices, float* normals, fl
     glBindVertexArray(0); // Disable our Vertex Buffer Object
 
     mesh->vertex_count = vertex_items / 3;  // 3 componenets (xyz) per vertex, so the count is....
-
+    mesh->is_fully_loaded = true;
 }
 
 Mesh* Meshes::LoadObjectPLY(const char* filename) {
