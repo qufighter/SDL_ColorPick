@@ -247,8 +247,72 @@ void mouseUpEvent(SDL_Event* event){
 }
 
 
+int MainThreadUserEventHandler(SDL_Event* p_event){
+
+    SDL_Event event = *p_event;
+
+    switch( event.user.code ){
+#ifdef MAIN_THREAD_ANIMATIONS
+        case USER_EVENT_ENUM::ANIMATE_MAIN_THREAD: // NOTE on ios it still won't really be main thread.... right?  we'd want to process these events in the animation handler instead right?
+        {
+            SDL_Log("USER EVENT 3 - ANIMATE_MAIN_THREAD");
+            openglContext->generalUx->uxAnimations->updateAnimationsMain(true);
+            return 0;
+        }
+#endif
+#ifdef __ANDROID__
+        case USER_EVENT_ENUM::IMAGE_SELECTOR_READY:
+        {
+            SDL_Log("USER EVENT 0 - get picked image on android");
+            getImagePathFromMainThread();
+            return 0;
+        }
+#endif
+        case USER_EVENT_ENUM::NEW_HUE_CHOSEN:
+        {
+            SDL_Log("USER EVENT 1 - new hue gradient bg color");
+            void (*p) (void*) = (voidvoidp)event.user.data1;
+            p(event.user.data2);
+            // TODO instea
+            //SDL_FlushEvent(SDL_USEREVENT);
+            return 0;
+        }
+        case USER_EVENT_ENUM::GENERIC_ARBITRARY_CALL:
+        {
+            SDL_Log("USER EVENT GENERIC_ARBITRARY_CALL");
+            void (*p) (void*) = (voidvoidp)event.user.data1;
+            p(event.user.data2);
+            return 0;
+        }
+        case USER_EVENT_ENUM::VIEW_RECENTLY_ROTATED:
+        {
+            SDL_Log("USER EVENT 2 - rotation delayted update");
+            ReshapeWindow(true);
+            openglContext->renderShouldUpdate = true;
+            return 0;
+        }
+        case USER_EVENT_ENUM::RENDER_VIEW_AGAIN:
+        {
+            SDL_Log("USER EVENT - RENDER_VIEW_AGAIN");
+            openglContext->renderShouldUpdate = true;
+            return 0;
+        }
+    }
+
+    //return 1; // not handled, leave it in the queue ?????? only really makes sense if we process events elsewhere right?  tough to say for sure but we'd have to make sure all platforms handle the other events somehow...
+    return 0;
+}
+
 int EventFilter(void* userdata, SDL_Event* event){
     switch ( event->type ){
+
+#ifdef COLORPICK_MISSING_MAIN_LOOP
+        case SDL_USEREVENT:  // normally we process all SDL_USEREVENT in the main loop - but we are missing a main loop on this platform....  maybe we would process these in the animation thread (ShowFrame) instaed of this (event watch) thread?  or maybe split the handling up and don't return 0
+        {
+            return MainThreadUserEventHandler(event);
+        }
+#endif
+
         case SDL_WINDOWEVENT:
         {
 
@@ -769,7 +833,7 @@ compatibility; this flag is ignored
 
 
 
-#if __IPHONEOS__
+#ifdef COLORPICK_MISSING_MAIN_LOOP
 
 //    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
     SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
@@ -794,50 +858,9 @@ compatibility; this flag is ignored
                     return 0;
 
 
-                case SDL_USEREVENT:  // maybe move all handing of these to , say main thread? (instead of coincidentally same thread on android)
+                case SDL_USEREVENT:  // we normally process all these in the main thread.... there are some exceptions for ios
                 {
-                    switch( event.user.code ){
-#ifdef MAIN_THREAD_ANIMATIONS
-                        case USER_EVENT_ENUM::ANIMATE_MAIN_THREAD:
-                        {
-                            SDL_Log("USER EVENT 3 - ANIMATE_MAIN_THREAD");
-                            openglContext->generalUx->uxAnimations->updateAnimationsMain(true);
-                            break;//return 0;
-                        }
-#endif
-#ifdef __ANDROID__
-                        case USER_EVENT_ENUM::IMAGE_SELECTOR_READY:
-                        {
-                            SDL_Log("USER EVENT 0 - get picked image on android");
-                            getImagePathFromMainThread();
-                            break;//return 0;
-                        }
-#endif
-                        case USER_EVENT_ENUM::NEW_HUE_CHOSEN:
-                        {
-                            SDL_Log("USER EVENT 1 - new hue gradient bg color");
-                            void (*p) (void*) = (voidvoidp)event.user.data1;
-                            p(event.user.data2);
-                            // TODO instea
-                            //SDL_FlushEvent(SDL_USEREVENT);
-                            break;//return 0;
-                        }
-                        case USER_EVENT_ENUM::GENERIC_ARBITRARY_CALL:
-                        {
-                            SDL_Log("USER EVENT GENERIC_ARBITRARY_CALL");
-                            void (*p) (void*) = (voidvoidp)event.user.data1;
-                            p(event.user.data2);
-                            break;//return 0;
-                        }
-                        case USER_EVENT_ENUM::VIEW_RECENTLY_ROTATED:
-                        {
-                            SDL_Log("USER EVENT 2 - rotation delayted update");
-                            ReshapeWindow(true);
-                            openglContext->renderShouldUpdate = true;
-                            break;//return 0;
-                        }
-                    }
-
+                    MainThreadUserEventHandler(&event);
                     break;//return 0;
                 }
             }

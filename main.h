@@ -26,6 +26,7 @@
 #include "SDL_opengl.h"
 #import <OpenGLES/ES3/gl.h>
 #import <OpenGLES/ES3/glext.h>
+#define COLORPICK_MISSING_MAIN_LOOP 1
 #elif __ANDROID__
 
 #define GL_GLEXT_PROTOTYPES 1
@@ -149,6 +150,7 @@ typedef enum  {
     NEW_HUE_CHOSEN,
     GENERIC_ARBITRARY_CALL,
     VIEW_RECENTLY_ROTATED,
+    RENDER_VIEW_AGAIN,
     ANIMATE_MAIN_THREAD,
 } USER_EVENT_ENUM; // these may not be supported as of now on IOS ... ??
 

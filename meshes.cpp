@@ -110,7 +110,7 @@ void buildMesh(Mesh* mesh, int vertex_items, float* vertices, float* normals, fl
 
     glBindVertexArray(0); // Disable our Vertex Buffer Object
 
-    mesh->vertex_count = vertex_items;// / 3;
+    mesh->vertex_count = vertex_items / 3;  // 3 componenets (xyz) per vertex, so the count is....
 
 }
 

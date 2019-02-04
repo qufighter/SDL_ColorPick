@@ -125,6 +125,18 @@ bool OpenGLContext:: restoreLastSurface(){
     return false;
 }
 
+// can we move this to main.h?
+static Uint32 render_one_more_frame(Uint32 interval, void* parm){
+    SDL_Event event;
+    SDL_UserEvent userevent;
+    userevent.type = SDL_USEREVENT;
+    userevent.code = USER_EVENT_ENUM::RENDER_VIEW_AGAIN;
+    event.type = SDL_USEREVENT;
+    event.user = userevent;
+    SDL_PushEvent(&event);
+    return 0; // end timer
+}
+
 void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
 
     if( lastHue!=nullptr ) SDL_free(lastHue);
@@ -172,6 +184,9 @@ void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
 
     renderShouldUpdate = true;
     //SDL_Log("really done loading new surface.... right?");
+#ifdef __IPHONEOS__
+    SDL_AddTimer(250, render_one_more_frame, nullptr);
+#endif
 }
 
 void OpenGLContext:: loadNextTestImage(){
@@ -1280,7 +1295,9 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
     glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
     glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
 
-    if( colorFillPercent > 0.00001 ){
+    float fill_requirement = 0.00001;
+
+    if( colorFillPercent > fill_requirement ){
         // we make some preliminary write op to the stencil buffer...
 
         glUniform4f(uniformLocations->color_additive, 0.0,0,0,0.0); // transparent draw so no visible output....  to debug you might use  eyedropper_stem->applyUniforms(uniformLocations);  (glass default)
@@ -1361,7 +1378,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
     glBindVertexArray(eyedropper_stem->vertex_array[0]);
     glDrawArrays(GL_TRIANGLES, 0, eyedropper_stem->vertex_count );
 
-    if( colorFillPercent > 0.00001 ){
+    if( colorFillPercent > fill_requirement ){
 
         glEnable(GL_CULL_FACE); // no sense rendering back of our clolr block....
 
