@@ -18,6 +18,7 @@ Default constructor
 */
 Meshes::Meshes(void) {
 
+    allMeshes.reserve(4); // maybe we will load 4 models someday!
 }
 /**
 Destructor
@@ -113,11 +114,26 @@ void buildMesh(Mesh* mesh, int vertex_items, float* vertices, float* normals, fl
     mesh->is_fully_loaded = true;
 }
 
-Mesh* Meshes::LoadObjectPLY(const char* filename) {
-    Mesh* mesh = new Mesh();
-    logLoadingMessage(filename);
+static Uint32 post_meshes_loaded_event(Uint32 interval, void* parm){
+    SDL_Event event;
+    SDL_UserEvent userevent;
+    userevent.type = SDL_USEREVENT;
+    userevent.code = USER_EVENT_ENUM::MESH_FILE_READ;
+    //    userevent.data1 = (void*)&pickerForPercentV;
+    //    userevent.data2 = &self->lastPickPercent; // &percent; // waste arg
+    event.type = SDL_USEREVENT;
+    event.user = userevent;
+    SDL_PushEvent(&event);
+    return 0; // end timer
+    //return interval;
+}
 
-    char* charData = (char*)SDL_LoadFile(filename, NULL);
+static int LoadObjectPLYThread(void* data){
+    Mesh* mesh = (Mesh*)data;
+    SDL_Log("Thread Here: Mesh vert count and loaded status %s %i %i",mesh->filename,mesh->vertex_count,mesh->is_fully_loaded);
+
+    logLoadingMessage(mesh->filename);
+    char* charData = (char*)SDL_LoadFile(mesh->filename, NULL);
 
     // TODO maybe we don't need fileString and can just use the c string?
     std::string *fileString = new std::string();
@@ -141,16 +157,16 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
     char* char2 = (char*)SDL_malloc( sizeof(char) * 25 );
 
     //int retVal = SDL_sscanf(charData, "ply\nformat ascii %f\ncomment", &aValue);
-//    retVal = SDL_sscanf(&charData[1], "ly\nformat ascii %f\ncomment", &aFloatValue);
-//    SDL_Log("We got a floatly value %i %f ", retVal, aFloatValue);
-//
-////%s would capture fileString
-////%*s would suprress capture of that string...
-//
-//    retVal = SDL_sscanf(&charData[1], "%*s\nformat ascii %f\ncomment", &aFloatValue);
-//    SDL_Log("We got a floatly value %i %f ", retVal, aFloatValue);
-//    retVal = SDL_sscanf(&charData[headerString.find("format")], "format ascii %f\ncomment", &aFloatValue);
-//    SDL_Log("We got a floatly value %i %f ", retVal, aFloatValue);
+    //    retVal = SDL_sscanf(&charData[1], "ly\nformat ascii %f\ncomment", &aFloatValue);
+    //    SDL_Log("We got a floatly value %i %f ", retVal, aFloatValue);
+    //
+    ////%s would capture fileString
+    ////%*s would suprress capture of that string...
+    //
+    //    retVal = SDL_sscanf(&charData[1], "%*s\nformat ascii %f\ncomment", &aFloatValue);
+    //    SDL_Log("We got a floatly value %i %f ", retVal, aFloatValue);
+    //    retVal = SDL_sscanf(&charData[headerString.find("format")], "format ascii %f\ncomment", &aFloatValue);
+    //    SDL_Log("We got a floatly value %i %f ", retVal, aFloatValue);
 
 
     long next_element_start = headerString.find("element");
@@ -282,7 +298,7 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
             last_row_position_start = row_position_start;
 
             //if(  read<reads_next_index -1 )
-                row_position_start = fileString->find(" ", row_position_start+1);
+            row_position_start = fileString->find(" ", row_position_start+1);
         }
         next_data_start = fileString->find("\n", last_row_position_start+1);
     }
@@ -306,22 +322,22 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
             v[face] = &vertexMetadata[anIntValue];
             last_row_position_start = row_position_start;
             //if( face<faces -1 )
-                row_position_start = fileString->find(" ", row_position_start+1);
+            row_position_start = fileString->find(" ", row_position_start+1);
         }
 
         if( faces >= 3 ){
             // we push one triangle....
 
             //if( v[0]->gotVertex ){ // ply always has vertex....
-                vertices[vIdx++]=v[0]->vertex.x;
-                vertices[vIdx++]=v[0]->vertex.y;
-                vertices[vIdx++]=v[0]->vertex.z;
-                vertices[vIdx++]=v[1]->vertex.x;
-                vertices[vIdx++]=v[1]->vertex.y;
-                vertices[vIdx++]=v[1]->vertex.z;
-                vertices[vIdx++]=v[2]->vertex.x;
-                vertices[vIdx++]=v[2]->vertex.y;
-                vertices[vIdx++]=v[2]->vertex.z;
+            vertices[vIdx++]=v[0]->vertex.x;
+            vertices[vIdx++]=v[0]->vertex.y;
+            vertices[vIdx++]=v[0]->vertex.z;
+            vertices[vIdx++]=v[1]->vertex.x;
+            vertices[vIdx++]=v[1]->vertex.y;
+            vertices[vIdx++]=v[1]->vertex.z;
+            vertices[vIdx++]=v[2]->vertex.x;
+            vertices[vIdx++]=v[2]->vertex.y;
+            vertices[vIdx++]=v[2]->vertex.z;
             //}
 
             if( v[0]->gotNormal ){
@@ -364,15 +380,15 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
 
             // p2 (second triangle)
             //if( v[0]->gotVertex ){ // ply always has vertex....
-                vertices[vIdx++]=v[0]->vertex.x;
-                vertices[vIdx++]=v[0]->vertex.y;
-                vertices[vIdx++]=v[0]->vertex.z;
-                vertices[vIdx++]=v[2]->vertex.x;
-                vertices[vIdx++]=v[2]->vertex.y;
-                vertices[vIdx++]=v[2]->vertex.z;
-                vertices[vIdx++]=v[3]->vertex.x;
-                vertices[vIdx++]=v[3]->vertex.y;
-                vertices[vIdx++]=v[3]->vertex.z;
+            vertices[vIdx++]=v[0]->vertex.x;
+            vertices[vIdx++]=v[0]->vertex.y;
+            vertices[vIdx++]=v[0]->vertex.z;
+            vertices[vIdx++]=v[2]->vertex.x;
+            vertices[vIdx++]=v[2]->vertex.y;
+            vertices[vIdx++]=v[2]->vertex.z;
+            vertices[vIdx++]=v[3]->vertex.x;
+            vertices[vIdx++]=v[3]->vertex.y;
+            vertices[vIdx++]=v[3]->vertex.z;
             //}
             if( v[0]->gotNormal ){
                 normals[nIdx++]=v[0]->normal.x;
@@ -410,13 +426,20 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
         next_data_start = fileString->find("\n", last_row_position_start+1);
     }
 
+    mesh->vertices = vertices;
+    mesh->colors = colors;
+    mesh->normals = normals;
+    mesh->texCoords = texCoords;
+    mesh->vIdx = vIdx;
+    mesh->nIdx = nIdx;
+    mesh->cIdx = cIdx;
+    mesh->tIdx = tIdx;
+
     // we can have combined face4 and face3.....
-//    if( isFace4 ){
-//        vertex_items *= 2; // too simplistic??? depends on how its initally set though... would be ok now
-//       // vertex_items = (( faceCount * 3 ) * 3) * 2; // we could always run this....
-//    }
-
-
+    //    if( isFace4 ){
+    //        vertex_items *= 2; // too simplistic??? depends on how its initally set though... would be ok now
+    //       // vertex_items = (( faceCount * 3 ) * 3) * 2; // we could always run this....
+    //    }
 
     SDL_free(charData);
     SDL_free(char1);
@@ -429,33 +452,33 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
 
     headerString.clear(); // not really free?
 
-    buildMesh(mesh, vIdx,
-              vertices,
-              normals,
-              cIdx > 0 ? colors : nullptr,
-              tIdx > 0 ? texCoords: nullptr);
-
     SDL_free(reads);
     SDL_free(vertexMetadata);
 
-    delete [] vertices; // Delete our vertices from memory
-    delete [] normals;
-    delete [] colors;
-    delete [] texCoords;
+    mesh->file_loaded=true;
 
-    return mesh;
+    //Meshes::Singleton()->completeMeshLoading(); // on a timer ????
+    int my_timer_id = SDL_AddTimer(30, post_meshes_loaded_event, (void*)mesh);
+
+    return 0;
 }
 
 
-Mesh* Meshes::LoadObjectSTL(const char* filename) {
-    // insipired by STLLoader.js - this is by no means a complete STL loader...
-    // also STL doesn't support UVs... (what good is that?)
-    // the normals seem to be broken, though they pretty much match what glm computes
-    Mesh* mesh = new Mesh();
-    logLoadingMessage(filename);
 
-    SDL_RWops* fileref = SDL_RWFromFile(filename, "r");
-    if( fileref == NULL ) return mesh;
+
+
+static int LoadObjectSTLThread(void* data){
+    Mesh* mesh = (Mesh*)data;
+
+    SDL_Log("Thread Here: Mesh vert count and loaded status %s %i %i",mesh->filename,mesh->vertex_count,mesh->is_fully_loaded);
+
+    logLoadingMessage(mesh->filename);
+
+    SDL_RWops* fileref = SDL_RWFromFile(mesh->filename, "r");
+    if( fileref == NULL ){
+        SDL_Log("Error: fle not read: %s", mesh->filename);
+        return 1;
+    }
 
     Sint64 filesize = SDL_RWsize(fileref); // this filesize is in ? units... not a count of u8? (actually it seems to count u8s)
     int eachElementSize = sizeof(Sint32); // 4 bytes
@@ -484,6 +507,7 @@ Mesh* Meshes::LoadObjectSTL(const char* filename) {
     float* vertices = new float[vertex_items];
     float* colors = new float[vertex_items];
     float* normals = new float[vertex_items];
+    //float* texCoords = new float[uv_items*2];
 
 
     int vIdx =0;
@@ -510,26 +534,26 @@ Mesh* Meshes::LoadObjectSTL(const char* filename) {
         vertices[vIdx++]=p3.y;
         vertices[vIdx++]=p3.z;
 
-//        glm::vec3 computedNormal = glm::triangleNormal(p1,p2,p3);
-////        normal *= -1;
-//
-//        if( normal != computedNormal ){
-//
-//            SDL_Log("Normal mismatch...");
-//        }
+        //        glm::vec3 computedNormal = glm::triangleNormal(p1,p2,p3);
+        ////        normal *= -1;
+        //
+        //        if( normal != computedNormal ){
+        //
+        //            SDL_Log("Normal mismatch...");
+        //        }
 
         //repeats!
-//        normals[nIdx++]=p1.x+normal.x;
-//        normals[nIdx++]=p1.x+normal.y;
-//        normals[nIdx++]=p1.z+normal.z;
-//        normals[nIdx++]=p2.x+normal.x;
-//        normals[nIdx++]=p2.y+normal.y;
-//        normals[nIdx++]=p2.z+normal.z;
-//        normals[nIdx++]=p3.x+normal.x;
-//        normals[nIdx++]=p3.y+normal.y;
-//        normals[nIdx++]=p3.z+normal.z;
+        //        normals[nIdx++]=p1.x+normal.x;
+        //        normals[nIdx++]=p1.x+normal.y;
+        //        normals[nIdx++]=p1.z+normal.z;
+        //        normals[nIdx++]=p2.x+normal.x;
+        //        normals[nIdx++]=p2.y+normal.y;
+        //        normals[nIdx++]=p2.z+normal.z;
+        //        normals[nIdx++]=p3.x+normal.x;
+        //        normals[nIdx++]=p3.y+normal.y;
+        //        normals[nIdx++]=p3.z+normal.z;
 
-//
+        //
 
         //face normals are flat?
         normals[nIdx++]=normal.x;
@@ -554,62 +578,143 @@ Mesh* Meshes::LoadObjectSTL(const char* filename) {
         colors[cIdx++]=0;
         colors[cIdx++]=0;
 
-//        colors[cIdx++]=((rand() % 100) / 100.0f);
-//        colors[cIdx++]=((rand() % 100) / 100.0f);
-//        colors[cIdx++]=((rand() % 100) / 100.0f);
-//        colors[cIdx++]=((rand() % 100) / 100.0f);
-//        colors[cIdx++]=((rand() % 100) / 100.0f);
-//        colors[cIdx++]=((rand() % 100) / 100.0f);
-//        colors[cIdx++]=((rand() % 100) / 100.0f);
-//        colors[cIdx++]=((rand() % 100) / 100.0f);
-//        colors[cIdx++]=((rand() % 100) / 100.0f);
+        //        colors[cIdx++]=((rand() % 100) / 100.0f);
+        //        colors[cIdx++]=((rand() % 100) / 100.0f);
+        //        colors[cIdx++]=((rand() % 100) / 100.0f);
+        //        colors[cIdx++]=((rand() % 100) / 100.0f);
+        //        colors[cIdx++]=((rand() % 100) / 100.0f);
+        //        colors[cIdx++]=((rand() % 100) / 100.0f);
+        //        colors[cIdx++]=((rand() % 100) / 100.0f);
+        //        colors[cIdx++]=((rand() % 100) / 100.0f);
+        //        colors[cIdx++]=((rand() % 100) / 100.0f);
 
-//        colors[cIdx++]=((triangeCount % 255) / 255.0f);
-//        colors[cIdx++]=((triangeCount % 255) / 255.0f);
-//        colors[cIdx++]=((triangeCount % 255) / 255.0f);
-//        colors[cIdx++]=((triangeCount % 255) / 255.0f);
-//        colors[cIdx++]=((triangeCount % 255) / 255.0f);
-//        colors[cIdx++]=((triangeCount % 255) / 255.0f);
-//        colors[cIdx++]=((triangeCount % 255) / 255.0f);
-//        colors[cIdx++]=((triangeCount % 255) / 255.0f);
-//        colors[cIdx++]=((triangeCount % 255) / 255.0f);
-//        triangeCount++;
+        //        colors[cIdx++]=((triangeCount % 255) / 255.0f);
+        //        colors[cIdx++]=((triangeCount % 255) / 255.0f);
+        //        colors[cIdx++]=((triangeCount % 255) / 255.0f);
+        //        colors[cIdx++]=((triangeCount % 255) / 255.0f);
+        //        colors[cIdx++]=((triangeCount % 255) / 255.0f);
+        //        colors[cIdx++]=((triangeCount % 255) / 255.0f);
+        //        colors[cIdx++]=((triangeCount % 255) / 255.0f);
+        //        colors[cIdx++]=((triangeCount % 255) / 255.0f);
+        //        colors[cIdx++]=((triangeCount % 255) / 255.0f);
+        //        triangeCount++;
 
-//        SDL_Log("We have a triangle here:\n\tnormal: %f %f %f \n\tp1: %f %f %f \n\tp2: %f %f %f \n\tp3: %f %f %f \n bytes: %i",
-//                    normal.x,
-//                    normal.y,
-//                    normal.z,
-//                    p1.x   ,
-//                    p1.y   ,
-//                    p1.z   ,
-//                    p2.x   ,
-//                    p2.y   ,
-//                    p2.z   ,
-//                    p3.x   ,
-//                    p3.y   ,
-//                    p3.z   ,
-//                    byteCount
-//                );
+        //        SDL_Log("We have a triangle here:\n\tnormal: %f %f %f \n\tp1: %f %f %f \n\tp2: %f %f %f \n\tp3: %f %f %f \n bytes: %i",
+        //                    normal.x,
+        //                    normal.y,
+        //                    normal.z,
+        //                    p1.x   ,
+        //                    p1.y   ,
+        //                    p1.z   ,
+        //                    p2.x   ,
+        //                    p2.y   ,
+        //                    p2.z   ,
+        //                    p3.x   ,
+        //                    p3.y   ,
+        //                    p3.z   ,
+        //                    byteCount
+        //                );
 
 
         currentPosition += 12 * eachElementSize;
         currentPosition += sizeof(Sint16); // byteCount
     }
     SDL_RWclose(fileref);
-//
-//    glBindVertexArray(0);
-//    debugGLerror("previous - error");
-//    debugGLerror("previous - error2");
 
-    buildMesh(mesh, vertex_items, vertices, normals, colors, nullptr);
-                                                    //colors
+    mesh->vertices = vertices;
+    mesh->colors = colors;
+    mesh->normals = normals;
+    //mesh->texCoords = nullptr;
+    mesh->vIdx = vIdx;
+    mesh->nIdx = nIdx;
+    mesh->cIdx = cIdx;
+    //mesh->tIdx = tIdx;
 
-    delete [] vertices; // Delete our vertices from memory
-    delete [] normals;
-    delete [] colors;
+    mesh->file_loaded=true;
+
+    //Meshes::Singleton()->completeMeshLoading(); // on a timer ????
+    int my_timer_id = SDL_AddTimer(30, post_meshes_loaded_event, (void*)mesh);
+
+    return 0;
+}
+
+
+void Meshes::completeMeshLoading(){
+    for( std::vector<Mesh*>::iterator i=allMeshes.begin(); i!=allMeshes.end(); ++i){
+        Mesh* mesh = (*i);
+        SDL_Log("Mesh vert count and loaded status %s %i %i",mesh->filename,mesh->vertex_count,mesh->is_fully_loaded);
+
+        if( mesh->file_loaded && !mesh->is_fully_loaded ){
+            mesh->file_loaded = false; // lets try to only get here ONCE for any given mesh...
+
+                // omg um, why not just pass in mesh? ? ? ?
+
+                buildMesh(mesh, mesh->vIdx,
+                          mesh->vertices,
+                          mesh->normals,
+                          mesh->cIdx > 0 ? mesh->colors : nullptr,
+                          mesh->tIdx > 0 ? mesh->texCoords: nullptr);
+
+
+            if( mesh->vertices != nullptr ){ delete [] mesh->vertices;} // Delete our vertices from memory
+            if( mesh->normals != nullptr  ){ delete [] mesh->normals;}
+            if( mesh->colors != nullptr   ){ delete [] mesh->colors;}
+            if( mesh->texCoords != nullptr){ delete [] mesh->texCoords;}
+
+        }
+
+    }
+}
+
+
+Mesh* Meshes::LoadObjectPLY(const char* filename) {
+    Mesh* mesh = new Mesh(filename);
+    allMeshes.push_back(mesh);
+
+    SDL_Thread *thread;
+    thread = SDL_CreateThread(LoadObjectPLYThread, "MeshLoadPLY", (void *)mesh);
+    if (NULL == thread) {
+        printf("Mesh Loading: SDL_CreateThread failed: %s\n", SDL_GetError());
+    }
+
+
+
+    //    buildMesh(mesh, vIdx,
+    //              vertices,
+    //              normals,
+    //              cIdx > 0 ? colors : nullptr,
+    //              tIdx > 0 ? texCoords: nullptr);
+    //
+    //
+    //
+    //    delete [] vertices; // Delete our vertices from memory
+    //    delete [] normals;
+    //    delete [] colors;
+    //    delete [] texCoords;
 
     return mesh;
 }
 
 
+Mesh* Meshes::LoadObjectSTL(const char* filename) {
+    // insipired by STLLoader.js - this is by no means a complete STL loader...
+    // also STL doesn't support UVs... (what good is that?)
+    // the normals seem to be broken, though they pretty much match what glm computes
+    Mesh* mesh = new Mesh(filename);
+    allMeshes.push_back(mesh);
 
+    SDL_Thread *thread;
+    thread = SDL_CreateThread(LoadObjectSTLThread, "MeshLoadSTL", (void *)mesh);
+    if (NULL == thread) {
+        printf("Mesh Loading: SDL_CreateThread failed: %s\n", SDL_GetError());
+    }
+
+    //    buildMesh(mesh, vertex_items, vertices, normals, colors, nullptr);
+    //                                                    //colors
+    //
+    //    delete [] vertices; // Delete our vertices from memory
+    //    delete [] normals;
+    //    delete [] colors;
+
+    return mesh;
+}

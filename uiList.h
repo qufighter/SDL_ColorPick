@@ -222,6 +222,11 @@ struct uiList
     void remove(int index){
         if( index < 0 || index > _largestIndex || index >= maxSize ) return;
 
+        if( _out_of_space ){
+            _nextIndex++;
+            _out_of_space=false;
+        }
+
         if( _indexed ){     // also the location for ALL the moving entries will need to be now updated........
             genType* item = &listItself[index];
             _tmp_index_offset = indexOffsetGen(item);

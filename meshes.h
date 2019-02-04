@@ -132,14 +132,23 @@ typedef struct TypedRead{
 
 typedef struct Mesh
 {
-    Mesh(){
+    Mesh(const char* pfilename){
+        filename = pfilename;
         defaults();
     }
 
     void defaults(){
         color_additive = glm::vec4(0.0, 0.0, 0.0, 1.0);
         is_fully_loaded = false;
-        //shader=nullptr;
+        file_loaded = false;
+        vIdx = 0;
+        nIdx = 0;
+        cIdx = 0;
+        tIdx = 0;
+        vertices=nullptr;
+        colors=nullptr;
+        normals=nullptr;
+        texCoords=nullptr;
     }
 
 //    Mesh* setShader(Shader* pshader){
@@ -173,6 +182,7 @@ typedef struct Mesh
 
     // we could store a ref to the shader
     // we can store bindings related to material
+    const char* filename;
 
     //Shader* shader;
     glm::vec4 color_additive; // MIGHT ALPHA BE OVERRIDE?
@@ -182,6 +192,17 @@ typedef struct Mesh
     unsigned int buffers[4];
     unsigned int vertex_count;
 
+    // we also need some temp variables to hold the arrays while we load... we can delete these later....
+    float* vertices;
+    float* colors;
+    float* normals;
+    float* texCoords;
+    int vIdx;
+    int nIdx;
+    int cIdx;
+    int tIdx;
+
+    bool file_loaded;
     bool is_fully_loaded;
 
 } Mesh;
@@ -202,7 +223,10 @@ public:
     Mesh* LoadObjectPLY(const char* filename);
     Mesh* LoadObjectSTL(const char* filename);
 
+    // shall we have a vector of our mesh's ?
+    std::vector<Mesh*> allMeshes;
 
+    void completeMeshLoading();
 
 private:
 	//GLuint LoadTextureRAW( const char * filename, int wrap );

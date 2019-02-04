@@ -1295,6 +1295,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
     glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
     glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
 
+    
     float fill_requirement = 0.00001;
 
     if( colorFillPercent > fill_requirement ){

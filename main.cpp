@@ -246,7 +246,7 @@ void mouseUpEvent(SDL_Event* event){
     //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 }
 
-
+// TODO: this might need to be in the animation loop for ios!!!!!!!
 int MainThreadUserEventHandler(SDL_Event* p_event){
 
     SDL_Event event = *p_event;
@@ -286,9 +286,15 @@ int MainThreadUserEventHandler(SDL_Event* p_event){
         }
         case USER_EVENT_ENUM::VIEW_RECENTLY_ROTATED:
         {
-            SDL_Log("USER EVENT 2 - rotation delayted update");
+            SDL_Log("USER EVENT 2 VIEW_RECENTLY_ROTATED");
             ReshapeWindow(true);
             openglContext->renderShouldUpdate = true;
+            return 0;
+        }
+        case USER_EVENT_ENUM::MESH_FILE_READ:
+        {
+            SDL_Log("USER EVENT MESH_FILE_READ");
+            openglContext->meshes->completeMeshLoading();
             return 0;
         }
         case USER_EVENT_ENUM::RENDER_VIEW_AGAIN:

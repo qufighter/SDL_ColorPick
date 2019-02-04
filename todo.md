@@ -34,9 +34,13 @@ android - when storage permission missing - and we open an image
 ios - loading image progress bar ?  no refresh?
 
 hide announcmenet texts (achivements ?) option
+slow announcments texts option
 
 SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256); // see this string in todo
 
+254 items in pick history breaks indexing???
+    when we delete one color, the second to last item is still replaced! (should be fixed)
+or just breaks broker guy ??? there is no "out of space" messaging showing up
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
