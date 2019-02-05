@@ -31,7 +31,7 @@ freepik tou- really check it carefully ?
 android - when storage permission missing - and we open an image
     - see "Cannot find file %s"
 
-ios - loading image progress bar ?  no refresh?
+ios - loading image progress bar ?  no refresh? < - refresh is done (todo:test)
 
 hide announcmenet texts (achivements ?) option
 slow announcments texts option
@@ -43,6 +43,8 @@ when tapping BG bounce the ADD button !!!
   // and or after some number of taps, count it?
 
 feedback button
+
+android - split screen (hold down switch app button) cannot restore window!
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)

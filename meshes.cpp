@@ -18,6 +18,7 @@ Default constructor
 */
 Meshes::Meshes(void) {
 
+    hasLoadedToProcess = false;
     allMeshes.reserve(4); // maybe we will load 4 models someday!
 }
 /**
@@ -456,6 +457,7 @@ static int LoadObjectPLYThread(void* data){
     SDL_free(vertexMetadata);
 
     mesh->file_loaded=true;
+    Meshes::Singleton()->hasLoadedToProcess = true;
 
     //Meshes::Singleton()->completeMeshLoading(); // on a timer ????
     int my_timer_id = SDL_AddTimer(Meshes::load_delay_ms, post_meshes_loaded_event, (void*)mesh);
@@ -631,6 +633,7 @@ static int LoadObjectSTLThread(void* data){
     //mesh->tIdx = tIdx;
 
     mesh->file_loaded=true;
+    Meshes::Singleton()->hasLoadedToProcess = true;
 
     //Meshes::Singleton()->completeMeshLoading(); // on a timer ????
     int my_timer_id = SDL_AddTimer(Meshes::load_delay_ms, post_meshes_loaded_event, (void*)mesh);
@@ -640,6 +643,11 @@ static int LoadObjectSTLThread(void* data){
 
 
 void Meshes::completeMeshLoading(){
+
+    // todo: we could check a bool hasLoadedToProcess first.... otherwise we may end up here 3x
+
+    if( !hasLoadedToProcess ) return;
+    hasLoadedToProcess = false;
     for( std::vector<Mesh*>::iterator i=allMeshes.begin(); i!=allMeshes.end(); ++i){
         Mesh* mesh = (*i);
         SDL_Log("Mesh vert count and loaded status %s %i %i",mesh->filename,mesh->vertex_count,mesh->is_fully_loaded);
@@ -660,9 +668,7 @@ void Meshes::completeMeshLoading(){
             if( mesh->normals != nullptr  ){ delete [] mesh->normals;}
             if( mesh->colors != nullptr   ){ delete [] mesh->colors;}
             if( mesh->texCoords != nullptr){ delete [] mesh->texCoords;}
-
         }
-
     }
 }
 

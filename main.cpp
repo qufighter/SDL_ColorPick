@@ -310,6 +310,8 @@ int MainThreadUserEventHandler(SDL_Event* p_event){
 }
 
 int EventFilter(void* userdata, SDL_Event* event){
+
+    //SDL_Log("WE GOT AN EVENT; type %i", event->type );
     switch ( event->type ){
 
         case SDL_WINDOWEVENT:

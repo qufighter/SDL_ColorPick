@@ -145,6 +145,7 @@ typedef struct Mesh
         color_additive = glm::vec4(0.0, 0.0, 0.0, 1.0);
         is_fully_loaded = false;
         file_loaded = false; // after we load the file, we clean up, so this will be false
+        vertex_count=0;
         vIdx = 0;
         nIdx = 0;
         cIdx = 0;
@@ -182,7 +183,7 @@ typedef struct Mesh
             glBindVertexArray(vertex_array[0]);
             glDrawArrays(GL_TRIANGLES, 0, vertex_count);
         }else{
-            SDL_Log("Mesh not yet loaded... cannot render it!");
+            // SDL_Log("Mesh not yet loaded... cannot render it!");
         }
     }
 
@@ -236,6 +237,7 @@ public:
     void completeMeshLoading();
 
     static const int load_delay_ms = 30;
+    bool hasLoadedToProcess;
 
 private:
 	//GLuint LoadTextureRAW( const char * filename, int wrap );
