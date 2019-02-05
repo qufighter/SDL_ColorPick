@@ -8,7 +8,7 @@
 #include <vector>
 
 
-
+// this is a utility used to read metadata about a particular vertex from files.. the setters are handlers bound to particular positions in PLY file
 typedef struct VertexMeta{
     VertexMeta(){
         gotVertex = false;
@@ -68,6 +68,10 @@ typedef struct VertexMeta{
 
 typedef void (*aFloatAssignmentFn)(VertexMeta* self, float i);
 
+
+// this describes each position in the PLY format, and may be useful in other formats too
+// the format described at the top is used througout the file... this allows the types specified in the header
+// to be parsed, creating many VertexMeta objects (formerly we'd populate destArr directly but that did not allow for vertex re-use druing face4>triangle construction)
 typedef struct TypedRead{
 
 
@@ -79,7 +83,7 @@ typedef struct TypedRead{
     TypedRead(char* label, const char* fmt){
         destLable = SDL_strdup(label);
         readFmt = SDL_strdup(fmt);
-        destArr = nullptr;
+        //destArr = nullptr;
         floatValueAssigner=nullptr;
         if( SDL_strcmp(readFmt, "%f") == 0 ){
             readType = READ_DATA_TYPES::FLOAT;
@@ -91,8 +95,8 @@ typedef struct TypedRead{
         floatValueAssigner = p;
     }
     void resolveDest(float* pdestArr, int* pdestArrIdx){
-        destArr = pdestArr;
-        destArrIdx = pdestArrIdx;
+//        destArr = pdestArr;
+//        destArrIdx = pdestArrIdx;
     }
     void setVertexMeta(VertexMeta* vm){
         vertexMeta = vm;
@@ -115,18 +119,18 @@ typedef struct TypedRead{
         if( floatValueAssigner != nullptr && dataDest != nullptr ){
             floatValueAssigner(dataDest, aFloat);
         }
-        if( destArr!=nullptr ){
-            destArr[*destArrIdx] = aFloat;
-            (*destArrIdx)++;
-        }
+//        if( destArr!=nullptr ){ // currently disabled....
+//            destArr[*destArrIdx] = aFloat;
+//            (*destArrIdx)++;
+//        }
     }
     char* destLable;
     char* readFmt;
     Uint8 readType;
     aFloatAssignmentFn floatValueAssigner;
     VertexMeta* vertexMeta;
-    float* destArr; // its always float no?
-    int* destArrIdx;
+//    float* destArr; // its always float no?
+//    int* destArrIdx;
 } TypedRead;
 
 
@@ -140,7 +144,7 @@ typedef struct Mesh
     void defaults(){
         color_additive = glm::vec4(0.0, 0.0, 0.0, 1.0);
         is_fully_loaded = false;
-        file_loaded = false;
+        file_loaded = false; // after we load the file, we clean up, so this will be false
         vIdx = 0;
         nIdx = 0;
         cIdx = 0;
@@ -151,11 +155,13 @@ typedef struct Mesh
         texCoords=nullptr;
     }
 
+    // we don't have the ref to shader, so this doesn't work.  some refactor maybe
 //    Mesh* setShader(Shader* pshader){
 //        shader = pshader;
 //        return this;
 //    }
 
+    // we'd need to return uniformLocationStruct*.. sort of nasty
 //    void bindShader(){
 //        if( shader!=nullptr ){
 //            uniformLocationStruct* uniformLocations = shader->bind();
@@ -188,7 +194,7 @@ typedef struct Mesh
     glm::vec4 color_additive; // MIGHT ALPHA BE OVERRIDE?
 
     //GLuint triangleStripIndexBuffer;
-    unsigned int vertex_array[1];
+    unsigned int vertex_array[1];  // this really does NOT need to be an array... but its ok
     unsigned int buffers[4];
     unsigned int vertex_count;
 
@@ -204,6 +210,7 @@ typedef struct Mesh
 
     bool file_loaded;
     bool is_fully_loaded;
+
 
 } Mesh;
 
@@ -227,6 +234,8 @@ public:
     std::vector<Mesh*> allMeshes;
 
     void completeMeshLoading();
+
+    static const int load_delay_ms = 30;
 
 private:
 	//GLuint LoadTextureRAW( const char * filename, int wrap );

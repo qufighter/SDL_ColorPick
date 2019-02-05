@@ -458,7 +458,7 @@ static int LoadObjectPLYThread(void* data){
     mesh->file_loaded=true;
 
     //Meshes::Singleton()->completeMeshLoading(); // on a timer ????
-    int my_timer_id = SDL_AddTimer(30, post_meshes_loaded_event, (void*)mesh);
+    int my_timer_id = SDL_AddTimer(Meshes::load_delay_ms, post_meshes_loaded_event, (void*)mesh);
 
     return 0;
 }
@@ -633,7 +633,7 @@ static int LoadObjectSTLThread(void* data){
     mesh->file_loaded=true;
 
     //Meshes::Singleton()->completeMeshLoading(); // on a timer ????
-    int my_timer_id = SDL_AddTimer(30, post_meshes_loaded_event, (void*)mesh);
+    int my_timer_id = SDL_AddTimer(Meshes::load_delay_ms, post_meshes_loaded_event, (void*)mesh);
 
     return 0;
 }
