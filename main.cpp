@@ -788,18 +788,27 @@ compatibility; this flag is ignored
 //    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 //    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
+// UX read settings begin....
+
 #ifndef __ANDROID__
     // OES is already core?? (ish?)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
 #endif
 //    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-
     int win_pos_x=0;
     int win_pos_y=0;
+
 #ifdef COLORPICK_PLATFORM_DESKTOP
+
+    // this enables 4x on osx....  it works on iphone but is slow in simulator
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 4);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+
+
     // BAD!!!!  check SDL_WINDOWEVENT_MOVED maybe and store this?  or forget it...
     win_pos_x=512;
     win_pos_y=512;

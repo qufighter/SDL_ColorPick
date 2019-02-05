@@ -36,6 +36,8 @@ images can have a color space????
 SDL_ShowMessageBox > allocate buttons once....
 > check update policy
 
+// UX read settings begin....
+
 when color is selected in pallete - indicate in history view if visible??????? 
 (really only good for first 2 -3 rows of history..... has to be reset any time the view color is hidden, more of a can do)
 IMO this become part of ColorList item itself?  but we don't need to scan the full color list except to reset it?

@@ -434,9 +434,6 @@ void OpenGLContext::setupScene(void) {
 //    glEnable(GL_DEPTH_TEST);
 //    glDepthMask(GL_TRUE);
 
-
-
-
     createUI();
     setFishScale(0.0, 1.0);
 
