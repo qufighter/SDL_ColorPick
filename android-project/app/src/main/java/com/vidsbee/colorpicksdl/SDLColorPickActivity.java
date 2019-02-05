@@ -14,6 +14,12 @@ import android.provider.MediaStore;
 //import android.widget.Button;
 //import android.widget.ImageView;
 
+import android.Manifest;
+
+// see     compile 'com.android.support:support-v4:+' in build.gradle....
+import android.support.v4.content.ContextCompat;
+import android.support.v4.app.ActivityCompat;
+import android.content.pm.PackageManager;
 
 import android.util.Log;
 
@@ -26,11 +32,45 @@ public class SDLColorPickActivity extends SDLActivity {
 
     private static String lastResult = "";
 
+    final private static int MY_PERMISSIONS_REQUEST_READ_EXT_STORAGE = 1029;
+
     public void openWebsiteUrl(String url){
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_EXT_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the
+                    //  task you need to do.
+                    beginImageSelector();
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+                // other 'case' lines to check for other
+                // permissions this app might request.
+        }
+    }
+
+
     public void beginImageSelector(){
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                                              new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                              MY_PERMISSIONS_REQUEST_READ_EXT_STORAGE);
+            return;
+        }
 
         lastResult = "WAITING";
 

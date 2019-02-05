@@ -30,6 +30,7 @@ freepik tou- really check it carefully ?
 
 android - when storage permission missing - and we open an image
     - see "Cannot find file %s"
+    requestPermissions(), 
 
 ios - loading image progress bar ?  no refresh? < - refresh is done (todo:test)
 
