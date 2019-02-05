@@ -38,6 +38,12 @@ slow announcments texts option
 
 SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256); // see this string in todo
 
+when tapping BG bounce the ADD button !!! 
+// aka             generalUx->uxAnimations->scale_bounce(generalUx->addHistoryBtn, 0.005);
+  // and or after some number of taps, count it?
+
+feedback button
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 images can have a color space????

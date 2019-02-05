@@ -312,13 +312,6 @@ int MainThreadUserEventHandler(SDL_Event* p_event){
 int EventFilter(void* userdata, SDL_Event* event){
     switch ( event->type ){
 
-#ifdef COLORPICK_MISSING_MAIN_LOOP
-        case SDL_USEREVENT:  // normally we process all SDL_USEREVENT in the main loop - but we are missing a main loop on this platform....  maybe we would process these in the animation thread (ShowFrame) instaed of this (event watch) thread?  or maybe split the handling up and don't return 0
-        {
-            return MainThreadUserEventHandler(event);
-        }
-#endif
-
         case SDL_WINDOWEVENT:
         {
 
@@ -579,6 +572,20 @@ void ShowFrame(void*)
 
 //    currentTime = SDL_GetTicks();
 //    openglContext->updateFrame(currentTime - lastTimerTime);
+
+
+#ifdef COLORPICK_MISSING_MAIN_LOOP
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        switch ( event.type ){
+            case SDL_USEREVENT:  // we normally process all these in the main thread.... there are some exceptions for ios
+            {
+                MainThreadUserEventHandler(&event);
+                break;//return 0;
+            }
+        }
+    }
+#endif
 
 
     //SDL_Log("RENDER SCENE....");
