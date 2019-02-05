@@ -1516,6 +1516,9 @@ void Ux::updateColorValueDisplay(SDL_Color* color){
     //addCurrentToPickHistory();
 }
 
+bool Ux::wouldLooseIfColorAdded(){
+    return pickHistoryList->total() > 0 && colorEquals(&pickHistoryList->getLast()->color, currentlyPickedColor);
+}
 
 
 void Ux::addCurrentToPickHistory(){
@@ -1533,9 +1536,9 @@ void Ux::addCurrentToPickHistory(){
     float bounceIntensity = -0.001;
 
     // if we have a lastPickHistoryIndex
-    if( pickHistoryList->total() > 0 || pickHistoryList->largestIndex() > 0 ){
+    if( pickHistoryList->total() > 0  ){
         // the new color must be unique
-        if( colorEquals(&pickHistoryList->getLast()->color, currentlyPickedColor) ){
+        if( wouldLooseIfColorAdded() ){
 
             // we already had this color added to the end of the history... indicate this with an effect and do not continue
 

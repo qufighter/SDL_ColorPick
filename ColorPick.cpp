@@ -316,6 +316,7 @@ void OpenGLContext::pickerForHue(HSV_Color* color, SDL_Color* desired_color){
         // rare spot on guess....
         if( matchDistance == 0 ){
             generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, 1, SCORE_EFFECTS::NOMOVE);
+            generalUx->defaultScoreDisplay->displayExplanation(" > < ");
         }else{
             generalUx->defaultScoreDisplay->display(generalUx->returnToLastImgBtn, matchDistance * 14, SCORE_EFFECTS::NOMOVE);
             //generalUx->defaultScoreDisplay->displayExplanation("*in-exact!!");

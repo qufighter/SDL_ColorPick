@@ -260,7 +260,7 @@ struct uiList
     }
 
     int total(){
-        return _largestIndex+1;//_nextIndex; // if we looped... then this will be wrong
+        return _largestIndex+1;//_nextIndex; // if we looped... then _nextIndex will be wrong
     }
     int largestIndex(){
         return _largestIndex;

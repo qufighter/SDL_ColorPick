@@ -320,6 +320,7 @@ static Ux* Singleton();
     void updatePickHistoryPreview();
     void updatePalleteScroller();
 
+    bool wouldLooseIfColorAdded();
 
     float screenRatio = 1.0f;
     bool widescreen = false;

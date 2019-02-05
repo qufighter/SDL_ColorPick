@@ -220,7 +220,11 @@ void mouseUpEvent(SDL_Event* event){
             // this feature will move
             if( openglContext->pixelInteraction.wasStationary() ){
                 //SDL_Log("No movement BG click");
-                openglContext->generalUx->uxAnimations->scale_bounce(openglContext->generalUx->addHistoryBtn, 0.005);
+                if( openglContext->generalUx->wouldLooseIfColorAdded() ){
+                    //openglContext->generalUx->uxAnimations->scale_bounce(openglContext->generalUx->addHistoryBtn, -0.005);
+                }else{
+                    openglContext->generalUx->uxAnimations->scale_bounce(openglContext->generalUx->addHistoryBtn, 0.005);
+                }
             }
         }else{
             //
@@ -791,6 +795,7 @@ compatibility; this flag is ignored
 //    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
 
     int win_pos_x=0;
     int win_pos_y=0;

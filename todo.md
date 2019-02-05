@@ -1,48 +1,26 @@
 # notes
 DEVELOPER_TEST_MODE
 
+# Checklist
+   platform version number
+   settings displayed version number
+
 #  todo
-
-movement velocity platform diffences (android) (dupe)
-
-add version string somewhere (do not let it look like an IP address!)  maybe this is plat specifc/bundle specific?
- > AndroidManifest.xml
 
 achievements
 can only achieve when points enabled? (at least for points based achievements...)
    - huzzah (3rd button) meh achievement?  training achievement?  need ponts for clicking button though...,
    - 13 points from color 5d5a4b - its improved.... but not an achievement
-   - the +1 "no scope"  mathmagical (color exact found without scan?)
+   - the +1 "no scope"  mathmagical (color exact found without scan?) < TODO: show > < or some other char based message, see generalUx->defaultScoreDisplay->displayExplanation(" [ ] ");
 
 when points disabled, they still accumulate and yuou can still loose yer points.... (is this a bug?)
-
-  SDL_ShowMessageBox > allocate buttons once....
-  > check update policy
-
-  when color is selected in pallete - indicate in history view if visible??????? 
-      (really only good for first 2 -3 rows of history..... has to be reset any time the view color is hidden, more of a can do)
-      IMO this become part of ColorList item itself?  but we don't need to scan the full color list except to reset it?
-      Arguably we should have an index of our list just to help find this.... - or shader bool ikr
-
-- URL shorteners - how friendly with location hash ?
-
-freepik tou- really check it carefully ?
-
-android - when storage permission missing - and we open an image
-    - see "Cannot find file %s"
-    requestPermissions(), 
+   - add lock points feature.... ?
 
 ios - loading image progress bar ?  no refresh? < - refresh is done (todo:test)
+   - android loading image has not progress bar either... blank screen.... maybe ok for now...
 
-hide announcmenet texts (achivements ?) option
+hide announcmenet texts (achivements ?) option - again need to be careful here...explanations will still show
 slow announcments texts option
-
-SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256); // see this string in todo
-
-when tapping BG bounce the ADD button !!! 
-// aka             generalUx->uxAnimations->scale_bounce(generalUx->addHistoryBtn, 0.005);
-  // and or after some number of taps, count it?
-   // see "No movement BG click"
 
 
 ## bugs
@@ -51,6 +29,17 @@ images can have a color space????
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 ##  can do
+
+- URL shorteners - how friendly with location hash ?
+        most are ok with it....  web solution seems plausible....
+
+SDL_ShowMessageBox > allocate buttons once....
+> check update policy
+
+when color is selected in pallete - indicate in history view if visible??????? 
+(really only good for first 2 -3 rows of history..... has to be reset any time the view color is hidden, more of a can do)
+IMO this become part of ColorList item itself?  but we don't need to scan the full color list except to reset it?
+Arguably we should have an index of our list just to help find this.... - or shader bool ikr
 
 send accumulated_movement_x/pxFactor  accumulated_movement_y/pxFactor to the shader
   this represents the approach to 1.0 in each cardinal direction before we move a full pixel over....
@@ -120,7 +109,7 @@ we need test colors like:
 0,85,255 (256*86)
 85,15,15 (256*86)
 // as far as platform android seek color differences...
-// why not try out SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256);
+// why not try out SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256); < -- does not work on android
 
 
 good test color:
