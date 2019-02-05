@@ -15,6 +15,10 @@ uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform sampler2D texture3;
 
+bool oobCheck(vec2 c){
+    return c.x < 0.0 || c.x > 1.0 || c.y < 0.0 || c.y > 1.0;
+}
+
 void main()
 {
     // floor breaks ios... maybe we can hardcode it to 1023 anyway...
@@ -22,17 +26,10 @@ void main()
 
     // todo: keep moving (non int) stuff to vsh???
     float reticuleSize = 0.1 + (0.5 * (1.0-fishEyeScalePercent));
-    float retSize = 0.5 - (reticuleSize * 0.5);  // half of the size of the visibe pixel color reticule - the rest will be filled with ccolor
-    float pointFour = retSize;
-    float pointSix = 1.0 - retSize;
+    float retSize = 0.5 - (reticuleSize * 0.5);  // half of the size of the visible pixel color reticule - the rest will be filled with ccolor
 
     vec2 octr=vec2(0.5,0.5);
     float dis=distance(octr,TexCoordOut) / fishEyeScale;
-
-    float maxDis = (0.3 / (fishEyeScale));
-
-        float scaler = (dis - maxDis) * (texWidth * 0.2);
-        if( scaler < 1.0 ) scaler = 1.0;
 
     vec2 inp=(TexCoordOut * texWidth);
     vec2 ctr=vec2(halfTexWidth,halfTexWidth);
@@ -40,7 +37,7 @@ void main()
 
     float aRetDist = 0.0001; // 0.0123 @ 255
 
-    vec2 res=(ctr + (agl * dis)) ;
+    vec2 res=(ctr + (agl * dis));
 
     float halfPixel = 0.5;
 
@@ -48,7 +45,9 @@ void main()
 
     vec2 pixelPosition = floor(res+halfPixel) / texWidthLessOne;
 
-    if(  pixelPosition.x > 0.0 && pixelPosition.x < 1.0 && pixelPosition.y > 0.0 && pixelPosition.y < 1.0){
+    vec4 ocolor;
+
+    if( pixelPosition.x > 0.0 && pixelPosition.x < 1.0 && pixelPosition.y > 0.0 && pixelPosition.y < 1.0){
 
 		vec4 bcolor=texture2D(texture1,  pixelPosition); //maths
 
@@ -60,8 +59,8 @@ void main()
 			ccolor = vec4(1.0,1.0,1.0,1.0);
 		}
 
-        if( (get.x == halfTexWidthInt && get.y == halfTexWidthInt) //){
-           && (res.x < halfTexWidth - pointFour || res.x > halfTexWidth + pointFour || res.y < halfTexWidth - pointFour || res.y > halfTexWidth + pointFour) ){
+        if( (get.x == halfTexWidthInt && get.y == halfTexWidthInt)
+           && (res.x < halfTexWidth - retSize || res.x > halfTexWidth + retSize || res.y < halfTexWidth - retSize || res.y > halfTexWidth + retSize) ){
 				bcolor = ccolor;
 		}
 
@@ -73,14 +72,11 @@ void main()
         //corner color preview
 //        float cornerSize = texWidth *0.45;
 //        if( inp.x < cornerSize && inp.y > texWidth - cornerSize ){
-//            //bcolor = texelFetch2D(texture1, ivec2(ctr) , 0);
 //            bcolor = pcolor;
 //        }
 
         if( bcolor.a == 0.0){
-
-            vec4 ocolor;
-            if( backgroundTexCoord.x < 0.0 || backgroundTexCoord.x > 1.0 || backgroundTexCoord.y < 0.0 || backgroundTexCoord.y > 1.0 ){
+            if( oobCheck(backgroundTexCoord) ){
                 ocolor=vec4(0.0,0.0,0.0,1.0);
             }else{
                 ocolor=texture2D(texture2, backgroundTexCoord);
@@ -91,9 +87,7 @@ void main()
         gl_FragColor = bcolor;
 
     }else{
-
-        vec4 ocolor;
-        if( backgroundTexCoord.x < 0.0 || backgroundTexCoord.x > 1.0 || backgroundTexCoord.y < 0.0 || backgroundTexCoord.y > 1.0 ){
+        if( oobCheck(backgroundTexCoord) ){
             ocolor=vec4(0.0,0.0,0.0,1.0);
         }else{
             ocolor=texture2D(texture2, backgroundTexCoord);
