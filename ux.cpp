@@ -1186,7 +1186,7 @@ void Ux::interactionNoOp(uiObject *interactionObj, uiInteraction *delta){
 
 }
 
-void Ux::doOpenURL(char* url){
+void Ux::doOpenURL(char* url){ // note: any spaces in the URL will cause this to not work (osx)... replace with + or encode to %20 ?
     openURL(url); // uses platform specific version from FileChooser.h
 }
 

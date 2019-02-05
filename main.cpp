@@ -218,6 +218,10 @@ void mouseUpEvent(SDL_Event* event){
             // we have missed the UI and BG clicked oh now what
             // this breaks multigesture somehow
             // this feature will move
+            if( openglContext->pixelInteraction.wasStationary() ){
+                //SDL_Log("No movement BG click");
+                openglContext->generalUx->uxAnimations->scale_bounce(openglContext->generalUx->addHistoryBtn, 0.005);
+            }
         }else{
             //
             //openglContext->generalUx->interactionUpdate(uiInteraction *delta);

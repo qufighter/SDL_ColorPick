@@ -19,8 +19,8 @@ this is really different from uiHistoryPalleteEditor in that it takes up the ful
 
 struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and is pretty much singleton....
 
-
-    const static int maxSettings = 40;
+    const char* appVersion = "Version-1.0"; // no spaces allowed or we won't be able to open URL
+    const static int maxSettings = 45;
 
     typedef enum  {
         HEADING,
@@ -270,11 +270,18 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
 
         settingsList->add(SettingsListObj((new uiObject()), SETTING_TYPES_ENUM::SPACE, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->pad(0.4,0.001)->print("Feedback!")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, subWidth))->marginLeft(0.05)->print(appVersion)->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+        settingsList->add(SettingsListObj((new uiControlButton(d, "Bugs / Comments", &interactionGoToFeedbackUrl))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
+        settingsList->add(SettingsListObj((new uiObject()), SETTING_TYPES_ENUM::SPACE, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
 
         if( settingsList->_out_of_space ){
-            SDL_Log("\n\n\nERROR: we do not have enough maxSettings for all the settings scroller items!!!\n\n\n");
+            SDL_Log("\n\n\nERROR: we do not have enough maxSettings for all the settings scroller items!!!  Increase maxSettings \n\n\n");
             SDL_Quit();
             exit(1);
         }
@@ -569,6 +576,18 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         Ux* myUxRef = Ux::Singleton();
         myUxRef->interactionFileBrowserTime(interactionObj, delta);
         interactionToggleSettings(nullptr, nullptr);
+    }
+
+    static void interactionGoToFeedbackUrl(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        uiSettingsScroller* self = myUxRef->settingsScroller;
+        //const char* urlBase = "http://www.vidsbee.com/Contact/?BugReportInfo=1&browserinfo=AppVersion:NativeColorPick"; // this would include extra stuff, that we get anyway.
+        const char* urlBase = "http://www.vidsbee.com/Contact/?browserinfo=AppVersion:NativeColorPick";
+        long len = SDL_strlen(urlBase) + SDL_strlen(self->appVersion) + 10;
+        char* clrStr = (char*)SDL_malloc( sizeof(char) * len );
+        SDL_snprintf(clrStr, len,  "%s:%s:::", urlBase, self->appVersion);
+        myUxRef->doOpenURL(clrStr);
+        SDL_free(clrStr);
     }
 
     static void interactionResetScoreBtn(uiObject *interactionObj, uiInteraction *delta){

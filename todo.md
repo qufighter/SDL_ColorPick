@@ -41,10 +41,8 @@ SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256); // see this string in todo
 when tapping BG bounce the ADD button !!! 
 // aka             generalUx->uxAnimations->scale_bounce(generalUx->addHistoryBtn, 0.005);
   // and or after some number of taps, count it?
+   // see "No movement BG click"
 
-feedback button
-
-android - split screen (hold down switch app button) cannot restore window!
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -229,7 +227,7 @@ win impl
 
 ### android
 // (done?) timer keeps firign in background if file chooser is left open... // we tried this but we can't pick an image... not quite sure why yet... compare logs?
-
+contribute to sdl multi-window support, (see multi-window html) and android:resizeableActivity="false"
 
 ### ios
 anything using main loop timers (processed on main loop) are not processed....
