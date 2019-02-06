@@ -1464,10 +1464,34 @@ bool Ux::bubbleWhenHidden(uiObject *interactionObj, uiInteraction *delta){ // re
     return true;
 }
 
+// if we are moving up or down we want to scroll instead
+bool Ux::bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
+    // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
+    Ux* self = Ux::Singleton();
+
+    if( interactionObj->isInHiddenState() ){
+        return self->bubbleCurrentInteraction();
+    }
+    //SDL_Log("we are looking at the fabs %f %f ", fabs(delta->dy), fabs(delta->dx) );
+    if( !interactionObj->doesInFactRender
+       || ( fabs(delta->dy) > 0.01f && fabs(delta->dx) < 0.01f) ){ // or is approx 0
+
+        if( interactionObj->hasInteractionCb ){
+            // in some cases, we can pretend the interaction DID complete (even though the mouse is not released) since the handler will reset the position automagically and is otherwise no-op
+            // this is utilized currently in uiControlBooleanToggle
+            interactionObj->interactionCallback(interactionObj, delta);
+        }
+
+        return self->bubbleCurrentInteraction();
+    }
+
+    return true;
+}
+
 // this really means when swiping left far enough we disable scrolling
 // other conditions we should bubble (if it seems like scrolling)
 // this is also becomming rather specific to scroller tiles, and probably belongs in the scroller....
-bool Ux::bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
+bool Ux::bubbleInteractionIfNonHorozontalMovementScroller(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
     // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
 
     Ux* self = Ux::Singleton();

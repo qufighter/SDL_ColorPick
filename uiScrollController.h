@@ -598,7 +598,7 @@ struct uiScrollController{
                         scrollTile->setInteractionCallback(tileClicked); // needs more // cannot be setClickInteractionCallback though...
                         scrollTile->setInteraction(tileDragged);
 
-                        scrollTile->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonHorozontalMovement);
+                        scrollTile->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonHorozontalMovementScroller);
                     } // HMM first 2 tiles are not clickable...
                     // why do we do this: this should just allocate 2 tiles.
 

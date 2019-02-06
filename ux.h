@@ -276,7 +276,8 @@ static Ux* Singleton();
     static void interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteraction *delta);
     static bool bubbleInteractionIfNonClickOrHiddenPalletePreview(uiObject *interactionObj, uiInteraction *delta);
     static bool bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *delta);
-    static bool bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiInteraction *delta); // return true always, unless the interaction should be dropped and not bubble for some reason....
+    static bool bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiInteraction *delta);
+    static bool bubbleInteractionIfNonHorozontalMovementScroller(uiObject *interactionObj, uiInteraction *delta); // return true always, unless the interaction should be dropped and not bubble for some reason....
     static bool bubbleWhenHidden(uiObject *interactionObj, uiInteraction *delta);
 
     static int indexForColor(SDL_Color* c);

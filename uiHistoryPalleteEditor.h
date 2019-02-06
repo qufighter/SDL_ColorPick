@@ -936,8 +936,15 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             return;
         }
 
+        myUxRef->uxAnimations->scale_bounce(interactionObj, -0.002);
         self->addColorToPallete(interactionObj, interactionObj->backgroundColor, true);
         self->palleteScroller->scrollToItemByIndex(myUxRef->palleteList->previousIndex());
+
+//        uiObject* visibleTile = self->palleteScroller->getVisibleTileForOffsetOrNull(myUxRef->palleteList->previousIndex());
+//        if( visibleTile != nullptr ){
+//            myUxRef->uxAnimations->scale_bounce(visibleTile, -0.002);
+//        }
+
     }
 
     bool isGameModeHardMode(){
@@ -1404,6 +1411,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
         interactionObjectOrProxy->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObjectOrProxy) ); // returns uiAminChain*
 
+        myUxRef->uxAnimations->scale_bounce(interactionObj, -0.002);
 
         bool changed = self->palleteSelectionColorPreview->update(&interactionObj->backgroundColor);
 
