@@ -61,8 +61,23 @@ void main()
 
         if( (get.x == halfTexWidthInt && get.y == halfTexWidthInt)
            && (res.x < halfTexWidth - retSize || res.x > halfTexWidth + retSize || res.y < halfTexWidth - retSize || res.y > halfTexWidth + retSize) ){
-				bcolor = ccolor;
-		}
+                bcolor = ccolor;
+        }
+
+        // outline where ever the selected color also is... 0.1 needs to be scaled based on distance
+//        if( pcolor.rgb == bcolor.rgb ){
+//            vec2 TlEdgePixelPosition = floor(res+halfPixel-0.1) / texWidthLessOne;
+//            vec4 tlEdgeColor=texture2D(texture1,  TlEdgePixelPosition);
+//            if( tlEdgeColor.rgb != bcolor.rgb ){
+//                bcolor=ccolor;
+//            }else{
+//                vec2 TrEdgePixelPosition = floor(res+halfPixel+0.1) / texWidthLessOne;
+//                vec4 trEdgeColor=texture2D(texture1,  TrEdgePixelPosition);
+//                if( trEdgeColor.rgb != bcolor.rgb ){
+//                    bcolor=ccolor;
+//                }
+//            }
+//        }
 
         //circle
 //        if( dis > 0.009 && dis < 0.01 ){

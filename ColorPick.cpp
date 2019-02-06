@@ -1160,7 +1160,7 @@ void OpenGLContext::begin3dDropperAnimation(int aDropperAnimation) {
 }
 
 void OpenGLContext::begin3dDropperAnimation(void) {
-    begin3dDropperAnimation(DROPPER_ANIMATION_ENUM::ANIMATION_ZOOM_INTO_DROPPER);
+    begin3dDropperAnimation(DROPPER_ANIMATION_ENUM::ANIMATION_DEFAULT);
 }
 
 void OpenGLContext::eyedropperTestMatrix(float progress){
@@ -1218,9 +1218,6 @@ void OpenGLContext::eyedropperTestMatrix(float progress){
 void OpenGLContext::eyedropperAddColorMatrix(float progress){
     matrixModel = glm::mat4(1.0f);
     float rotation = progress * 90.0f;
-    float position = progress * 10.0f;
-    float scale = 1.0 - progress;
-
     if( progress > 0.9 ){
         float endProgress = 1.0 - ((1.0 - progress) / 0.1);
         matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, endProgress * -3.0f, endProgress * 20.0f));
@@ -1228,18 +1225,43 @@ void OpenGLContext::eyedropperAddColorMatrix(float progress){
         float beginProgress = 1.0 - (progress / 0.1);
         matrixModel = glm::translate(matrixModel, glm::vec3(beginProgress * 2.0f, beginProgress * -2.0f, beginProgress * 40.0f));
     }
-
     matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
-    matrixModel = glm::rotate(matrixModel, 45.0f, glm::vec3(1.0f, 1.0f, 0.0f)); // upside down (point up)
+    matrixModel = glm::rotate(matrixModel, 45.0f, glm::vec3(1.0f, 1.0f, 0.0f));
     matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
-
-    //matrixModel = glm::rotate(matrixModel, -rotation*0.25f, glm::vec3(1.0f, 0.0f, 0.0f));
     matrixModel = glm::rotate(matrixModel, -progress*25.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-
-
 }
 
+void OpenGLContext::eyedropperZoomDropperMatrix(float progress){
+    matrixModel = glm::mat4(1.0f);
+    float rotation = progress * 90.0f;
+    float scale = 1.0f+ (progress * 2.0f); // 1.0 - progress;
+    // need an exponentail slow down as we approach the end of the dropper...
+    float invProg = 1.0 - progress;
+    float scaler = invProg * 100;
+    float invProgResult = (scaler * scaler) / 10000;
+    // 1.0 puts the entire dropper behind the camera, -15 lets us see the back of the dropper
+    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 1.0 + (invProgResult * -13.0f)));
+    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
+    matrixModel = glm::scale(matrixModel, glm::vec3(scale,scale,scale));
+}
 
+void OpenGLContext::eyedropperZoomDropperBulbMatrix(float progress){
+    matrixModel = glm::mat4(1.0f);
+    float scaler = progress * 100;
+    float progResult = (scaler * scaler) / 10000;
+    float rotation = progress * 90.0f;
+    float position = progResult * 30.0f;
+    float scale = 1.0f+ (progress * 4.0f);
+    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f + position));
+    if( progress < 0.25 ){
+        float beginProgress = 1.0 - (progress / 0.25);
+        matrixModel = glm::translate(matrixModel, glm::vec3(beginProgress * 2.0f, beginProgress * -2.0f, 0.0f));
+        matrixModel = glm::rotate(matrixModel, beginProgress * -90, glm::vec3(1.0f, 1.0f, 0.0f));
+    }
+    matrixModel = glm::rotate(matrixModel, 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
+    matrixModel = glm::scale(matrixModel, glm::vec3(scale,scale,1.0));
+}
 
 void OpenGLContext::render3dDropperAnimation(void) {
     if( animationDropper3dId == DROPPER_ANIMATION_ENUM::NO_ANIMATION ){return;}
@@ -1248,12 +1270,24 @@ void OpenGLContext::render3dDropperAnimation(void) {
     float progress=1.0;
 
     if( animationDropper3dId == ANIMATION_ADD_COLOR ){
-
-        progress = (SDL_GetTicks() - animationDropper3dStartTime) / 1000.0f;
+        progress = (SDL_GetTicks() - animationDropper3dStartTime) / 1200.0f;
         eyedropperAddColorMatrix(progress);
         render3dDropper(progress);
-
-    } else {
+    } else if( animationDropper3dId == ANIMATION_ZOOM_INTO_DROPPER ){
+        progress = (SDL_GetTicks() - animationDropper3dStartTime) / 3000.0f;
+        eyedropperZoomDropperMatrix(progress);
+        render3dDropper(0.0);
+    } else if( animationDropper3dId == ANIMATION_ZOOM_INTO_BULB ){
+        progress = (SDL_GetTicks() - animationDropper3dStartTime) / 1500.0f;
+        if( progress <= 1.0 ){
+            eyedropperZoomDropperBulbMatrix(progress);
+            render3dDropper(0.0);
+        }else{
+            animationDropper3dId = DROPPER_ANIMATION_ENUM::NO_ANIMATION;
+            generalUx->defaultScoreDisplay->displayExplanation(" Mini Game ");
+        }
+        return; // custom progress handling.... for end events...
+    } else if( animationDropper3dId == ANIMATION_DEFAULT ){
         //SDL_Log("Default debug animation rendering...");
         progress = (SDL_GetTicks() - animationDropper3dStartTime) / 8000.0f;
         if( progress < 8.0 ){
@@ -1262,15 +1296,15 @@ void OpenGLContext::render3dDropperAnimation(void) {
         }else{
             // animation is "done" lets mark it as such
             animationDropper3dId = DROPPER_ANIMATION_ENUM::NO_ANIMATION;
-
-            // bounce the add icon
+            // bounce the add icon when our animation is done....
             generalUx->uxAnimations->scale_bounce(generalUx->addHistoryBtn, 0.005);
         }
-        return; // custom progress handling....
+        return; // custom progress handling.... for repeat of animations
     }
 
-    if( progress > 1.0 ){
+    if( progress >= 1.0 ){
         animationDropper3dId = DROPPER_ANIMATION_ENUM::NO_ANIMATION;
+        //SDL_Log("3d animation done");
     }
 }
 

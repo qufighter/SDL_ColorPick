@@ -22,6 +22,7 @@ ios - loading image progress bar ?  no refresh? < - refresh is done (todo:test)
 hide announcmenet texts (achivements ?) option - again need to be careful here...explanations will still show
 slow announcments texts option
 
+REALLY reset the chain multiplier (the 2 times it gets reset accidentally to 1, and should be set to 0)
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)

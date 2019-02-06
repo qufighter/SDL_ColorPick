@@ -84,6 +84,7 @@ public:
         ANIMATION_ZOOM_INTO_BULB,
         ANIMATION_ADD_COLOR,
         ANIMATION_FAILED_ADD_COLOR,
+        ANIMATION_DEFAULT,
     } DROPPER_ANIMATION_ENUM;
 
     static OpenGLContext* Singleton();
@@ -104,11 +105,12 @@ public:
 
     void setLight(void);
 
-    void eyedropperTestMatrix(float progress);
     void render3dDropper(float colorFillPercent);
 
-
+    void eyedropperTestMatrix(float progress);
     void eyedropperAddColorMatrix(float progress);
+    void eyedropperZoomDropperMatrix(float progress);
+    void eyedropperZoomDropperBulbMatrix(float progress);
 
 
 
