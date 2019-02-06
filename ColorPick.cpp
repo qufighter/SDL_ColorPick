@@ -1175,7 +1175,6 @@ void OpenGLContext::eyedropperTestMatrix(float progress){
     float scale = 1.0 - progress;
 
 
-
     // try translating Z.. compare with matrixViews eye
     //       matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
     // so +z moves towards screen..
@@ -1183,8 +1182,6 @@ void OpenGLContext::eyedropperTestMatrix(float progress){
     //
 
     //    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
-
-
 
     //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, 0.5));
     //   matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
@@ -1224,12 +1221,21 @@ void OpenGLContext::eyedropperAddColorMatrix(float progress){
     float position = progress * 10.0f;
     float scale = 1.0 - progress;
 
+    if( progress > 0.9 ){
+        float endProgress = 1.0 - ((1.0 - progress) / 0.1);
+        matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, endProgress * -3.0f, endProgress * 20.0f));
+    }else if( progress < 0.1 ){
+        float beginProgress = 1.0 - (progress / 0.1);
+        matrixModel = glm::translate(matrixModel, glm::vec3(beginProgress * 2.0f, beginProgress * -2.0f, beginProgress * 40.0f));
+    }
+
     matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
     matrixModel = glm::rotate(matrixModel, 45.0f, glm::vec3(1.0f, 1.0f, 0.0f)); // upside down (point up)
     matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
 
     //matrixModel = glm::rotate(matrixModel, -rotation*0.25f, glm::vec3(1.0f, 0.0f, 0.0f));
     matrixModel = glm::rotate(matrixModel, -progress*25.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+
 
 }
 
@@ -1293,7 +1299,9 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
     glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
     glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
 
-    
+
+    colorFillPercent = (colorFillPercent - 0.1) / 0.9; // the first 0.1 are skipped
+
     float fill_requirement = 0.00001;
 
     if( colorFillPercent > fill_requirement ){
