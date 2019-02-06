@@ -26,6 +26,8 @@ import android.util.Log;
 
 public class SDLColorPickActivity extends SDLActivity {
 
+    private static final String TAG = "ColorPickSDL";
+
     private static int RESULT_LOAD_IMAGE = 1;
 
     public static native void loadThisImagePath(String path);
@@ -131,6 +133,47 @@ public class SDLColorPickActivity extends SDLActivity {
 
 
     }
+
+
+
+
+
+//    @Override
+//    protected void onPause() {
+//        Log.v(TAG, "intercepted onPause()");
+//
+//        NativeState realCurrentNativeState = mCurrentNativeState;
+//        mCurrentNativeState = NativeState.PAUSED;
+//        super.onPause(); // since we hacked mCurrentNativeState above this should have no effect....
+//
+//        mCurrentNativeState = realCurrentNativeState;
+//
+//        //SDLActivity.onResume();
+//
+//        super.onResume();
+//    }
+//
+//    @Override
+//    protected void onResume() {
+//        Log.v(TAG, "intercepted onResume()");
+//        super.onResume();
+//        //SDLActivity.onResume();
+//    }
+//
+//    @Override
+//    protected void onStop() {
+//        Log.v(TAG, "intercepted onStop()");
+//        //super.onStop();
+//        super.onPause();
+//    }
+//
+//    @Override
+//    protected void onStart() {
+//        Log.v(TAG, "intercepted onStart()");
+//        //super.onStart();
+//        super.onResume();
+//    }
+
 
 }
 

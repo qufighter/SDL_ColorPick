@@ -33,8 +33,6 @@ void main()
 
     float nNdotL = max(dot(globalLight,normalOut.xyz),ambient_light);
 
-    ocolor.rgb *= nNdotL;
-
     float ratio = 1.00 / 1.52; // glass
 
     vec3 CamPos = vec3(0.0,0.0,0.0);
@@ -55,7 +53,9 @@ void main()
 
     vec4 reflection_color =texture2D(texture1, vec2( R.x, -R.y) + vec2(0.5,0.5) );
 
-    gl_FragColor.rgb = mix(reflection_color.rgb,ocolor.rgb,0.125);
 
-    gl_FragColor.a = ocolor.a;
+
+    gl_FragColor.rgb = mix(reflection_color.rgb * nNdotL,ocolor.rgb * nNdotL,0.0625 * nNdotL);
+
+    gl_FragColor.a = ocolor.a; //  / nNdotL;
 }
