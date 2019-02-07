@@ -166,6 +166,7 @@ struct uniformLocationStruct
     textureSampler,
     textureSampler2,
     textureSampler3,
+    ui_modelMatrix,
     ui_scale,
     ui_position,
     ui_color,

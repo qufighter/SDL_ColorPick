@@ -24,12 +24,24 @@ slow announcments texts option
 
 REALLY reset the chain multiplier (the 2 times it gets reset accidentally to 1, and should be set to 0)
 
+// some random thing ? we need to roll above though.
+
+the non scrolling "out of space" should possibly flash the lightening bolt??
++10 out of space excessive...
+
+pigcel
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 images can have a color space????
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 ##  can do
+
+additional sorts (dark->light->dark) (dull -> vivid -> dull)
+
+the adjustments histogram/curves/gamma correction/etc for image
+   the rotation of the image
 
 - URL shorteners - how friendly with location hash ?
         most are ok with it....  web solution seems plausible....

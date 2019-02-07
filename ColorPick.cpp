@@ -443,6 +443,10 @@ void OpenGLContext::setupScene(void) {
 
     matrixViews = glm::lookAt(glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0)); // eye, center, up
 
+    minigameCounterMatrix = glm::mat4(1.0f);
+    minigameCounterMatrix = glm::rotate(minigameCounterMatrix, -45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+    minigameCounterMatrix = glm::translate(minigameCounterMatrix, glm::vec3(0.0f, 2.3f, 9.0f));
+
     meshes = Meshes::Singleton();
 
     textures = Textures::Singleton();
@@ -726,6 +730,8 @@ void OpenGLContext::loadShaders(void){
 
     shader_ui_shader_default = new Shader("shaders/uiShader.vsh", "shaders/uiShader.fsh");
 
+    shader_3d_ui = new Shader("shaders/uiShader.vsh.3d.vsh", "shaders/uiShader.fsh");
+
     shader_3d = new Shader("shaders/3dShader.vsh", "shaders/3dShader.fsh");
 
     shader_3d_unlit = new Shader("shaders/3dShader.vsh", "shaders/3dShader.fsh.Unlit.fsh");
@@ -741,6 +747,7 @@ void OpenGLContext::reloadShaders(void){
     // reload just doesn't work - because the build files are not in teh same location
     shader_lit_detail->reload();
     shader_ui_shader_default->reload();
+    shader_3d_ui->reload();
     shader_3d->reload();
     shader_3d_Glass->reload();
     shader_3d_unlit->reload();
@@ -1111,8 +1118,6 @@ void OpenGLContext::renderScene(void) {
 
     debugGLerror("renderScene glEnable GL_BLEND");
 
-
-    //render3dScene();
     render3dDropperAnimation();
 
 
@@ -1165,70 +1170,54 @@ void OpenGLContext::begin3dDropperAnimation(void) {
 
 void OpenGLContext::eyedropperTestMatrix(float progress){
     matrixModel = glm::mat4(1.0f);
-    //    matrixViews = glm::mat4(1.0f);
-    //    matrixPersp = glm::mat4(1.0f);
-
     float rotation = progress * 90.0f;
-
-    float position = progress * 10.0f;
-
-    float scale = 1.0 - progress;
-
-
+//    float position = progress * 10.0f;
+//    float scale = 1.0 - progress;
     // try translating Z.. compare with matrixViews eye
     //       matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
     // so +z moves towards screen..
     matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
-    //
-
     //    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
-
     //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, 0.5));
     //   matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
-
     // matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -1.0f)); // in bulb
-
     //    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 0.0f)); // base
-
-
     //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 1.0f));
-
-
     //matrixModel = glm::rotate(matrixModel, 180.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // pointed at camera
     //  matrixModel = glm::rotate(matrixModel, -90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // vertical (point down)
-
-
     //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, scale)); // if we are already looking down the stem, this collapses the stem.... if we rotated it first we will see this from the side...
     //    SDL_Log("scale %f " , scale);
-
-
     matrixModel = glm::rotate(matrixModel, rotation*4.0f, glm::vec3(0.0f, 0.0f, 1.0f));
     matrixModel = glm::rotate(matrixModel, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // upside down (point up)
     matrixModel = glm::rotate(matrixModel, -rotation*4, glm::vec3(1.0f, 0.0f, 0.0f));
-           matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 1.0f, 0.0f));
-
-
+    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 1.0f, 0.0f));
     //  matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 8.0f));
-
     //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 9.0f));
-
-
 }
 
 void OpenGLContext::eyedropperAddColorMatrix(float progress){
     matrixModel = glm::mat4(1.0f);
     float rotation = progress * 90.0f;
+    bool endProgressActive = false;
+    float endProgress=0.0f;
     if( progress > 0.9 ){
-        float endProgress = 1.0 - ((1.0 - progress) / 0.1);
+        endProgress = 1.0 - ((1.0 - progress) / 0.1);
         matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, endProgress * -3.0f, endProgress * 20.0f));
+        endProgressActive=true;
+
     }else if( progress < 0.1 ){
         float beginProgress = 1.0 - (progress / 0.1);
         matrixModel = glm::translate(matrixModel, glm::vec3(beginProgress * 2.0f, beginProgress * -2.0f, beginProgress * 40.0f));
     }
-    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
+    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f)); // how far away is dropper
     matrixModel = glm::rotate(matrixModel, 45.0f, glm::vec3(1.0f, 1.0f, 0.0f));
     matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
     matrixModel = glm::rotate(matrixModel, -progress*25.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+
+    if( endProgressActive ){
+        // some random thing ? we need to roll above though.
+        matrixModel = glm::rotate(matrixModel, endProgress * -90.0f, glm::vec3(1.0f, 1.0f, 0.0f));
+    }
 }
 
 void OpenGLContext::eyedropperZoomDropperMatrix(float progress){
@@ -1263,6 +1252,13 @@ void OpenGLContext::eyedropperZoomDropperBulbMatrix(float progress){
     matrixModel = glm::scale(matrixModel, glm::vec3(scale,scale,1.0));
 }
 
+void OpenGLContext::miniGameTextAnimComplete(Ux::uiAnimation* uiAnim){
+    OpenGLContext::Singleton()->begin3dDropperAnimation(OpenGLContext::ANIMATION_ZOOM_INTO_DROPPER, nullptr);
+
+//    uiScrollController* self = uiAnim->myUiObject->myScrollController;
+//    self->animConstrainToScrollableRegion(); // careful - ani is updating (though our current animation just completed)
+}
+
 void OpenGLContext::render3dDropperAnimation(void) {
     if( animationDropper3dId == DROPPER_ANIMATION_ENUM::NO_ANIMATION ){return;}
     // presumably this/each animation knows when it's done... based on some duration of the specified animation..... for now we will say 4 seconds
@@ -1284,7 +1280,12 @@ void OpenGLContext::render3dDropperAnimation(void) {
             render3dDropper(0.0);
         }else{
             animationDropper3dId = DROPPER_ANIMATION_ENUM::NO_ANIMATION;
-            generalUx->defaultScoreDisplay->displayExplanation(" Mini Game ");
+            Ux::uiAminChain* myAnimChain = generalUx->defaultScoreDisplay->displayExplanation(" Mini Game ");
+
+            myAnimChain->addAnim((new Ux::uiAnimation(generalUx->defaultScoreDisplay->explanation_position))->setAnimationReachedCallback(miniGameTextAnimComplete) );
+
+            // when our game is done....
+
         }
         return; // custom progress handling.... for end events...
     } else if( animationDropper3dId == ANIMATION_DEFAULT ){
@@ -1427,9 +1428,9 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
 
         uniformLocations = shader_3d_unlit->bind(); // Bind our shader
 
-        matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, colorFillPercent * 1.0));
+        glm::mat4 matrixModelInk = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, colorFillPercent * 1.0));
 
-        glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
+        glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModelInk[0][0]); // Send our model matrix to the shader
         glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
         glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
 
@@ -1443,7 +1444,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
         uniformLocations = shader_3d->bind(); // Bind our shader
         setLight();
 
-        glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModel[0][0]); // Send our model matrix to the shader
+        glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &matrixModelInk[0][0]); // Send our model matrix to the shader
         glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
         glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
 
@@ -1462,6 +1463,35 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
 
         glDisable(GL_STENCIL_TEST);
 
+        // some 3d ux experiment...
+
+        // UI needs square....
+        glBindVertexArray(rect_vaoID[0]);
+
+        //glEnable(GL_CULL_FACE);
+        //glDisable(GL_DEPTH_TEST);
+        uniformLocations = shader_3d_ui->bind(); // Bind our shader
+
+        glUniform1i(uniformLocations->textureSampler, 0);
+        glActiveTexture( GL_TEXTURE0 + 0);
+        glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
+
+        glm::mat4 counterMat = matrixModel * minigameCounterMatrix;
+        glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &counterMat[0][0]); // Send our model matrix to the shader
+        glUniformMatrix4fv(uniformLocations->viewMatrixLocation, 1, GL_FALSE, &matrixViews[0][0]); // Send our model matrix to the shader
+        glUniformMatrix4fv(uniformLocations->projectionMatrixLocation, 1, GL_FALSE, &matrixPersp[0][0]); // Send our model matrix to the shader
+
+        // this renderes the ENTIRE ui on our "quad"
+        //generalUx->renderObject(uniformLocations);
+        // the quad is not the same aspect ratiou as the screen
+
+        // the render is always within the root render space where sizes rae computed...  with knowldge of that we can (painfluly?) scale it to the ful quad
+        glm::mat4 uiSizerMat = glm::mat4(1.0f);
+        Ux::uiObject* toRender; // = generalUx->curerntColorPreview->uiObjectItself;
+        // realistically any object destined to take up the full quad, should just be added to root, or orphaned adn updated independently.
+        toRender = generalUx->minigameCounterText;
+
+        generalUx->renderObjects(uniformLocations, toRender, uiSizerMat);
     }
 
     // "reset" the following (arguably this should just move out of here?)
@@ -1471,52 +1501,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
     renderShouldUpdate=true; // keep animation going...
     debugGLerror("render3dDropperAnimation ending");
 }
-//
-//void OpenGLContext::render3dScene(void) { // TODO: delete this prelim test fn....
-//
-//
-//    debugGLerror("renderScene4d glDisable glEnable");
-//
-//
-//
-//
-//
-//    matrixModel = glm::mat4(1.0f);
-////    matrixViews = glm::mat4(1.0f);
-////    matrixPersp = glm::mat4(1.0f);
-//
-//    float rotation = (SDL_GetTicks() * 1.0f) / 50.0f;
-//
-//    float position = (SDL_GetTicks() * 1.0f) / 500.0f;
-//
-//    float scale = 1.0 - (((SDL_GetTicks() % 2000) * 1.0f) / 2000.0f); // from 1.0 -> 0.0 every 2 seconds
-//
-//
-//
-//    // try translating Z.. compare with matrixViews eye
-//    //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
-//    // so +z moves towards screen..
-//    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
-//
-////    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -10.0f + position));
-//    //    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, 0.5));
-// //   matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -20.0f));
-//   // matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, -1.0f)); // in bulb
-////    matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 0.0f)); // base
-//    //matrixModel = glm::translate(matrixModel, glm::vec3(0.0f, 0.0f, 1.0f));
-//    //matrixModel = glm::rotate(matrixModel, 180.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // pointed at camera
-// //  matrixModel = glm::rotate(matrixModel, -90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // vertical (point down)
-////    matrixModel = glm::scale(matrixModel, glm::vec3(1.0f, 1.0f, scale)); // if we are already looking down the stem, this collapses the stem.... if we rotated it first we will see this from the side...
-////    SDL_Log("scale %f " , scale);
-//
-//
-//    matrixModel = glm::rotate(matrixModel, rotation*2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-//    matrixModel = glm::rotate(matrixModel, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // upside down (point up)
-//    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(1.0f, 0.0f, 0.0f));
-//    matrixModel = glm::rotate(matrixModel, rotation, glm::vec3(0.0f, 1.0f, 0.0f));
-//
-//    render3dDropper(0.0f);
-//}
+
 
 #ifdef DEVELOPER_TEST_MODE
 void OpenGLContext::TEST_BEGIN(void) {
@@ -1540,7 +1525,6 @@ void OpenGLContext::TEST_CAN_VIEW_ANY_COLOR(void) {
                 aColor.r=r;
                 aColor.g=g;
                 aColor.b=b;
-
                 SDL_Event event;
                 SDL_UserEvent userevent;
                 userevent.type = SDL_USEREVENT;
@@ -1567,7 +1551,7 @@ void OpenGLContext::createSquare(void) {
     srand ( (unsigned int)(time(NULL)) );
     float c1=0;//(float)(rand() % 10);
     float c2=0;//(float)(rand() % 10);
-    float c3=0;//(float)(rand() % 10);
+    float c3=0;
     float c4=0;//(float)(rand() % 10);
 
     GLuint squareTriangleIndicies[4];

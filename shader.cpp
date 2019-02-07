@@ -193,6 +193,7 @@ void Shader::reload() {
 	uniformLocations->projectionMatrixLocation =	glGetUniformLocation(shader_id, "projectionMatrix"); // Get the location of our projection matrix in the shader
 	uniformLocations->viewMatrixLocation =			glGetUniformLocation(shader_id, "viewMatrix"); // Get the location of our view matrix in the shader
 	uniformLocations->modelMatrixLocation =			glGetUniformLocation(shader_id, "modelMatrix"); // Get the location of our model matrix in the shader
+    uniformLocations->ui_modelMatrix =            glGetUniformLocation(shader_id, "ui_modelMatrix"); // Get the location of our model matrix in the shader
 //	uniformLocations->textureSampler =				glGetUniformLocation(shader_id, "my_texture"); // Get the location of our model matrix in the shader
 //	uniformLocations->textureSampler2 =				glGetUniformLocation(shader_id, "my_texture2"); // Get the location of our model matrix in the shader
 //	uniformLocations->textureSampler3 =				glGetUniformLocation(shader_id, "my_texture3"); // Get the location of our model matrix in the shader

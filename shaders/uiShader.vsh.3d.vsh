@@ -2,7 +2,11 @@
 
 attribute vec4 position; // one of 4 sq verticies (-1,-1, 1,-1, 1,1, -1,1)
 
-uniform mat4 ui_modelMatrix;
+uniform mat4 ui_modelMatrix; // commenting here, hte UI has its own modelMatrix... we cold maybe have pre-multiplied this....
+
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
 
 attribute vec2 TexCoordIn;
 varying vec2 TexCoordOut;
@@ -130,4 +134,16 @@ void main()
 
     TexCoordOut = vec2( TexCoordIn.s / ui_texture_xscaler + ui_texture_x,   TexCoordIn.t / ui_texture_yscaler + ui_texture_y);
     gl_Position=objPosition;
+
+
+    //vec4 objPosition = (modelMatrix * position * ui_scale) + ui_position;
+    //vec4 objPosition3d = (position * ui_scale) + ui_position;
+
+
+    // taken from 3dShader.vsh...
+//    colorOut = color;
+//    TexCoordOut = TexCoordIn;
+    gl_Position=projectionMatrix * viewMatrix * modelMatrix * objPosition;
+//    normalOut = projectionMatrix * modelMatrix * normalize(normal);
+
 }

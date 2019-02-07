@@ -100,7 +100,6 @@ public:
     void reshapeWindow(int w, int h); // Method to get our window width and height on resize
     //void updateFrame(Uint32 elapsedMs);
     void renderScene(void); // Render scene (display method from previous OpenGL tutorials)
-    void render3dScene(void);
 
 
     void setLight(void);
@@ -112,6 +111,7 @@ public:
     void eyedropperZoomDropperMatrix(float progress);
     void eyedropperZoomDropperBulbMatrix(float progress);
 
+    static void miniGameTextAnimComplete(Ux::uiAnimation* uiAnim);
 
 
     void render3dDropperAnimation(void);
@@ -141,6 +141,8 @@ public:
     Shader *shader_3d; // Our GLSL shader
     Shader *shader_3d_Glass;
     Shader *shader_3d_unlit;
+    Shader *shader_3d_ui;
+
     Shader *shader_lit_detail; // Our GLSL shader
     Shader *shader_ui_shader_default;
 
@@ -250,6 +252,8 @@ private:
     glm::mat4 matrixModel;
     glm::mat4 matrixViews;
     glm::mat4 matrixPersp;
+
+    glm::mat4 minigameCounterMatrix;
 
     Uint32 animationDropper3dStartTime;
     int animationDropper3dId;

@@ -536,6 +536,9 @@ Ux::uiObject* Ux::create(void){
     palleteList = new uiList<ColorList, Uint8>(palleteMax);
     palleteList->index(COLOR_INDEX_MAX, indexForColor);
 
+    minigameColorList = new uiList<ColorList, Uint8>(minigameColorListMax);
+    minigameColorList->index(COLOR_INDEX_MAX, indexForColor);
+
     //pickHistoryListState = new uiList<ColorListState, Uint8>(pickHistoryMax);
     //palleteListState = new uiList<ColorListState, Uint8>(palleteMax);
 
@@ -554,6 +557,8 @@ Ux::uiObject* Ux::create(void){
 
     // make this color the selected color ! ! ! ! !! ^ ^ ^
 
+
+    minigameCounterText = new uiObject();
 
 
     returnToLastImgBtn = new uiObject();
@@ -1586,7 +1591,8 @@ void Ux::addCurrentToPickHistory(){
 
     ogg->begin3dDropperAnimation(OpenGLContext::ANIMATION_ADD_COLOR, currentlyPickedColor);
 
-    pickHistoryList->add(ColorList(*currentlyPickedColor));
+    ColorList anEntry = ColorList(*currentlyPickedColor);
+    pickHistoryList->add(anEntry);
     if( pickHistoryList->_out_of_space ){
         defaultScoreDisplay->display(historyPreview->childList[0], 2);
         //defaultScoreDisplay->displayExplanation("out of space!");
@@ -1604,6 +1610,37 @@ void Ux::addCurrentToPickHistory(){
     }else{
         historyPalleteEditor->historyScroller->scrolly = 0;
     }
+
+
+    // now we also update our minigame list....
+
+    int existingLocation = minigameColorList->locate(anEntry);
+    if( existingLocation < 0 ){
+        // other checks - minigame colors can't be too dark, too light, or too grey....
+        int total = (int)currentlyPickedColor->r + (int)currentlyPickedColor->g + (int)currentlyPickedColor->b;
+        if( total < 700 && total > 64 ){ // 765 - 64 // not too brigt
+            int avg = total / 3;
+            int variance =  SDL_abs(avg-currentlyPickedColor->r) + SDL_abs(avg-currentlyPickedColor->g) + SDL_abs(avg-currentlyPickedColor->b);
+            if( variance > 64 ){
+                minigameColorList->add(ColorList(*currentlyPickedColor));
+                if( minigameColorList->_out_of_space ){
+                    // is this the condition to tirgger the minigame????
+                    ogg->begin3dDropperAnimation(OpenGLContext::ANIMATION_ZOOM_INTO_BULB, currentlyPickedColor);
+                    // after mnigame completes...
+                    minigameColorList->clear();
+                }
+            }else{
+                SDL_Log("omit color from minigame: too grey %i", variance);
+            }
+        }else{
+            SDL_Log("omit color from minigame: too bright/dark %i", total);
+        }
+    }else{
+        // SDL_Log("this color is already in the minigame...");
+    }
+    SDL_snprintf(print_here, max_print_here, "%i", minigameColorList->total());//"Add All?"
+    printStringToUiObject(minigameCounterText, print_here, DO_NOT_RESIZE_NOW);
+    minigameCounterText->updateRenderPosition();
 
 }
 
@@ -1689,7 +1726,7 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 
     //renderObj->matrix = glm::scale(renderObj->matrix, glm::vec3(0.998,0.998,1.0));
 
-    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &resolvedRenderObjMat[0][0]); // Send our model matrix to the shader
+    glUniformMatrix4fv(uniformLocations->ui_modelMatrix, 1, GL_FALSE, &resolvedRenderObjMat[0][0]); // Send our model matrix to the shader
 
     //textMatrix = glm::translate(textMatrix, screenToWorldSpace(1000.0,500.0,450.1));  // just try screen coord like -512??
 

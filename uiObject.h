@@ -931,7 +931,11 @@ struct uiObject
             }
         }else{
             // note we s hould get here rarely if its workign right
-            SDL_Log("Update Render Position - Root element!");
+            if( isRoot ){
+                SDL_Log("Update Render Position - Root element!");
+            }else{
+                // updating an object that has no parent (not in hirearchy, its a root object of its own sort)
+            }
             parentRenderRect = Float_Rect();
             parentCollisionRect = Float_Rect();
         }

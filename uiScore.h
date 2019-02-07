@@ -409,7 +409,7 @@ struct uiScore{
     }
 
     // PLEASE call display() first - since it may have its own explanation (intOverflow) which we want to overwrite now....
-    void displayExplanation(const char* textToShow){
+    uiAminChain* displayExplanation(const char* textToShow){
         // longer strings won't work... the size is critical too (since if first char goes off screen it will not render)
         Ux* uxInstance = Ux::Singleton();
         //bool widescreen = uxInstance->widescreen;
@@ -440,8 +440,14 @@ struct uiScore{
         chain5 = uxInstance->uxAnimations->spin(explanation_position, 2)->preserveReference();
         chain6 = uxInstance->uxAnimations->scale_bounce(explanation_position, 0.017, uxInstance->uxAnimations->mat_zeroscale, 1200)->preserveReference();
 
+        // we can push something onto our chains, to get a notification :)  - so maybe we should return the chain from this function ????
+        //myAnimChain->addAnim((new uiAnimation(this->scrollChildContainer))->setAnimationReachedCallback(ourAnimationCompleted) );
+        // we could queue up some anims possibly....
+
 
         explanation_position->updateRenderPosition();
+
+        return chain6;
     }
 //
 //    void hide(){
