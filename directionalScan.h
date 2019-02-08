@@ -356,7 +356,7 @@ struct DirectionalScan
         DirectionalElement* bestDe = getItemAtDistanceIndex(0);
         DirectionalElement* de;
         VectorValidity* vv;
-        dimensonalType* vector;
+        //dimensonalType* vector;
         int vecIndex;
         for( int i=0; i<_total_size; i++ ){
             de = getItemAtDistanceIndex(i);

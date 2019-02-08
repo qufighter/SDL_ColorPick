@@ -51,8 +51,8 @@ struct uiToolMenu{
 
         hide();
 
-        bool widescreen = uxInstance->widescreen;
-        float bounceIntensity = -0.001;
+//        bool widescreen = uxInstance->widescreen;
+//        float bounceIntensity = -0.001;
 
         // just so we can call end on these??? this could crash the app at boot time right??
         chain1 = uxInstance->uxAnimations->emptyChain(); // uxInstance->uxAnimations->reset_matrix(menu_position)->preserveReference();

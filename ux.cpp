@@ -859,7 +859,7 @@ void Ux::printStringToUiObject(uiObject* printObj, const char* text, bool resize
     const char * i;
     uiObject* letter;
 
-    int len=SDL_strlen(text);
+    long len=SDL_strlen(text);
 
     float letterWidth = ((1.0 - printObj->containTextPadding - printObj->containTextPadding) / len);// + printObj->textSpacing;
     //float letterWidth = ((1.0 - printObj->containTextPadding - printObj->containTextPadding - printObj->textSpacing) / len);// + printObj->textSpacing;
@@ -1217,7 +1217,7 @@ void Ux::interactionBeginReturnToPreviousSurface(uiObject *interactionObj, uiInt
 
 
 void Ux::loadTestImageByIndex(int index){
-    Ux* myUxRef = Ux::Singleton();
+    //Ux* myUxRef = Ux::Singleton();
     OpenGLContext* ogg=OpenGLContext::Singleton();
     ogg->loadNextTestImageByIndex(index);
 }

@@ -59,7 +59,7 @@ struct uiHistoryPreviewScroller{
         int totalInList = self->historyListToShow->total();
 
 
-        int origOffset = offset;
+//        int origOffset = offset;
 
         if( totalInList > tileRowLength ){
 

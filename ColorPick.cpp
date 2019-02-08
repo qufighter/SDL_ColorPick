@@ -125,7 +125,7 @@ bool OpenGLContext:: restoreLastSurface(){
     return false;
 }
 
-// can we move this to main.h?
+// can we move this to main.h? it is used on ios
 static Uint32 render_one_more_frame(Uint32 interval, void* parm){
     SDL_Event event;
     SDL_UserEvent userevent;

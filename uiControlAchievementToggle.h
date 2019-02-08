@@ -19,7 +19,7 @@ struct uiControlAchievementToggle{
         achievement_chars = achivementTxt;
         hidden = isHiddenAchievement;
 
-        Ux* uxInstance = Ux::Singleton(); // some useful helper?
+        //Ux* uxInstance = Ux::Singleton(); // some useful helper?
 
         uiObjectItself = new uiObject();
 
@@ -95,7 +95,7 @@ struct uiControlAchievementToggle{
     }
 
     const char* achieveAchievement(){
-        Ux* uxInstance = Ux::Singleton();
+        //Ux* uxInstance = Ux::Singleton();
         updateState( true ); // still will need to save to disk....
         return achievement_chars;
     }

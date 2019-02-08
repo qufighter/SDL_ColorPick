@@ -17,7 +17,7 @@ struct uiControlButton{
 
         label_chars = labelTxt;
 
-        Ux* uxInstance = Ux::Singleton(); // some useful helper?
+        //Ux* uxInstance = Ux::Singleton(); // some useful helper?
 
         uiObjectItself = new uiObject();
 

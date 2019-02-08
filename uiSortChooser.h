@@ -14,7 +14,7 @@ struct uiSortChooser{
 
     uiSortChooser(uiObject* parentObj, Float_Rect boundaries){
 
-        Ux* uxInstance = Ux::Singleton(); // some useful helper?
+//        Ux* uxInstance = Ux::Singleton(); // some useful helper?
 
         uiObjectItself = new uiObject();
 

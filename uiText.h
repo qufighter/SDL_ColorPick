@@ -38,7 +38,7 @@ struct uiText{
         hzAlign=TEXT_ALIGN::LEFT;
         vtAlign=TEXT_VERT_ALIGN::VERT_CENTER;
 
-        Ux* uxInstance = Ux::Singleton(); // some useful helper?
+        //Ux* uxInstance = Ux::Singleton(); // some useful helper?
 
         uiObjectItself = new uiObject();
 

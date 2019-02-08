@@ -19,9 +19,7 @@ struct uiHueGradient{
 
         uiObjectItself->myUiController = this; // this propagates to the other child objects
 
-        int counter = 0;
-        int offset = 0;
-        float width = 1.0 / 128;
+        
 
         // 6 chunks of 0-255 rainbow
 //        hueGradientHolder = new uiObject();

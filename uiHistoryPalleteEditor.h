@@ -1363,7 +1363,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
                 uiListIterator<uiList<ColorList, Uint8>, ColorList>* myIterator = myUxRef->palleteList->iterate();
 
-                int len = (totalColors * perColorChars) + SDL_strlen(urlBase);
+                long len = (totalColors * perColorChars) + SDL_strlen(urlBase);
                 char* clrStr = (char*)SDL_malloc( sizeof(char) * len );
 
                 SDL_snprintf(clrStr, SDL_strlen(urlBase)+1,  "%s", urlBase);

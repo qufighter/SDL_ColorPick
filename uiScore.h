@@ -58,7 +58,7 @@ struct uiScore{
 
         //maths
         float w = 0.125;
-        float hw = w * 0.5;
+//        float hw = w * 0.5;
 
         //no->setBoundaryRect( 0.0+pad, 0.5-hh, w, h);
 
