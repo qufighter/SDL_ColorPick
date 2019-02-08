@@ -316,7 +316,7 @@ static Ux* Singleton();
     //Uint8 palleteColorsIndex[COLOR_INDEX_MAX]; // we do not search the array
     //Uint8* palleteColorsIndex = (Uint8*)SDL_malloc( sizeof(Uint8) * COLOR_INDEX_MAX ); // totally equivilent to above
 
-    static const int minigameColorListMax = 4; // 254 // WARN do not exeede max size Uint8 palleteColorsIndex 255 (each entry in the index, see COLOR_INDEX_MAX, will point to an entry in the list, so if you have 256 in the list you can point to each with Uint8 - you can index with another type but it will use a lot more memory.  the used memory will always be COLOR_INDEX_MAX * sizeof(uint8) bytes.
+    static const int minigameColorListMax = 3; // 254 // WARN do not exeede max size Uint8 palleteColorsIndex 255 (each entry in the index, see COLOR_INDEX_MAX, will point to an entry in the list, so if you have 256 in the list you can point to each with Uint8 - you can index with another type but it will use a lot more memory.  the used memory will always be COLOR_INDEX_MAX * sizeof(uint8) bytes.
     uiList<ColorList, Uint8>* minigameColorList;
     uiObject *minigameCounterText;
 

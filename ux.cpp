@@ -559,7 +559,7 @@ Ux::uiObject* Ux::create(void){
 
 
     minigameCounterText = new uiObject();
-
+    minigameCounterText->containText=true; // we'd rather not contain text, but we'd have to render all the OOB child objects too...
 
     returnToLastImgBtn = new uiObject();
     returnToLastImgBtn->hasForeground = true;
