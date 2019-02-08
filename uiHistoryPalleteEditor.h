@@ -293,6 +293,12 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         }
     }
 
+    static void showAdditonalMessageLightenignBolt(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage(" * ");
+        myUxRef->defaultYesNoChoiceDialogue->showAdditionalMessageCharAtLocation(CHAR_LIGHTENING_BOLT, 1);
+        myUxRef->defaultYesNoChoiceDialogue->resize();
+    }
 
 
 
@@ -536,7 +542,10 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             }
             SDL_free(pickHistoryIterator);
             if( delCounter > 1 ){
-                myUxRef->defaultYesNoChoiceDialogue->displayAdditionalAction(&removeAllCheckedHistoryColor, delCounter-1);
+                myUxRef->defaultYesNoChoiceDialogue->displayAdditionalAction(&showAdditonalMessageLightenignBolt, &removeAllCheckedHistoryColor, delCounter-1);
+            }else{
+                myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage(" * ");
+                myUxRef->defaultYesNoChoiceDialogue->showAdditionalMessageCharAtLocation(CHAR_LIGHTENING_BOLT, 1);
             }
 
         }else{
@@ -839,6 +848,8 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
                 myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
 
                 myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickClearHistory, &clickCancelClearHistory, myUxRef->pickHistoryList->total());
+                myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage(" * ");
+                myUxRef->defaultYesNoChoiceDialogue->showAdditionalMessageCharAtLocation(CHAR_LIGHTENING_BOLT, 1);
 
 
             }else if( interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_ADD_ALL_HISTORY ){
@@ -1243,7 +1254,10 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             }
             SDL_free(palleteListIterator);
             if( delCounter > 1 ){
-                myUxRef->defaultYesNoChoiceDialogue->displayAdditionalAction(&removeAllCheckedPalleteColor, delCounter-1);
+                myUxRef->defaultYesNoChoiceDialogue->displayAdditionalAction(&showAdditonalMessageLightenignBolt, &removeAllCheckedPalleteColor, delCounter-1);
+            }else{
+                myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage(" * ");
+                myUxRef->defaultYesNoChoiceDialogue->showAdditionalMessageCharAtLocation(CHAR_LIGHTENING_BOLT, 1);
             }
 
         }else{
@@ -1349,6 +1363,9 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
                 myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
 
                 myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &clickClearPallete, &clickCancelClearPallete, myUxRef->palleteList->total());
+                myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage(" * ");
+                myUxRef->defaultYesNoChoiceDialogue->showAdditionalMessageCharAtLocation(CHAR_LIGHTENING_BOLT, 1);
+
 
 
             }else if(interactionObj->myIntegerIndex == BTN_NEGATIVE_START - BUTTON_SAVE_PALLETE ){

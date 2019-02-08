@@ -32,7 +32,7 @@ struct uiYesNoChoice{
 
 
         uiObjectItself->myUiController = this; // this propagates to the other child objects
-
+        uiObjectItself->hasBackground = true;
 
         //uiObjectItself->setInteractionCallback(tileClickedFn);
 
@@ -49,14 +49,14 @@ struct uiYesNoChoice{
         addSomeMore->hasBackground=true;
         addSomeMore->hasForeground=true;
         Ux::setColor(&addSomeMore->backgroundColor, 32, 0, 0, 128);
-        Ux::setColor(&addSomeMore->foregroundColor, 200, 200, 200, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        Ux::setColor(&addSomeMore->foregroundColor, 255, 255, 255, 212); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         uxInstance->printCharToUiObject(addSomeMore, CHAR_CIRCLE_PLAIN, DO_NOT_RESIZE_NOW);
         //uxInstance->printStringToUiObject(addSomeMore, "+499", DO_NOT_RESIZE_NOW);
         addSomeMore->setRoundedCorners(0.5);
 
 
         addSomeMoreText->hasForeground=true;
-        Ux::setColor(&addSomeMoreText->foregroundColor, 200, 200, 200, 192); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        Ux::setColor(&addSomeMoreText->foregroundColor, 255, 255, 255, 212); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         addSomeMoreText->containText = true;
         //addSomeMoreText->containTextPadding=0.15; // we toggle this later...
         addSomeMoreText->scale(1.8); // this effects the text scale / letter spacing
@@ -183,6 +183,7 @@ struct uiYesNoChoice{
 
     anInteractionFn yesClickedFn;
     anInteractionFn noClickedFn;
+    anInteractionFn additionalActionSelectedFn;
     anInteractionFn additionalActionFn;
     scoreDisplayFn scoreDisplayCallback;
 
@@ -222,8 +223,14 @@ struct uiYesNoChoice{
 
     uiYesNoChoice* allowFastYes(){
         fastYesAllowed = true;
+        return setBackground(25, 25, 25, 192);
+    }
+
+    uiYesNoChoice* setBackground(int r, int g, int b, int a){
+        Ux::setColor(&uiObjectItself->backgroundColor, r, g, b, a);
         return this;
     }
+
 
     void showAdditionalMessageCharAtLocation(int character, int location){
         Ux* uxInstance = Ux::Singleton();
@@ -234,6 +241,7 @@ struct uiYesNoChoice{
 
     void displayAdditionalMessage(const char* message){
         additionalActionFn = nullptr;
+        additionalActionSelectedFn=nullptr;
         Ux* uxInstance = Ux::Singleton();
 
         setFontForMessageText();
@@ -266,8 +274,9 @@ struct uiYesNoChoice{
     }
 
 
-    void displayAdditionalAction(anInteractionFn p_additionalYesClickedFn, int numberToShow){
+    void displayAdditionalAction(anInteractionFn p_additionalSelectedFn, anInteractionFn p_additionalYesClickedFn, int numberToShow){
         additionalActionFn = p_additionalYesClickedFn;
+        additionalActionSelectedFn = p_additionalSelectedFn;
         additional_number_to_show = numberToShow;
         Ux* uxInstance = Ux::Singleton();
 
@@ -346,6 +355,8 @@ struct uiYesNoChoice{
         last_num_delete = 1;
         isDisplayed = true;
         fastYesAllowed=false;
+        setBackground(65, 0, 65, 192);
+
         addSomeMoreHolder->hideAndNoInteraction();
         additionalUiObjectContainer->empty();
 
@@ -394,6 +405,11 @@ struct uiYesNoChoice{
         self->last_num_delete = self->additional_number_to_show + 1;
 
         self->showStringNearOkButton(self->convertIntegerToString(self->last_num_delete));
+
+        if( self->additionalActionSelectedFn != nullptr ){
+            // todo some of the processing above... can maybe move into this custom handler...
+            self->additionalActionSelectedFn(self->myTriggeringUiObject, delta);
+        }
 
         self->yesClickedFn = self->additionalActionFn;
     }

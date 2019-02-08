@@ -732,8 +732,6 @@ Ux::uiObject* Ux::create(void){
     // top most objects
     defaultYesNoChoiceDialogue = new uiYesNoChoice(defaultYesNoChoiceHolder, Float_Rect(0.0, 0.0, 1.0, 1.0), true);
 
-    defaultYesNoChoiceDialogue->uiObjectItself->hasBackground = true;
-    Ux::setColor(&defaultYesNoChoiceDialogue->uiObjectItself->backgroundColor, 98, 0, 98, 192);
 
     //defaultYesNoChoiceDialogue->uiObjectItself->setAnimation( uxAnimations->slideUp(defaultYesNoChoiceDialogue->uiObjectItself) ); // returns uiAminChain*
 
@@ -1630,10 +1628,10 @@ void Ux::addCurrentToPickHistory(){
                     minigameColorList->clear();
                 }
             }else{
-                SDL_Log("omit color from minigame: too grey %i", variance);
+                //SDL_Log("omit color from minigame: too grey %i", variance);
             }
         }else{
-            SDL_Log("omit color from minigame: too bright/dark %i", total);
+            //SDL_Log("omit color from minigame: too bright/dark %i", total);
         }
     }else{
         // SDL_Log("this color is already in the minigame...");

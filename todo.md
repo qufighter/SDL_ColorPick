@@ -31,6 +31,8 @@ the non scrolling "out of space" should possibly flash the lightening bolt??
 
 pigcel
 
+drag scroller edge bg beyond end/start is actually annoying
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 images can have a color space????
