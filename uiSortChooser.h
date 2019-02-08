@@ -128,7 +128,8 @@ struct uiSortChooser{
         Ux* myUxRef = Ux::Singleton();
         uiSortChooser* self = myUxRef->historyPalleteEditor->sortChooser;
 
-        int oldLen = self->dedupeHistoryList(self->previewColorList);
+        //int oldLen =
+        self->dedupeHistoryList(self->previewColorList);
         //
         //        float pct = self->sortChooser->getGradientOffsetPercentage();
         //        SDL_Color* clr = self->sortChooser->getGradientOffsetColor();

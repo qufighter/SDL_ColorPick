@@ -121,7 +121,7 @@ struct uiText{
     uiObject *text_itself;
     uiObject *text_backgr;
 
-    int lastDisplayTxtLen = 0;
+    long lastDisplayTxtLen = 0;
 
     int hzAlign;
     int vtAlign;
@@ -239,7 +239,7 @@ struct uiText{
         text_itself->propagateTextSettings();
     }
 
-    int length(){
+    long length(){
         return lastDisplayTxtLen;
     }
 

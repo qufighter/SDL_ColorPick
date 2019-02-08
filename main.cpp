@@ -614,6 +614,7 @@ void ShowFrame(void*)
     SDL_GL_SwapWindow(window); // move into render scene?
 }
 
+// it is used, on android, but maybe can be interchanged with "render_one_more_frame"
 static Uint32 my_reshape_callbackfunc(Uint32 interval, void* parm){
 
     SDL_Event event;
@@ -775,7 +776,7 @@ compatibility; this flag is ignored
     }
 
     /* seed random number generator */
-    srand(time(NULL));
+    srand((int)time(NULL));
 
 
 //    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);

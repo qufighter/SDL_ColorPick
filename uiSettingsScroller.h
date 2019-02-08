@@ -189,7 +189,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         right->setBoundaryRect(0.5, 0, 0.5, 1.0);
         row->addChild(left);
         row->addChild(right);
-        uiControlButton* defaultBtn = (new uiControlButton(left, "Default", &interactionGoToDefaultImageBtn))->size(0.065 * 2);
+        /*uiControlButton* defaultBtn =*/ (new uiControlButton(left, "Default", &interactionGoToDefaultImageBtn))->size(0.065 * 2);
         uiControlButton* openBtn = (new uiControlButton(right, "x Other", &interactionGoToOpenImages))->size(0.065 * 2);
         uxInstance->printCharToUiObject(openBtn->labelText->getTextFirstChar(), CHAR_OPEN_FILES, DO_NOT_RESIZE_NOW);
 

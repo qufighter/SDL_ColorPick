@@ -26,10 +26,10 @@ void beginImageSelector()
 
 //    [openDlg setPrompt:@"Select an Image"];
 //    [openDlg setTitle: @"Choose an image to pick colors from"];
-    if ( [openDlg runModal] == NSOKButton ) // NSModalResponseOK
+    if ( [openDlg runModal] == NSModalResponseOK ) // NSOKButton
     {
         NSArray* files = [openDlg URLs];
-        for( int i = 0; i < [files count]; i++ )
+        for( int i = 0; i < [files count]; /*i++*/ )
         {
             NSString* fileName = [[files objectAtIndex:i] path];
             NSLog(@"file: %@", fileName);
@@ -40,7 +40,7 @@ void beginImageSelector()
             SDL_RaiseWindow(openglContext->getSdlWindow());
             
             // OUR mAIN window did not regain focus!!!
-            break; // one image supported....
+            break; // one image supported.... we do not even increment our loop...
         }
     }else{
         SDL_RaiseWindow(openglContext->getSdlWindow());

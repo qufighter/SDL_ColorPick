@@ -170,6 +170,11 @@ SDL_Surface* Textures::ConvertSurface(SDL_Surface *origSurface, SDL_Color* backg
                                       surface,
                                       &surface->clip_rect);
 
+        if( didBlit != 0 ){
+            SDL_Log("Blit problem");
+            SDL_Log("%s", SDL_GetError());
+        }
+
         SDL_Surface *surface2 = SDL_CreateRGBSurfaceWithFormat(0, origSurface->w, origSurface->h, origSurface->format->BitsPerPixel, isProbablyAndroid ? SDL_PIXELFORMAT_ABGR8888 : SDL_PIXELFORMAT_ARGB8888);
 
         SDL_BlitSurface(surface,

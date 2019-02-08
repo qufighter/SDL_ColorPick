@@ -138,7 +138,7 @@ struct uiToolMenu{
     }
 
     void addMenuItem(uiObject *p_cbUiObject, const char* menuText, anInteractionFn p_interactionCallback){
-        Ux* uxInstance = Ux::Singleton();
+        //Ux* uxInstance = Ux::Singleton();
 
         lastMenuItemIndex += 1;
 
@@ -156,7 +156,7 @@ struct uiToolMenu{
 
         text->print(menuText);
         //uxInstance->printStringToUiObject(menu_item_txt, menuText, DO_NOT_RESIZE_NOW);
-        int menuItemLen = text->length();// SDL_strlen(menuText);
+        int menuItemLen = (int)text->length();// SDL_strlen(menuText);
         
         text->backgroundClickCallback(p_interactionCallback)->backgroundClickProxy(p_cbUiObject);
 
