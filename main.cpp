@@ -534,6 +534,7 @@ int EventFilter(void* userdata, SDL_Event* event){
              Your app is interactive and getting CPU again.
              */
             colorPickState->appInForeground = true;
+            openglContext->renderShouldUpdate = true;
             SDL_Log("SDL_APP_DIDENTERFOREGROUND !!!!");
             return 0;
         }

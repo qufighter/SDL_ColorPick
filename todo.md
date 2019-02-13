@@ -35,11 +35,7 @@ drag scroller edge bg beyond end/start is actually annoying
 
 convert or crop cubic coord
 
-read error - no error
-
-render when entering FG - android app menu repeately bugs (blank screen or partial render!?? when not rendering continuously ?? 
-
-multiple delete is broken ( 0679b70c94fc3cbda3b50d9464700926ef0815ae )
+render when entering FG - android app menu repeately bugs (blank screen or partial render!?? when not rendering continuously ?? (may be fixed now)
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
