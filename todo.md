@@ -33,6 +33,14 @@ pigcel
 
 drag scroller edge bg beyond end/start is actually annoying
 
+convert or crop cubic coord
+
+read error - no error
+
+render when entering FG - android app menu repeately bugs (blank screen or partial render!?? when not rendering continuously ?? 
+
+multiple delete is broken ( 0679b70c94fc3cbda3b50d9464700926ef0815ae )
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 images can have a color space????
@@ -128,6 +136,10 @@ we need test colors like:
 // as far as platform android seek color differences...
 // why not try out SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256); < -- does not work on android
 
+unable to find some colors precisely (pink ff00fc > "works" while ff00fd des not)
+-> android -> ff00fc resolevs to fe00fd
+-> desktop osx -> ff00fc resolves to ff00fe
+
 
 good test color:
 10,11,13  0a0b0d (hsv picker scan crash fixed...) test all possible color?
@@ -156,9 +168,6 @@ squarilate scroller
 
 zoom scrollers?  maybe both would zoom at same time??? not sure...
 
-unable to find some colors precisely (pink ff00fc > "works" while ff00fd des not)
--> android -> ff00fc resolevs to fe00fd
--> desktop osx -> ff00fc resolves to ff00fe
 
 arrow interaction repeat....
 

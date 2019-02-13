@@ -406,12 +406,13 @@ struct uiYesNoChoice{
 
         self->showStringNearOkButton(self->convertIntegerToString(self->last_num_delete));
 
+        self->yesClickedFn = self->additionalActionFn;
+
         if( self->additionalActionSelectedFn != nullptr ){
-            // todo some of the processing above... can maybe move into this custom handler...
+            // todo some of the processing above... can maybe move into this custom handler... one must be careful about certain actions in the hander which might reset things (such as additionalActionFn which was consumed above)
             self->additionalActionSelectedFn(self->myTriggeringUiObject, delta);
         }
 
-        self->yesClickedFn = self->additionalActionFn;
     }
 
     // default scoreDisplayFn
@@ -539,47 +540,8 @@ struct uiYesNoChoice{
 
     void update(){ // w/h
 
-        // does this get realle whenever reshape?
-
-
-//        if( aspect > 1.0 ){
-//            is_vertical = false; //hopefully unused var
-//
-//        }else{
-//            is_vertical = true; //hopefully unused var
-//
-//
-//        }
-//
-//        round_tl->setBoundaryRect( 0.0, 0.0, 1.0, 1.0);
-//        middle->setBoundaryRect( 0.0, 0.0, 1.0, 1.0);
-//        round_br->setBoundaryRect( 0.0, 0.0, 1.0, 1.0);
-
-
         uiObjectItself->updateRenderPosition();
 
-        //Ux* uxInstance = Ux::Singleton();
-
-        // what the
-
-//        sprintf(resultText6char, "%02x%02x%02x", color->r, color->g, color->b);
-//        Ux::setColor(&hexValueText->backgroundColor,color->r, color->g, color->b, 255);
-//        uxInstance->printStringToUiObject(hexValueText, resultText6char, DO_NOT_RESIZE_NOW);
-//
-//        sprintf(resultText6char, "%3d", color->r);
-//        rgbRedText->backgroundColor.a = color->r;
-//        uxInstance->printStringToUiObject(rgbRedText, resultText6char, DO_NOT_RESIZE_NOW);
-//
-//        sprintf(resultText6char, "%3d", color->g);
-//        rgbGreenText->backgroundColor.a = color->g;
-//        uxInstance->printStringToUiObject(rgbGreenText, resultText6char, DO_NOT_RESIZE_NOW);
-//
-//        sprintf(resultText6char, "%3d", color->b);
-//        rgbBlueText->backgroundColor.a = color->b;
-//        uxInstance->printStringToUiObject(rgbBlueText, resultText6char, DO_NOT_RESIZE_NOW);
-
-
-        //SDL_free(resultText6char);
     }
 
 };
