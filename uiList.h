@@ -186,7 +186,8 @@ struct uiList
             genType* existing = &listItself[_nextIndex];
 
             int _offset_in_exi_index = indexOffsetGen(existing);
-            if( indexItself[_offset_in_exi_index] == _nextIndex){
+
+            if( _offset_in_exi_index >= 0 && _offset_in_exi_index < _indexSize && indexItself[_offset_in_exi_index] == _nextIndex){
                 indexItself[_offset_in_exi_index] = maxSize; // unset // we are about to overwrite this entry in list... lets reset it from index
             }
         }

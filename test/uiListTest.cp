@@ -99,6 +99,7 @@ main(int argc, char *argv[])
     }
 
     // could / should the index have blocked the dupe item?  it now points at the last one added (1) above and we now have (2) items.... in practice we use locate before we use add if we want to avoid dupes right now...
+    // right now you will break settings - certain items don't need to be in the index and its okay if they have the same index
     if(myColorList->total() != 3){
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected total(): %i\n",
                      myColorList->total() );
