@@ -510,16 +510,16 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 //                glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
             // just experimenting...
-            //    debugGLerror();
+            //    debugGLerror("generic error label - sorry");
             //    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
             //    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
             //    //glEnable(GL_TEXTURE_2D);
-            //    debugGLerror();
+            //    debugGLerror("generic error label - sorry");
 //                glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)(GL_REPEAT) );
 //                glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)(GL_REPEAT) );
-            //    debugGLerror();
+            //    debugGLerror("generic error label - sorry");
             //    glGenerateMipmap(GL_TEXTURE_2D);
-            //    debugGLerror();
+            //    debugGLerror("generic error label - sorry");
 
 //            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)( GL_MIRRORED_REPEAT ) );
 //            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)( GL_MIRRORED_REPEAT ) );
@@ -605,16 +605,16 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
 
 
     // just experimenting...
-    //    debugGLerror();
+    //    debugGLerror("generic error label - sorry");
     //    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
     //    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
     //    //glEnable(GL_TEXTURE_2D);
-    //    debugGLerror();
+    //    debugGLerror("generic error label - sorry");
     //    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)(GL_REPEAT) );
     //    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)(GL_REPEAT) );
-    //    debugGLerror();
+    //    debugGLerror("generic error label - sorry");
     //    glGenerateMipmap(GL_TEXTURE_2D);
-    //    debugGLerror();
+    //    debugGLerror("generic error label - sorry");
 
 
 
@@ -922,16 +922,16 @@ GLuint Textures::LoadTextureFromSdlSurface(SDL_Surface *surface, GLuint& texture
 
 
     // just experimenting...
-    //    debugGLerror();
+    //    debugGLerror("generic error label - sorry");
     //    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
     //    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
     //    //glEnable(GL_TEXTURE_2D);
-    //    debugGLerror();
+    //    debugGLerror("generic error label - sorry");
     //    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)(GL_REPEAT) );
     //    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)(GL_REPEAT) );
-    //    debugGLerror();
+    //    debugGLerror("generic error label - sorry");
     //    glGenerateMipmap(GL_TEXTURE_2D);
-    //    debugGLerror();
+    //    debugGLerror("generic error label - sorry");
 
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,(GLfloat)( GL_REPEAT ) );
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,(GLfloat)( GL_REPEAT ) );
@@ -976,7 +976,7 @@ GLuint Textures::LoadTexture(unsigned char *data, int width, int height) {
 	glGenTextures(1, &texture_id);
 	glBindTexture(GL_TEXTURE_2D, texture_id);
 	
-	debugGLerror();
+	debugGLerror("Debug in load texture...");
 	
 		/*void glTexImage2D(	GLenum  	target,
  	GLint  	level,
@@ -987,12 +987,12 @@ GLuint Textures::LoadTexture(unsigned char *data, int width, int height) {
  	GLenum  	format,
  	GLenum  	type,
  	const GLvoid *  	data);*/
-	DebugMessage(("HELLO---"));
+	//DebugMessage(("HELLO---"));
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data);
 
 
-	debugGLerror();
-	DebugMessage(("HELLO---glTexImage2D done"));
+	debugGLerror("Debug in load texture... after glTexImage2D");
+	//DebugMessage(("HELLO---glTexImage2D done"));
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	//glEnable(GL_TEXTURE_2D);
@@ -1004,7 +1004,7 @@ GLuint Textures::LoadTexture(unsigned char *data, int width, int height) {
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	debugGLerror();
+    debugGLerror("Debug in load texture... near end");
 	//glDrawPixels(treeTexture.width, treeTexture.height,treeTexture.type, GL_UNSIGNED_BYTE,treeTexture.imageData);
 
 	return texture_id;
@@ -1165,7 +1165,7 @@ void Textures::dataToTgaFile(char filename[160],unsigned char *data,int x, int y
 //    return result;
 //*/
 //    //DebugMessage(("screenToTexture"));
-//    //debugGLerror();
+//    //debugGLerror("generic error label - sorry");
 //
 //        /*void glTexImage2D(    GLenum      target,
 //     GLint      level,
@@ -1181,7 +1181,7 @@ void Textures::dataToTgaFile(char filename[160],unsigned char *data,int x, int y
 //
 //
 //    //DebugMessage(("screenToTexture glReadPixels"));
-//    //debugGLerror();
+//    //debugGLerror("generic error label - sorry");
 //
 ////debug only
 ////dataToTgaFile("textures/dynamictexture.tga", data, width,  height);

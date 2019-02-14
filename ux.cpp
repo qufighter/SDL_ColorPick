@@ -80,6 +80,8 @@ void Ux::GetPrefPath(char* preferencesPath, const char* filename, char** resultD
  */
 Ux::Ux(void) {
 
+    isMinigameMode = false;
+
     print_here = (char*)SDL_malloc( sizeof(char) * max_print_here );
 
     hueGradientData = new uxHueGradientData();
@@ -146,7 +148,7 @@ void Ux::readInState(void){
         pickHistoryList->add(ColorList(newHistoryList[readOffset++]));
         memOffset+=eachElementSize;
     }
-    //pickHistoryList->addAll(newHistoryList, quantityBytesRead);
+ //    pickHistoryList->addAll(newHistoryList, quantityBytesRead);
     SDL_free(newHistoryList);
     updatePickHistoryPreview();
 
@@ -163,7 +165,7 @@ void Ux::readInState(void){
         palleteList->add(ColorList(newPalleteList[readOffset++]));
         memOffset+=eachElementSize;
     }
-    //palleteList->addAll(newPalleteList, quantityBytesRead);
+ //    palleteList->addAll(newPalleteList, quantityBytesRead);
     SDL_free(newPalleteList);
     updatePalleteScroller();
 
@@ -234,12 +236,12 @@ void Ux::readInState(void){
     }
 
 
-    //defaultScoreDisplay->int_score = 1000000000 - 1;
-    //defaultScoreDisplay->int_score = SDL_MAX_SINT32; // 2147483647  = 26,214 full history (8192x10 "out of space!") "Much Risk" to reach.... with max chain its as low as 262.14
-    //defaultScoreDisplay->int_max_score = 0;
+ //    defaultScoreDisplay->int_score = 1000000000 - 1;
+ //    defaultScoreDisplay->int_score = SDL_MAX_SINT32; // 2147483647  = 26,214 full history (8192x10 "out of space!") "Much Risk" to reach.... with max chain its as low as 262.14
+ //    defaultScoreDisplay->int_max_score = 0;
 
     SDL_RWclose(fileref);
-    //*readSize = currentPosition;
+ //    *readSize = currentPosition;
 }
 
 void Ux::writeOutState(void){
@@ -341,152 +343,178 @@ void Ux::updateStageDimension(float w, float h){
 
 void Ux::resizeUiElements(void){
 
-    // move to constructor?
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+
+    if( isMinigameMode ){
+
+        minigamesUiContainer->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+        mainUiContainer->setBoundaryRect(5000.0, 5000.0, 1.0, 1.0);
+
+        // resize the minigame... and thats it
+        ogg->minigames->resize();
+
+        // we COULD resize everything and then it will be ready for us, but game will run faster if we defer that.... and then resize when leaving the game?
+        //rootUiObject->updateRenderPosition();
+        //return;
+
+// actually we only skip the set rect below if
+        //if( hasChildren && isInBounds ){
+// check remains in place in updateRenderPosition
+
+    }else{
+        mainUiContainer->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+        minigamesUiContainer->setBoundaryRect(5000.0, 5000.0, 1.0, 1.0);
+
+
+
+
+
 
 
 #ifdef DEVELOPER_TEST_MODE
 
 #else
 
-//#ifndef __IPHONEOS__
-    clock_bar=0.0f;
-//#endif
+ //    #ifndef __IPHONEOS__
+        clock_bar=0.0f;
+ //    #endif
 
 #endif
 
-    //historyPreview->updateRenderPosition();
-    // what about elements that have auto sizing properties??? like>  square,
+        //historyPreview->updateRenderPosition();
+        // what about elements that have auto sizing properties??? like>  square,
 
-    // todo some maths during resize repeat... this fires more than needed and could just be debounced?
+        // todo some maths during resize repeat... this fires more than needed and could just be debounced?
 
-    float temp=0.0;
-    float temp1=0.0;
+        float temp=0.0;
+        float temp1=0.0;
 
-    // watch out for ux components whose update functions will ->updateRenderPosition();
-    // all these function should provide means to bypass the update
-    //  argubaly the signature of this function should match any update function?
+        // watch out for ux components whose update functions will ->updateRenderPosition();
+        // all these function should provide means to bypass the update
+        //  argubaly the signature of this function should match any update function?
 
-    // optimization - our sizes don't change unless ratio does maybe??? or not...
+        // optimization - our sizes don't change unless ratio does maybe??? or not...
 
-    float ws_clock=0.0;
+        float ws_clock=0.0;
 
-    rootUiObject->setBoundaryRect( 0, 0, 1.0, 1.0);
-    // we try to indent here in a way that reflects hirearchy under rootUiObject, and attempt to do this in the order of lower (first added) elements first and those that render attop later...
-    if( widescreen ){
+        //rootUiObject->setBoundaryRect( 0, 0, 1.0, 1.0); // default rect...
+        // we try to indent here in a way that reflects hirearchy under rootUiObject, and attempt to do this in the order of lower (first added) elements first and those that render attop later...
+        if( widescreen ){
 
-        bottomBar->setBoundaryRect( 1.0-0.27777777777778+hue_picker, ws_clock, 0.27777777777778-hue_picker-history_preview, 1.0 - ws_clock);
+            bottomBar->setBoundaryRect( 1.0-0.27777777777778+hue_picker, ws_clock, 0.27777777777778-hue_picker-history_preview, 1.0 - ws_clock);
 
-            zoomSliderHolder->setBoundaryRect( 0.0, 0.01, 1.0, 0.25);
-                zoomSliderBg->setBoundaryRect( 0.05, 0, 0.88, 1);
-                zoomSlider->setBoundaryRect( 0.0, 0, 0.5, 1);
-                zoomSlider->setMovementBoundaryRect( 0.0, 0, 1.0, 0.0);
+                zoomSliderHolder->setBoundaryRect( 0.0, 0.01, 1.0, 0.25);
+                    zoomSliderBg->setBoundaryRect( 0.05, 0, 0.88, 1);
+                    zoomSlider->setBoundaryRect( 0.0, 0, 0.5, 1);
+                    zoomSlider->setMovementBoundaryRect( 0.0, 0, 1.0, 0.0);
 
-            temp = zoomSliderHolder->boundryRect.h;
-            temp1= (1.0-temp)/((float)bottomBarRightStack->getChildCount());
-            bottomBarRightStack->setBoundaryRect( 0.0, 1.0-temp1,
-                    1.0, temp1); // max size of single stacked right component?
-//                pickSourceBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
-//                addHistoryBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
-//                optionsGearBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
-                pickSourceBtn->stackBottom();
-                addHistoryBtn->stackBottom();
-                optionsGearBtn->stackBottom();
+                temp = zoomSliderHolder->boundryRect.h;
+                temp1= (1.0-temp)/((float)bottomBarRightStack->getChildCount());
+                bottomBarRightStack->setBoundaryRect( 0.0, 1.0-temp1,
+                        1.0, temp1); // max size of single stacked right component?
+ //                    pickSourceBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+ //                    addHistoryBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+ //                    optionsGearBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+                    pickSourceBtn->stackBottom();
+                    addHistoryBtn->stackBottom();
+                    optionsGearBtn->stackBottom();
 
-                optionsGearBtn->setInteraction(&Ux::interactionHorizontal);
+                    optionsGearBtn->setInteraction(&Ux::interactionHorizontal);
 
-        huePicker->resize(Float_Rect(1.0-0.27777777777778, ws_clock, hue_picker, 1.0 - ws_clock ));
-        returnToLastImgBtn->setBoundaryRect( 1.0-0.27777777777778 - 0.1, ws_clock, 0.1, 0.1 * screenRatio);
-        returnToLastImgBtn->setRoundedCorners(0.5, 0.0, 0.5, 0.5);
+            huePicker->resize(Float_Rect(1.0-0.27777777777778, ws_clock, hue_picker, 1.0 - ws_clock ));
+            returnToLastImgBtn->setBoundaryRect( 1.0-0.27777777777778 - 0.1, ws_clock, 0.1, 0.1 * screenRatio);
+            returnToLastImgBtn->setRoundedCorners(0.5, 0.0, 0.5, 0.5);
 
-        historyPreviewHolder->setBoundaryRect(1.0-history_preview, ws_clock, history_preview, 1.0 - ws_clock);
-        historyPreviewHolder->setInteraction(&Ux::interactionHorizontal);
-            historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::BTT, true);
+            historyPreviewHolder->setBoundaryRect(1.0-history_preview, ws_clock, history_preview, 1.0 - ws_clock);
+            historyPreviewHolder->setInteraction(&Ux::interactionHorizontal);
+                historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::BTT, true);
 
-        // depending on animation state rect is different....
-        Float_Rect visibleModal = Float_Rect(0.025, ws_clock, 0.92, 1.0 - ws_clock);
-        Float_Rect hiddenModal = Float_Rect(1.0, ws_clock, 0.92, 1.0 - ws_clock);
+            // depending on animation state rect is different....
+            Float_Rect visibleModal = Float_Rect(0.025, ws_clock, 0.92, 1.0 - ws_clock);
+            Float_Rect hiddenModal = Float_Rect(1.0, ws_clock, 0.92, 1.0 - ws_clock);
 
-        historyPalleteEditor->resize(visibleModal, hiddenModal);
-        settingsScroller->resize(visibleModal, hiddenModal);
+            historyPalleteEditor->resize(visibleModal, hiddenModal);
+            settingsScroller->resize(visibleModal, hiddenModal);
 
 
 
-        temp = 0.15;
+            temp = 0.15;
 #ifndef OMIT_SCROLLY_ARROWS
-        movementArrows->resize(Float_Rect(0.27777777777778, 0.0,
-            1.0 - 0.27777777777778 - 0.27777777777778, 1.0));
+            movementArrows->resize(Float_Rect(0.27777777777778, 0.0,
+                1.0 - 0.27777777777778 - 0.27777777777778, 1.0));
 #endif
-        curerntColorPreview->resize(Float_Rect(0.0, ws_clock, 0.27777777777778, 1.0 - ws_clock));
+            curerntColorPreview->resize(Float_Rect(0.0, ws_clock, 0.27777777777778, 1.0 - ws_clock));
 
-        defaultYesNoChoiceHolder->setBoundaryRectForAnimState(0.0, 0.0, 1.0, 1.0, // vis
-                                                              0.0, -1.0, 1.0, 1.0); // hid
-//        defaultYesNoChoiceDialogue->resize(Float_Rect(0.0, -1.0, 1.0, 1.0));
-        defaultYesNoChoiceDialogue->resize();
-
-
-
-    }else{ // not widescreen
-
-        bottomBar->setBoundaryRect( 0.0, 0.75, 1.0, 0.15);
-
-            zoomSliderHolder->setBoundaryRect( 0.0, 0.05, 0.25, 0.95);
-                zoomSliderBg->setBoundaryRect( 0.05, 0, 0.88, 1);
-                zoomSlider->setBoundaryRect( 0.0, 0, 0.5, 1);
-                zoomSlider->setMovementBoundaryRect( 0.0, 0, 1.0, 0.0);
-                    //runner->resize(Float_Rect(0.0, 0.7, 1.0, hue_picker));
-
-            temp = (1.0 - zoomSliderHolder->boundryRect.w) / (float)bottomBarRightStack->getChildCount(); // 2 total stack right components
-            bottomBarRightStack->setBoundaryRect( 1.0-temp, 0.0, temp, 1.0); // max size of single stacked right component?
-//                pickSourceBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
-//                addHistoryBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
-//                optionsGearBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
-                pickSourceBtn->stackRight();
-                addHistoryBtn->stackRight();
-                optionsGearBtn->stackRight();
-
-                optionsGearBtn->setInteraction(&Ux::interactionVert);
-
-        huePicker->resize(Float_Rect(0.0, 0.7, 1.0, hue_picker));
-        returnToLastImgBtn->setBoundaryRect( 0.0, 0.7 - 0.1, 0.1 / screenRatio, 0.1);
-        returnToLastImgBtn->setRoundedCorners(0.5, 0.5, 0.5, 0.0);
-
-        historyPreviewHolder->setBoundaryRect(0.0, 1.0-history_preview, 1.0, history_preview);
-        historyPreviewHolder->setInteraction(&Ux::interactionVert);
-            historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::RTL, true);
-
-        // depending on animation state rect is different....
-
-        float clocky_space = 0.032;
-
-        Float_Rect visibleModal = Float_Rect(0.0, clock_bar+clocky_space,     1.0, 0.92-clock_bar-clocky_space);
-        Float_Rect hiddenModal = Float_Rect(0.0, clock_bar+clocky_space+1.0, 1.0, 0.92-clock_bar-clocky_space);
-
-        historyPalleteEditor->resize(visibleModal, hiddenModal);
-        settingsScroller->resize(visibleModal, hiddenModal);
+            defaultYesNoChoiceHolder->setBoundaryRectForAnimState(0.0, 0.0, 1.0, 1.0, // vis
+                                                                  0.0, -1.0, 1.0, 1.0); // hid
+ //            defaultYesNoChoiceDialogue->resize(Float_Rect(0.0, -1.0, 1.0, 1.0));
+            defaultYesNoChoiceDialogue->resize();
 
 
-        temp = 0.27777777777778 + 0.04;
+
+        }else{ // not widescreen
+
+            bottomBar->setBoundaryRect( 0.0, 0.75, 1.0, 0.15);
+
+                zoomSliderHolder->setBoundaryRect( 0.0, 0.05, 0.25, 0.95);
+                    zoomSliderBg->setBoundaryRect( 0.05, 0, 0.88, 1);
+                    zoomSlider->setBoundaryRect( 0.0, 0, 0.5, 1);
+                    zoomSlider->setMovementBoundaryRect( 0.0, 0, 1.0, 0.0);
+                        //runner->resize(Float_Rect(0.0, 0.7, 1.0, hue_picker));
+
+                temp = (1.0 - zoomSliderHolder->boundryRect.w) / (float)bottomBarRightStack->getChildCount(); // 2 total stack right components
+                bottomBarRightStack->setBoundaryRect( 1.0-temp, 0.0, temp, 1.0); // max size of single stacked right component?
+ //                    pickSourceBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+ //                    addHistoryBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+ //                    optionsGearBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+                    pickSourceBtn->stackRight();
+                    addHistoryBtn->stackRight();
+                    optionsGearBtn->stackRight();
+
+                    optionsGearBtn->setInteraction(&Ux::interactionVert);
+
+            huePicker->resize(Float_Rect(0.0, 0.7, 1.0, hue_picker));
+            returnToLastImgBtn->setBoundaryRect( 0.0, 0.7 - 0.1, 0.1 / screenRatio, 0.1);
+            returnToLastImgBtn->setRoundedCorners(0.5, 0.5, 0.5, 0.0);
+
+            historyPreviewHolder->setBoundaryRect(0.0, 1.0-history_preview, 1.0, history_preview);
+            historyPreviewHolder->setInteraction(&Ux::interactionVert);
+                historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::RTL, true);
+
+            // depending on animation state rect is different....
+
+            float clocky_space = 0.032;
+
+            Float_Rect visibleModal = Float_Rect(0.0, clock_bar+clocky_space,     1.0, 0.92-clock_bar-clocky_space);
+            Float_Rect hiddenModal = Float_Rect(0.0, clock_bar+clocky_space+1.0, 1.0, 0.92-clock_bar-clocky_space);
+
+            historyPalleteEditor->resize(visibleModal, hiddenModal);
+            settingsScroller->resize(visibleModal, hiddenModal);
+
+
+            temp = 0.27777777777778 + 0.04;
 #ifndef OMIT_SCROLLY_ARROWS
-        movementArrows->resize(Float_Rect(0.0, temp, 1.0, 1.0 - temp - temp));
+            movementArrows->resize(Float_Rect(0.0, temp, 1.0, 1.0 - temp - temp));
 #endif
-        curerntColorPreview->resize(Float_Rect(0.0, clock_bar, 1.0, 0.27777777777778));
+            curerntColorPreview->resize(Float_Rect(0.0, clock_bar, 1.0, 0.27777777777778));
 
 
-        defaultYesNoChoiceHolder->setBoundaryRectForAnimState(0.0, 0.0, 1.0, 1.0, // vis
-                                                              0.0, -1.0, 1.0, 1.0); // hid
+            defaultYesNoChoiceHolder->setBoundaryRectForAnimState(0.0, 0.0, 1.0, 1.0, // vis
+                                                                  0.0, -1.0, 1.0, 1.0); // hid
 
-//        defaultYesNoChoiceDialogue->resize(Float_Rect(0.0, -1.0, 1.0, 1.0));
-        defaultYesNoChoiceDialogue->resize();
+ //            defaultYesNoChoiceDialogue->resize(Float_Rect(0.0, -1.0, 1.0, 1.0));
+            defaultYesNoChoiceDialogue->resize();
+
+        }
+
+        ogg->updateFishScaleSlider();
+
+        updatePalleteScroller();
 
     }
 
-    OpenGLContext* ogg=OpenGLContext::Singleton();
-    ogg->updateFishScaleSlider();
-
-    updatePalleteScroller();
-
     rootUiObject->updateRenderPosition();
-    // our "create" caller also updates scrollers at this time??
+ //     our "create" caller also updates scrollers at this time??
 }
 
 void Ux::updatePalleteScroller(){
@@ -539,8 +567,8 @@ Ux::uiObject* Ux::create(void){
     minigameColorList = new uiList<ColorList, Uint8>(minigameColorListMax);
     minigameColorList->index(COLOR_INDEX_MAX, indexForColor);
 
-    //pickHistoryListState = new uiList<ColorListState, Uint8>(pickHistoryMax);
-    //palleteListState = new uiList<ColorListState, Uint8>(palleteMax);
+ //    pickHistoryListState = new uiList<ColorListState, Uint8>(pickHistoryMax);
+ //    palleteListState = new uiList<ColorListState, Uint8>(palleteMax);
 
     uxAnimations = new UxAnim();
 
@@ -555,7 +583,22 @@ Ux::uiObject* Ux::create(void){
     Ux::setColor(&rootUiObject->foregroundColor, 0, 0, 0, 0); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
     rootUiObject->hasForeground = false; // render texture
 
-    // make this color the selected color ! ! ! ! !! ^ ^ ^
+ //     make this color the selected color ! ! ! ! !! ^ ^ ^
+
+
+    mainUiContainer = new uiObject();
+
+    minigamesUiContainer = new uiObject();
+    minigamesUiContainer->hasBackground = true;
+    Ux::setColor(&minigamesUiContainer->backgroundColor, 0, 0, 0, 255);
+    minigamesUiContainer->setBoundaryRect(5000.0, 5000.0, 1.0, 1.0);
+
+
+    minigamesUiContainer->addChild(new uiObject());// this is sort of a hack... index zero is unused in games, but this lets our child index match our game index!
+    minigamesUiContainer->childList[0]->hideAndNoInteraction();
+
+    rootUiObject->addChild(mainUiContainer);
+    rootUiObject->addChild(minigamesUiContainer);
 
 
     minigameCounterText = new uiObject();
@@ -569,17 +612,17 @@ Ux::uiObject* Ux::create(void){
     printCharToUiObject(returnToLastImgBtn, CHAR_BACK_ICON, DO_NOT_RESIZE_NOW);
     returnToLastImgBtn->setInteractionBegin(&Ux::interactionBeginReturnToPreviousSurface);
     returnToLastImgBtn->setClickInteractionCallback(&Ux::interactionReturnToPreviousSurface);
-    rootUiObject->addChild(returnToLastImgBtn);
+    mainUiContainer->addChild(returnToLastImgBtn);
     returnToLastImgBtn->hideAndNoInteraction(); // initially hidden....
 
 
     bottomBar = new uiObject();
     bottomBar->hasBackground = true;
     Ux::setColor(&bottomBar->backgroundColor, 0, 0, 0, 198);
-    rootUiObject->addChild(bottomBar);
+    mainUiContainer->addChild(bottomBar);
     bottomBar->setInteractionCallback(Ux::interactionNoOp); // cannot click through this bar...
 
-    huePicker = new uiHueGradient(rootUiObject, Float_Rect(0.0, 0.60, 1.0, 0.09));
+    huePicker = new uiHueGradient(mainUiContainer, Float_Rect(0.0, 0.60, 1.0, 0.09));
     huePicker->resize(Float_Rect(0.0, 0.7, 1.0, hue_picker));
 
 
@@ -589,7 +632,7 @@ Ux::uiObject* Ux::create(void){
 //    pickSourceBtn->hasBackground = true;
 //    Ux::setColor(&pickSourceBtn->backgroundColor, 32, 0, 0, 128);
     pickSourceBtn->setClickInteractionCallback(&Ux::interactionFileBrowserTime); // TODO rename me
-    //printCharToUiObject(pickSourceBtn, '+', DO_NOT_RESIZE_NOW);
+ //    printCharToUiObject(pickSourceBtn, '+', DO_NOT_RESIZE_NOW);
     printCharToUiObject(pickSourceBtn, CHAR_OPEN_FILES, DO_NOT_RESIZE_NOW);
     pickSourceBtn->squarify();
 
@@ -609,9 +652,9 @@ Ux::uiObject* Ux::create(void){
     optionsGearBtn = new uiObject();
     optionsGearBtn->hasForeground = true;
     Ux::setColor(&optionsGearBtn->foregroundColor, 240, 240, 240, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-    //    optionsGearBtn->hasBackground = true;
-    //    Ux::setColor(&optionsGearBtn->backgroundColor, 32, 0, 0, 128);
-    //optionsGearBtn->setClickInteractionCallback(&Ux::interactionAddHistory); // TODO rename me
+ //        optionsGearBtn->hasBackground = true;
+ //        Ux::setColor(&optionsGearBtn->backgroundColor, 32, 0, 0, 128);
+ //    optionsGearBtn->setClickInteractionCallback(&Ux::interactionAddHistory); // TODO rename me
     printCharToUiObject(optionsGearBtn, CHAR_GEAR_ICON, DO_NOT_RESIZE_NOW);
     optionsGearBtn->squarify(); // "keep round"
     optionsGearBtn->setRoundedCorners(0.5);
@@ -624,7 +667,7 @@ Ux::uiObject* Ux::create(void){
 //    Ux::setColor(&bottomBarRightStack->backgroundColor, 255, 0, 0, 128);
 
 
-    // stacked bottom bar elements...
+ //     stacked bottom bar elements...
     bottomBarRightStack->addChildStackedRight(addHistoryBtn);
     bottomBarRightStack->addChildStackedRight(pickSourceBtn);
     bottomBarRightStack->addChildStackedRight(optionsGearBtn);
@@ -655,8 +698,8 @@ Ux::uiObject* Ux::create(void){
     Ux::setColor(&zoomSlider->backgroundColor, 255, 255, 255, 255);
     Ux::setColor(&zoomSlider->foregroundColor, 0, 0, 0, 50); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
     zoomSlider->setInteraction(&Ux::interactionHZ);//zoomSlider->canCollide = true;
-    //printCharToUiObject(zoomSlider, '^', DO_NOT_RESIZE_NOW);
-    //printCharToUiObject(zoomSlider, CHAR_VERTICAL_BAR_POINTED, DO_NOT_RESIZE_NOW);
+ //    printCharToUiObject(zoomSlider, '^', DO_NOT_RESIZE_NOW);
+ //    printCharToUiObject(zoomSlider, CHAR_VERTICAL_BAR_POINTED, DO_NOT_RESIZE_NOW);
     printCharToUiObject(zoomSlider, CHAR_ZOOM_PLUSS, DO_NOT_RESIZE_NOW);
     zoomSlider->setRoundedCorners(0.486);
     zoomSliderHolder->addChild(zoomSlider);
@@ -672,15 +715,15 @@ Ux::uiObject* Ux::create(void){
 
 
     historyPreview = new uiObject();
-    //historyPreview->hasForeground = true;
+ //    historyPreview->hasForeground = true;
 //    historyPreview->hasBackground = true;
 //    Ux::setColor(&historyPreview->backgroundColor, 0, 0, 0, 192);
-    //Ux::setColor(&historyPreview->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-    //historyPreview->doesInFactRender = false;
-    //historyPreview->setInteraction(&Ux::interactionHZ);
-    //historyPreview->canCollide = true;
+ //    Ux::setColor(&historyPreview->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+ //    historyPreview->doesInFactRender = false;
+ //    historyPreview->setInteraction(&Ux::interactionHZ);
+ //    historyPreview->canCollide = true;
 
-    // we should another way to set rects for animation support?
+ //     we should another way to set rects for animation support?
 
     int ctr = SIX_ACROSS;
     while( --ctr >= 0 ){
@@ -690,61 +733,61 @@ Ux::uiObject* Ux::create(void){
         historyPreview->addChild(colora);
     }
 
-    //historyPreview->hasForeground = true;
-    //printCharToUiObject(historyPreview, '_', DO_NOT_RESIZE_NOW);
-    //historyPreview->canCollide = true; // set by setInteractionCallback
+ //    historyPreview->hasForeground = true;
+ //    printCharToUiObject(historyPreview, '_', DO_NOT_RESIZE_NOW);
+ //    historyPreview->canCollide = true; // set by setInteractionCallback
     historyPreviewHolder->setInteraction(&Ux::interactionVert);
-    //historyPreviewHolder->interactionProxy = historyPalleteEditor->historyPalleteHolder; // when we drag the preview effect the fullsize sliding into view...
-    //printCharToUiObject(historyPreview, 'H', DO_NOT_RESIZE_NOW);
-    //bottomBar->addChild(historyPreview);
+ //    historyPreviewHolder->interactionProxy = historyPalleteEditor->historyPalleteHolder; // when we drag the preview effect the fullsize sliding into view...
+ //    printCharToUiObject(historyPreview, 'H', DO_NOT_RESIZE_NOW);
+ //    bottomBar->addChild(historyPreview);
     historyPreviewHolder->addChild(historyPreview);
-    rootUiObject->addChild(historyPreviewHolder);
+    mainUiContainer->addChild(historyPreviewHolder);
 
 
 
 #ifndef OMIT_SCROLLY_ARROWS
-    movementArrows = new uiNavArrows(rootUiObject, Float_Rect(0.0, clock_bar + 0.27777777777778, 1.0, 0.38), &Ux::interactionDirectionalArrowClicked);
+    movementArrows = new uiNavArrows(mainUiContainer, Float_Rect(0.0, clock_bar + 0.27777777777778, 1.0, 0.38), &Ux::interactionDirectionalArrowClicked);
 #endif
-    curerntColorPreview = new uiViewColor(rootUiObject, Float_Rect(0.0, clock_bar, 1.0, 0.27777777777778), false);
+    curerntColorPreview = new uiViewColor(mainUiContainer, Float_Rect(0.0, clock_bar, 1.0, 0.27777777777778), false);
 
 
 
-    historyPalleteEditor = new uiHistoryPalleteEditor(rootUiObject);
+    historyPalleteEditor = new uiHistoryPalleteEditor(mainUiContainer);
 
-    // late setup of these, we have historyPalleteEditor now....
+ //     late setup of these, we have historyPalleteEditor now....
     historyPreviewHolder->interactionProxy = historyPalleteEditor->historyPalleteHolder; // when we drag the preview effect the fullsize sliding into view...
     historyPreviewHolder->setInteractionCallback(&historyPalleteEditor->interactionToggleHistory);
 
 
-    settingsScroller = new uiSettingsScroller(rootUiObject);
+    settingsScroller = new uiSettingsScroller(mainUiContainer);
 //    optionsGearBtn->setClickInteractionCallback(&Ux::interactionVisitSettings);
-    // to make this dragable.... you disable the above, and use this instead....
+ //     to make this dragable.... you disable the above, and use this instead....
     optionsGearBtn->setInteractionCallback(&Ux::interactionVisitSettings);
     optionsGearBtn->setInteraction(&Ux::interactionVert); // todo: not responsive
     optionsGearBtn->interactionProxy = settingsScroller->uiObjectItself;
 
 
     defaultYesNoChoiceHolder = new uiObject();
-    //defaultYesNoChoiceHolder->setBoundaryRect(0.0, -1.0, 1.0, 1.0);
+ //    defaultYesNoChoiceHolder->setBoundaryRect(0.0, -1.0, 1.0, 1.0);
     defaultYesNoChoiceHolder->setDefaultHidden();
-    rootUiObject->addChild(defaultYesNoChoiceHolder);
+    /*mainUiContainer*/ rootUiObject->addChild(defaultYesNoChoiceHolder);
 
-    // top most objects
+ //     top most objects
     defaultYesNoChoiceDialogue = new uiYesNoChoice(defaultYesNoChoiceHolder, Float_Rect(0.0, 0.0, 1.0, 1.0), true);
 
 
-    //defaultYesNoChoiceDialogue->uiObjectItself->setAnimation( uxAnimations->slideUp(defaultYesNoChoiceDialogue->uiObjectItself) ); // returns uiAminChain*
+ //    defaultYesNoChoiceDialogue->uiObjectItself->setAnimation( uxAnimations->slideUp(defaultYesNoChoiceDialogue->uiObjectItself) ); // returns uiAminChain*
 
-    rClickMenu = new uiToolMenu(rootUiObject);
+    rClickMenu = new uiToolMenu(rootUiObject /*mainUiContainer*/);
 
-    defaultScoreDisplay = new uiScore(rootUiObject);
+    defaultScoreDisplay = new uiScore(rootUiObject /*mainUiContainer*/); // score and some others are always available....
 
     historyPalleteEditor->addScoreboard(defaultScoreDisplay->buildScoreDisplay());
 
 
-    //uiHueGradientScroller* gradTest = new uiHueGradientScroller(rootUiObject, Float_Rect(0.0,0.0,1.0,0.035), true);
+ //    uiHueGradientScroller* gradTest = new uiHueGradientScroller(mainUiContainer, Float_Rect(0.0,0.0,1.0,0.035), true);
 
-    //uiText::BOTTOM;
+ //    uiText::BOTTOM;
 
 
     updateRenderPositions();
@@ -754,7 +797,7 @@ Ux::uiObject* Ux::create(void){
     defaultScoreDisplay->updateScoreDisplay();
 
 
-    //test cololr history
+ //    test cololr history
 #ifdef DEVELOPER_TEST_MODE
     for( int q=0; q<8192; q++ ){
         currentlyPickedColor = new SDL_Color();
@@ -763,11 +806,11 @@ Ux::uiObject* Ux::create(void){
     }
 #endif
 
-    //writeOutState(); // testing
-    // for awful reasons during init some things should not be called....
-    //palleteSelectionColorPreview->uiObjectItself->setAnimation( uxAnimations->slideDownFullHeight(palleteSelectionColorPreview->uiObjectItself) ); // returns uiAminChain*
-    // todo we should just chain a interactionTogglePalletePreview
-    //interactionTogglePalletePreview(nullptr, nullptr);
+ //    writeOutState(); // testing
+ //     for awful reasons during init some things should not be called....
+ //    palleteSelectionColorPreview->uiObjectItself->setAnimation( uxAnimations->slideDownFullHeight(palleteSelectionColorPreview->uiObjectItself) ); // returns uiAminChain*
+ //     todo we should just chain a interactionTogglePalletePreview
+ //    interactionTogglePalletePreview(nullptr, nullptr);
     historyPalleteEditor->interactionToggleHistory(nullptr, nullptr);
 
     settingsScroller->interactionToggleSettings(nullptr, nullptr);
@@ -814,7 +857,7 @@ Ux::uiObject* Ux::create(void){
 //    }
 
 
-    //SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
+ //    SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 
 
     return rootUiObject;
@@ -842,14 +885,14 @@ void Ux::updateRenderPosition(uiObject *renderObj){
 // maybe just be static Ux:: member functions defined the same way as others
 
 void Ux::printStringToUiObject(uiObject* printObj, const char* text, bool resizeText){
-    // this function will print or update text, adding characters if needed
-    // the object must be empy (essentially to become a text container and no loner normal UI object)
+ //     this function will print or update text, adding characters if needed
+ //     the object must be empy (essentially to become a text container and no loner normal UI object)
 
 
-    // todo possibly create container on fly if nonempty?
-    // see "NEW rule" where it basically defines how to maybe go about this....
+ //     todo possibly create container on fly if nonempty?
+ //     see "NEW rule" where it basically defines how to maybe go about this....
 
-    // TODO these are global constants
+ //     TODO these are global constants
 
 
     int ctr=0;
@@ -860,7 +903,7 @@ void Ux::printStringToUiObject(uiObject* printObj, const char* text, bool resize
     long len=SDL_strlen(text);
 
     float letterWidth = ((1.0 - printObj->containTextPadding - printObj->containTextPadding) / len);// + printObj->textSpacing;
-    //float letterWidth = ((1.0 - printObj->containTextPadding - printObj->containTextPadding - printObj->textSpacing) / len);// + printObj->textSpacing;
+ //    float letterWidth = ((1.0 - printObj->containTextPadding - printObj->containTextPadding - printObj->textSpacing) / len);// + printObj->textSpacing;
     float letterSpacing = letterWidth; //((1.0 - printObj->containTextPadding - printObj->containTextPadding + printObj->textSpacing) / len);
     float firstOffset = printObj->containTextPadding;// - ((printObj->textSpacing * 0.5));
     float vertOffset = 0.5 - (letterWidth*0.5);
@@ -953,8 +996,8 @@ void Ux::printStringToUiObject(uiObject* printObj, const char* text, bool resize
         printObj->textDirection = TEXT_DIR_ENUM::LTR;
     }
 
-    // we just printed a shorter string than we did previously, hide any allocated letteres beyond current str len
-    // it is also possible extra letters need to be set to offeset 0 to render space?
+ //     we just printed a shorter string than we did previously, hide any allocated letteres beyond current str len
+ //     it is also possible extra letters need to be set to offeset 0 to render space?
     for( int l=printObj->childListIndex; ctr<l; ctr++ ){
         printObj->childList[ctr]->doesInFactRender = false;
 
@@ -964,7 +1007,7 @@ void Ux::printStringToUiObject(uiObject* printObj, const char* text, bool resize
 //                    xStep,yStep);
     }
 
-    //        hexValueText->setChildNodeDirection(TEXT_DIR_ENUM::RTL); // see TEXT_DIR_ENUM
+ //            hexValueText->setChildNodeDirection(TEXT_DIR_ENUM::RTL); // see TEXT_DIR_ENUM
 
 
     if( resizeText ){
@@ -1015,7 +1058,7 @@ bool Ux::triggerInteraction(bool isStart){ // mouseup, mouse didn't move
 
     bool hasInteraction = objectCollides(currentInteraction.px, currentInteraction.py);
 
-    //interactionObject  currentInteraction
+ //    interactionObject  currentInteraction
     if( hasInteraction && isStart ){
         if( lastInteractionObject == interactionObject ){
             // second click
@@ -1043,11 +1086,11 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
 
     bool collides = false;
     bool childCollides = false;
-    // update ???? seems handled by interactionUpdate
-    // test collision with object itself, then render all child obj
+ //     update ???? seems handled by interactionUpdate
+ //     test collision with object itself, then render all child obj
 
 
-    // some objects (font container) may bypass all collision checks....
+ //     some objects (font container) may bypass all collision checks....
     if( renderObj->doesNotCollide ){
         return collides;
     }
@@ -1093,8 +1136,8 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
 
     }
 
-    // finally if we perfomed a translation for object position
-    // reset that translation
+ //     finally if we perfomed a translation for object position
+ //     reset that translation
 
     return collides;
 }
@@ -1118,7 +1161,7 @@ bool Ux::bubbleCurrentInteraction(){ // true if we found a match
 }
 
 bool Ux::interactionUpdate(uiInteraction *delta){
-    // TODO ret bool determine modification?
+ //     TODO ret bool determine modification?
 
     uiObject* orig = interactionObject;
 
@@ -1159,10 +1202,10 @@ bool Ux::interactionComplete(uiInteraction *delta){
         }
     }
 
-    // really we should consider storing 2 seperate callbacks - interaction complete is really quite different from click callback
-    // and in some cases we may need both....
+ //     really we should consider storing 2 seperate callbacks - interaction complete is really quite different from click callback
+ //     and in some cases we may need both....
 
-    // so in some cases, the interaction is complete even if the object changed!?!
+ //     so in some cases, the interaction is complete even if the object changed!?!
 
     if( isInteracting && interactionObject->hasInteractionCb && interactionObject->interactionCallback != nullptr ){
         isInteracting = false;
@@ -1178,14 +1221,14 @@ bool Ux::interactionComplete(uiInteraction *delta){
 void Ux::interactionHistoryEnteredView(uiObject *interactionObj){
 
     Ux* self = Ux::Singleton();
-    //self->historyScroller->allowUp = true;
+ //    self->historyScroller->allowUp = true;
     self->updatePickHistoryPreview();  /// this is too much update right?
     self->historyPalleteEditor->palleteScroller->updateTiles();
 }
 
 //static
 void Ux::interactionNoOp(uiObject *interactionObj, uiInteraction *delta){
-    //SDL_Log("INERACTION NOOP REACHED");
+ //    SDL_Log("INERACTION NOOP REACHED");
 
 }
 
@@ -1215,7 +1258,7 @@ void Ux::interactionBeginReturnToPreviousSurface(uiObject *interactionObj, uiInt
 
 
 void Ux::loadTestImageByIndex(int index){
-    //Ux* myUxRef = Ux::Singleton();
+ //    Ux* myUxRef = Ux::Singleton();
     OpenGLContext* ogg=OpenGLContext::Singleton();
     ogg->loadNextTestImageByIndex(index);
 }
@@ -1241,7 +1284,7 @@ void Ux::interactionAddHistory(uiObject *interactionObj, uiInteraction *delta){
     myUxRef->uxAnimations->scale_bounce(interactionObj, 0.001);
     myUxRef->addCurrentToPickHistory();
 
-    // in the popup, if we were viewing a color, we should hide it next time we open this up.... esp for widescreen
+ //     in the popup, if we were viewing a color, we should hide it next time we open this up.... esp for widescreen
     if( myUxRef->historyPalleteEditor->palleteSelectionPreviewHolder->is_being_viewed_state ) {
         myUxRef->historyPalleteEditor->interactionTogglePalletePreview(myUxRef->historyPalleteEditor->palleteSelectionPreviewHolder, delta);
     }
@@ -1258,7 +1301,7 @@ void Ux::hueClickedPickerHsv(SDL_Color* c){
     myUxRef->lastHue->fromColor(c);
     ogg->pickerForHue(myUxRef->lastHue, c);
     myUxRef->historyPalleteEditor->interactionToggleHistory(myUxRef->interactionObject, &myUxRef->currentInteraction);
-    //interactionToggleHistory(nullptr, nullptr);
+ //    interactionToggleHistory(nullptr, nullptr);
 }
 
 // unused...
@@ -1269,7 +1312,7 @@ void Ux::pickerForHuePercentage(float percent){
 }
 
 void Ux::interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteraction *delta){
-    //SDL_Log("directionalllly");
+ //    SDL_Log("directionalllly");
     if( delta->py < 0 ){
         colorPickState->mmovey+=1;
     }else if( delta->py > 0 ){
@@ -1281,7 +1324,50 @@ void Ux::interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteract
     }
 }
 
+void Ux::interactionDragMove(uiObject *interactionObj, uiInteraction *delta){
 
+    interactionObj->cancelCurrentAnimation();
+
+    interactionObj->boundryRect.x += (delta->rx * (1.0/interactionObj->parentObject->collisionRect.w));
+    interactionObj->boundryRect.y += (delta->ry * (1.0/interactionObj->parentObject->collisionRect.h));
+
+    interactionObj->updateRenderPosition();
+
+}
+//interactionDragReleased
+void Ux::interactionDragMoveConstrain(uiObject *interactionObj, uiInteraction *delta){
+    Ux* uxInstance = Ux::Singleton();
+
+    uiAminChain* myAnimChain = new uiAminChain();
+    myAnimChain->addAnim((new uiAnimation(interactionObj))->initialMoveVelocity(delta->vx, delta->vy) /*->setAnimationCallback(scrollAnimationUpdaterCb)->setGetBoundsFn(scrollAnimationGetBoundsFn)*/ );
+    myAnimChain->addAnim((new uiAnimation(interactionObj))->setAnimationReachedCallback(&interactionConstrainToParentObject) );
+    interactionObj->setAnimation(myAnimChain); // imporrtant to do this before we push it..
+    uxInstance->uxAnimations->pushAnimChain(myAnimChain);
+}
+
+void Ux::interactionConstrainToParentObject(uiAnimation* uiAnim){
+    Ux* uxInstance = Ux::Singleton();
+
+    float xDest = uiAnim->myUiObject->boundryRect.x;
+    float yDest = uiAnim->myUiObject->boundryRect.y;
+
+    if( uiAnim->myUiObject->boundryRect.x < 0 ){
+        xDest = 0.0;
+    }else if( uiAnim->myUiObject->boundryRect.x + uiAnim->myUiObject->boundryRect.w > 1.0 ){
+        xDest = 1.0 - uiAnim->myUiObject->boundryRect.w;
+    }
+
+    if( uiAnim->myUiObject->boundryRect.y < 0 ){
+        yDest = 0.0;
+    }else if( uiAnim->myUiObject->boundryRect.y + uiAnim->myUiObject->boundryRect.h > 1.0 ){
+        yDest = 1.0 - uiAnim->myUiObject->boundryRect.h;
+    }
+
+    uiAnim->myUiObject->setAnimation( uxInstance->uxAnimations->moveTo(uiAnim->myUiObject,xDest,yDest, nullptr, nullptr) );
+
+
+
+}
 
 // this overrides the interface fn?
 // this function is a bit odd for now, but is planned to be used to drag and throw objects that will otherwise animiate in, or not animate in based on this - Pane
@@ -1289,12 +1375,12 @@ void Ux::interactionDirectionalArrowClicked(uiObject *interactionObj, uiInteract
 void Ux::interactionHorizontal(uiObject *interactionObj, uiInteraction *delta){
     Ux* self = Ux::Singleton();
 
-    //self->historyFullsize // right now there is still some history specific stuff here
+ //    self->historyFullsize // right now there is still some history specific stuff here
 
     if( interactionObj->interactionProxy != nullptr ){
         interactionObj = interactionObj->interactionProxy;
     }
-    // if we are already panning ....
+ //     if we are already panning ....
     interactionObj->cancelCurrentAnimation();
 
     interactionObj->boundryRect.x += (delta->rx * (1.0/interactionObj->parentObject->collisionRect.w));
@@ -1316,12 +1402,12 @@ void Ux::interactionHorizontal(uiObject *interactionObj, uiInteraction *delta){
 void Ux::interactionVert(uiObject *interactionObj, uiInteraction *delta){
     Ux* self = Ux::Singleton();
 
-    //self->historyFullsize // right now there is still some history specific stuff here
+ //    self->historyFullsize // right now there is still some history specific stuff here
 
     if( interactionObj->interactionProxy != nullptr ){
         interactionObj = interactionObj->interactionProxy;
     }
-    // if we are already panning ....
+ //     if we are already panning ....
     interactionObj->cancelCurrentAnimation();
 
     interactionObj->boundryRect.y += (delta->ry * (1.0/interactionObj->parentObject->collisionRect.h));
@@ -1341,9 +1427,9 @@ void Ux::interactionVert(uiObject *interactionObj, uiInteraction *delta){
 void Ux::interactionSliderVT(uiObject *interactionObj, uiInteraction *delta){
 
     interactionObj->boundryRect.y += (delta->ry * (1.0/interactionObj->parentObject->collisionRect.h));
-    /// we cannot modify the rect directly like this?
+ //    / we cannot modify the rect directly like this?
 
-    //computedMovementRect
+ //    computedMovementRect
     if( interactionObj->boundryRect.y < interactionObj->computedMovementRect.y ){
         interactionObj->boundryRect.y = interactionObj->computedMovementRect.y;
         delta->fixY(interactionObj->collisionRect,  interactionObj->parentObject->collisionRect);
@@ -1378,7 +1464,7 @@ void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
     interactionObj->cancelCurrentAnimation();
 
     interactionObj->boundryRect.x += (delta->rx * (1.0/interactionObj->parentObject->collisionRect.w));
-    /// we cannot modify the rect directly like this?
+ //    / we cannot modify the rect directly like this?
 
 //computedMovementRect
     if( interactionObj->boundryRect.x < interactionObj->computedMovementRect.x ){
@@ -1395,21 +1481,21 @@ void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
 
 
 // now why do we set the volume?
-    //setVolume
+ //    setVolume
 
     if( interactionObj->hasAnimCb ){
         interactionObj->animationPercCallback(interactionObj, interactionObj->computedMovementRect.w > 0 ? ((interactionObj->boundryRect.x - interactionObj->computedMovementRect.x) / interactionObj->computedMovementRect.w) : 0.0);
     }
 
-    //updateRenderPositions();  // WHY NOT MOVE HERE
-    // we need to make a singleton ux and then we can get instance
-    // and call member functions
-    // see OpenGLContext::Singleton
+ //    updateRenderPositions();  // WHY NOT MOVE HERE
+ //     we need to make a singleton ux and then we can get instance
+ //     and call member functions
+ //     see OpenGLContext::Singleton
 
-    //OpenGLContext* ogg=OpenGLContext::Singleton();
+ //    OpenGLContext* ogg=OpenGLContext::Singleton();
 
     Ux* myUxRef = Ux::Singleton();
-    //myUxRef->updateRenderPositions();
+ //    myUxRef->updateRenderPositions();
     myUxRef->updateRenderPosition(interactionObj);
 
 
@@ -1417,8 +1503,8 @@ void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
 //    myUxRef->bottomBar->updateRenderPosition();
 
 
-    // currently does not consider width of the object, since given a width it could remain within boundaries, but this is not usefl
-    // for sliders where the center point of the object is all that is considered for positioning (bool isCentered) <-- ? untrue ? planing stage problems
+ //     currently does not consider width of the object, since given a width it could remain within boundaries, but this is not usefl
+ //     for sliders where the center point of the object is all that is considered for positioning (bool isCentered) <-- ? untrue ? planing stage problems
 }
 
 
@@ -1432,10 +1518,10 @@ void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
 
 //static add Ux:: // UNUSED FUNCTION
 bool Ux::bubbleInteractionIfNonClickOrHiddenPalletePreview(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
-    // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
+ //     THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
 
     Ux* self = Ux::Singleton();
-    // see also interactionUpdate
+ //     see also interactionUpdate
 
     if( !self->historyPalleteEditor->palleteSelectionPreviewHolder->is_being_viewed_state || delta->dy != 0 || delta->dx != 0 ){
         return self->bubbleCurrentInteraction(); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
@@ -1447,10 +1533,10 @@ bool Ux::bubbleInteractionIfNonClickOrHiddenPalletePreview(uiObject *interaction
 
 //static add Ux::
 bool Ux::bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
-    // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
+ //     THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
 
     Ux* self = Ux::Singleton();
-    // see also interactionUpdate
+ //     see also interactionUpdate
 
     if( delta->dy != 0 || delta->dx != 0 ){
         return self->bubbleCurrentInteraction(); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
@@ -1469,13 +1555,13 @@ bool Ux::bubbleWhenHidden(uiObject *interactionObj, uiInteraction *delta){ // re
 
 // if we are moving up or down we want to scroll instead
 bool Ux::bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
-    // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
+ //     THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
     Ux* self = Ux::Singleton();
 
     if( interactionObj->isInHiddenState() ){
         return self->bubbleCurrentInteraction();
     }
-    //SDL_Log("we are looking at the fabs %f %f ", fabs(delta->dy), fabs(delta->dx) );
+ //    SDL_Log("we are looking at the fabs %f %f ", fabs(delta->dy), fabs(delta->dx) );
     if( !interactionObj->doesInFactRender
        || ( fabs(delta->dy) > 0.01f && fabs(delta->dx) < 0.01f) ){ // or is approx 0
 
@@ -1495,22 +1581,22 @@ bool Ux::bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiIn
 // other conditions we should bubble (if it seems like scrolling)
 // this is also becomming rather specific to scroller tiles, and probably belongs in the scroller....
 bool Ux::bubbleInteractionIfNonHorozontalMovementScroller(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
-    // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
+ //     THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
 
     Ux* self = Ux::Singleton();
-    // see also interactionUpdate
+ //     see also interactionUpdate
 
-    // interactionObj is the tile itself basically... it contains 2 child objects
-    // -x is leftward movement
-    // -y is upward movement
+ //     interactionObj is the tile itself basically... it contains 2 child objects
+ //     -x is leftward movement
+ //     -y is upward movement
 
-    //SDL_Log("00))))0000000000000000000000000 y:%f x:%f",delta->dy, delta->dx);
-    //SDL_Log("00))))0000000000000000000000000 y:%f x:%f",fabs(delta->dy), fabs(0.0f-delta->dx));
-    //SDL_Log("00))))0000000000000000000000000 x:%f 0x:%f",interactionObj->boundryRect.x, interactionObj->origBoundryRect.x);
+ //    SDL_Log("00))))0000000000000000000000000 y:%f x:%f",delta->dy, delta->dx);
+ //    SDL_Log("00))))0000000000000000000000000 y:%f x:%f",fabs(delta->dy), fabs(0.0f-delta->dx));
+ //    SDL_Log("00))))0000000000000000000000000 x:%f 0x:%f",interactionObj->boundryRect.x, interactionObj->origBoundryRect.x);
 
 
-    // todo: for widescreen mode.... if we swipe right (delta->dx > 0.04f)? and we are not showing the close X
-    // this means we should also bubble...
+ //     todo: for widescreen mode.... if we swipe right (delta->dx > 0.04f)? and we are not showing the close X
+ //     this means we should also bubble...
 
     if( interactionObj->isInHiddenState() /*|| interactionObj->isInAnimation()*/ ){
         return self->bubbleCurrentInteraction();
@@ -1538,9 +1624,9 @@ bool Ux::bubbleInteractionIfNonHorozontalMovementScroller(uiObject *interactionO
 ///   or otherwise seperate function for addPickHistory from this
 void Ux::updateColorValueDisplay(SDL_Color* color){
     curerntColorPreview->update(color);
-    //currentlyPickedColor = color; // maybe we should copy it instead?
+ //    currentlyPickedColor = color; // maybe we should copy it instead?
     setColor(currentlyPickedColor, color);
-    //addCurrentToPickHistory();
+ //    addCurrentToPickHistory();
 }
 
 bool Ux::wouldLooseIfColorAdded(){
@@ -1551,18 +1637,18 @@ bool Ux::wouldLooseIfColorAdded(){
 void Ux::addCurrentToPickHistory(){
 
 //  TODO consider eliminating lastPickHistoryIndex instead
-    /// i.e pickHistoryIndex = lastPickHistoryIndex
-    // we can increment and bound check before using the new index
-    // this should simplify the checks used elsewhere
+ //    / i.e pickHistoryIndex = lastPickHistoryIndex
+ //     we can increment and bound check before using the new index
+ //     this should simplify the checks used elsewhere
 
-    // IMPORTANT remember ot text with pickHistoryMax = <5
-    // IMPORTANT remember to check more than 10 colors
+ //     IMPORTANT remember ot text with pickHistoryMax = <5
+ //     IMPORTANT remember to check more than 10 colors
 
     OpenGLContext* ogg=OpenGLContext::Singleton();
 
     float bounceIntensity = -0.001;
 
-    // if we have a lastPickHistoryIndex
+ //     if we have a lastPickHistoryIndex
     if( pickHistoryList->total() > 0  ){
         // the new color must be unique
         if( wouldLooseIfColorAdded() ){
@@ -1602,7 +1688,7 @@ void Ux::addCurrentToPickHistory(){
 
     updatePickHistoryPreview();
 
-    // move logic into historyPalleteEditor
+ //     move logic into historyPalleteEditor
     if( historyPalleteEditor->historyPalleteHolder->isInBounds ){
         historyPalleteEditor->historyScroller->scrollToItemByIndex(0);
     }else{
@@ -1610,7 +1696,7 @@ void Ux::addCurrentToPickHistory(){
     }
 
 
-    // now we also update our minigame list....
+ //     now we also update our minigame list....
 
     int existingLocation = minigameColorList->locate(anEntry);
     if( existingLocation < 0 ){
@@ -1624,8 +1710,6 @@ void Ux::addCurrentToPickHistory(){
                 if( minigameColorList->_out_of_space ){
                     // is this the condition to tirgger the minigame????
                     ogg->begin3dDropperAnimation(OpenGLContext::ANIMATION_ZOOM_INTO_BULB, currentlyPickedColor);
-                    // after mnigame completes...
-                    minigameColorList->clear();
                 }
             }else{
                 //SDL_Log("omit color from minigame: too grey %i", variance);
@@ -1676,7 +1760,7 @@ void Ux::updatePickHistoryPreview(){
         }
     }
 
-    // somertimes upate the full histoury preview too
+ //     somertimes upate the full histoury preview too
     if( historyPalleteEditor->historyPalleteHolder->isInBounds ){
         historyPalleteEditor->historyScroller->updateTiles(); // calls updateUiObjectFromHistory for each tile
         //palleteScroller->updateTiles();
@@ -1695,8 +1779,8 @@ int Ux::renderObject(uniformLocationStruct *uniformLocations){
 }
 
 int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderObj, glm::mat4 inheritMat){
-    // update
-    // render object itself, then render all child hobj
+ //     update
+ //     render object itself, then render all child hobj
 
 
     if( !renderObj->isInBounds ) return 1;
@@ -1707,7 +1791,7 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
         resolvedRenderObjMat *= inheritMat; // we limit the matrix math except where needed this way....
     }
 
-    //glm::mat4 uiMatrix = glm::mat4(1.0f);
+ //    glm::mat4 uiMatrix = glm::mat4(1.0f);
 
 
 
@@ -1718,15 +1802,15 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 //
 //    }
 
-    //uiMatrix = glm::scale(uiMatrix, glm::vec3(0.9,0.9,1.0));
-    //uiMatrix = glm::rotate(uiMatrix,  2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+ //    uiMatrix = glm::scale(uiMatrix, glm::vec3(0.9,0.9,1.0));
+ //    uiMatrix = glm::rotate(uiMatrix,  2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 //
 
-    //renderObj->matrix = glm::scale(renderObj->matrix, glm::vec3(0.998,0.998,1.0));
+ //    renderObj->matrix = glm::scale(renderObj->matrix, glm::vec3(0.998,0.998,1.0));
 
     glUniformMatrix4fv(uniformLocations->ui_modelMatrix, 1, GL_FALSE, &resolvedRenderObjMat[0][0]); // Send our model matrix to the shader
 
-    //textMatrix = glm::translate(textMatrix, screenToWorldSpace(1000.0,500.0,450.1));  // just try screen coord like -512??
+ //    textMatrix = glm::translate(textMatrix, screenToWorldSpace(1000.0,500.0,450.1));  // just try screen coord like -512??
 
 
     if( renderObj->doesInFactRender && (renderObj->hasBackground || renderObj->hasForeground) ){
@@ -1736,16 +1820,16 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
                     0.0,
                     0.0);
 
-    //    glUniform4f(uniformLocations->ui_position,
-    //                 0.2,
-    //                0.2,
-    //                0.0,
-    //                0.0);
+ //        glUniform4f(uniformLocations->ui_position,
+ //                     0.2,
+ //                    0.2,
+ //                    0.0,
+ //                    0.0);
 
-    //    glUniform3f(uniformLocations->ui_scale,
-    //                renderObj.boundryRect,
-    //                renderObj.boundryRect.y,
-    //                0.0);
+ //        glUniform3f(uniformLocations->ui_scale,
+ //                    renderObj.boundryRect,
+ //                    renderObj.boundryRect.y,
+ //                    0.0);
 
         glUniform4f(uniformLocations->ui_scale,
                     renderObj->renderRect.w,
@@ -1830,12 +1914,12 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
                         /*disabled*/0);//1); // 0,0,1,1  is screen crop, but we can skip this logic in vsh
         }
 
-    //
-    //    glUniform4f(uniformLocations->ui_scale,
-    //                1.0,
-    //                1.0,
-    //                1.0,
-    //                1.0);
+ //
+ //        glUniform4f(uniformLocations->ui_scale,
+ //                    1.0,
+ //                    1.0,
+ //                    1.0,
+ //                    1.0);
 
 
         glUniform4f(uniformLocations->texture_crop,

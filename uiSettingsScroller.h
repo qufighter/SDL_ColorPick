@@ -20,7 +20,7 @@ this is really different from uiHistoryPalleteEditor in that it takes up the ful
 struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and is pretty much singleton....
 
     const char* appVersion = "Version-1.0"; // no spaces allowed or we won't be able to open URL
-    const static int maxSettings = 45;
+    const static int maxSettings = 45; // the indexing may break at 254....
 
     typedef enum  {
         HEADING,
@@ -101,7 +101,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
     uiSettingsScroller(uiObject* parentObj){
         Ux* uxInstance = Ux::Singleton();
 
-        settingsList = new uiList<SettingsListObj, Uint8>(maxSettings); // WARN - do not enable index if using Uint8 - max Uint8 is far less than pickHistoryMax
+        settingsList = new uiList<SettingsListObj, Uint8>(maxSettings);
         settingsList->index(UI_SETTINGS_ENUM::UI_SETTING_LAST, indexForSetting);
 
 //        SDL_Log("NOise output about enums: %d %d %d %d %d %d %d",

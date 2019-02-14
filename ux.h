@@ -193,6 +193,7 @@ static Ux* Singleton();
 #include "uiHueGradientScroller.h"
 #include "uiHueGradient.h"
 #include "uiScore.h"
+#include "uiSwatch.h"
 #include "uiToolMenu.h"
 #include "uiRunningMan.h"
 #include "uiHistoryPreviewScroller.h"
@@ -270,6 +271,11 @@ static Ux* Singleton();
     static void interactionHorizontal(uiObject *interactionObj, uiInteraction *delta);
     static void interactionVert(uiObject *interactionObj, uiInteraction *delta);
 
+    static void interactionDragMove(uiObject *interactionObj, uiInteraction *delta);
+    static void interactionDragMoveConstrain(uiObject *interactionObj, uiInteraction *delta);
+    static void interactionConstrainToParentObject(uiAnimation* uiAnim);
+
+
     static void hueClicked(SDL_Color* c);
     static void hueClickedPickerHsv(SDL_Color* c);
     static void pickerForHuePercentage(float percent);
@@ -329,6 +335,7 @@ static Ux* Singleton();
 
     float screenRatio = 1.0f;
     bool widescreen = false;
+    bool isMinigameMode = false;
 
     float clock_bar = 0.04; // clock bar height (ios etc)
     float hue_picker = 0.05; // huePicker "height" (or width when widescreen)
@@ -338,6 +345,10 @@ static Ux* Singleton();
 
     uiInteraction currentInteraction;
     uiObject *rootUiObject; // there is a root ui object
+
+    uiObject *mainUiContainer;
+    uiObject *minigamesUiContainer;
+
     uiObject* currentModal;
 
     UxAnim *uxAnimations;

@@ -1227,8 +1227,8 @@ struct uiObject
         // in any case the logic before delta->fixX may work... I guess if hte animation may continue it could also need to fixX ?  may animate unrealistically then....
 
 
-
-        if( hasChildren  ){
+        /// NOTE: some object should maybe still updated even if they are out of bounds, since some of the children COULD be in bounds....
+        if( hasChildren && isInBounds ){
             float stackingOffset=0;
             // we could thread this???
             for( int x=0,l=childListIndex; x<l; x++ ){

@@ -26,16 +26,17 @@ REALLY reset the chain multiplier (the 2 times it gets reset accidentally to 1, 
 
 // some random thing ? we need to roll above though.
 
-the non scrolling "out of space" should possibly flash the lightening bolt??
-+10 out of space excessive...
+the non scrolling "out of space" should possibly flash the lightening bolt?? (yes please)
++10 out of space excessive... ?
 
 pigcel
 
 drag scroller edge bg beyond end/start is actually annoying
 
-convert or crop cubic coord
 
-render when entering FG - android app menu repeately bugs (blank screen or partial render!?? when not rendering continuously ?? (may be fixed now)
+KEYBOARD INPUT NOT INTERCEPTED DURING MINIGAME!!!
+
+minigame is not considered a "Modal" that can be canceled... 
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -43,6 +44,12 @@ images can have a color space????
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
 
 ##  can do
+
+convert or crop cubic coord
+
+more tests for uiList needed...
+1) remove the last item then try to locate it and other items
+
 
 additional sorts (dark->light->dark) (dull -> vivid -> dull)
 

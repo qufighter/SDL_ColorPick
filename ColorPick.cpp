@@ -424,6 +424,8 @@ void OpenGLContext::createUI(void) {
     generalUx = Ux::Singleton(); // new Ux();
     rootUiObject = generalUx->create(); // if all create function are 1off... no ret needed?
 
+    minigames = new Minigames();
+
     // we can now set this refernce from UX -> create
     generalUx->zoomSlider->setAnimationPercCallback(&OpenGLContext::setFishScalePerentage);
 
@@ -698,6 +700,10 @@ void OpenGLContext::setupScene(void) {
     //glDisable(GL_DEPTH_TEST);
 
 
+    glEnable(GL_BLEND);  //this enables alpha blending
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_BLEND);
+
     //projectionMatrix = glm::perspective(60.0f, (float)windowWidth / (float)windowHeight, 0.1f, (float)VIEW_MAX_CLIP_DISTANCE);  // Create our perspective projection matrix
 
 
@@ -751,6 +757,10 @@ void OpenGLContext::reloadShaders(void){
     shader_3d->reload();
     shader_3d_Glass->reload();
     shader_3d_unlit->reload();
+}
+
+bool OpenGLContext::isMinigameMode(){
+    return generalUx->isMinigameMode;
 }
 
 /**
@@ -958,11 +968,10 @@ void OpenGLContext::clearVelocity(){
  */
 #define VELOCITY_MIN 0.0000001f
 
-void OpenGLContext::renderScene(void) {
 
-    debugGLerror("renderScene begin");
-    //SDL_Log("renderScene begin");
+void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
 
+    debugGLerror("renderZoomedPickerBg begin");
 
     if( has_velocity ){
 
@@ -974,8 +983,8 @@ void OpenGLContext::renderScene(void) {
 
         // we now take any full integer amounts visible in the accumulated velocity....
         /// todo does this work good for negative numbers?? ANSWER : no  X: -1.267014 -2 Y: -0.894823 -1 -- it always rounds towards negative even for negativess
-//        int acu_v_y_int = SDL_floorf(accumulated_velocity_y);
-//        int acu_v_x_int = SDL_floorf(accumulated_velocity_x);
+        //        int acu_v_y_int = SDL_floorf(accumulated_velocity_y);
+        //        int acu_v_x_int = SDL_floorf(accumulated_velocity_x);
         /// todo does this work good for negative numbers?? ANSWER : yes  X: -9.183308 -9 Y: -5.968337 -5    X: -9.247559 -9 Y: -6.010095 -6
         int acu_v_y_int = (int)(accumulated_velocity_y) / pxFactor;
         int acu_v_x_int = (int)(accumulated_velocity_x) / pxFactor;
@@ -1020,7 +1029,7 @@ void OpenGLContext::renderScene(void) {
         position_x_was = position_x;
         position_y_was = position_y;
 
-// lets figure out how to maintain this position into the shader for the full image texture...
+        // lets figure out how to maintain this position into the shader for the full image texture...
 
         updateColorPreview();
 
@@ -1038,27 +1047,27 @@ void OpenGLContext::renderScene(void) {
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-//    glEnable(GL_DEPTH_TEST);
+    //    glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT);//  | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-//    glDisable(GL_DEPTH_TEST);
+    //    glDisable(GL_DEPTH_TEST);
     debugGLerror("renderScene glClear");
 
     uniformLocations = shader_lit_detail->bind(); // Bind our shader
     cur_shader_id = shader_lit_detail->id();
 
-//
-//    uniformLocations->modelMatrixLocation = glGetUniformLocation(cur_shader_id, "modelMatrix");
-//    uniformLocations->viewMatrixLocation = glGetUniformLocation(cur_shader_id, "viewMatrix");
-//    uniformLocations->projectionMatrixLocation = glGetUniformLocation(cur_shader_id, "projectionMatrix");
-//    uniformLocations->fishScale = glGetUniformLocation(cur_shader_id, "fishEyeScale");
-//    uniformLocations->textureSampler = glGetUniformLocation(cur_shader_id, "texture1");
-//    uniformLocations->textureSampler2 = glGetUniformLocation(cur_shader_id, "texture2");
-//    uniformLocations->textureSampler3 = glGetUniformLocation(cur_shader_id, "texture3");
-//    uniformLocations->textureCoord = glGetAttribLocation(cur_shader_id, "TexCoordIn");
-//    uniformLocations->normalLightingMat = glGetAttribLocation(cur_shader_id, "lightingMat");
+    //
+    //    uniformLocations->modelMatrixLocation = glGetUniformLocation(cur_shader_id, "modelMatrix");
+    //    uniformLocations->viewMatrixLocation = glGetUniformLocation(cur_shader_id, "viewMatrix");
+    //    uniformLocations->projectionMatrixLocation = glGetUniformLocation(cur_shader_id, "projectionMatrix");
+    //    uniformLocations->fishScale = glGetUniformLocation(cur_shader_id, "fishEyeScale");
+    //    uniformLocations->textureSampler = glGetUniformLocation(cur_shader_id, "texture1");
+    //    uniformLocations->textureSampler2 = glGetUniformLocation(cur_shader_id, "texture2");
+    //    uniformLocations->textureSampler3 = glGetUniformLocation(cur_shader_id, "texture3");
+    //    uniformLocations->textureCoord = glGetAttribLocation(cur_shader_id, "TexCoordIn");
+    //    uniformLocations->normalLightingMat = glGetAttribLocation(cur_shader_id, "lightingMat");
 
 
- //   modelMatrix = glm::translate(modelMatrix, glm::vec3(0.2f, 0.0f, 0.0f));
+    //   modelMatrix = glm::translate(modelMatrix, glm::vec3(0.2f, 0.0f, 0.0f));
 
 
 
@@ -1070,17 +1079,17 @@ void OpenGLContext::renderScene(void) {
     glUniform2f(uniformLocations->positionOffset, (float)position_x / -loadedImageMaxSize, (float)position_y/ -loadedImageMaxSize);
     //glUniform2f(uniformLocations->positionOffset, 0.1f, 0.1f);
 
-//    glUniform4f(uniformLocations->ui_foreground_color,
-//                renderObj->foregroundColor.r/255.0,
-//                renderObj->foregroundColor.g/255.0,
-//                renderObj->foregroundColor.b/255.0,
-//                renderObj->foregroundColor.a/255.0
-//                );
+    //    glUniform4f(uniformLocations->ui_foreground_color,
+    //                renderObj->foregroundColor.r/255.0,
+    //                renderObj->foregroundColor.g/255.0,
+    //                renderObj->foregroundColor.b/255.0,
+    //                renderObj->foregroundColor.a/255.0
+    //                );
 
     glUniform1f(uniformLocations->widthHeightRatio, colorPickState->viewport_ratio);
 
-//    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-//    glUniformMatrix4fv(uniformLocations->projectionMatrixLocation,	1, GL_FALSE, &projectionMatrix[0][0]); // Send our projection matrix to the shader
+    //    glUniformMatrix4fv(uniformLocations->modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+    //    glUniformMatrix4fv(uniformLocations->projectionMatrixLocation,    1, GL_FALSE, &projectionMatrix[0][0]); // Send our projection matrix to the shader
 
     glUniform1i(uniformLocations->textureSampler, 0);
     glUniform1i(uniformLocations->textureSampler2, 1);
@@ -1112,15 +1121,10 @@ void OpenGLContext::renderScene(void) {
 
     debugGLerror("renderScene our renderinng done");
 
+}
 
-    glEnable(GL_BLEND);  //this enables alpha blending
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    debugGLerror("renderScene glEnable GL_BLEND");
-
-    render3dDropperAnimation();
-
-
+void OpenGLContext::renderUi(void) {
+    // needs GL_Blend
     /* NEXT UP: RENDER UI */
     uniformLocations = shader_ui_shader_default->bind(); // Bind our shader
 
@@ -1130,7 +1134,7 @@ void OpenGLContext::renderScene(void) {
 
     glUniform1i(uniformLocations->textureSampler, 0);
     //glUniform1i(uniformLocations->textureSampler2, 1);
-   // glUniform1i(uniformLocations->textureSampler3, 1);
+    // glUniform1i(uniformLocations->textureSampler3, 1);
 
     debugGLerror("renderScene ui texture uniform set");
 
@@ -1147,6 +1151,55 @@ void OpenGLContext::renderScene(void) {
     debugGLerror("generalUx->renderObject ending");
 
 }
+
+
+void OpenGLContext::renderScene(void) {
+
+    debugGLerror("renderScene begin");
+    //SDL_Log("renderScene begin");
+
+    if( isMinigameMode() ){
+
+        glClear(GL_COLOR_BUFFER_BIT);//  | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        debugGLerror("renderScene minigame glClear");
+
+        minigames->update();
+        minigames->render();
+
+        glEnable(GL_BLEND);  //this enables alpha blending
+
+        renderUi();
+
+    }else{
+        renderZoomedPickerBg();
+
+        glEnable(GL_BLEND);  //this enables alpha blending
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        // some animations will go before or after the UI!!!!  depends on which animation....
+
+        if( animationDropper3dId == ANIMATION_ZOOM_INTO_DROPPER || animationDropper3dId == ANIMATION_ZOOM_INTO_BULB ){
+
+            // HMM for zoom into bulb... we want to switch rendeirng half way through....
+
+            if( animationDropper3dId == ANIMATION_ZOOM_INTO_BULB && SDL_GetTicks() - animationDropper3dStartTime < 375 ){ // really 375 but whatev.. ( for 1500 duration and 0.25 begin duration )
+                render3dDropperAnimation();
+                renderUi();
+
+            }else{
+                renderUi();
+                render3dDropperAnimation();
+            }
+        }else{
+            render3dDropperAnimation();
+            renderUi();
+        }
+
+
+    }
+
+}
+
 
 void OpenGLContext::begin3dDropperAnimation(int aDropperAnimation, SDL_Color* aColor){
     animationDropper3dStartTime = SDL_GetTicks();
@@ -1252,13 +1305,6 @@ void OpenGLContext::eyedropperZoomDropperBulbMatrix(float progress){
     matrixModel = glm::scale(matrixModel, glm::vec3(scale,scale,1.0));
 }
 
-void OpenGLContext::miniGameTextAnimComplete(Ux::uiAnimation* uiAnim){
-    OpenGLContext::Singleton()->begin3dDropperAnimation(OpenGLContext::ANIMATION_ZOOM_INTO_DROPPER, nullptr);
-
-//    uiScrollController* self = uiAnim->myUiObject->myScrollController;
-//    self->animConstrainToScrollableRegion(); // careful - ani is updating (though our current animation just completed)
-}
-
 void OpenGLContext::render3dDropperAnimation(void) {
     if( animationDropper3dId == DROPPER_ANIMATION_ENUM::NO_ANIMATION ){return;}
     // presumably this/each animation knows when it's done... based on some duration of the specified animation..... for now we will say 4 seconds
@@ -1280,12 +1326,7 @@ void OpenGLContext::render3dDropperAnimation(void) {
             render3dDropper(0.0);
         }else{
             animationDropper3dId = DROPPER_ANIMATION_ENUM::NO_ANIMATION;
-            Ux::uiAminChain* myAnimChain = generalUx->defaultScoreDisplay->displayExplanation(" Mini Game ");
-
-            myAnimChain->addAnim((new Ux::uiAnimation(generalUx->defaultScoreDisplay->explanation_position))->setAnimationReachedCallback(miniGameTextAnimComplete) );
-
-            // when our game is done....
-
+            minigames->beginNextGame();
         }
         return; // custom progress handling.... for end events...
     } else if( animationDropper3dId == ANIMATION_DEFAULT ){

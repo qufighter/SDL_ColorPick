@@ -11,11 +11,10 @@
 
 
 void DebugStr(const char *c_str ) {
+#if defined(_DEBUG) || defined(DEBUG) || \
+(defined(__GNUC__) && !defined(__OPTIMIZE__))
     SDL_Log("%s", c_str);
-}
-
-void debugGLerror(){
-    debugGLerror("default-error-identifier");
+#endif
 }
 
 void debugGLerror(const char *c_str_label){

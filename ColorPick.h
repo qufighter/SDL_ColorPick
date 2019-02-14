@@ -25,6 +25,8 @@
 #include "meshes.h"
 
 #include "ux.h"
+
+
 //
 //#include "ux-anim.h"
 
@@ -76,6 +78,9 @@ static const GLubyte squareTexCoords[] = {
 
 class OpenGLContext {
 
+#include "minigames/_minigames.h"
+
+
 public:
 
     typedef enum  {
@@ -101,6 +106,8 @@ public:
     //void updateFrame(Uint32 elapsedMs);
     void renderScene(void); // Render scene (display method from previous OpenGL tutorials)
 
+    void renderZoomedPickerBg(void);
+    void renderUi(void);
 
     void setLight(void);
 
@@ -110,8 +117,6 @@ public:
     void eyedropperAddColorMatrix(float progress);
     void eyedropperZoomDropperMatrix(float progress);
     void eyedropperZoomDropperBulbMatrix(float progress);
-
-    static void miniGameTextAnimComplete(Ux::uiAnimation* uiAnim);
 
 
     void render3dDropperAnimation(void);
@@ -156,14 +161,15 @@ public:
             textureId_pick_button,
             tex2_id;
 
-    Textures *textures;
+    Textures* textures;
 
-    Meshes *meshes;
-    Mesh *eyedropper_bulb;
-    Mesh *eyedropper_stem;
-    Mesh *eyedropper_fill;
+    Meshes* meshes;
+    Mesh* eyedropper_bulb;
+    Mesh* eyedropper_stem;
+    Mesh* eyedropper_fill;
 
-    Ux *generalUx;
+    Ux* generalUx;
+    Minigames* minigames;
 
     uiInteraction pixelInteraction;
 
@@ -203,6 +209,8 @@ public:
     void updateColorPreview(void);
 
 
+    bool isMinigameMode(void);
+
     void reloadShaders(void);
     bool renderShouldUpdate = true;
 
@@ -219,7 +227,7 @@ private:
 
     int loadedImageMaxSize = 0;
 
-    Ux::uiObject* rootUiObject; // there is a root ui object
+    Ux::uiObject* rootUiObject; // there is a root ui object (we don't need a ref here really)
 
     Ux::uiList<const char*, Uint8>* textureList;
     Ux::uiListLoopingIterator<Ux::uiList<const char*, Uint8>, const char*>* testTexturesBuiltin;
