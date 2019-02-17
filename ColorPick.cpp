@@ -420,14 +420,9 @@ void OpenGLContext::prepareForHuePickerMode(bool fromHueGradient) {
 }
 
 void OpenGLContext::createUI(void) {
-
     generalUx = Ux::Singleton(); // new Ux();
     rootUiObject = generalUx->create(); // if all create function are 1off... no ret needed?
-
-
-    // we can now set this refernce from UX -> create
-    generalUx->zoomSlider->setAnimationPercCallback(&OpenGLContext::setFishScalePerentage);
-
+    minigames = new Minigames();
 }
 
 void OpenGLContext::setupScene(void) {
@@ -436,8 +431,6 @@ void OpenGLContext::setupScene(void) {
 //    glDepthMask(GL_TRUE);
 
     createUI();
-
-    minigames = new Minigames();
 
     setFishScale(0.0, 1.0);
 

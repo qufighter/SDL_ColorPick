@@ -702,6 +702,7 @@ Ux::uiObject* Ux::create(void){
  //    printCharToUiObject(zoomSlider, CHAR_VERTICAL_BAR_POINTED, DO_NOT_RESIZE_NOW);
     printCharToUiObject(zoomSlider, CHAR_ZOOM_PLUSS, DO_NOT_RESIZE_NOW);
     zoomSlider->setRoundedCorners(0.486);
+    zoomSlider->setAnimationPercCallback(&OpenGLContext::setFishScalePerentage);
     zoomSliderHolder->addChild(zoomSlider);
 
 
