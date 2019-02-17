@@ -13,6 +13,8 @@ struct Minigame1{
     Ux::uiObject* gameRootUi;
     Ux::uiText* gameHeading;
 
+    Ux::uiSwatch* mySwatch; // fixme... should be arrays
+
     Minigame1(Uint8 pGameIndex){
         gameIndex = pGameIndex;
         gameNameLen = SDL_strlen(gameName);
@@ -26,22 +28,13 @@ struct Minigame1{
         gameRootUi->hideAndNoInteraction();
         myUxRef->minigamesUiContainer->addChild(gameRootUi);
 
-
-
-        Ux::uiSwatch* mySwatch = new Ux::uiSwatch(gameRootUi, Float_Rect(0.25,0.25,0.5,0.5));
-
-        SDL_Color aColor = {255,0,0,255};
-
-        mySwatch->update(&aColor);
-
+        mySwatch = (new Ux::uiSwatch(gameRootUi, Float_Rect(0.25,0.25,0.5,0.5)))->displayHex();
         mySwatch->uiObjectItself->setInteraction(&interactionSwatchDragMove);
         mySwatch->uiObjectItself->setInteractionCallback(interactionSwatchDragMoveConstrain);
 
         //last for on top
         gameHeading = (new Ux::uiText(gameRootUi, 1.0/gameNameLen))->pad(0.0,0.0)->margins(0.25,0.0,0.0,0.0)->print(gameName);
     }
-
-
 
     static void interactionSwatchDragMove(Ux::uiObject *interactionObj, uiInteraction *delta){
         Ux::uiSwatch* swatch = (Ux::uiSwatch*)interactionObj->myUiController;
@@ -52,6 +45,10 @@ struct Minigame1{
     static void interactionSwatchDragMoveConstrain(Ux::uiObject *interactionObj, uiInteraction *delta){
         Ux::uiSwatch* swatch = (Ux::uiSwatch*)interactionObj->myUiController;
         Ux* myUxRef = Ux::Singleton();
+
+        // we plan to clear the animation first, then see if one is assigned by the following (make the creation of animation conditional on movement)
+        // if no constrain animation is set, then we can perform our own animation.
+
         myUxRef->interactionDragMoveConstrain(interactionObj, delta);
     }
 
@@ -59,6 +56,18 @@ struct Minigame1{
     static void show(void* gameItself){
         Minigame1* self = (Minigame1*)gameItself;
         SDL_Log("%s show", self->gameName);
+        Ux* myUxRef = Ux::Singleton();
+
+
+        // todo: set all boundaries and all colors
+        // hide any extras....
+
+        if( myUxRef->minigameColorList->total() > 0 ){
+            self->mySwatch->update(&myUxRef->minigameColorList->get(0)->color);
+        }
+
+
+
         self->gameRootUi->showAndAllowInteraction();
         self->startTime = SDL_GetTicks();
     }
@@ -67,7 +76,7 @@ struct Minigame1{
         Minigame1* self = (Minigame1*)gameItself;
         SDL_Log("%s begin", self->gameName);
         self->startTime = SDL_GetTicks();
-        Ux* myUxRef = Ux::Singleton();\
+        Ux* myUxRef = Ux::Singleton();
         // move game title down....  we could do something else maybe...         // see interactionDragMoveConstrain for custom chain...
         self->gameHeading->uiObjectItself->setAnimation(
             myUxRef->uxAnimations->moveTo(self->gameHeading->uiObjectItself,self->gameHeading->uiObjectItself->boundryRect.x, 0.56 , nullptr, nullptr) );

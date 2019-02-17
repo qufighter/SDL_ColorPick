@@ -19,8 +19,12 @@
 
 struct uiSwatch{
 
+    char* resultText6char;
+
     uiSwatch(uiObject* parentObj, Float_Rect boundaries){
-        
+
+        resultText6char = (char*)SDL_malloc( sizeof(char) * 8 );
+
         Ux* uxInstance = Ux::Singleton();
 
         uiObjectItself = new uiObject();
@@ -52,16 +56,28 @@ struct uiSwatch{
 //        Ux::setColor(&swatchItself->foregroundColor, 192, 192, 192, 255);
 //        uxInstance->printCharToUiObject(swatchItself, CHAR_ZOOM_SPEEDY_GUY, DO_NOT_RESIZE_NOW);
 
+
+        hexDisplay = (new Ux::uiText(uiObjectItself, 1.0/6))->pad(0.0,0.0)->margins(0.0,0.05,0.0,0.05)->print("");
+
         parentObj->addChild(uiObjectItself);
 
         resize();
 
+        displayHexOn=false;
     }
 
     uiObject* uiObjectItself; //BTW: this is the border too...  // no real inheritance here, this its the uiSwatch, I would use self->
     uiObject* swatchItself;
+    Ux::uiText* hexDisplay;
 
     SDL_Color last_color;
+
+    bool displayHexOn;
+
+    uiSwatch* displayHex(){
+        displayHexOn = true;
+        return this;
+    }
 
     void resize(){
 
@@ -69,14 +85,20 @@ struct uiSwatch{
 
     bool update(SDL_Color* color){
 
-        Ux* uxInstance = Ux::Singleton();
+        //Ux* uxInstance = Ux::Singleton();
 
         bool changed = setColorNotifyOfChange(&last_color, color);
 
         Ux::setColor(&swatchItself->backgroundColor, color->r, color->g, color->b, 255);
 
+        if( displayHexOn ){
+            SDL_snprintf(resultText6char, 7,  "%02x%02x%02x", color->r, color->g, color->b);
+            hexDisplay->print(resultText6char);
+        }
+
         return changed;
     }
+
 
 };
 

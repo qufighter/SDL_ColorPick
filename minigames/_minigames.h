@@ -164,6 +164,8 @@ struct Minigames{
         Ux::uiAminChain* myAnimChain = myUxRef->defaultScoreDisplay->displayExplanation(" Mini Game ");
         myAnimChain->addAnim((new Ux::uiAnimation(myUxRef->defaultScoreDisplay->explanation_position))->setAnimationReachedCallback(miniGameTextAnimComplete) );
 
+        myUxRef->updateModal(myUxRef->minigamesUiContainer /*minigamesCloseX*/, &interactionCloseXClicked);
+
         myUxRef->isMinigameMode = true;
         myUxRef->resizeUiElements();
     }
@@ -177,11 +179,10 @@ struct Minigames{
 
         currentGame->end();
 
+        myUxRef->endModal(myUxRef->minigamesUiContainer);
 
         myUxRef->minigameColorList->clear();
 
-        //    ogg->minigames->endGame();
-        //
         ogg->begin3dDropperAnimation(OpenGLContext::ANIMATION_ZOOM_INTO_DROPPER, nullptr);
     }
 
