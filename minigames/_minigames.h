@@ -94,6 +94,9 @@ struct Minigames{
     Minigames(){
         Ux* myUxRef = Ux::Singleton();
 
+        // todo: if we get ogg and then set the ref now ogg->minigames = this; .... then when we construct our minigamess they'll be able to get the reference below...
+        OpenGLContext* ogg=OpenGLContext::Singleton();
+        ogg->minigames = this;
 
 
 
@@ -159,14 +162,15 @@ struct Minigames{
         Ux* myUxRef = Ux::Singleton();
         currentGame = randomGame(); // roll again
 
-        currentGame->show();
-
         Ux::uiAminChain* myAnimChain = myUxRef->defaultScoreDisplay->displayExplanation(" Mini Game ");
         myAnimChain->addAnim((new Ux::uiAnimation(myUxRef->defaultScoreDisplay->explanation_position))->setAnimationReachedCallback(miniGameTextAnimComplete) );
 
         myUxRef->updateModal(myUxRef->minigamesUiContainer /*minigamesCloseX*/, &interactionCloseXClicked);
 
         myUxRef->isMinigameMode = true;
+
+        currentGame->show(); // we try to call show last, in case show determines it should endGame that it will work right.
+
         myUxRef->resizeUiElements();
     }
 
@@ -175,15 +179,17 @@ struct Minigames{
         OpenGLContext* ogg=OpenGLContext::Singleton();
 
         myUxRef->isMinigameMode = false;
-        myUxRef->resizeUiElements();
-
-        currentGame->end();
 
         myUxRef->endModal(myUxRef->minigamesUiContainer);
 
         myUxRef->minigameColorList->clear();
 
         ogg->begin3dDropperAnimation(OpenGLContext::ANIMATION_ZOOM_INTO_DROPPER, nullptr);
+
+        currentGame->end();
+
+        myUxRef->resizeUiElements();
+
     }
 
     static void interactionCloseXClicked(Ux::uiObject *interactionObj, uiInteraction *delta){

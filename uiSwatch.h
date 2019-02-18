@@ -19,11 +19,7 @@
 
 struct uiSwatch{
 
-    char* resultText6char;
-
     uiSwatch(uiObject* parentObj, Float_Rect boundaries){
-
-        resultText6char = (char*)SDL_malloc( sizeof(char) * 8 );
 
         Ux* uxInstance = Ux::Singleton();
 
@@ -33,10 +29,8 @@ struct uiSwatch{
 
         uiObjectItself->setBoundaryRect(&boundaries);
 
-
         uiObjectItself->hasBackground=true;
         Ux::setColor(&uiObjectItself->backgroundColor, 128, 128, 128, 255);
-
 
         uiObjectItself->squarify();
 
@@ -49,7 +43,7 @@ struct uiSwatch{
         float border_w = 0.025;
         swatchItself->setBoundaryRect(border_w,border_w,1.0-border_w-border_w,1.0-border_w-border_w);
         swatchItself->hasBackground=true;
-        Ux::setColor(&swatchItself->backgroundColor, 0, 0, 0, 192);
+        Ux::setColor(&swatchItself->backgroundColor, 0, 0, 0, 255);
         uiObjectItself->addChild(swatchItself);
 
 //        swatchItself->hasForeground=true;
@@ -64,6 +58,7 @@ struct uiSwatch{
         resize();
 
         displayHexOn=false;
+        displayBgOn=true;
     }
 
     uiObject* uiObjectItself; //BTW: this is the border too...  // no real inheritance here, this its the uiSwatch, I would use self->
@@ -73,10 +68,30 @@ struct uiSwatch{
     SDL_Color last_color;
 
     bool displayHexOn;
+    bool displayBgOn;
 
     uiSwatch* displayHex(){
         displayHexOn = true;
         return this;
+    }
+
+    uiSwatch* displayBg(){
+        displayBgOn = true;
+        return this;
+    }
+
+    uiSwatch* hideBg(){
+        displayBgOn = false;
+        return this;
+    }
+
+
+    void show(){
+        uiObjectItself->showAndAllowInteraction();
+    }
+
+    void hide(){
+        uiObjectItself->hideAndNoInteraction();
     }
 
     void resize(){
@@ -85,15 +100,24 @@ struct uiSwatch{
 
     bool update(SDL_Color* color){
 
-        //Ux* uxInstance = Ux::Singleton();
+        Ux* uxInstance = Ux::Singleton();
 
         bool changed = setColorNotifyOfChange(&last_color, color);
 
-        Ux::setColor(&swatchItself->backgroundColor, color->r, color->g, color->b, 255);
+        if( displayBgOn ){
+            Ux::setColor(&swatchItself->backgroundColor, color->r, color->g, color->b, 255);
+        }else{
+            Ux::setColor(&swatchItself->backgroundColor, 0, 0, 0, 255);
+        }
 
         if( displayHexOn ){
-            SDL_snprintf(resultText6char, 7,  "%02x%02x%02x", color->r, color->g, color->b);
-            hexDisplay->print(resultText6char);
+            if( ((int)swatchItself->backgroundColor.r + (int)swatchItself->backgroundColor.g + (int)swatchItself->backgroundColor.b) > 382 ){
+                hexDisplay->color(0, 0, 0, 255);
+            }else{
+                hexDisplay->color(255, 255, 255, 255);
+            }
+            SDL_snprintf(uxInstance->print_here, 7,  "%02x%02x%02x", color->r, color->g, color->b);
+            hexDisplay->print(uxInstance->print_here);
         }
 
         return changed;

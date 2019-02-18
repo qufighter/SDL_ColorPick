@@ -1338,36 +1338,47 @@ void Ux::interactionDragMove(uiObject *interactionObj, uiInteraction *delta){
 //interactionDragReleased
 void Ux::interactionDragMoveConstrain(uiObject *interactionObj, uiInteraction *delta){
     Ux* uxInstance = Ux::Singleton();
+    uxInstance->interactionDragMoveConstrain(interactionObj, delta, &interactionConstrainToParentObject); // just usign the default callback here...
+}
+
+void Ux::interactionDragMoveConstrain(uiObject *interactionObj, uiInteraction *delta, animationCallbackFn customVelocityAnimationAppliedFn){
+    Ux* uxInstance = Ux::Singleton();
 
     uiAminChain* myAnimChain = new uiAminChain();
     myAnimChain->addAnim((new uiAnimation(interactionObj))->initialMoveVelocity(delta->vx, delta->vy) /*->setAnimationCallback(scrollAnimationUpdaterCb)->setGetBoundsFn(scrollAnimationGetBoundsFn)*/ );
-    myAnimChain->addAnim((new uiAnimation(interactionObj))->setAnimationReachedCallback(&interactionConstrainToParentObject) );
+    myAnimChain->addAnim((new uiAnimation(interactionObj))->setAnimationReachedCallback(customVelocityAnimationAppliedFn) );
     interactionObj->setAnimation(myAnimChain); // imporrtant to do this before we push it..
     uxInstance->uxAnimations->pushAnimChain(myAnimChain);
 }
 
 void Ux::interactionConstrainToParentObject(uiAnimation* uiAnim){
     Ux* uxInstance = Ux::Singleton();
+    uxInstance->interactionConstrainToParentObject(uiAnim, nullptr);
+}
 
-    float xDest = uiAnim->myUiObject->boundryRect.x;
-    float yDest = uiAnim->myUiObject->boundryRect.y;
-
-    if( uiAnim->myUiObject->boundryRect.x < 0 ){
-        xDest = 0.0;
-    }else if( uiAnim->myUiObject->boundryRect.x + uiAnim->myUiObject->boundryRect.w > 1.0 ){
-        xDest = 1.0 - uiAnim->myUiObject->boundryRect.w;
+void Ux::interactionConstrainToParentObject(uiAnimation* uiAnim, animationCallbackFn customViewportConstraintAnimationAppliedFn){
+    Ux* uxInstance = Ux::Singleton();
+    Ux::uiObject* interactionObj = uiAnim->myUiObject;
+    bool needsAnim = false;
+    float xDest = interactionObj->boundryRect.x;
+    float yDest = interactionObj->boundryRect.y;
+    if( interactionObj->boundryRect.x < 0 ){
+        xDest = 0.0; needsAnim=true;
+    }else if( interactionObj->boundryRect.x + interactionObj->boundryRect.w > 1.0 ){
+        xDest = 1.0 - interactionObj->boundryRect.w; needsAnim=true;
     }
-
-    if( uiAnim->myUiObject->boundryRect.y < 0 ){
-        yDest = 0.0;
-    }else if( uiAnim->myUiObject->boundryRect.y + uiAnim->myUiObject->boundryRect.h > 1.0 ){
-        yDest = 1.0 - uiAnim->myUiObject->boundryRect.h;
+    if( interactionObj->boundryRect.y < 0 ){
+        yDest = 0.0; needsAnim=true;
+    }else if( interactionObj->boundryRect.y + interactionObj->boundryRect.h > 1.0 ){
+        yDest = 1.0 - interactionObj->boundryRect.h; needsAnim=true;
     }
-
-    uiAnim->myUiObject->setAnimation( uxInstance->uxAnimations->moveTo(uiAnim->myUiObject,xDest,yDest, nullptr, nullptr) );
-
-
-
+    if( needsAnim ){
+        uiAminChain* myAnimChain = uxInstance->uxAnimations->moveTo(interactionObj,xDest,yDest, nullptr, nullptr);
+        if( customViewportConstraintAnimationAppliedFn != nullptr ){
+            myAnimChain->addAnim((new uiAnimation(interactionObj))->setAnimationReachedCallback(customViewportConstraintAnimationAppliedFn) );
+        }
+        interactionObj->setAnimation(myAnimChain);
+    }
 }
 
 // this overrides the interface fn?
@@ -1708,7 +1719,7 @@ void Ux::addCurrentToPickHistory(){
             int variance =  SDL_abs(avg-currentlyPickedColor->r) + SDL_abs(avg-currentlyPickedColor->g) + SDL_abs(avg-currentlyPickedColor->b);
             if( variance > 64 ){
                 minigameColorList->add(ColorList(*currentlyPickedColor));
-                if( minigameColorList->_out_of_space ){
+                if( minigameColorList->_out_of_space || minigameColorList->total() >= 3 ){
                     // is this the condition to tirgger the minigame????
                     ogg->begin3dDropperAnimation(OpenGLContext::ANIMATION_ZOOM_INTO_BULB, currentlyPickedColor);
                 }

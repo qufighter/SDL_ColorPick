@@ -1373,7 +1373,6 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
 
     colorFillPercent = (colorFillPercent - 0.1) / 0.9; // the first 0.1 are skipped
 
-    float fill_requirement = 0.00001;
 
     if( colorFillPercent > fill_requirement ){
         // we make some preliminary write op to the stencil buffer...
@@ -1578,6 +1577,7 @@ void OpenGLContext::TEST_CAN_VIEW_ANY_COLOR(void) {
 }
 #endif
 
+// todo: return mesh* instead?
 void OpenGLContext::createSquare(void) {
     float *vertices = new float[18];	// Vertices for our square
     float *colors = new float[18]; // Colors for our vertices

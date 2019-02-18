@@ -137,6 +137,9 @@ public:
     int last_mode_position_x = 0; // this is non hue picker mode...
     int last_mode_position_y = 0;
 
+    const float fill_requirement = 0.00001;
+
+
 //    void keyDown(int key);
     void keyUp(SDL_Keycode key);
 //    int totalKeys = 1073742052;
@@ -148,7 +151,7 @@ public:
     Shader *shader_3d_unlit;
     Shader *shader_3d_ui;
 
-    Shader *shader_lit_detail; // Our GLSL shader
+    Shader *shader_lit_detail; // Our GLSL shader, rename
     Shader *shader_ui_shader_default;
 
     uniformLocationStruct* uniformLocations;
