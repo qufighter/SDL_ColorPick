@@ -941,6 +941,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
             // if in easy mode don't loose :)
             if( self->isGameModeHardMode() ){
+                myUxRef->defaultScoreDisplay->displayExplanation("Hard Mode");
                 myUxRef->defaultScoreDisplay->loose(interactionObj, SCORE_EFFECTS::NOMOVE);
             }
 

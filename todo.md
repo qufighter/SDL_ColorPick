@@ -33,10 +33,7 @@ pigcel
 
 drag scroller edge bg beyond end/start is actually annoying
 
-
 KEYBOARD INPUT NOT INTERCEPTED DURING MINIGAME!!!
-
-minigame is not considered a "Modal" that can be canceled... 
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)

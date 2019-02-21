@@ -422,7 +422,7 @@ void OpenGLContext::prepareForHuePickerMode(bool fromHueGradient) {
 void OpenGLContext::createUI(void) {
     generalUx = Ux::Singleton(); // new Ux();
     rootUiObject = generalUx->create(); // if all create function are 1off... no ret needed?
-    minigames = new Minigames();
+    /*minigames = */ new Minigames(); // this sets the reference on ogg automatically... commented out pointlessly but also because its already assigned.. neat right?
 }
 
 void OpenGLContext::setupScene(void) {
