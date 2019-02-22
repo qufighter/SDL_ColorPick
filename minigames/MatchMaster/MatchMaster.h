@@ -1,9 +1,9 @@
 //
 //
-#ifndef ColorPick_iOS_SDL_Minigame1_h
-#define ColorPick_iOS_SDL_Minigame1_h
+#ifndef ColorPick_iOS_SDL_MatchMaster_h
+#define ColorPick_iOS_SDL_MatchMaster_h
 
-struct Minigame1{
+struct MatchMaster{
 
     const char* gameName = "Match Master";
     const int maxSwatches = 6;
@@ -36,7 +36,7 @@ struct Minigame1{
 
     Minigames* minigames; // handy ref?  cannot populate in constructor (yet??)
 
-    Minigame1(Uint8 pGameIndex){
+    MatchMaster(Uint8 pGameIndex){
         gameIndex = pGameIndex;
         Ux* myUxRef = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();
@@ -98,7 +98,7 @@ struct Minigame1{
         Ux* myUxRef = Ux::Singleton();
 
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        Minigame1* self = (Minigame1*)ogg->minigames->currentGame->gameItself; // helper?
+        MatchMaster* self = (MatchMaster*)ogg->minigames->currentGame->gameItself; // helper?
         if( self->isComplete ){
             // lock it up..
             return;
@@ -113,7 +113,7 @@ struct Minigame1{
         Ux::uiSwatch* swatch = (Ux::uiSwatch*)interactionObj->myUiController;
 
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        Minigame1* self = (Minigame1*)ogg->minigames->currentGame->gameItself; // helper?
+        MatchMaster* self = (MatchMaster*)ogg->minigames->currentGame->gameItself; // helper?
         if( self->isComplete ){
             // lock it up..
 
@@ -136,7 +136,7 @@ struct Minigame1{
         if( !interactionObj->isAnimating() ){ // its in the viewport still... lets snap it to the nearest dest if close enough...
 
             OpenGLContext* ogg=OpenGLContext::Singleton();
-            Minigame1* self = (Minigame1*)ogg->minigames->currentGame->gameItself; // helper?
+            MatchMaster* self = (MatchMaster*)ogg->minigames->currentGame->gameItself; // helper?
 
             self->checkIfGameIsCompleted(uiAnim); // mostly to reset
 
@@ -168,7 +168,7 @@ struct Minigame1{
 
     static void checkIfGameIsCompleted(Ux::uiAnimation* uiAnim){
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        Minigame1* self = (Minigame1*)ogg->minigames->currentGame->gameItself; // helper?
+        MatchMaster* self = (MatchMaster*)ogg->minigames->currentGame->gameItself; // helper?
 
         if( self->isGameComplete() ){
             //SDL_Log("Looks like you won!");
@@ -251,7 +251,7 @@ struct Minigame1{
     void showMatches(){
         Ux* uxInstance = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        Minigame1* self = (Minigame1*)ogg->minigames->currentGame->gameItself; // helper?
+        MatchMaster* self = (MatchMaster*)ogg->minigames->currentGame->gameItself; // helper?
 
         // we verify before this is called, every dest has 1 and only 1 match....
 
@@ -290,7 +290,7 @@ struct Minigame1{
     bool isGameComplete(){
         Ux* uxInstance = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        Minigame1* self = (Minigame1*)ogg->minigames->currentGame->gameItself; // helper?
+        MatchMaster* self = (MatchMaster*)ogg->minigames->currentGame->gameItself; // helper?
 
         bool isWin = true; // lets see if any of them are non
         bool isReadyToScore = true;
@@ -334,7 +334,7 @@ struct Minigame1{
 
     // "reset state"
     static void show(void* gameItself){
-        Minigame1* self = (Minigame1*)gameItself;
+        MatchMaster* self = (MatchMaster*)gameItself;
         SDL_Log("%s show", self->gameName);
         Ux* myUxRef = Ux::Singleton();
 
@@ -413,7 +413,7 @@ struct Minigame1{
     }
 
     static void begin(void* gameItself){
-        Minigame1* self = (Minigame1*)gameItself;
+        MatchMaster* self = (MatchMaster*)gameItself;
         SDL_Log("%s begin", self->gameName);
         self->startTime = SDL_GetTicks();
         Ux* myUxRef = Ux::Singleton();
@@ -421,7 +421,7 @@ struct Minigame1{
     }
 
     static void resize(void* gameItself){
-        Minigame1* self = (Minigame1*)gameItself;
+        MatchMaster* self = (MatchMaster*)gameItself;
         SDL_Log("%s resize", self->gameName);
         Ux* uxInstance = Ux::Singleton();
         if( uxInstance->widescreen ){
@@ -434,44 +434,44 @@ struct Minigame1{
     }
 
     static void update(void* gameItself){
-        Minigame1* self = (Minigame1*)gameItself;
+        MatchMaster* self = (MatchMaster*)gameItself;
         //SDL_Log("%s update", self->gameName);
     }
 
     static void render(void* gameItself){
-        Minigame1* self = (Minigame1*)gameItself;
+        MatchMaster* self = (MatchMaster*)gameItself;
         //SDL_Log("%s render", self->gameName);
     }
 
     static void end(void* gameItself){
-        Minigame1* self = (Minigame1*)gameItself;
+        MatchMaster* self = (MatchMaster*)gameItself;
         SDL_Log("%s end", self->gameName);
         self->gameRootUi->hideAndNoInteraction();
     }
 
     static const char* getGameName(void* gameItself){
-        Minigame1* self = (Minigame1*)gameItself;
+        MatchMaster* self = (MatchMaster*)gameItself;
         return self->gameName;
     }
 
     static int getTimeLimit(void* gameItself){
-        Minigame1* self = (Minigame1*)gameItself;
+        MatchMaster* self = (MatchMaster*)gameItself;
         return self->timeLimit;
     }
 
 //    static int getStartTime(void* gameItself){ // is this used?
-//        Minigame1* self = (Minigame1*)gameItself;
+//        MatchMaster* self = (MatchMaster*)gameItself;
 //        return self->startTime;
 //    }
 
 //    static int getRemainingTime(void* gameItself){ // NOT IMPLEMENTED
-//        Minigame1* self = (Minigame1*)gameItself;
+//        MatchMaster* self = (MatchMaster*)gameItself;
 //        return self->getTimeLimit(self) - self->getElapsedTime(self);
 //    }
 
     static int getElapsedTime(void* gameItself){
         // maybe game can pause itself...
-        Minigame1* self = (Minigame1*)gameItself;
+        MatchMaster* self = (MatchMaster*)gameItself;
 
         if( self->isComplete ){
             return self->lastTicks - self->startTime;

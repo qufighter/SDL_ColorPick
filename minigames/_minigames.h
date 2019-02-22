@@ -127,7 +127,7 @@ struct Minigames{
         gameList = new Ux::uiList<GameListObj, Uint8>(maxGames);
         gameList->index(MINIGAMES_ENUM::TOTAL_GAMES, indexForGame);
 
-
+        //        MatchMaster* minigame1 = new MatchMaster(MINIGAMES_ENUM::GAME1);
         MixMaster* minigame1 = new MixMaster(MINIGAMES_ENUM::GAME1); // new Minigame1(MINIGAMES_ENUM::GAME1);
         MixMaster* minigame2 = new MixMaster(MINIGAMES_ENUM::GAME2);
 
