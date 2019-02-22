@@ -143,31 +143,6 @@ struct uiSortChooser{
         self->historySortedPreviewScroller->update();
     }
 
-
-
-    // this helper goes elsewhere??
-    static int compareColor(SDL_Color *a, SDL_Color *b){
-        HSV_Color A, B;
-        A.fromColor(a);
-        B.fromColor(b);
-        int result = A.h - B.h;
-        if( result == 0 ) result = A.s - B.s;
-        if( result == 0 ) result = A.v - B.v;
-        if( result == 0 ){
-            result =  a->r - b->r;
-            if( result == 0 ) result =  a->g - b->g;
-            if( result == 0 ) result =  a->b - b->b;
-            //            if( result == 0 ){
-            //                SDL_Log("WHA THE");
-            //            }
-        }
-        return result;
-    }
-
-    static int compareColorListItems(ColorList *a, ColorList *b){
-        return compareColor(&a->color, &b->color);
-    }
-
     int dedupeHistoryList(uiList<ColorList, Uint8>* listToSort){
         int oldLen = listToSort->total(); // if we return some scoring info... we could reveal that here??? (should probably return a struct tho)
         listToSort->sort(&compareColorListItems);

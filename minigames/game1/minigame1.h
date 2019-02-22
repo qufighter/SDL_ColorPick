@@ -10,7 +10,6 @@ struct Minigame1{
     const int timeLimit = 60000; // one minute....
     const int scoreBreakdownLn = 10;
 
-    long gameNameLen;
     Uint8 gameIndex; // we try to keep this matching the childList index of minigamesUiContainer ....
     int startTime;
     int lastTicks;
@@ -25,8 +24,6 @@ struct Minigame1{
     Ux::uiObject* gameRootUi;
     Ux::uiObject* gameSwatchesHolder;
     Ux::uiObject* scoreBreakdownHolder;
-    Ux::uiObject* gameHeadingHolder;
-    Ux::uiText* gameHeading;
 
     Ux::uiText* scoreBreakdown0;
     Ux::uiText* scoreBreakdown1;
@@ -41,7 +38,6 @@ struct Minigame1{
 
     Minigame1(Uint8 pGameIndex){
         gameIndex = pGameIndex;
-        gameNameLen = SDL_strlen(gameName);
         Ux* myUxRef = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();
         minigames = ogg->minigames;
@@ -81,7 +77,7 @@ struct Minigame1{
         }
 
         scoreBreakdownHolder =new Ux::uiObject();
-        scoreBreakdownHolder->setBoundaryRect(0.05, 0.1, 0.5, 1.0-0.2);
+        //scoreBreakdownHolder->setBoundaryRect(0.05, 0.1, 0.5, 1.0-0.2); // do this in resize instead....
         gameRootUi->addChild(scoreBreakdownHolder);
         float charSize = 1.0/scoreBreakdownLn;
         scoreBreakdown0 = (new Ux::uiText(scoreBreakdownHolder, charSize))->margins(-0.5,0.0,0.0,0.0)->print("Score0");
@@ -96,11 +92,6 @@ struct Minigame1{
         activeSwatches=0;
         //just a reminder.... don't init here, init in show();
 
-        gameHeadingHolder = new Ux::uiObject();
-        gameRootUi->addChild(gameHeadingHolder);
-
-        //last for on top
-        gameHeading = (new Ux::uiText(gameHeadingHolder, 1.0/gameNameLen))->pad(0.0,0.0)->margins(0.25,0.0,0.0,0.0)->print(gameName);
     }
 
     static void interactionSwatchDragMove(Ux::uiObject *interactionObj, uiInteraction *delta){
@@ -181,7 +172,8 @@ struct Minigame1{
 
         if( self->isGameComplete() ){
             //SDL_Log("Looks like you won!");
-            self->showMatches();
+            //self->showMatches();
+            self->showColors();
 
             if( self->isComplete ) return; // once only.... ???
             self->solveAttempts += 1;
@@ -193,6 +185,7 @@ struct Minigame1{
             // at this piont, we can allow the game to end and lock it up somehow.... ?
             // and we show the score....
             self->computeGameScore();
+
 
         }else{
             if( self->isReadyToScore ){
@@ -244,7 +237,7 @@ struct Minigame1{
             SDL_snprintf(uxInstance->print_here, scoreBreakdownLn,  "+%i", finalScore);
             scoreBreakdown3->print(uxInstance->print_here);
 
-            SDL_snprintf(uxInstance->print_here, scoreBreakdownLn,  "x%i chain", uxInstance->defaultScoreDisplay->combo_chain);
+            SDL_snprintf(uxInstance->print_here, scoreBreakdownLn,  "x%i combo", uxInstance->defaultScoreDisplay->combo_chain);
             scoreBreakdown4->print(uxInstance->print_here);
 
             SDL_Log("Minigame: just applied final score.... %i", finalScore);
@@ -284,6 +277,14 @@ struct Minigame1{
             }
         }
 
+    }
+
+    void showColors(){ // when we win!
+        for( int y=0; y<activeSwatches; y++ ){
+            Ux::uiSwatch* move = *pickList->get(y);
+            move->displayHex();
+            move->refresh();
+        }
     }
 
     bool isGameComplete(){
@@ -331,14 +332,6 @@ struct Minigame1{
         return isWin;
     }
 
-    // TODO: move somewhere we can share this??
-    static int randomSort(const void *a, const void *b){
-        OpenGLContext* ogg=OpenGLContext::Singleton();
-        Minigames*  minigames = ogg->minigames;
-        //SDL_Log("ghere is a random int during sort: %i", minigames->randomInt(-1, 1));
-        return minigames->randomInt(0, 42); // its odd returinging -1,1 here makes more sense to me, but is a lot less random in result...
-    }
-
     // "reset state"
     static void show(void* gameItself){
         Minigame1* self = (Minigame1*)gameItself;
@@ -357,7 +350,7 @@ struct Minigame1{
         Ux::uiList<Ux::ColorList, Uint8>* myDestList;
 
         myColorList = myUxRef->minigameColorList->clone();
-        myColorList->sort(&self->randomSort);
+        myColorList->sort(&Ux::randomSort);
 
         int totalTiles = SDL_min(myColorList->total(), self->maxSwatches);
 
@@ -368,7 +361,7 @@ struct Minigame1{
         SDL_free(myColorList);
 
         myColorList = myDestList->clone();
-        myColorList->sort(&self->randomSort);
+        myColorList->sort(&Ux::randomSort);
 
         float height = 1.0 / (totalTiles + 0.0f);
         self->tileHeight = height;
@@ -394,7 +387,7 @@ struct Minigame1{
                 move->uiObjectItself->setBoundaryRect(0.0, y, 0.4, height);
                 dest->uiObjectItself->setBoundaryRect(0.6, y, 0.4, height);
 
-                move->update(&myColorList->get(x)->color); // TODO: we need to get a random color - so we need a way to have each int map to a different int without repeats...
+                move->hideHex()->update(&myColorList->get(x)->color);
                 dest->update(&myDestList->get(x)->color);
 
             }else{
@@ -424,9 +417,7 @@ struct Minigame1{
         SDL_Log("%s begin", self->gameName);
         self->startTime = SDL_GetTicks();
         Ux* myUxRef = Ux::Singleton();
-        // move game title down....  we could do something else maybe...         // see interactionDragMoveConstrain for custom chain...
-        self->gameHeading->uiObjectItself->setAnimation(
-            myUxRef->uxAnimations->moveTo(self->gameHeading->uiObjectItself,self->gameHeading->uiObjectItself->boundryRect.x, 0.56 , nullptr, nullptr) );
+
     }
 
     static void resize(void* gameItself){
@@ -434,9 +425,9 @@ struct Minigame1{
         SDL_Log("%s resize", self->gameName);
         Ux* uxInstance = Ux::Singleton();
         if( uxInstance->widescreen ){
-            self->gameHeadingHolder->setBoundaryRect(0.25, 0.0, 0.5, 1.0);
+            self->scoreBreakdownHolder->setBoundaryRect(0.25, 0.1, 0.25, 1.0-0.2);
         }else{
-            self->gameHeadingHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+            self->scoreBreakdownHolder->setBoundaryRect(0.05, 0.1, 0.5, 1.0-0.2);
         }
 
         self->gameRootUi->updateRenderPosition();

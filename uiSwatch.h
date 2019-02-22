@@ -76,6 +76,11 @@ struct uiSwatch{
         return this;
     }
 
+    uiSwatch* hideHex(){
+        displayHexOn = false;
+        return this;
+    }
+
     uiSwatch* displayBg(){
         displayBgOn = true;
         return this;
@@ -130,6 +135,11 @@ struct uiSwatch{
 
         return changed;
     }
+
+    void refresh(){
+        update(&last_color);
+    }
+
 
 
 };

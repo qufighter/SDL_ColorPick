@@ -57,41 +57,41 @@ void debugGLerror(const char *c_str_label){
 }
 
 
-int
-randomInt(int min, int max)
-{
-    return min + rand() % (max - min + 1);
-}
-
-void
-render(SDL_Renderer *renderer) // DEFAULT demo using sdl render, delete me
-{
-
-    Uint8 r, g, b;
-
-    /* Clear the screen */
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-
-    /*  Come up with a random rectangle */
-    SDL_Rect rect;
-    rect.w = randomInt(64, 128);
-    rect.h = randomInt(64, 128);
-    rect.x = randomInt(0, SCREEN_WIDTH);
-    rect.y = randomInt(0, SCREEN_HEIGHT);
-
-    /* Come up with a random color */
-    r = randomInt(50, 255);
-    g = randomInt(50, 255);
-    b = randomInt(50, 255);
-    SDL_SetRenderDrawColor(renderer, r, g, b, 255);
-
-    /*  Fill the rectangle in the color */
-    SDL_RenderFillRect(renderer, &rect);
-
-    /* update screen */
-    SDL_RenderPresent(renderer);
-}
+//int // this is just Ux::randomInt lets remove this one?
+//randomInt(int min, int max)
+//{
+//    return min + rand() % (max - min + 1);
+//}
+//
+//void
+//render(SDL_Renderer *renderer) // DEFAULT demo using sdl render, delete me
+//{
+//
+//    Uint8 r, g, b;
+//
+//    /* Clear the screen */
+//    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+//    SDL_RenderClear(renderer);
+//
+//    /*  Come up with a random rectangle */
+//    SDL_Rect rect;
+//    rect.w = randomInt(64, 128);
+//    rect.h = randomInt(64, 128);
+//    rect.x = randomInt(0, SCREEN_WIDTH);
+//    rect.y = randomInt(0, SCREEN_HEIGHT);
+//
+//    /* Come up with a random color */
+//    r = randomInt(50, 255);
+//    g = randomInt(50, 255);
+//    b = randomInt(50, 255);
+//    SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+//
+//    /*  Fill the rectangle in the color */
+//    SDL_RenderFillRect(renderer, &rect);
+//
+//    /* update screen */
+//    SDL_RenderPresent(renderer);
+//}
 
 typedef void (*voidvoidp)(void *someParam);
 

@@ -79,11 +79,8 @@ struct Minigames{
         //SDL_Log("index lookup... %i", gameListObj->gameEnumIndex);
         return gameListObj->gameEnumIndex;
     }
-    int randomInt(int min, int max){
-        return min + rand() % (max - min + 1);
-    }
     int randomGameId(){
-        return randomInt(1,TOTAL_GAMES-1);
+        return Ux::randomInt(1,TOTAL_GAMES-1);
     }
     GameListObj* randomGame(){
         int foundGame = gameList->locateIndex(randomGameId());
@@ -101,6 +98,8 @@ struct Minigames{
     Ux::uiObject* controls;
     Ux::uiObject* controlBarTop;
     Ux::uiObject* minigamesCloseX;
+    Ux::uiObject* gameHeadingHolder;
+    Ux::uiText* gameHeading;
     Ux::uiText* gameTimer;
 
     int my_timer_id;
@@ -172,21 +171,22 @@ struct Minigames{
         minigamesCloseX->squarify();
         Ux::setColor(&minigamesCloseX->foregroundColor, 255, 255, 255, 96); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         minigamesCloseX->setClickInteractionCallback(&interactionCloseXClicked);
-        minigamesCloseX->setBoundaryRect(0.05, 0.0, 0.1, 1.0);
-        controlBarTop->addChild(minigamesCloseX);
+        minigamesCloseX->setBoundaryRect(0.05, 0.0, 0.1, 0.1);
+        controls->addChild(minigamesCloseX);
 
 
         gameTimer = (new Ux::uiText(controlBarTop, 1.0/5.0))->pad(0.0,0.0)->margins(0.0,0.25,0.0,0.25)->print("00:00");
+
+
+        gameHeadingHolder = new Ux::uiObject();
+        controls->addChild(gameHeadingHolder);
+
+        gameHeadingHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+
+        //last for on top
+        gameHeading = (new Ux::uiText(gameHeadingHolder, 0.1))->pad(0.0,0.0)->margins(0.25,0.0,0.0,0.0)->print("");
     }
 
-
-    static void miniGameTextAnimComplete(Ux::uiAnimation* uiAnim){
-        OpenGLContext* ogg=OpenGLContext::Singleton();
-        // TELL THE CURRENT GAME THE TEXT ANIMATION IS DONE :)
-
-        ogg->minigames->currentGame->begin();
-//
-    }
 
     static Uint32 my_timer_callback(Uint32 interval, void* parm){
         Ux* myUxRef = Ux::Singleton();
@@ -243,10 +243,14 @@ struct Minigames{
         Ux* uxInstance = Ux::Singleton();
         if( uxInstance->widescreen ){
             controlBarTop->setBoundaryRect(0.25, 0.0, 0.5, 0.1);
+            gameHeadingHolder->setBoundaryRect(0.25, 0.0, 0.5, 1.0);
         }else{
             controlBarTop->setBoundaryRect(0.0, 0.0, 1.0, 0.1);
+            gameHeadingHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+
         }
         currentGame->resize();
+        controls->updateRenderPosition();
     }
 
     void update(){
@@ -255,6 +259,20 @@ struct Minigames{
 
     void render(){
         currentGame->render();
+    }
+
+    static void miniGameTextAnimComplete(Ux::uiAnimation* uiAnim){
+        OpenGLContext* ogg=OpenGLContext::Singleton();
+        Minigames* self = ogg->minigames;
+        Ux* myUxRef = Ux::Singleton();
+
+        // TELL THE CURRENT GAME THE TEXT ANIMATION IS DONE :)
+
+        ogg->minigames->currentGame->begin();
+
+        self->gameHeading->uiObjectItself->setAnimation(
+            myUxRef->uxAnimations->moveTo(self->gameHeading->uiObjectItself,self->gameHeading->uiObjectItself->boundryRect.x, 0.57 , nullptr, nullptr) );
+
     }
 
     /* external API */
@@ -270,6 +288,12 @@ struct Minigames{
         myUxRef->isMinigameMode = true;
 
         currentGame->show(); // we try to call show last, in case show determines it should endGame that it will work right.
+
+        //gameHeadingHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+
+        gameHeading->uiObjectItself->resetPosition();
+
+        gameHeading->size(1.0 / SDL_strlen(currentGame->getGameName()))->print(currentGame->getGameName());
 
         my_timer_id = -1;
 

@@ -204,12 +204,35 @@ static Ux* Singleton();
 #include "ux-anim.h"
     
 
-    int
-    randomInt(int min, int max)
-    {
+    static int randomInt(int min, int max){
         return min + rand() % (max - min + 1);
     }
 
+    static int randomSort(const void *a, const void *b){
+        return randomInt(0, 42); // its odd returinging -1,1 here makes more sense to me, but is a lot less random in result...
+    }
+
+    static int compareColor(SDL_Color *a, SDL_Color *b){
+        HSV_Color A, B;
+        A.fromColor(a);
+        B.fromColor(b);
+        int result = A.h - B.h;
+        if( result == 0 ) result = A.s - B.s;
+        if( result == 0 ) result = A.v - B.v;
+        if( result == 0 ){
+            result =  a->r - b->r;
+            if( result == 0 ) result =  a->g - b->g;
+            if( result == 0 ) result =  a->b - b->b;
+            //            if( result == 0 ){
+            //                SDL_Log("WHA THE");
+            //            }
+        }
+        return result;
+    }
+
+    static int compareColorListItems(ColorList *a, ColorList *b){
+        return compareColor(&a->color, &b->color);
+    }
 
     Ux(void); // Default constructor
     ~Ux(void); // Destructor for cleaning up our application
