@@ -5,9 +5,11 @@
 
 struct Minigame1{
 
-    const char* gameName = "Test Game 1";
+    const char* gameName = "Match Master";
     const int maxSwatches = 6;
     const int timeLimit = 60000; // one minute....
+    const int scoreBreakdownLn = 10;
+
     long gameNameLen;
     Uint8 gameIndex; // we try to keep this matching the childList index of minigamesUiContainer ....
     int startTime;
@@ -22,7 +24,15 @@ struct Minigame1{
 
     Ux::uiObject* gameRootUi;
     Ux::uiObject* gameSwatchesHolder;
+    Ux::uiObject* scoreBreakdownHolder;
+    Ux::uiObject* gameHeadingHolder;
     Ux::uiText* gameHeading;
+
+    Ux::uiText* scoreBreakdown0;
+    Ux::uiText* scoreBreakdown1;
+    Ux::uiText* scoreBreakdown2;
+    Ux::uiText* scoreBreakdown3;
+    Ux::uiText* scoreBreakdown4;
 
     Ux::uiList<Ux::uiSwatch*, Uint8>* pickList; // this is list of movable colors
     Ux::uiList<Ux::uiSwatch*, Uint8>* matchList; // list of match destinations
@@ -68,17 +78,29 @@ struct Minigame1{
 
             //tmp1.displayHex(); // testing only...
             pickList->add(tmp1);
-
-
         }
+
+        scoreBreakdownHolder =new Ux::uiObject();
+        scoreBreakdownHolder->setBoundaryRect(0.05, 0.1, 0.5, 1.0-0.2);
+        gameRootUi->addChild(scoreBreakdownHolder);
+        float charSize = 1.0/scoreBreakdownLn;
+        scoreBreakdown0 = (new Ux::uiText(scoreBreakdownHolder, charSize))->margins(-0.5,0.0,0.0,0.0)->print("Score0");
+        scoreBreakdown1 = (new Ux::uiText(scoreBreakdownHolder, charSize))->margins(-0.25,0.0,0.0,0.0)->print("Score1");
+        scoreBreakdown2 = (new Ux::uiText(scoreBreakdownHolder, charSize))->margins(0.0,0.0,0.0,0.0)->print("Score2");
+        scoreBreakdown3 = (new Ux::uiText(scoreBreakdownHolder, charSize))->margins(0.25,0.0,0.0,0.0)->print("Score3");
+        scoreBreakdown4 = (new Ux::uiText(scoreBreakdownHolder, charSize))->margins(0.5,0.0,0.0,0.0)->print("Score4");
+
 
         tileHeight = 0.2;
         halfTileHeight = 0.1;
         activeSwatches=0;
         //just a reminder.... don't init here, init in show();
 
+        gameHeadingHolder = new Ux::uiObject();
+        gameRootUi->addChild(gameHeadingHolder);
+
         //last for on top
-        gameHeading = (new Ux::uiText(gameRootUi, 1.0/gameNameLen))->pad(0.0,0.0)->margins(0.25,0.0,0.0,0.0)->print(gameName);
+        gameHeading = (new Ux::uiText(gameHeadingHolder, 1.0/gameNameLen))->pad(0.0,0.0)->margins(0.25,0.0,0.0,0.0)->print(gameName);
     }
 
     static void interactionSwatchDragMove(Ux::uiObject *interactionObj, uiInteraction *delta){
@@ -144,8 +166,6 @@ struct Minigame1{
                         interactionObj->setAnimation(myAnimChain); // imporrtant to do this before we push it..
                         uxInstance->uxAnimations->pushAnimChain(myAnimChain);
 
-
-
                         // NOTE: when the above animation completes, this swatch is "locked" until we move it again...
                         // once all swatches are locked.... then the game is ready to complete...
                         break;
@@ -159,7 +179,7 @@ struct Minigame1{
         OpenGLContext* ogg=OpenGLContext::Singleton();
         Minigame1* self = (Minigame1*)ogg->minigames->currentGame->gameItself; // helper?
 
-        if( self->gameIsCompleted() ){
+        if( self->isGameComplete() ){
             //SDL_Log("Looks like you won!");
             self->showMatches();
 
@@ -168,7 +188,7 @@ struct Minigame1{
             self->isComplete = true; // complete, and won, lock it up!
             self->lastTicks = SDL_GetTicks();
 
-            ogg->minigames->ceaseUpdatingTime(); // save CPUs.
+            ogg->minigames->gameIsCompleted(); // save CPUs.
 
             // at this piont, we can allow the game to end and lock it up somehow.... ?
             // and we show the score....
@@ -191,15 +211,42 @@ struct Minigame1{
         if( solveAttempts > 0 ){
 
             int elapsedMs = lastTicks - startTime;
-            activeSwatches; // more for more points.... its sort of mulitplier?? we can subtract one less than minimum though...
+            //activeSwatches; // more for more points.... its sort of mulitplier?? we can subtract one less than minimum though...
 
-            solveAttempts; // divide by this....
+            //solveAttempts; // divide by this....
 
-            int timeBonus = timeLimit - elapsedMs;
+            int timeBonus = (timeLimit - elapsedMs) / 1000;
+
+            if( timeBonus < 1 ) timeBonus = 1;
 
             int finalScore = (timeBonus * activeSwatches) / solveAttempts;
 
-            uxInstance->defaultScoreDisplay->display(gameSwatchesHolder, finalScore, SCORE_EFFECTS::MOVE_UP);
+
+            uxInstance->defaultScoreDisplay->display(gameSwatchesHolder->childList[0], finalScore, SCORE_EFFECTS::MOVE_UP);
+
+            scoreBreakdownHolder->show();
+
+            SDL_snprintf(uxInstance->print_here, scoreBreakdownLn,  "%i swatch", activeSwatches);
+            scoreBreakdown0->print(uxInstance->print_here);
+
+            SDL_snprintf(uxInstance->print_here, scoreBreakdownLn,  ":%02i bonus", timeBonus);
+            scoreBreakdown1->print(uxInstance->print_here);
+
+
+            if( solveAttempts != 1 ){
+                SDL_snprintf(uxInstance->print_here, scoreBreakdownLn,  "/%i tries", solveAttempts);
+            }else{
+                SDL_snprintf(uxInstance->print_here, scoreBreakdownLn,  "/%i try", solveAttempts);
+            }
+            scoreBreakdown2->print(uxInstance->print_here);
+
+
+            SDL_snprintf(uxInstance->print_here, scoreBreakdownLn,  "+%i", finalScore);
+            scoreBreakdown3->print(uxInstance->print_here);
+
+            SDL_snprintf(uxInstance->print_here, scoreBreakdownLn,  "x%i chain", uxInstance->defaultScoreDisplay->combo_chain);
+            scoreBreakdown4->print(uxInstance->print_here);
+
             SDL_Log("Minigame: just applied final score.... %i", finalScore);
 
             return finalScore;
@@ -239,7 +286,7 @@ struct Minigame1{
 
     }
 
-    bool gameIsCompleted(){
+    bool isGameComplete(){
         Ux* uxInstance = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();
         Minigame1* self = (Minigame1*)ogg->minigames->currentGame->gameItself; // helper?
@@ -301,6 +348,8 @@ struct Minigame1{
         self->isComplete= false;
         self->isReadyToScore = false;
         self->solveAttempts = 0;
+
+        self->scoreBreakdownHolder->hide();
 
         //    minigameColorList = new uiList<ColorList, Uint8>(minigameColorListMax)
 
@@ -383,7 +432,13 @@ struct Minigame1{
     static void resize(void* gameItself){
         Minigame1* self = (Minigame1*)gameItself;
         SDL_Log("%s resize", self->gameName);
-        // check ux widescreen?
+        Ux* uxInstance = Ux::Singleton();
+        if( uxInstance->widescreen ){
+            self->gameHeadingHolder->setBoundaryRect(0.25, 0.0, 0.5, 1.0);
+        }else{
+            self->gameHeadingHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+        }
+
         self->gameRootUi->updateRenderPosition();
     }
 
@@ -403,15 +458,20 @@ struct Minigame1{
         self->gameRootUi->hideAndNoInteraction();
     }
 
+    static const char* getGameName(void* gameItself){
+        Minigame1* self = (Minigame1*)gameItself;
+        return self->gameName;
+    }
+
     static int getTimeLimit(void* gameItself){
         Minigame1* self = (Minigame1*)gameItself;
         return self->timeLimit;
     }
 
-    static int getStartTime(void* gameItself){ // is this used?
-        Minigame1* self = (Minigame1*)gameItself;
-        return self->startTime;
-    }
+//    static int getStartTime(void* gameItself){ // is this used?
+//        Minigame1* self = (Minigame1*)gameItself;
+//        return self->startTime;
+//    }
 
 //    static int getRemainingTime(void* gameItself){ // NOT IMPLEMENTED
 //        Minigame1* self = (Minigame1*)gameItself;

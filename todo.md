@@ -33,7 +33,12 @@ pigcel
 
 drag scroller edge bg beyond end/start is actually annoying
 
-KEYBOARD INPUT NOT INTERCEPTED DURING MINIGAME!!!
+KEYBOARD INPUT NOT sent to MINIGAME!!!
+multigesture input not sent to minigame
+mouse wheel/pinch not intercepted during minigame
+
+need a disable minigmes option
+
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)

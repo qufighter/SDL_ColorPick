@@ -12,16 +12,18 @@
     &minigameN->update, \
     &minigameN->render, \
     &minigameN->end, \
-    &minigameN->getStartTime, \
     &minigameN->getElapsedTime, \
-    &minigameN->getTimeLimit
+    &minigameN->getTimeLimit, \
+    &minigameN->getGameName
 
 struct Minigames{
 
     const static int maxGames = 10;
+    const static int msPerMinute = 60000;
 
     typedef void (*aGenericGameCb)(void* gameItself);
     typedef int (*anIntGenericGameCb)(void* gameItself);
+    typedef const char* (*aConstCharStarGenericGameCb)(void* gameItself);
 
     typedef struct GameListObj
     {
@@ -32,9 +34,9 @@ struct Minigames{
                     aGenericGameCb pUpdateFn,
                     aGenericGameCb pRenderFn,
                     aGenericGameCb pEndFn,
-                    anIntGenericGameCb pGetStartTimeFn,
                     anIntGenericGameCb pGetElapsedTimeFn,
-                    anIntGenericGameCb pGetTimeLimitFn
+                    anIntGenericGameCb pGetTimeLimitFn,
+                    aConstCharStarGenericGameCb pGetNameFn
         ){
             gameEnumIndex = gameId;
             gameItself = p_gameItself;
@@ -44,9 +46,9 @@ struct Minigames{
             updateFn=pUpdateFn;
             renderFn=pRenderFn;
             endFn=pEndFn;
-            startTimeFn=pGetStartTimeFn;
             timeLimitFn=pGetTimeLimitFn;
             elapsedTimeFn=pGetElapsedTimeFn;
+            gameNameFn=pGetNameFn;
         }
 
         void show(){showFn(gameItself);}
@@ -55,9 +57,9 @@ struct Minigames{
         void update(){updateFn(gameItself);}
         void render(){renderFn(gameItself);}
         void end(){endFn(gameItself);}
-        int getStartTime(){return startTimeFn(gameItself);} // not used anymore...
         int getElapsedTime(){return elapsedTimeFn(gameItself);}
         int getTimeLimit(){return timeLimitFn(gameItself);}
+        const char* getGameName(){return gameNameFn(gameItself);}
 
         Uint8 gameEnumIndex;
         void* gameItself;
@@ -67,9 +69,9 @@ struct Minigames{
         aGenericGameCb updateFn;
         aGenericGameCb renderFn;
         aGenericGameCb endFn;
-        anIntGenericGameCb startTimeFn;
         anIntGenericGameCb elapsedTimeFn;
         anIntGenericGameCb timeLimitFn;
+        aConstCharStarGenericGameCb gameNameFn;
 
     } GameListObj;
 
@@ -96,8 +98,11 @@ struct Minigames{
 
     Ux::uiList<GameListObj, Uint8>* gameList;
     GameListObj* currentGame;
+    Ux::uiObject* controls;
+    Ux::uiObject* controlBarTop;
     Ux::uiObject* minigamesCloseX;
     Ux::uiText* gameTimer;
+
     int my_timer_id;
 
     typedef enum  {
@@ -154,8 +159,8 @@ struct Minigames{
 
         // TODO use one or more contaienrs for these types of controls!::
 
-        Ux::uiObject* controls = new Ux::uiObject();
-        Ux::uiObject* controlBarTop = new Ux::uiObject();
+        controls = new Ux::uiObject();
+        controlBarTop = new Ux::uiObject();
         controlBarTop->setBoundaryRect(0.0, 0.0, 1.0, 0.1);
 
         controls->addChild(controlBarTop);
@@ -208,10 +213,10 @@ struct Minigames{
             remainMs = 0;
         }
 
-        int minutes = remainMs / 60000;
-        int seconds = (remainMs - (minutes * 60000)) / 1000;
+        int minutes = remainMs / msPerMinute;
+        int seconds = (remainMs - (minutes * msPerMinute)) / 1000;
 
-        SDL_Log("Game Timer State is %i %i %i %i",elapsedMs,  remainMs,  minutes, seconds);
+        //SDL_Log("Game Timer State is %i %i %i %i",elapsedMs,  remainMs,  minutes, seconds);
 
         SDL_snprintf(myUxRef->print_here, 6,  "%02i:%02i", minutes, seconds);
         gameTimer->print(myUxRef->print_here);
@@ -219,18 +224,40 @@ struct Minigames{
         return remainMs > 0;
     }
 
-    // maybe this should be more generic to state -user won game... and be a "more mandatory" callback....
-    // game ends itself but really displays results screen first....
-    // organize the functions useful for the game to call in the same place...
     void ceaseUpdatingTime(){
-        // call this if your game has ended to reduce rendering...
+        // call this if your game has ended to reduce rendering... ( instead of calling directly, call gameIsCompleted() )
         if( my_timer_id > -1 ){
             SDL_RemoveTimer(my_timer_id);
             my_timer_id=-1;
         }
-        my_timer_callback(1, nullptr); // one final update...
+        my_timer_callback(0, nullptr); // one final update...
     }
 
+    static void interactionCloseXClicked(Ux::uiObject *interactionObj, uiInteraction *delta){
+        OpenGLContext* ogg=OpenGLContext::Singleton();
+        Minigames* self = ogg->minigames;
+        self->endGame();
+    }
+
+    void resize(){
+        Ux* uxInstance = Ux::Singleton();
+        if( uxInstance->widescreen ){
+            controlBarTop->setBoundaryRect(0.25, 0.0, 0.5, 0.1);
+        }else{
+            controlBarTop->setBoundaryRect(0.0, 0.0, 1.0, 0.1);
+        }
+        currentGame->resize();
+    }
+
+    void update(){
+        currentGame->update();
+    }
+
+    void render(){
+        currentGame->render();
+    }
+
+    /* external API */
     void beginNextGame(){
         Ux* myUxRef = Ux::Singleton();
         currentGame = randomGame(); // roll again
@@ -257,9 +284,12 @@ struct Minigames{
         myUxRef->resizeUiElements();
     }
 
+    /* you may call this from the minigame... if you want to auto exit after some amount of time */
     void endGame(){
         Ux* myUxRef = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();
+
+        if( !myUxRef->isMinigameMode ) return; // we must have already exited the minigame....
 
         myUxRef->isMinigameMode = false;
 
@@ -275,23 +305,10 @@ struct Minigames{
 
     }
 
-    static void interactionCloseXClicked(Ux::uiObject *interactionObj, uiInteraction *delta){
-        OpenGLContext* ogg=OpenGLContext::Singleton();
-        Minigames* self = ogg->minigames;
-        self->endGame();
-    }
-
-    void resize(){
-        // todo: resize close x ?
-        currentGame->resize();
-    }
-
-    void update(){
-        currentGame->update();
-    }
-
-    void render(){
-        currentGame->render();
+    // when the user won (or lost) the game, call this
+    // we'll stop any timer display from updating needlessly
+    void gameIsCompleted(){
+        ceaseUpdatingTime();
     }
 
 };
