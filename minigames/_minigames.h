@@ -11,13 +11,17 @@
     &minigameN->resize, \
     &minigameN->update, \
     &minigameN->render, \
-    &minigameN->end
+    &minigameN->end, \
+    &minigameN->getStartTime, \
+    &minigameN->getElapsedTime, \
+    &minigameN->getTimeLimit
 
 struct Minigames{
 
     const static int maxGames = 10;
 
     typedef void (*aGenericGameCb)(void* gameItself);
+    typedef int (*anIntGenericGameCb)(void* gameItself);
 
     typedef struct GameListObj
     {
@@ -27,7 +31,10 @@ struct Minigames{
                     aGenericGameCb pResizeFn,
                     aGenericGameCb pUpdateFn,
                     aGenericGameCb pRenderFn,
-                    aGenericGameCb pEndFn
+                    aGenericGameCb pEndFn,
+                    anIntGenericGameCb pGetStartTimeFn,
+                    anIntGenericGameCb pGetElapsedTimeFn,
+                    anIntGenericGameCb pGetTimeLimitFn
         ){
             gameEnumIndex = gameId;
             gameItself = p_gameItself;
@@ -37,6 +44,9 @@ struct Minigames{
             updateFn=pUpdateFn;
             renderFn=pRenderFn;
             endFn=pEndFn;
+            startTimeFn=pGetStartTimeFn;
+            timeLimitFn=pGetTimeLimitFn;
+            elapsedTimeFn=pGetElapsedTimeFn;
         }
 
         void show(){showFn(gameItself);}
@@ -45,6 +55,9 @@ struct Minigames{
         void update(){updateFn(gameItself);}
         void render(){renderFn(gameItself);}
         void end(){endFn(gameItself);}
+        int getStartTime(){return startTimeFn(gameItself);} // not used anymore...
+        int getElapsedTime(){return elapsedTimeFn(gameItself);}
+        int getTimeLimit(){return timeLimitFn(gameItself);}
 
         Uint8 gameEnumIndex;
         void* gameItself;
@@ -54,6 +67,9 @@ struct Minigames{
         aGenericGameCb updateFn;
         aGenericGameCb renderFn;
         aGenericGameCb endFn;
+        anIntGenericGameCb startTimeFn;
+        anIntGenericGameCb elapsedTimeFn;
+        anIntGenericGameCb timeLimitFn;
 
     } GameListObj;
 
@@ -81,6 +97,8 @@ struct Minigames{
     Ux::uiList<GameListObj, Uint8>* gameList;
     GameListObj* currentGame;
     Ux::uiObject* minigamesCloseX;
+    Ux::uiText* gameTimer;
+    int my_timer_id;
 
     typedef enum  {
         GAME0_RESERVED=0,
@@ -136,16 +154,24 @@ struct Minigames{
 
         // TODO use one or more contaienrs for these types of controls!::
 
+        Ux::uiObject* controls = new Ux::uiObject();
+        Ux::uiObject* controlBarTop = new Ux::uiObject();
+        controlBarTop->setBoundaryRect(0.0, 0.0, 1.0, 0.1);
+
+        controls->addChild(controlBarTop);
+        myUxRef->minigamesUiContainer->addChild(controls);
+
         minigamesCloseX = new Ux::uiObject();
         myUxRef->printCharToUiObject(minigamesCloseX, CHAR_CLOSE_ICON, DO_NOT_RESIZE_NOW);
         minigamesCloseX->hasForeground = true;
         minigamesCloseX->squarify();
         Ux::setColor(&minigamesCloseX->foregroundColor, 255, 255, 255, 96); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         minigamesCloseX->setClickInteractionCallback(&interactionCloseXClicked);
-        minigamesCloseX->setBoundaryRect(0.0, 0.0, 0.1, 0.1);
-        myUxRef->minigamesUiContainer->addChild(minigamesCloseX);
+        minigamesCloseX->setBoundaryRect(0.05, 0.0, 0.1, 1.0);
+        controlBarTop->addChild(minigamesCloseX);
 
 
+        gameTimer = (new Ux::uiText(controlBarTop, 1.0/5.0))->pad(0.0,0.0)->margins(0.0,0.25,0.0,0.25)->print("00:00");
     }
 
 
@@ -157,6 +183,53 @@ struct Minigames{
 //
     }
 
+    static Uint32 my_timer_callback(Uint32 interval, void* parm){
+        Ux* myUxRef = Ux::Singleton();
+        OpenGLContext* ogg=OpenGLContext::Singleton();
+        Minigames* self = ogg->minigames;
+
+        if( myUxRef->isMinigameMode && self->printRemainingTime() ){
+            ogg->renderShouldUpdate = true;
+            return interval;
+        }
+        return 0; // ends the timer...
+    }
+
+    bool printRemainingTime(){
+        Ux* myUxRef = Ux::Singleton();
+
+        int elapsedMs = currentGame->getElapsedTime();
+        int remainMs = currentGame->getTimeLimit() - elapsedMs;
+
+        if( remainMs > 0 ){
+
+        }else{
+            /// our game is actually over!!!
+            remainMs = 0;
+        }
+
+        int minutes = remainMs / 60000;
+        int seconds = (remainMs - (minutes * 60000)) / 1000;
+
+        SDL_Log("Game Timer State is %i %i %i %i",elapsedMs,  remainMs,  minutes, seconds);
+
+        SDL_snprintf(myUxRef->print_here, 6,  "%02i:%02i", minutes, seconds);
+        gameTimer->print(myUxRef->print_here);
+
+        return remainMs > 0;
+    }
+
+    // maybe this should be more generic to state -user won game... and be a "more mandatory" callback....
+    // game ends itself but really displays results screen first....
+    // organize the functions useful for the game to call in the same place...
+    void ceaseUpdatingTime(){
+        // call this if your game has ended to reduce rendering...
+        if( my_timer_id > -1 ){
+            SDL_RemoveTimer(my_timer_id);
+            my_timer_id=-1;
+        }
+        my_timer_callback(1, nullptr); // one final update...
+    }
 
     void beginNextGame(){
         Ux* myUxRef = Ux::Singleton();
@@ -170,6 +243,16 @@ struct Minigames{
         myUxRef->isMinigameMode = true;
 
         currentGame->show(); // we try to call show last, in case show determines it should endGame that it will work right.
+
+        my_timer_id = -1;
+
+        if( currentGame->getTimeLimit() > 0 ){
+            // this game has a time limit.... lets make sure to show elapsed time....
+            printRemainingTime();
+            my_timer_id = SDL_AddTimer(1000, my_timer_callback, this);
+        }else{
+            // perhaps games that don't have a time limit, can (optionally?) show a timer that counts upwards ??
+        }
 
         myUxRef->resizeUiElements();
     }

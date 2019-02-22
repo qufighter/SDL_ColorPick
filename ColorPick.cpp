@@ -72,27 +72,35 @@ void OpenGLContext::keyUp(SDL_Keycode k){
 
     SDL_Log("keyup %d", k);
 
-    switch(k){
-        case SDLK_UP:
-            colorPickState->mmovey=1;
-            break;
-        case SDLK_DOWN:
-            colorPickState->mmovey=-1;
-            break;
-        case SDLK_RIGHT:
-            colorPickState->mmovex=-1;
-            break;
-        case SDLK_LEFT:
-            colorPickState->mmovex=1;
-            break;
-        case SDLK_RETURN:
-        case SDLK_KP_ENTER:
-            generalUx->addCurrentToPickHistory();
-            break;
-    }
+    if( isMinigameMode() ){
 
-    has_velocity=false;
-    renderShouldUpdate=true;
+        //minigames->keyDown(k);
+        
+        //renderShouldUpdate=true;
+    }else{
+
+        switch(k){
+            case SDLK_UP:
+                colorPickState->mmovey=1;
+                break;
+            case SDLK_DOWN:
+                colorPickState->mmovey=-1;
+                break;
+            case SDLK_RIGHT:
+                colorPickState->mmovex=-1;
+                break;
+            case SDLK_LEFT:
+                colorPickState->mmovex=1;
+                break;
+            case SDLK_RETURN:
+            case SDLK_KP_ENTER:
+                generalUx->addCurrentToPickHistory();
+                break;
+        }
+
+        has_velocity=false;
+        renderShouldUpdate=true;
+    }
 
 }
 

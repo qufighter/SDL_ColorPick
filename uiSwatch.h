@@ -32,7 +32,7 @@ struct uiSwatch{
         uiObjectItself->hasBackground=true;
         Ux::setColor(&uiObjectItself->backgroundColor, 128, 128, 128, 255);
 
-        uiObjectItself->squarify();
+        uiObjectItself->squarifyKeepVt(); //make dynamic??
 
         swatchItself = new uiObject();
         // todo: scale border dynamically!!!! or statically><
@@ -50,10 +50,11 @@ struct uiSwatch{
 //        Ux::setColor(&swatchItself->foregroundColor, 192, 192, 192, 255);
 //        uxInstance->printCharToUiObject(swatchItself, CHAR_ZOOM_SPEEDY_GUY, DO_NOT_RESIZE_NOW);
 
+        parentObj->addChild(uiObjectItself);
 
+        
         hexDisplay = (new Ux::uiText(uiObjectItself, 1.0/6))->pad(0.0,0.0)->margins(0.0,0.05,0.0,0.05)->print("");
 
-        parentObj->addChild(uiObjectItself);
 
         resize();
 
@@ -98,6 +99,10 @@ struct uiSwatch{
 
     }
 
+    void print(const char* txtToShow){
+        hexDisplay->print(txtToShow);
+    }
+
     bool update(SDL_Color* color){
 
         Ux* uxInstance = Ux::Singleton();
@@ -110,14 +115,17 @@ struct uiSwatch{
             Ux::setColor(&swatchItself->backgroundColor, 0, 0, 0, 255);
         }
 
+        if( ((int)swatchItself->backgroundColor.r + (int)swatchItself->backgroundColor.g + (int)swatchItself->backgroundColor.b) > 382 ){
+            hexDisplay->color(0, 0, 0, 255);
+        }else{
+            hexDisplay->color(255, 255, 255, 255);
+        }
+
         if( displayHexOn ){
-            if( ((int)swatchItself->backgroundColor.r + (int)swatchItself->backgroundColor.g + (int)swatchItself->backgroundColor.b) > 382 ){
-                hexDisplay->color(0, 0, 0, 255);
-            }else{
-                hexDisplay->color(255, 255, 255, 255);
-            }
             SDL_snprintf(uxInstance->print_here, 7,  "%02x%02x%02x", color->r, color->g, color->b);
             hexDisplay->print(uxInstance->print_here);
+        }else{
+            hexDisplay->print("");
         }
 
         return changed;
