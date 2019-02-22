@@ -17,6 +17,9 @@ struct MixMaster{
     float halfTileHeight;
     int activeSwatches;
 
+    int totalMixes;
+    int totalDestinations; //(totalMixes * 2)
+
     bool isReadyToScore;
     bool isComplete;
     int solveAttempts = 0;
@@ -62,18 +65,24 @@ struct MixMaster{
 
         gameSwatchesHolder->setBoundaryRect(0.1, 0.1, 1.0-0.2, 1.0-0.2);
 
+
+        gameSwatchesHolder->setModeWhereChildCanCollideAndOwnBoundsIgnored();
+
         int x;
 
         for( x=0; x<maxSwatches; x++ ){
             Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)); // ignore these rect....
             tmp2->displayHex();
             //            tmp2->hideBg();
+
+            tmp2->uiObjectItself->setInteractionCallback(&genericExplainColor);
+
             mixedList->add(tmp2);
         }
 
         for( x=0; x<maxSwatches; x++ ){
             Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)); // ignore these rect....
-            tmp2->displayHex(); // this is MEH methinks ??
+            //tmp2->displayHex(); // this is MEH methinks ??
             tmp2->hideBg();
             matchList->add(tmp2);
         }
@@ -81,7 +90,7 @@ struct MixMaster{
         for( x=0; x<maxSwatches; x++ ){
             Ux::uiSwatch* tmp1 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)); // ignore these rect....
             tmp1->uiObjectItself->setInteraction(&interactionSwatchDragMove);
-            tmp1->uiObjectItself->setInteractionCallback(interactionSwatchDragMoveConstrain);
+            tmp1->uiObjectItself->setInteractionCallback(&interactionSwatchDragMoveConstrain);
 
             //tmp1.displayHex(); // testing only...
             pickList->add(tmp1);
@@ -119,6 +128,14 @@ struct MixMaster{
         myUxRef->interactionDragMove(interactionObj, delta);
     }
 
+    static void genericExplainColor(Ux::uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        Ux::uiSwatch* swatch = (Ux::uiSwatch*)interactionObj->myUiController;
+        SDL_snprintf(myUxRef->print_here, 7,  "%02x%02x%02x", swatch->swatchItself->backgroundColor.r, swatch->swatchItself->backgroundColor.g, swatch->swatchItself->backgroundColor.b);
+        myUxRef->defaultScoreDisplay->displayExplanation(myUxRef->print_here);
+
+    }
+
     static void interactionSwatchDragMoveConstrain(Ux::uiObject *interactionObj, uiInteraction *delta){
         Ux* myUxRef = Ux::Singleton();
         Ux::uiSwatch* swatch = (Ux::uiSwatch*)interactionObj->myUiController;
@@ -129,8 +146,6 @@ struct MixMaster{
             // lock it up..
 
             SDL_snprintf(myUxRef->print_here, 7,  "%02x%02x%02x", swatch->swatchItself->backgroundColor.r, swatch->swatchItself->backgroundColor.g, swatch->swatchItself->backgroundColor.b);
-
-            //SDL_snprintf(myUxRef->print_here, 7,  "%02x%02x%02x", interactionObj->childList[0]->backgroundColor.r, interactionObj->childList[0]->backgroundColor.g, interactionObj->childList[0]->backgroundColor.b);
             myUxRef->defaultScoreDisplay->displayExplanation(myUxRef->print_here);
             return;
         }
@@ -259,6 +274,19 @@ struct MixMaster{
         }
     }
 
+    void showColors(){ // when we win!  shows all move colors
+        for( int y=0; y<activeSwatches; y++ ){
+            Ux::uiSwatch* move = *pickList->get(y);
+
+            // only "used" moves
+            if( move->uiObjectItself->boundryRect.x > 0.5 ){
+                move->displayHex();
+                move->refresh();
+            }
+
+        }
+    }
+
     void showMatches(){
         Ux* uxInstance = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();
@@ -266,37 +294,60 @@ struct MixMaster{
 
         // we verify before this is called, every dest has 1 and only 1 match....
 
-        for( int x=0; x<self->activeSwatches; x++ ){
-            Ux::uiSwatch* dest = *self->matchList->get(x);
+        int destCtr = 0;
+        for( int x=0; x<self->totalMixes; x++ ){
+
+            Ux::uiSwatch* mixSwatch = *self->mixedList->get(x);
+            Ux::uiSwatch* dest1 = *self->matchList->get(destCtr);
+            Ux::uiSwatch* dest2 = *self->matchList->get(destCtr+1);
+            destCtr+=2;
+
+            Ux::uiSwatch* dest1move = nullptr;
+            Ux::uiSwatch* dest2move = nullptr;
+
+            // this is a duplicate search (see also "this is reallly a dupe search... oh well??")
+            // instead, each swatch ( in this case mixSwatch ) can house several transient references we'll have populated..... ref to other swatches... we'll know which ones to look at...
             for( int y=0; y<self->activeSwatches; y++ ){
+                // see if any moves are placed here...
                 Ux::uiSwatch* move = *self->pickList->get(y);
+                if( dest1->uiObjectItself->boundryRect.x == move->uiObjectItself->boundryRect.x && dest1->uiObjectItself->boundryRect.y == move->uiObjectItself->boundryRect.y ){
+                    dest1move = move;
+                }
 
-                if( dest->uiObjectItself->boundryRect.x == move->uiObjectItself->boundryRect.x && dest->uiObjectItself->boundryRect.y == move->uiObjectItself->boundryRect.y ){
-                    if( !Ux::colorEquals(&dest->last_color, &move->last_color) ){
-                        SDL_snprintf(uxInstance->print_here, 7,  "  ");
-                        move->print(uxInstance->print_here);
-                        uxInstance->printCharToUiObject(move->hexDisplay->getTextChar(1), CHAR_CANCEL_ICON, DO_NOT_RESIZE_NOW);
-
-                    }else{
-                        SDL_snprintf(uxInstance->print_here, 7,  "   OK");
-                        move->print(uxInstance->print_here);
-                        uxInstance->printCharToUiObject(move->hexDisplay->getTextChar(1), CHAR_CHECKMARK_ICON, DO_NOT_RESIZE_NOW);
-                    }
-
-
+                if( dest2->uiObjectItself->boundryRect.x == move->uiObjectItself->boundryRect.x && dest2->uiObjectItself->boundryRect.y == move->uiObjectItself->boundryRect.y ){
+                    dest2move = move;
                 }
             }
+
+            // so we know for sure we have both right?  just chekcing...
+            if( dest1move != nullptr  && dest2move != nullptr ){
+
+                SDL_Color mixed = Ux::mixColors( &dest1move->last_color, &dest2move->last_color );
+
+                if( !Ux::colorEquals(&mixed, &mixSwatch->last_color ) ){
+                    SDL_snprintf(uxInstance->print_here, 7,  "   "); // once at boot....
+                    dest1move->hexDisplay->color(mixed.r, mixed.g, mixed.b, mixed.a); // lets show what color it mixes to somewhares...
+                    dest2move->hexDisplay->color(mixed.r, mixed.g, mixed.b, mixed.a); // lets show what color it mixes to somewhares...
+                    // mayhaps this is swatch border color ??? could help.. .but we'll need to make sure this gets reset tho.... ( add to swatch ->update() to auto fix it ?? )
+                    dest1move->print(uxInstance->print_here);
+                    dest2move->print(uxInstance->print_here);
+                    uxInstance->printCharToUiObject(dest1move->hexDisplay->getTextChar(1), CHAR_CANCEL_ICON, DO_NOT_RESIZE_NOW);
+                    uxInstance->printCharToUiObject(dest2move->hexDisplay->getTextChar(1), CHAR_CANCEL_ICON, DO_NOT_RESIZE_NOW);
+                }else{
+                    SDL_snprintf(uxInstance->print_here, 7,  "   OK"); // once at boot....
+                    dest1move->print(uxInstance->print_here);
+                    dest2move->print(uxInstance->print_here);
+                    uxInstance->printCharToUiObject(dest1move->hexDisplay->getTextChar(1), CHAR_CHECKMARK_ICON, DO_NOT_RESIZE_NOW);
+                    uxInstance->printCharToUiObject(dest2move->hexDisplay->getTextChar(1), CHAR_CHECKMARK_ICON, DO_NOT_RESIZE_NOW);
+                }
+
+            }
+
+
         }
 
     }
 
-    void showColors(){ // when we win!
-        for( int y=0; y<activeSwatches; y++ ){
-            Ux::uiSwatch* move = *pickList->get(y);
-            move->displayHex();
-            move->refresh();
-        }
-    }
 
     bool isGameComplete(){
         Ux* uxInstance = Ux::Singleton();
@@ -306,36 +357,67 @@ struct MixMaster{
         bool isWin = true; // lets see if any of them are non
         bool isReadyToScore = true;
 
-        for( int x=0; x<self->activeSwatches; x++ ){
-            Ux::uiSwatch* dest = *self->matchList->get(x);
-            bool hasMatch = false;
+
+        int destCtr = 0;
+        for( int x=0; x<self->totalMixes; x++ ){
+
+            Ux::uiSwatch* mixSwatch = *self->mixedList->get(x);
+            Ux::uiSwatch* dest1 = *self->matchList->get(destCtr);
+            Ux::uiSwatch* dest2 = *self->matchList->get(destCtr+1);
+            destCtr+=2;
+//
+//            SDL_Color mixed = Ux::mixColors( dest1->, &myDestList->get(mixIndex+1)->color );
+//            mixSwatch->update( &mixed );
+
+
+            Ux::uiSwatch* dest1move = nullptr;
+            Ux::uiSwatch* dest2move = nullptr;
+
             for( int y=0; y<self->activeSwatches; y++ ){
                 // see if any moves are placed here...
                 Ux::uiSwatch* move = *self->pickList->get(y);
 
                 move->print(""); // we clear too many times, maybe this should be the outer loop?
 
-                if( dest->uiObjectItself->boundryRect.x == move->uiObjectItself->boundryRect.x && dest->uiObjectItself->boundryRect.y == move->uiObjectItself->boundryRect.y ){
-
-                    if( hasMatch ){
+                if( dest1->uiObjectItself->boundryRect.x == move->uiObjectItself->boundryRect.x && dest1->uiObjectItself->boundryRect.y == move->uiObjectItself->boundryRect.y ){
+                    if( dest1move != nullptr ){
                         // more than one color is here... lets slide it out... win is impossible now...
                         isWin = false;
                         move->uiObjectItself->setAnimation( uxInstance->uxAnimations->moveTo(move->uiObjectItself,move->uiObjectItself->origBoundryRect.x,move->uiObjectItself->origBoundryRect.y, nullptr, nullptr) );
-                    }else{
-                        // first match, lets evaluate it...
-                        if( !Ux::colorEquals(&dest->last_color, &move->last_color) ){
-                            isWin = false;
-                        }
                     }
+                    dest1move = move;
+                }
 
-                    hasMatch = true;
+                if( dest2->uiObjectItself->boundryRect.x == move->uiObjectItself->boundryRect.x && dest2->uiObjectItself->boundryRect.y == move->uiObjectItself->boundryRect.y ){
+                    if( dest2move != nullptr ){
+                        // more than one color is here... lets slide it out... win is impossible now...
+                        isWin = false;
+                        move->uiObjectItself->setAnimation( uxInstance->uxAnimations->moveTo(move->uiObjectItself,move->uiObjectItself->origBoundryRect.x,move->uiObjectItself->origBoundryRect.y, nullptr, nullptr) );
+                    }
+                    dest2move = move;
                 }
             }
 
-            if( !hasMatch ){
-                isWin = false;
+            if( dest1move != nullptr  && dest2move != nullptr ){
+
+                if(!isWin) continue; // arguably if we are going to save another loop later, we'd instead keep going here.....
+
+                // note: isWin could already be false.... no matter really ??
+                SDL_Color mixed = Ux::mixColors( &dest1move->last_color, &dest2move->last_color );
+
+                if( !Ux::colorEquals(&mixed, &mixSwatch->last_color ) ){
+                    isWin = false;
+                }
+
+            }else{
                 isReadyToScore = false;
+                isWin = false;
             }
+
+//            if( !hasMatch ){
+//                isWin = false;
+//                isReadyToScore = false;
+//            }
 
         }
 
@@ -386,7 +468,10 @@ struct MixMaster{
 
         self->activeSwatches = myColorList->total();
 
-        int totalMixes = self->activeSwatches * 0.5;
+        self->totalMixes = self->activeSwatches * 0.5;
+        self->totalDestinations = self->totalMixes * 2;
+
+        int mixIndex=0;
 
         for( int x=0; x<self->maxSwatches; x++ ){
 
@@ -398,16 +483,31 @@ struct MixMaster{
 
                 float y = (self->tileHeight * x) + (vertPadDist * x);
 
+                move->show();
+                dest->show();
+
                 move->uiObjectItself->setBoundaryRect(0.0, y, 0.4, height);
                 dest->uiObjectItself->setBoundaryRect(0.6, y, 0.4, height);
 
                 move->hideHex()->update(&myColorList->get(x)->color);
                 dest->update(&myDestList->get(x)->color);
 
-                if( x < totalMixes ){
+                if( x >= self->totalDestinations  ){
+                    dest->hide();
+                }
+
+                if( x < self->totalMixes ){
+
+                    mixSwatch->show();
+
+                    y = (self->tileHeight * x * 2) + (vertPadDist * x * 2) + vertPadDist;
 
                     mixSwatch->uiObjectItself->setBoundaryRect(0.6, y, 0.4, height * 2);
-                    mixSwatch->update(&myDestList->get(x)->color);
+
+                    SDL_Color mixed = Ux::mixColors( &myDestList->get(mixIndex)->color, &myDestList->get(mixIndex+1)->color );
+                    mixSwatch->update( &mixed );
+
+                    mixIndex+=2;
 
 
                 }else{

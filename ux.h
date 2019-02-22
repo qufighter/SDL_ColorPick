@@ -208,6 +208,16 @@ static Ux* Singleton();
         return min + rand() % (max - min + 1);
     }
 
+    static SDL_Color mixColors(SDL_Color *a, SDL_Color *b){
+        SDL_Color result;
+        result.r = (a->r + b->r) * 0.5;
+        result.g = (a->g + b->g) * 0.5;
+        result.b = (a->b + b->b) * 0.5;
+        result.a = (a->a + b->a) * 0.5;
+        return result;
+    }
+
+
     static int randomSort(const void *a, const void *b){
         return randomInt(0, 42); // its odd returinging -1,1 here makes more sense to me, but is a lot less random in result...
     }

@@ -42,6 +42,7 @@ need a disable minigmes option
 
 hard mode - minigames require more colors
 
+edge rounding tuned for circles, make dynamic
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)

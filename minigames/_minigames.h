@@ -98,11 +98,13 @@ struct Minigames{
     Ux::uiObject* controls;
     Ux::uiObject* controlBarTop;
     Ux::uiObject* minigamesCloseX;
+    Ux::uiObject* minigamesColorPickIcon;
     Ux::uiObject* gameHeadingHolder;
     Ux::uiText* gameHeading;
     Ux::uiText* gameTimer;
 
     int my_timer_id;
+    bool gotMinigameAnnounceDone;
 
     typedef enum  {
         GAME0_RESERVED=0,
@@ -127,8 +129,8 @@ struct Minigames{
         gameList = new Ux::uiList<GameListObj, Uint8>(maxGames);
         gameList->index(MINIGAMES_ENUM::TOTAL_GAMES, indexForGame);
 
-        //        MatchMaster* minigame1 = new MatchMaster(MINIGAMES_ENUM::GAME1);
-        MixMaster* minigame1 = new MixMaster(MINIGAMES_ENUM::GAME1); // new Minigame1(MINIGAMES_ENUM::GAME1);
+        MatchMaster* minigame1 = new MatchMaster(MINIGAMES_ENUM::GAME1);
+//        MixMaster* minigame1 = new MixMaster(MINIGAMES_ENUM::GAME1);
         MixMaster* minigame2 = new MixMaster(MINIGAMES_ENUM::GAME2);
 
         GameListObj aGame1 = GameListObj(makeGameArgs(minigame1));
@@ -175,6 +177,16 @@ struct Minigames{
         minigamesCloseX->setBoundaryRect(0.05, 0.0, 0.1, 0.1);
         controls->addChild(minigamesCloseX);
 
+        minigamesColorPickIcon = new Ux::uiObject();
+        myUxRef->printCharToUiObject(minigamesColorPickIcon, CHAR_APP_ICON, DO_NOT_RESIZE_NOW);
+        minigamesColorPickIcon->hasForeground = true;
+        minigamesColorPickIcon->squarify();
+        Ux::setColor(&minigamesColorPickIcon->foregroundColor, 255, 255, 255, 128); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+        minigamesColorPickIcon->setClickInteractionCallback(&interactionCloseXClicked);
+        minigamesColorPickIcon->setBoundaryRect(1.0-0.1-0.05, 0.0, 0.1, 0.1);
+        minigamesColorPickIcon->rotate(-45);
+        controls->addChild(minigamesColorPickIcon);
+
 
         gameTimer = (new Ux::uiText(controlBarTop, 1.0/5.0))->pad(0.0,0.0)->margins(0.0,0.25,0.0,0.25)->print("00:00");
 
@@ -196,6 +208,11 @@ struct Minigames{
 
         if( myUxRef->isMinigameMode && self->printRemainingTime() ){
             ogg->renderShouldUpdate = true;
+
+            if( !self->gotMinigameAnnounceDone ){
+                self->miniGameTextAnimComplete(nullptr);
+            }
+
             return interval;
         }
         return 0; // ends the timer...
@@ -262,10 +279,13 @@ struct Minigames{
         currentGame->render();
     }
 
-    static void miniGameTextAnimComplete(Ux::uiAnimation* uiAnim){
+    static void miniGameTextAnimComplete(Ux::uiAnimation* uiAnim /* DO NOT USE */){
         OpenGLContext* ogg=OpenGLContext::Singleton();
         Minigames* self = ogg->minigames;
         Ux* myUxRef = Ux::Singleton();
+
+        self->gotMinigameAnnounceDone = true;
+
 
         // TELL THE CURRENT GAME THE TEXT ANIMATION IS DONE :)
 
@@ -281,8 +301,10 @@ struct Minigames{
         Ux* myUxRef = Ux::Singleton();
         currentGame = randomGame(); // roll again
 
+        gotMinigameAnnounceDone = false;
         Ux::uiAminChain* myAnimChain = myUxRef->defaultScoreDisplay->displayExplanation(" Mini Game ");
         myAnimChain->addAnim((new Ux::uiAnimation(myUxRef->defaultScoreDisplay->explanation_position))->setAnimationReachedCallback(miniGameTextAnimComplete) );
+
 
         myUxRef->updateModal(myUxRef->minigamesUiContainer /*minigamesCloseX*/, &interactionCloseXClicked);
 

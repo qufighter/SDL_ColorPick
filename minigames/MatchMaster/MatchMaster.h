@@ -260,6 +260,7 @@ struct MatchMaster{
             for( int y=0; y<self->activeSwatches; y++ ){
                 Ux::uiSwatch* move = *self->pickList->get(y);
 
+                // this is reallly a dupe search... oh well??
                 if( dest->uiObjectItself->boundryRect.x == move->uiObjectItself->boundryRect.x && dest->uiObjectItself->boundryRect.y == move->uiObjectItself->boundryRect.y ){
                     if( !Ux::colorEquals(&dest->last_color, &move->last_color) ){
                         SDL_snprintf(uxInstance->print_here, 7,  "  ");
@@ -267,7 +268,7 @@ struct MatchMaster{
                         uxInstance->printCharToUiObject(move->hexDisplay->getTextChar(1), CHAR_CANCEL_ICON, DO_NOT_RESIZE_NOW);
 
                     }else{
-                        SDL_snprintf(uxInstance->print_here, 7,  "   OK");
+                        SDL_snprintf(uxInstance->print_here, 7,  "   OK"); // just saying, I like uxInstance->print_here and all, but we could have snprintf'd this once at boot time....
                         move->print(uxInstance->print_here);
                         uxInstance->printCharToUiObject(move->hexDisplay->getTextChar(1), CHAR_CHECKMARK_ICON, DO_NOT_RESIZE_NOW);
                     }
@@ -383,6 +384,9 @@ struct MatchMaster{
             if( x < self->activeSwatches ){
 
                 float y = (self->tileHeight * x) + (vertPadDist * x);
+
+                move->show();
+                dest->show();
 
                 move->uiObjectItself->setBoundaryRect(0.0, y, 0.4, height);
                 dest->uiObjectItself->setBoundaryRect(0.6, y, 0.4, height);
