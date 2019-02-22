@@ -4,6 +4,7 @@ DEVELOPER_TEST_MODE
 # Checklist
    platform version number
    settings displayed version number
+   re-enter EACH completed minigame
 
 #  todo
 
@@ -38,6 +39,8 @@ multigesture input not sent to minigame
 mouse wheel/pinch not intercepted during minigame
 
 need a disable minigmes option
+
+hard mode - minigames require more colors
 
 
 ## bugs

@@ -111,7 +111,8 @@ struct Minigames{
         TOTAL_GAMES
     } MINIGAMES_ENUM;
 
-#include "game1/minigame1.h"
+#include "MatchMaster/MatchMaster.h"
+#include "MixMaster/MixMaster.h"
 
     Minigames(){
         Ux* myUxRef = Ux::Singleton();
@@ -127,8 +128,8 @@ struct Minigames{
         gameList->index(MINIGAMES_ENUM::TOTAL_GAMES, indexForGame);
 
 
-        Minigame1* minigame1 = new Minigame1(MINIGAMES_ENUM::GAME1);
-        Minigame1* minigame2 = new Minigame1(MINIGAMES_ENUM::GAME2);
+        MixMaster* minigame1 = new MixMaster(MINIGAMES_ENUM::GAME1); // new Minigame1(MINIGAMES_ENUM::GAME1);
+        MixMaster* minigame2 = new MixMaster(MINIGAMES_ENUM::GAME2);
 
         GameListObj aGame1 = GameListObj(makeGameArgs(minigame1));
         GameListObj aGame2 = GameListObj(makeGameArgs(minigame2));
