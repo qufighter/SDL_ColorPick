@@ -284,6 +284,7 @@ struct Minigames{
         Minigames* self = ogg->minigames;
         Ux* myUxRef = Ux::Singleton();
 
+        if( self->gotMinigameAnnounceDone ) return; // once only...
         self->gotMinigameAnnounceDone = true;
 
 

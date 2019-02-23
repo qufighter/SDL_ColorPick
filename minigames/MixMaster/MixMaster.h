@@ -63,7 +63,7 @@ struct MixMaster{
         matchList = new Ux::uiList<Ux::uiSwatch*, Uint8>(maxSwatches);
         mixedList = new Ux::uiList<Ux::uiSwatch*, Uint8>(maxSwatches); //over allocated... meh..
 
-        gameSwatchesHolder->setBoundaryRect(0.1, 0.1, 1.0-0.2, 1.0-0.2);
+        gameSwatchesHolder->setBoundaryRect(0.1, 0.1, 1.0-0.2, 1.0-0.2); // margins all round
 
 
         gameSwatchesHolder->setModeWhereChildCanCollideAndOwnBoundsIgnored();
@@ -166,27 +166,25 @@ struct MixMaster{
 
             self->checkIfGameIsCompleted(uiAnim); // mostly to reset
 
-            for( int x=0; x<self->maxSwatches; x++ ){
-                if( x < uxInstance->minigameColorList->total() ){
-                    Ux::uiSwatch* dest = *self->matchList->get(x);
-                    float dist = glm::distance(
-                                               glm::vec2(interactionObj->boundryRect.x, interactionObj->boundryRect.y),
-                                               glm::vec2(dest->uiObjectItself->boundryRect.x, dest->uiObjectItself->boundryRect.y)
-                                               );
-                    if( dist < self->halfTileHeight ){
-                        //SDL_Log("Distance from this one is %f", dist);
-                        //interactionObj->setAnimation( uxInstance->uxAnimations->moveTo(interactionObj,dest->uiObjectItself->boundryRect.x,dest->uiObjectItself->boundryRect.y, nullptr, nullptr) );
+            for( int x=0; x<self->activeSwatches; x++ ){
+                Ux::uiSwatch* dest = *self->matchList->get(x);
+                float dist = glm::distance(
+                   glm::vec2(interactionObj->boundryRect.x, interactionObj->boundryRect.y),
+                   glm::vec2(dest->uiObjectItself->boundryRect.x, dest->uiObjectItself->boundryRect.y)
+                );
+                if( dist < self->halfTileHeight ){
+                    //SDL_Log("Distance from this one is %f", dist);
+                    //interactionObj->setAnimation( uxInstance->uxAnimations->moveTo(interactionObj,dest->uiObjectItself->boundryRect.x,dest->uiObjectItself->boundryRect.y, nullptr, nullptr) );
 
-                        Ux::uiAminChain* myAnimChain = new Ux::uiAminChain();
-                        myAnimChain->addAnim((new Ux::uiAnimation(interactionObj))->moveTo(dest->uiObjectItself->boundryRect.x,dest->uiObjectItself->boundryRect.y) );
-                        myAnimChain->addAnim((new Ux::uiAnimation(interactionObj))->setAnimationReachedCallback(&checkIfGameIsCompleted) );
-                        interactionObj->setAnimation(myAnimChain); // imporrtant to do this before we push it..
-                        uxInstance->uxAnimations->pushAnimChain(myAnimChain);
+                    Ux::uiAminChain* myAnimChain = new Ux::uiAminChain();
+                    myAnimChain->addAnim((new Ux::uiAnimation(interactionObj))->moveTo(dest->uiObjectItself->boundryRect.x,dest->uiObjectItself->boundryRect.y) );
+                    myAnimChain->addAnim((new Ux::uiAnimation(interactionObj))->setAnimationReachedCallback(&checkIfGameIsCompleted) );
+                    interactionObj->setAnimation(myAnimChain); // imporrtant to do this before we push it..
+                    uxInstance->uxAnimations->pushAnimChain(myAnimChain);
 
-                        // NOTE: when the above animation completes, this swatch is "locked" until we move it again...
-                        // once all swatches are locked.... then the game is ready to complete...
-                        break;
-                    }
+                    // NOTE: when the above animation completes, this swatch is "locked" until we move it again...
+                    // once all swatches are locked.... then the game is ready to complete...
+                    break;
                 }
             }
         }
