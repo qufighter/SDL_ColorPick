@@ -13,6 +13,8 @@ struct MixMaster{
     Uint8 gameIndex; // we try to keep this matching the childList index of minigamesUiContainer ....
     int startTime;
     int lastTicks;
+    int lastMoveMade;
+    int lastMoveFinished;
     float tileHeight;
     float halfTileHeight;
     int activeSwatches;
@@ -72,7 +74,7 @@ struct MixMaster{
 
         for( x=0; x<maxSwatches; x++ ){
             Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)); // ignore these rect....
-            tmp2->displayHex();
+            //tmp2->displayHex();
             //            tmp2->hideBg();
 
             tmp2->uiObjectItself->setInteractionCallback(&genericExplainColor);
@@ -149,6 +151,7 @@ struct MixMaster{
             myUxRef->defaultScoreDisplay->displayExplanation(myUxRef->print_here);
             return;
         }
+        self->lastMoveMade = SDL_GetTicks();
 
         myUxRef->interactionDragMoveConstrain(interactionObj, delta, &interactionSwatchDragMoveConstrainToParentObject);
     }
@@ -200,7 +203,7 @@ struct MixMaster{
             self->showColors();
 
             if( self->isComplete ) return; // once only.... ???
-            self->solveAttempts += 1;
+            self->countSolveAttempts();
             self->isComplete = true; // complete, and won, lock it up!
             self->lastTicks = SDL_GetTicks();
 
@@ -214,11 +217,18 @@ struct MixMaster{
         }else{
             if( self->isReadyToScore ){
                 //SDL_Log("Looks like LOSS");
-                self->solveAttempts += 1;
+                self->countSolveAttempts();
                 self->showMatches();
             }else{
                 //SDL_Log("Looks like INCOMPLETE");
             }
+        }
+    }
+
+    void countSolveAttempts(){
+        if( lastMoveFinished != lastMoveMade ){ // a given move is not more than one solve event
+            lastMoveFinished=lastMoveMade;
+            solveAttempts += 1;
         }
     }
 
@@ -432,6 +442,8 @@ struct MixMaster{
         self->isComplete= false;
         self->isReadyToScore = false;
         self->solveAttempts = 0;
+        self->lastMoveMade = 0;
+        self->lastMoveFinished = 0;
 
         self->scoreBreakdownHolder->hide();
 
@@ -498,9 +510,9 @@ struct MixMaster{
 
                     mixSwatch->show();
 
-                    y = (self->tileHeight * x * 2) + (vertPadDist * x * 2) + vertPadDist;
+                    y = (self->tileHeight * x * 2) + (vertPadDist * x * 2) + (vertPadDist * 2);
 
-                    mixSwatch->uiObjectItself->setBoundaryRect(0.6, y, 0.4, height * 2);
+                    mixSwatch->uiObjectItself->setBoundaryRect(0.5/*0.6-0.1*/, y, 0.4, height * 2);
 
                     SDL_Color mixed = Ux::mixColors( &myDestList->get(mixIndex)->color, &myDestList->get(mixIndex+1)->color );
                     mixSwatch->update( &mixed );

@@ -11,7 +11,7 @@ uniform vec4 ui_color;
 uniform vec4 ui_foreground_color;
 uniform vec4 ui_corner_radius;
 
-const float fuzz = 0.025;
+const float fuzz = 0.0078125; // 0.025;
 const float hfuzz =(fuzz * 0.5);
 
 void roundCorner(vec2 OrigTexCoordOut, vec2 center, float radius, float fuzz) {

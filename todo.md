@@ -44,6 +44,8 @@ hard mode - minigames require more colors
 
 edge rounding tuned for circles, make dynamic
 
+disable 3d anim (when modal present?) or and optionally ? (no?)
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 images can have a color space????

@@ -128,19 +128,26 @@ void getImagePathFromMainThread(){
 
     jstring path = (jstring)env->CallStaticObjectMethod(clazz, method_id);
 
+    // if we get null -> we are still waiting for a result.. maybe set another timer?
+    // if we get "" empty string - they either canceled the selector or it didn't retrurn a path with length... (no permissions)
+    // otherwise we got a path presumably...
+
+    SDL_RemoveTimer(my_android_fileopen_timer_id);
+    my_android_fileopen_timer_id = -1;
+
     if( path != nullptr ){
 
-        SDL_RemoveTimer(my_android_fileopen_timer_id);
-        my_android_fileopen_timer_id = -1;
 
         const char *cpath = env->GetStringUTFChars(path, NULL);
-        SDL_Log("We got the path! %s" , cpath);
+        SDL_Log("We got the path `%s`" , cpath);
 
         if( SDL_strlen(cpath) > 0 ){
             openglContext->imageWasSelectedCb(openglContext->textures->LoadSurface(cpath));
         }
 
         env->ReleaseStringUTFChars(path, cpath);
+    }else{
+        my_android_fileopen_timer_id = SDL_AddTimer(1000, my_test_if_image_selected, nullptr);
     }
 
     // clean up the local references.

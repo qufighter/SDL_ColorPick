@@ -13,6 +13,8 @@ struct MatchMaster{
     Uint8 gameIndex; // we try to keep this matching the childList index of minigamesUiContainer ....
     int startTime;
     int lastTicks;
+    int lastMoveMade;
+    int lastMoveFinished;
     float tileHeight;
     float halfTileHeight;
     int activeSwatches;
@@ -123,6 +125,7 @@ struct MatchMaster{
             myUxRef->defaultScoreDisplay->displayExplanation(myUxRef->print_here);
             return;
         }
+        self->lastMoveMade = SDL_GetTicks();
 
         myUxRef->interactionDragMoveConstrain(interactionObj, delta, &interactionSwatchDragMoveConstrainToParentObject);
     }
@@ -174,7 +177,7 @@ struct MatchMaster{
             self->showColors();
 
             if( self->isComplete ) return; // once only.... ???
-            self->solveAttempts += 1;
+            self->countSolveAttempts();
             self->isComplete = true; // complete, and won, lock it up!
             self->lastTicks = SDL_GetTicks();
 
@@ -188,11 +191,18 @@ struct MatchMaster{
         }else{
             if( self->isReadyToScore ){
                 //SDL_Log("Looks like LOSS");
-                self->solveAttempts += 1;
+                self->countSolveAttempts();
                 self->showMatches();
             }else{
                 //SDL_Log("Looks like INCOMPLETE");
             }
+        }
+    }
+
+    void countSolveAttempts(){
+        if( lastMoveFinished != lastMoveMade ){
+            lastMoveFinished=lastMoveMade;
+            solveAttempts += 1;
         }
     }
 
@@ -340,6 +350,8 @@ struct MatchMaster{
         self->isComplete= false;
         self->isReadyToScore = false;
         self->solveAttempts = 0;
+        self->lastMoveMade = 0;
+        self->lastMoveFinished = 0;
 
         self->scoreBreakdownHolder->hide();
 
