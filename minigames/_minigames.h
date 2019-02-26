@@ -205,6 +205,19 @@ struct Minigames{
         return uxInstance->settingsScroller->getBooleanSetting(Ux::uiSettingsScroller::UI_SETTING_MINIGAMES_ON);
     }
 
+    bool isGameModeHardMode(){
+        Ux* uxInstance = Ux::Singleton();
+        return !uxInstance->settingsScroller->getBooleanSetting(Ux::uiSettingsScroller::UI_SETTING_GAME_EASY_MODE);
+    }
+
+    int requiredSwatchesForMinigames(){
+        if( isGameModeHardMode() ){
+            return 6;
+        }
+        return 3;
+    }
+
+
     static Uint32 my_timer_callback(Uint32 interval, void* parm){
         Ux* myUxRef = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();

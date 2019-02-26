@@ -1722,7 +1722,7 @@ void Ux::addCurrentToPickHistory(){
                 int variance =  SDL_abs(avg-currentlyPickedColor->r) + SDL_abs(avg-currentlyPickedColor->g) + SDL_abs(avg-currentlyPickedColor->b);
                 if( variance > 49 ){
                     minigameColorList->add(ColorList(*currentlyPickedColor));
-                    if( minigameColorList->_out_of_space || minigameColorList->total() >= 3 ){
+                    if( minigameColorList->_out_of_space || minigameColorList->total() >= ogg->minigames->requiredSwatchesForMinigames() ){
                         // is this the condition to tirgger the minigame????
                         ogg->begin3dDropperAnimation(OpenGLContext::ANIMATION_ZOOM_INTO_BULB, currentlyPickedColor);
                     }
