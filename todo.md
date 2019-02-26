@@ -27,9 +27,6 @@ REALLY reset the chain multiplier (the 2 times it gets reset accidentally to 1, 
 
 // some random thing ? we need to roll above though.
 
-the non scrolling "out of space" should possibly flash the lightening bolt?? (yes please)
-+10 out of space excessive... ?
-
 pigcel
 
 drag scroller edge bg beyond end/start is actually annoying
@@ -37,10 +34,6 @@ drag scroller edge bg beyond end/start is actually annoying
 KEYBOARD INPUT NOT sent to MINIGAME!!!
 multigesture input not sent to minigame
 mouse wheel/pinch not intercepted during minigame
-
-need a disable minigmes option
-
-hard mode - minigames require more colors
 
 edge rounding tuned for circles, make dynamic
 

@@ -626,6 +626,12 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
         if( myUxRef->palleteList->_out_of_space ){
             myUxRef->defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_NOSPACE);
+
+            palleteScroller->scrollToItemByIndex( myUxRef->palleteList->total() + BUTTON_CLEAR_PALLETE); // scroll to clear button....
+            uiObject* visibleTile = palleteScroller->getVisibleTileForOffsetOrNull(myUxRef->palleteList->total() + BUTTON_CLEAR_PALLETE);
+            if( visibleTile != nullptr ){
+                myUxRef->uxAnimations->scale_bounce(visibleTile->childList[1], 0.001); // flash clear button....
+            }
             return;
         }
 
