@@ -1508,7 +1508,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
 
         // some 3d ux experiment...
     }
-    if( colorFillPercent > fill_requirement || animationDropper3dId == ANIMATION_ZOOM_INTO_BULB ){
+    if( minigames->minigamesEnabled() && (colorFillPercent > fill_requirement || animationDropper3dId == ANIMATION_ZOOM_INTO_BULB) ){
 
 
         // UI needs square....

@@ -65,6 +65,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         UI_SETTING_NONE = 0,
         UI_SETTING_GAME_ON,
         UI_SETTING_GAME_EASY_MODE,
+        UI_SETTING_MINIGAMES_ON,
         UI_SETTING_SHOW_NAV_ARROWS,
 
         UI_ACHEIVEMENT_START = 128, // 0x80
@@ -205,6 +206,8 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         settingsList->add(SettingsListObj((new uiControlBooleanToggle(dummyContainer, "+1 Points", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_GAME_ON));
 
         settingsList->add(SettingsListObj((new uiControlBooleanToggle(dummyContainer, " Easy Mode", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_GAME_EASY_MODE));
+
+        settingsList->add(SettingsListObj((new uiControlBooleanToggle(dummyContainer, "Minigames", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_MINIGAMES_ON));
 
         // consider testing with OMIT_SCROLLY_ARROWS .... (it will work though )... for the most part....
 #ifndef OMIT_SCROLLY_ARROWS

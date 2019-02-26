@@ -200,6 +200,10 @@ struct Minigames{
         gameHeading = (new Ux::uiText(gameHeadingHolder, 0.1))->pad(0.0,0.0)->margins(0.25,0.0,0.0,0.0)->print("");
     }
 
+    bool minigamesEnabled(){
+        Ux* uxInstance = Ux::Singleton();
+        return uxInstance->settingsScroller->getBooleanSetting(Ux::uiSettingsScroller::UI_SETTING_MINIGAMES_ON);
+    }
 
     static Uint32 my_timer_callback(Uint32 interval, void* parm){
         Ux* myUxRef = Ux::Singleton();

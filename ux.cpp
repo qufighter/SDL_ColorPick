@@ -1710,38 +1710,39 @@ void Ux::addCurrentToPickHistory(){
 
 
  //     now we also update our minigame list....
+    if( ogg->minigames->minigamesEnabled() ){
+        Ux::setColor(&ogg->generalUx->minigameCounterText->foregroundColor, 255, 255, 255, 255);
 
-    Ux::setColor(&ogg->generalUx->minigameCounterText->foregroundColor, 255, 255, 255, 255);
+        int existingLocation = minigameColorList->locate(anEntry);
+        if( existingLocation < 0 ){
+            // other checks - minigame colors can't be too dark, too light, or too grey....
+            int total = (int)currentlyPickedColor->r + (int)currentlyPickedColor->g + (int)currentlyPickedColor->b;
+            if( total < 715 && total > 50  ){ // 765 - 64 // not too brigt
+                int avg = total / 3;
+                int variance =  SDL_abs(avg-currentlyPickedColor->r) + SDL_abs(avg-currentlyPickedColor->g) + SDL_abs(avg-currentlyPickedColor->b);
+                if( variance > 49 ){
+                    minigameColorList->add(ColorList(*currentlyPickedColor));
+                    if( minigameColorList->_out_of_space || minigameColorList->total() >= 3 ){
+                        // is this the condition to tirgger the minigame????
+                        ogg->begin3dDropperAnimation(OpenGLContext::ANIMATION_ZOOM_INTO_BULB, currentlyPickedColor);
+                    }
+                }else{
+                    //SDL_Log("omit color from minigame: too grey %i", variance);
 
-    int existingLocation = minigameColorList->locate(anEntry);
-    if( existingLocation < 0 ){
-        // other checks - minigame colors can't be too dark, too light, or too grey....
-        int total = (int)currentlyPickedColor->r + (int)currentlyPickedColor->g + (int)currentlyPickedColor->b;
-        if( total < 715 && total > 50  ){ // 765 - 64 // not too brigt
-            int avg = total / 3;
-            int variance =  SDL_abs(avg-currentlyPickedColor->r) + SDL_abs(avg-currentlyPickedColor->g) + SDL_abs(avg-currentlyPickedColor->b);
-            if( variance > 49 ){
-                minigameColorList->add(ColorList(*currentlyPickedColor));
-                if( minigameColorList->_out_of_space || minigameColorList->total() >= 3 ){
-                    // is this the condition to tirgger the minigame????
-                    ogg->begin3dDropperAnimation(OpenGLContext::ANIMATION_ZOOM_INTO_BULB, currentlyPickedColor);
+                    Ux::setColor(&ogg->generalUx->minigameCounterText->foregroundColor, 128, 128, 128, 255);
+
                 }
             }else{
-                //SDL_Log("omit color from minigame: too grey %i", variance);
-
-                Ux::setColor(&ogg->generalUx->minigameCounterText->foregroundColor, 128, 128, 128, 255);
+                //SDL_Log("omit color from minigame: too bright/dark %i", total);
 
             }
         }else{
-            //SDL_Log("omit color from minigame: too bright/dark %i", total);
-
+            // SDL_Log("this color is already in the minigame...");
         }
-    }else{
-        // SDL_Log("this color is already in the minigame...");
+        SDL_snprintf(print_here, max_print_here, "%i", minigameColorList->total());//"Add All?"
+        printStringToUiObject(minigameCounterText, print_here, DO_NOT_RESIZE_NOW);
+        minigameCounterText->updateRenderPosition();
     }
-    SDL_snprintf(print_here, max_print_here, "%i", minigameColorList->total());//"Add All?"
-    printStringToUiObject(minigameCounterText, print_here, DO_NOT_RESIZE_NOW);
-    minigameCounterText->updateRenderPosition();
 
 }
 
