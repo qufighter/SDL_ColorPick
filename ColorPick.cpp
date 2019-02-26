@@ -1507,6 +1507,9 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
         glDisable(GL_STENCIL_TEST);
 
         // some 3d ux experiment...
+    }
+    if( colorFillPercent > fill_requirement || animationDropper3dId == ANIMATION_ZOOM_INTO_BULB ){
+
 
         // UI needs square....
         glBindVertexArray(rect_vaoID[0]);

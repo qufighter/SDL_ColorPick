@@ -1144,6 +1144,7 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
 }
 
 void Ux::wheelOrPinchInteraction(float delta){
+    if( interactionObject == nullptr ) return;
     uiObject* wheelIntObj = interactionObject->findWheelOrPinchInteractionObject();
     if( wheelIntObj != nullptr ){
         currentInteraction.wheel = delta;
