@@ -762,6 +762,7 @@ compatibility; this flag is ignored
      
      */
 //
+    SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1"); // its trapped by default still as of SDL2-2.0.9 (even though docs say otherwise...)
     SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
     SDL_SetHint(SDL_HINT_MAC_BACKGROUND_APP, "0");  // as far as I can tell.... this only makes the window not re-enter the background once focused - and also becomes incapable of entering the forground (no menu bar)
 //    SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "1");

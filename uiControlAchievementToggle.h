@@ -86,7 +86,7 @@ struct uiControlAchievementToggle{
             uxInstance->printCharToUiObject(rightSquare, CHAR_CANCEL_ICON, DO_NOT_RESIZE_NOW);
             labelText->color(128, 128, 128, 255);
             if( hidden ){
-                labelText->print("* * * *");
+                labelText->print("- - - -");
             }else{
                 labelText->print(label_chars);
             }

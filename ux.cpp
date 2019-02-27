@@ -60,6 +60,11 @@ void Ux::endCurrentModal(){
         // NOTE: just using  currentInteraction here could have SIDE EFFECTS (key presses could reset those???)
         currentModal->modalDismissal(currentModal, &currentInteraction);
         // endModal(currentModal); // the modal dismissal SHOULD call end modal automatically!  if not you probably did it wrong
+    }else{
+#if __ANDROID__
+        //SDL_AndroidBackButton(); // hmm we didn't SDL_HINT_ANDROID_TRAP_BACK_BUTTON...
+        // uhoh - after we call the above, we can't focus our app again... seems like the same issues as the "split screen"
+#endif
     }
 }
 
