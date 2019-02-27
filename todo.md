@@ -41,6 +41,10 @@ disable 3d anim (when modal present?) or and optionally ? (no?)
 
 distance based movement time for moveTo used during games (even when its really close, it still takes 1 second to move...) ?
 
+update icons
+
+verify logging in release mode
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 images can have a color space????

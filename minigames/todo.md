@@ -1,6 +1,0 @@
-# todo (minigames)
-
-Game Timer State - THIS IS STRANGE as its ok if it updates, but if the game won't start moving again, it becomes pointless to update.....
-   ^ so it keeps rendering (everything) (once per INTERVAL) even though the time will never change.
-   ^ calling ceaseUpdatingTime() fixes it.... 
-   // how to enforce!!!!!
