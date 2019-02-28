@@ -219,7 +219,7 @@ static Ux* Singleton();
 
 
     static int randomSort(const void *a, const void *b){
-        return randomInt(0, 42); // its odd returinging -1,1 here makes more sense to me, but is a lot less random in result...
+        return randomInt(-100, 100);
     }
 
     static int compareColor(SDL_Color *a, SDL_Color *b){

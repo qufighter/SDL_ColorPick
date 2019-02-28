@@ -139,7 +139,7 @@ main(int argc, char *argv[])
     }
 
     SDL_free(myColorListIterator);
-    SDL_free(myColorList);
+    myColorList->free();
 
 
     // non indexed....
@@ -191,8 +191,11 @@ main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_free(myColorList);
-    SDL_free(myListClone);
+
+    myColorList->free();
+    myListClone->free();
+
+    // todo: verify memory usage before and after.....
 
 
     SDL_Log("All list tests passed.");

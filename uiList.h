@@ -4,6 +4,7 @@
 #ifndef ColorPick_iOS_SDL_uiList_h
 #define ColorPick_iOS_SDL_uiList_h
 
+// TODO: move thse struct into the ohter struct and either build a static accessor or.... whatever....
 template <typename parentType, typename genType>
 struct uiListIterator
 {
@@ -291,6 +292,14 @@ struct uiList
 
     int maxMemorySize(){
         return maxSize * sizeof(genType);
+    }
+
+    void free(){
+        SDL_free(listItself);
+        if( _indexed ){
+            SDL_free(indexItself);
+        }
+        SDL_free(this); // < does this really work? (seems to work fine)
     }
 
     //Uint8 palleteColorsIndex[COLOR_INDEX_MAX]; // we do not search the array

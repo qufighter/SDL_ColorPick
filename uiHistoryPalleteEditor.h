@@ -717,7 +717,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 //        // we can determine what exactly whill occur....
 //            tempList->sort(&compareColorListItems); // we could clone it AGAIN now.. :) but we have to walk the list anyway so we can count the dupes as we go...
 //        //int oldLen = dedupeHistoryList(tempList);
-//        SDL_free(tempList);
+//        tempList->free();
 
         sortChooser->setPreivewListToNewClone();
 

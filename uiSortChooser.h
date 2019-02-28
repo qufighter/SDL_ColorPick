@@ -100,7 +100,7 @@ struct uiSortChooser{
 
     void setPreivewListToNewClone(){
         Ux* myUxRef = Ux::Singleton();
-        SDL_free(previewColorList);
+        previewColorList->free();
         previewColorList = myUxRef->pickHistoryList->clone();
         historySortedPreviewScroller->historyListToShow = previewColorList;
         theHueGradientChanged(nullptr, nullptr);

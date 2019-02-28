@@ -274,7 +274,7 @@ struct MixMaster{
             SDL_snprintf(uxInstance->print_here, scoreBreakdownLn,  "x%i combo", uxInstance->defaultScoreDisplay->combo_chain);
             scoreBreakdown4->print(uxInstance->print_here);
 
-            SDL_Log("Minigame: just applied final score.... %i", finalScore);
+            //SDL_Log("Minigame: just applied final score.... %i", finalScore);
 
             return finalScore;
         }else{
@@ -461,9 +461,10 @@ struct MixMaster{
         for( int x=0; x<totalTiles; x++ ){ // clipped
             myDestList->add(*myColorList->get(x));
         }
-        SDL_free(myColorList);
+        myColorList->free();
 
         myColorList = myDestList->clone();
+        myColorList->sort(&Ux::randomSort);
         myColorList->sort(&Ux::randomSort);
 
         float height = 1.0 / (totalTiles + 0.0f);
@@ -531,9 +532,8 @@ struct MixMaster{
             }
         }
 
-
-        SDL_free(myColorList);
-        SDL_free(myDestList);
+        myColorList->free();
+        myDestList->free();
 
         self->gameRootUi->showAndAllowInteraction();
         self->startTime = SDL_GetTicks();

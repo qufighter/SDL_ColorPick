@@ -21,6 +21,7 @@ ios - loading image progress bar ?  no refresh? < - refresh is done (todo:test)
    - android loading image has not progress bar either... blank screen.... maybe ok for now...
 
 hide announcmenet texts (achivements ?) option - again need to be careful here...explanations will still show
+
 slow announcments texts option
 
 REALLY reset the chain multiplier (the 2 times it gets reset accidentally to 1, and should be set to 0)
@@ -33,22 +34,27 @@ drag scroller edge bg beyond end/start is actually annoying
 
 KEYBOARD INPUT NOT sent to MINIGAME!!!
 multigesture input not sent to minigame
-mouse wheel/pinch not intercepted during minigame
+
+mouse wheel/pinch not intercepted during minigame (actually it is intercepted and sent to UI objects... so its not sent to the minigame directly...)
+
 
 edge rounding tuned for circles, make dynamic
 
 disable 3d anim (when modal present?) or and optionally ? (no?)
 
-distance based movement time for moveTo used during games (even when its really close, it still takes 1 second to move...) ?
+distance based movement time for moveTo used during games (even when its really close, it still takes 1 second to move...) ? (maybe its good, gives user some time)
 
-update icons
+update icons (default)
 
 verify logging in release mode
+
+
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 images can have a color space????
 3up pallete drag it down where it should crop - observe artifacts (seems to be the position reset delete button... of the valid items, this is likely a crop logic skipped in shader?)
+3finger zoom - Max Animation Chains 128 Exceeded
 
 ##  can do
 
@@ -239,6 +245,7 @@ handle when save of history data occurs (specifically desktop plat?) (program ex
 hold mouse down on scroll arrow, expect continuous scroll (also nav arrow?)
 drop image when history holder present - we should hide it (other modals should be canceled too?)
 //TODO recall window position?  useful possibly for desktop platforms.... ( dubious ) see win_pos_x
+// only trouble comes if we are already clicked when scrolling ?
 
 ### osx
 osx application bundle (see readme and  see   Use pbxbuild in the same directory as your .pbproj file)

@@ -119,7 +119,10 @@ void mouseDownEvent(SDL_Event* event){
     //SDL_Log("finger count %i", event->tfinger.);
     if( mousStateDown > 1 ){
         //second touch....
-        SDL_Log("SDL_FINGERDOWN second touch");
+        //SDL_Log("SDL_FINGERDOWN second touch (or second mouse button...)");
+        if( event->type == SDL_FINGERDOWN ){
+            SDL_Log("SDL_FINGERDOWN second touch finger %i", event->tfinger.fingerId ); // fingers 0,1,2,3.... 1.844674407370955e19
+        }
         mousStateDown--; // doing this so mouseUpEvent has an effect....
         mouseUpEvent(event); // lets treat it as if they stopped interacting....
         //mousStateDown++;
@@ -395,9 +398,14 @@ int EventFilter(void* userdata, SDL_Event* event){
         case SDL_MULTIGESTURE: // http://lazyfoo.net/tutorials/SDL/55_multitouch/index.php
             //SDL_Log("Hello Gesture!!");
 
-            openglContext->clearVelocity();
-            openglContext->renderShouldUpdate = true;
-            openglContext->setFishScale(event->mgesture.dDist, 40.0f);
+            if( openglContext->generalUx->hasCurrentModal() ){
+
+                // todo - send it to the modal.... (and or minigame as case may be ?)
+            }else{
+                openglContext->clearVelocity();
+                openglContext->renderShouldUpdate = true;
+                openglContext->setFishScale(event->mgesture.dDist, 40.0f);
+            }
 
             // we'll still get a SDL_FINGERDOWN and fingerup for each finger...
 

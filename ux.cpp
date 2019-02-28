@@ -1148,6 +1148,7 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
     return collides;
 }
 
+// we should split this out, this is for wheeel interaction only....
 void Ux::wheelOrPinchInteraction(float delta){
     if( interactionObject == nullptr ) return;
     uiObject* wheelIntObj = interactionObject->findWheelOrPinchInteractionObject();
