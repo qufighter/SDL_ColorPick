@@ -1,22 +1,21 @@
 //
 //
-#ifndef ColorPick_iOS_SDL_MatchMaster_h
-#define ColorPick_iOS_SDL_MatchMaster_h
+#ifndef ColorPick_iOS_SDL_FlipMaster_h
+#define ColorPick_iOS_SDL_FlipMaster_h
 
-struct MatchMaster{
+struct FlipMaster{
 
-    const char* gameName = "Match Maker";
-    const int maxSwatches = 6;
+    const char* gameName = "Flip Master";
+    const int maxSwatches = 12;  // max 6 colors and one match for each
     const int timeLimit = 60000; // one minute....
     const int scoreBreakdownLn = 10;
 
     Uint8 gameIndex; // we try to keep this matching the childList index of minigamesUiContainer ....
     int startTime;
     int lastTicks;
-    int lastMoveMade;
+    int lastMoveMade; // todo< this should be an unused int. remove it
     int lastMoveFinished;
-    float tileHeight;
-    float halfTileHeight;
+
     int activeSwatches;
 
     bool isReadyToScore;
@@ -33,12 +32,11 @@ struct MatchMaster{
     Ux::uiText* scoreBreakdown3;
     Ux::uiText* scoreBreakdown4;
 
-    Ux::uiList<Ux::uiSwatch*, Uint8>* pickList; // this is list of movable colors
-    Ux::uiList<Ux::uiSwatch*, Uint8>* matchList; // list of match destinations
+    Ux::uiList<Ux::uiSwatch*, Uint8>* pickList; // this is list of flip-able colors
 
     Minigames* minigames;
 
-    MatchMaster(Uint8 pGameIndex){
+    FlipMaster(Uint8 pGameIndex){
         gameIndex = pGameIndex;
         Ux* myUxRef = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();
@@ -56,20 +54,12 @@ struct MatchMaster{
         gameRootUi->addChild(gameSwatchesHolder);
 
         pickList = new Ux::uiList<Ux::uiSwatch*, Uint8>(maxSwatches);
-        matchList = new Ux::uiList<Ux::uiSwatch*, Uint8>(maxSwatches);
+        //matchList = new Ux::uiList<Ux::uiSwatch*, Uint8>(maxSwatches);
 
         gameSwatchesHolder->setBoundaryRect(0.1, 0.1, 1.0-0.2, 1.0-0.2); // some margins all around...
+        //gameSwatchesHolder->squarify();
 
-        int x;
-
-        for( x=0; x<maxSwatches; x++ ){
-            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)); // ignore these rect....
-            tmp2->displayHex();
-            tmp2->hideBg();
-            matchList->add(tmp2);
-        }
-
-        for( x=0; x<maxSwatches; x++ ){
+        for( int x=0; x<maxSwatches; x++ ){
             Ux::uiSwatch* tmp1 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)); // ignore these rect....
             tmp1->uiObjectItself->setInteraction(&interactionSwatchDragMove);
             tmp1->uiObjectItself->setInteractionCallback(interactionSwatchDragMoveConstrain);
@@ -89,8 +79,6 @@ struct MatchMaster{
         scoreBreakdown4 = (new Ux::uiText(scoreBreakdownHolder, charSize))->margins(0.5,0.0,0.0,0.0)->print("Score4");
 
 
-        tileHeight = 0.2;
-        halfTileHeight = 0.1;
         activeSwatches=0;
         //just a reminder.... don't init here, init in show();
 
@@ -100,7 +88,7 @@ struct MatchMaster{
         Ux* myUxRef = Ux::Singleton();
 
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        MatchMaster* self = (MatchMaster*)ogg->minigames->currentGame->gameItself; // helper?
+        FlipMaster* self = (FlipMaster*)ogg->minigames->currentGame->gameItself; // helper?
         if( self->isComplete ){
             // lock it up..
             return;
@@ -115,7 +103,7 @@ struct MatchMaster{
         Ux::uiSwatch* swatch = (Ux::uiSwatch*)interactionObj->myUiController;
 
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        MatchMaster* self = (MatchMaster*)ogg->minigames->currentGame->gameItself; // helper?
+        FlipMaster* self = (FlipMaster*)ogg->minigames->currentGame->gameItself; // helper?
         if( self->isComplete ){
             // lock it up..
 
@@ -139,37 +127,37 @@ struct MatchMaster{
         if( !interactionObj->isAnimating() ){ // its in the viewport still... lets snap it to the nearest dest if close enough...
 
             OpenGLContext* ogg=OpenGLContext::Singleton();
-            MatchMaster* self = (MatchMaster*)ogg->minigames->currentGame->gameItself; // helper?
+            FlipMaster* self = (FlipMaster*)ogg->minigames->currentGame->gameItself; // helper?
 
             self->checkIfGameIsCompleted(uiAnim); // mostly to reset
 
             for( int x=0; x<self->activeSwatches; x++ ){
-                Ux::uiSwatch* dest = *self->matchList->get(x);
-                float dist = glm::distance(
-                   glm::vec2(interactionObj->boundryRect.x, interactionObj->boundryRect.y),
-                   glm::vec2(dest->uiObjectItself->boundryRect.x, dest->uiObjectItself->boundryRect.y)
-                );
-                if( dist < self->halfTileHeight ){
-                    //SDL_Log("Distance from this one is %f", dist);
-                    //interactionObj->setAnimation( uxInstance->uxAnimations->moveTo(interactionObj,dest->uiObjectItself->boundryRect.x,dest->uiObjectItself->boundryRect.y, nullptr, nullptr) );
-
-                    Ux::uiAminChain* myAnimChain = new Ux::uiAminChain();
-                    myAnimChain->addAnim((new Ux::uiAnimation(interactionObj))->moveTo(dest->uiObjectItself->boundryRect.x,dest->uiObjectItself->boundryRect.y) );
-                    myAnimChain->addAnim((new Ux::uiAnimation(interactionObj))->setAnimationReachedCallback(&checkIfGameIsCompleted) );
-                    interactionObj->setAnimation(myAnimChain); // imporrtant to do this before we push it..
-                    uxInstance->uxAnimations->pushAnimChain(myAnimChain);
-
-                    // NOTE: when the above animation completes, this swatch is "locked" until we move it again...
-                    // once all swatches are locked.... then the game is ready to complete...
-                    break;
-                }
+//                Ux::uiSwatch* dest = *self->matchList->get(x);
+//                float dist = glm::distance(
+//                   glm::vec2(interactionObj->boundryRect.x, interactionObj->boundryRect.y),
+//                   glm::vec2(dest->uiObjectItself->boundryRect.x, dest->uiObjectItself->boundryRect.y)
+//                );
+//                if( dist < self->halfTileHeight ){
+//                    //SDL_Log("Distance from this one is %f", dist);
+//                    //interactionObj->setAnimation( uxInstance->uxAnimations->moveTo(interactionObj,dest->uiObjectItself->boundryRect.x,dest->uiObjectItself->boundryRect.y, nullptr, nullptr) );
+//
+//                    Ux::uiAminChain* myAnimChain = new Ux::uiAminChain();
+//                    myAnimChain->addAnim((new Ux::uiAnimation(interactionObj))->moveTo(dest->uiObjectItself->boundryRect.x,dest->uiObjectItself->boundryRect.y) );
+//                    myAnimChain->addAnim((new Ux::uiAnimation(interactionObj))->setAnimationReachedCallback(&checkIfGameIsCompleted) );
+//                    interactionObj->setAnimation(myAnimChain); // imporrtant to do this before we push it..
+//                    uxInstance->uxAnimations->pushAnimChain(myAnimChain);
+//
+//                    // NOTE: when the above animation completes, this swatch is "locked" until we move it again...
+//                    // once all swatches are locked.... then the game is ready to complete...
+//                    break;
+//                }
             }
         }
     }
 
     static void checkIfGameIsCompleted(Ux::uiAnimation* uiAnim){
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        MatchMaster* self = (MatchMaster*)ogg->minigames->currentGame->gameItself; // helper?
+        FlipMaster* self = (FlipMaster*)ogg->minigames->currentGame->gameItself; // helper?
 
         if( self->isGameComplete() ){
             //SDL_Log("Looks like you won!");
@@ -259,31 +247,31 @@ struct MatchMaster{
     void showMatches(){
         Ux* uxInstance = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        MatchMaster* self = (MatchMaster*)ogg->minigames->currentGame->gameItself; // helper?
+        FlipMaster* self = (FlipMaster*)ogg->minigames->currentGame->gameItself; // helper?
 
         // we verify before this is called, every dest has 1 and only 1 match....
 
         for( int x=0; x<self->activeSwatches; x++ ){
-            Ux::uiSwatch* dest = *self->matchList->get(x);
-            for( int y=0; y<self->activeSwatches; y++ ){
-                Ux::uiSwatch* move = *self->pickList->get(y);
-
-                // this is reallly a dupe search... oh well??
-                if( dest->uiObjectItself->boundryRect.x == move->uiObjectItself->boundryRect.x && dest->uiObjectItself->boundryRect.y == move->uiObjectItself->boundryRect.y ){
-                    if( !Ux::colorEquals(&dest->last_color, &move->last_color) ){
-                        SDL_snprintf(uxInstance->print_here, 7,  "  ");
-                        move->print(uxInstance->print_here);
-                        uxInstance->printCharToUiObject(move->hexDisplay->getTextChar(1), CHAR_CANCEL_ICON, DO_NOT_RESIZE_NOW);
-
-                    }else{
-                        SDL_snprintf(uxInstance->print_here, 7,  "   OK"); // just saying, I like uxInstance->print_here and all, but we could have snprintf'd this once at boot time....
-                        move->print(uxInstance->print_here);
-                        uxInstance->printCharToUiObject(move->hexDisplay->getTextChar(1), CHAR_CHECKMARK_ICON, DO_NOT_RESIZE_NOW);
-                    }
-
-
-                }
-            }
+//            Ux::uiSwatch* dest = *self->matchList->get(x);
+//            for( int y=0; y<self->activeSwatches; y++ ){
+//                Ux::uiSwatch* move = *self->pickList->get(y);
+//
+//                // this is reallly a dupe search... oh well??
+//                if( dest->uiObjectItself->boundryRect.x == move->uiObjectItself->boundryRect.x && dest->uiObjectItself->boundryRect.y == move->uiObjectItself->boundryRect.y ){
+//                    if( !Ux::colorEquals(&dest->last_color, &move->last_color) ){
+//                        SDL_snprintf(uxInstance->print_here, 7,  "  ");
+//                        move->print(uxInstance->print_here);
+//                        uxInstance->printCharToUiObject(move->hexDisplay->getTextChar(1), CHAR_CANCEL_ICON, DO_NOT_RESIZE_NOW);
+//
+//                    }else{
+//                        SDL_snprintf(uxInstance->print_here, 7,  "   OK"); // just saying, I like uxInstance->print_here and all, but we could have snprintf'd this once at boot time....
+//                        move->print(uxInstance->print_here);
+//                        uxInstance->printCharToUiObject(move->hexDisplay->getTextChar(1), CHAR_CHECKMARK_ICON, DO_NOT_RESIZE_NOW);
+//                    }
+//
+//
+//                }
+//            }
         }
 
     }
@@ -299,41 +287,41 @@ struct MatchMaster{
     bool isGameComplete(){
         Ux* uxInstance = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        MatchMaster* self = (MatchMaster*)ogg->minigames->currentGame->gameItself; // helper?
+        FlipMaster* self = (FlipMaster*)ogg->minigames->currentGame->gameItself; // helper?
 
         bool isWin = true; // lets see if any of them are non
         bool isReadyToScore = true;
 
         for( int x=0; x<self->activeSwatches; x++ ){
-            Ux::uiSwatch* dest = *self->matchList->get(x);
-            bool hasMatch = false;
-            for( int y=0; y<self->activeSwatches; y++ ){
-                // see if any moves are placed here...
-                Ux::uiSwatch* move = *self->pickList->get(y);
-
-                move->print(""); // we clear too many times, maybe this should be the outer loop?
-
-                if( dest->uiObjectItself->boundryRect.x == move->uiObjectItself->boundryRect.x && dest->uiObjectItself->boundryRect.y == move->uiObjectItself->boundryRect.y ){
-
-                    if( hasMatch ){
-                        // more than one color is here... lets slide it out... win is impossible now...
-                        isWin = false;
-                        move->uiObjectItself->setAnimation( uxInstance->uxAnimations->moveTo(move->uiObjectItself,move->uiObjectItself->origBoundryRect.x,move->uiObjectItself->origBoundryRect.y, nullptr, nullptr) );
-                    }else{
-                        // first match, lets evaluate it...
-                        if( !Ux::colorEquals(&dest->last_color, &move->last_color) ){
-                            isWin = false;
-                        }
-                    }
-
-                    hasMatch = true;
-                }
-            }
-
-            if( !hasMatch ){
-                isWin = false;
-                isReadyToScore = false;
-            }
+//            Ux::uiSwatch* dest = *self->matchList->get(x);
+//            bool hasMatch = false;
+//            for( int y=0; y<self->activeSwatches; y++ ){
+//                // see if any moves are placed here...
+//                Ux::uiSwatch* move = *self->pickList->get(y);
+//
+//                move->print(""); // we clear too many times, maybe this should be the outer loop?
+//
+//                if( dest->uiObjectItself->boundryRect.x == move->uiObjectItself->boundryRect.x && dest->uiObjectItself->boundryRect.y == move->uiObjectItself->boundryRect.y ){
+//
+//                    if( hasMatch ){
+//                        // more than one color is here... lets slide it out... win is impossible now...
+//                        isWin = false;
+//                        move->uiObjectItself->setAnimation( uxInstance->uxAnimations->moveTo(move->uiObjectItself,move->uiObjectItself->origBoundryRect.x,move->uiObjectItself->origBoundryRect.y, nullptr, nullptr) );
+//                    }else{
+//                        // first match, lets evaluate it...
+//                        if( !Ux::colorEquals(&dest->last_color, &move->last_color) ){
+//                            isWin = false;
+//                        }
+//                    }
+//
+//                    hasMatch = true;
+//                }
+//            }
+//
+//            if( !hasMatch ){
+//                isWin = false;
+//                isReadyToScore = false;
+//            }
 
         }
 
@@ -343,7 +331,7 @@ struct MatchMaster{
 
     // "reset state"
     static void show(void* gameItself){
-        MatchMaster* self = (MatchMaster*)gameItself;
+        FlipMaster* self = (FlipMaster*)gameItself;
         SDL_Log("%s show", self->gameName);
         Ux* myUxRef = Ux::Singleton();
 
@@ -358,62 +346,86 @@ struct MatchMaster{
         //    minigameColorList = new uiList<ColorList, Uint8>(minigameColorListMax)
 
         Ux::uiList<Ux::ColorList, Uint8>* myColorList;
-        Ux::uiList<Ux::ColorList, Uint8>* myDestList;
+        //Ux::uiList<Ux::ColorList, Uint8>* myDestList;
 
-        myColorList = myUxRef->minigameColorList->clone();
-        myColorList->sort(&Ux::randomSort);
+//        myColorList = myUxRef->minigameColorList->clone();
+//        myColorList->sort(&Ux::randomSort);
 
-        int totalTiles = SDL_min(myColorList->total(), self->maxSwatches);
+        int totalTiles = SDL_min(myUxRef->minigameColorList->total(), self->maxSwatches * 0.5);
 
-        myDestList = new Ux::uiList<Ux::ColorList, Uint8>(totalTiles);
+        myColorList = new Ux::uiList<Ux::ColorList, Uint8>(totalTiles * 2);
         for( int x=0; x<totalTiles; x++ ){ // clipped
-            myDestList->add(*myColorList->get(x));
+            myColorList->add(*myUxRef->minigameColorList->get(x));
+            myColorList->add(*myUxRef->minigameColorList->get(x)); // each color added twice, has a match
+
         }
-        myColorList->free();
 
-        myColorList = myDestList->clone();
         myColorList->sort(&Ux::randomSort);
         myColorList->sort(&Ux::randomSort);
+        myColorList->sort(&Ux::randomSort);
 
-        float height = 1.0 / (totalTiles + 0.0f);
-        self->tileHeight = height;
-        self->halfTileHeight = height * 0.5;
 
-        float vertPad = 0.01;
-        float vertPadDist = vertPad / (totalTiles + 0.0f);
-        height -= vertPad;
 
         //colorPickState->viewport_ratio
 
         self->activeSwatches = myColorList->total();
 
+
+        float columnsf = SDL_sqrtf((float)self->activeSwatches);
+        int columns = columnsf;
+
+        float width = 1.0 / (columns + 0.0f);
+        float tileWidth = width;
+        int row = -1;
+
+        float rows = SDL_ceilf(self->activeSwatches / (columns + 0.0f));
+
+        float height = 1.0 / rows;
+        float tileHeight = height;
+        //float halfTileHeight = height * 0.5;
+
+        float vertPad = 0.01;
+        float vertPadDist = vertPad / (rows + 0.0f);
+        height -= vertPad;
+
+        float hzPad = 0.1;
+        float hzPadDist = hzPad / (columns + 0.0f);
+        width -= hzPad;
+
+
+
         for( int x=0; x<self->maxSwatches; x++ ){
 
             Ux::uiSwatch* move = *self->pickList->get(x);
-            Ux::uiSwatch* dest = *self->matchList->get(x);
 
             if( x < self->activeSwatches ){
 
-                float y = (self->tileHeight * x) + (vertPadDist * x);
+                float col = (x % columns);
+
+                if( col == 0 ){
+                    row++;
+                }
+
+                float xPosition = (tileWidth * col) + (hzPadDist * col);
+
+                float yPosition = (tileHeight * row) + (vertPadDist * row);
 
                 move->show();
-                dest->show();
 
-                move->uiObjectItself->setBoundaryRect(0.0, y, 0.4, height);
-                dest->uiObjectItself->setBoundaryRect(0.6, y, 0.4, height);
+                move->uiObjectItself->setBoundaryRect(xPosition, yPosition, width, height);
 
-                move->hideHex()->update(&myColorList->get(x)->color);
-                dest->update(&myDestList->get(x)->color);
+                //move->hideHex()->hideBg()->update(&myColorList->get(x)->color);
+
+                move->displayHex()->displayBg()->update(&myColorList->get(x)->color);
+
 
             }else{
                 move->hide();
-                dest->hide();
             }
         }
 
 
         myColorList->free();
-        myDestList->free();
 
         self->gameRootUi->showAndAllowInteraction();
         self->startTime = SDL_GetTicks();
@@ -428,7 +440,7 @@ struct MatchMaster{
     }
 
     static void begin(void* gameItself){
-        MatchMaster* self = (MatchMaster*)gameItself;
+        FlipMaster* self = (FlipMaster*)gameItself;
         SDL_Log("%s begin", self->gameName);
         self->startTime = SDL_GetTicks();
         Ux* myUxRef = Ux::Singleton();
@@ -436,7 +448,7 @@ struct MatchMaster{
     }
 
     static void resize(void* gameItself){
-        MatchMaster* self = (MatchMaster*)gameItself;
+        FlipMaster* self = (FlipMaster*)gameItself;
         SDL_Log("%s resize", self->gameName);
         Ux* uxInstance = Ux::Singleton();
         if( uxInstance->widescreen ){
@@ -449,44 +461,44 @@ struct MatchMaster{
     }
 
     static void update(void* gameItself){
-        MatchMaster* self = (MatchMaster*)gameItself;
+        FlipMaster* self = (FlipMaster*)gameItself;
         //SDL_Log("%s update", self->gameName);
     }
 
     static void render(void* gameItself){
-        MatchMaster* self = (MatchMaster*)gameItself;
+        FlipMaster* self = (FlipMaster*)gameItself;
         //SDL_Log("%s render", self->gameName);
     }
 
     static void end(void* gameItself){
-        MatchMaster* self = (MatchMaster*)gameItself;
+        FlipMaster* self = (FlipMaster*)gameItself;
         SDL_Log("%s end", self->gameName);
         self->gameRootUi->hideAndNoInteraction();
     }
 
     static const char* getGameName(void* gameItself){
-        MatchMaster* self = (MatchMaster*)gameItself;
+        FlipMaster* self = (FlipMaster*)gameItself;
         return self->gameName;
     }
 
     static int getTimeLimit(void* gameItself){
-        MatchMaster* self = (MatchMaster*)gameItself;
+        FlipMaster* self = (FlipMaster*)gameItself;
         return self->timeLimit;
     }
 
 //    static int getStartTime(void* gameItself){ // is this used?
-//        MatchMaster* self = (MatchMaster*)gameItself;
+//        FlipMaster* self = (FlipMaster*)gameItself;
 //        return self->startTime;
 //    }
 
 //    static int getRemainingTime(void* gameItself){ // NOT IMPLEMENTED
-//        MatchMaster* self = (MatchMaster*)gameItself;
+//        FlipMaster* self = (FlipMaster*)gameItself;
 //        return self->getTimeLimit(self) - self->getElapsedTime(self);
 //    }
 
     static int getElapsedTime(void* gameItself){
         // maybe game can pause itself...
-        MatchMaster* self = (MatchMaster*)gameItself;
+        FlipMaster* self = (FlipMaster*)gameItself;
 
         if( self->isComplete ){
             return self->lastTicks - self->startTime;

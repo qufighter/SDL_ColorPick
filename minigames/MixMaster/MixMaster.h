@@ -42,7 +42,7 @@ struct MixMaster{
     Ux::uiList<Ux::uiSwatch*, Uint8>* mixedList; // list of mixed colors (destinations for 2 colors)
 
 
-    Minigames* minigames; // handy ref?  cannot populate in constructor (yet??)
+    Minigames* minigames;
 
     MixMaster(Uint8 pGameIndex){
         gameIndex = pGameIndex;

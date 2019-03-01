@@ -48,7 +48,7 @@ update icons (default)
 
 verify logging in release mode
 
-
+colorblind detection? (maybe in some minigames... ??)
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
