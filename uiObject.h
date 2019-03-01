@@ -397,6 +397,26 @@ struct uiObject
         Ux::setRect(&origBoundryRect, x, y, w, h);
     }
 
+    void setForegroundColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a){
+        Ux::setColor(&foregroundColor, r, g, b, a);
+        hasForeground = true;
+    }
+
+    void setForegroundColor(SDL_Color* setFgTo){
+        Ux::setColor(&foregroundColor, setFgTo);
+        hasForeground = true;
+    }
+
+    void setBackgroundColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a){
+        Ux::setColor(&backgroundColor, r, g, b, a);
+        hasBackground = true;
+    }
+
+    void setBackgroundColor(SDL_Color* setBgTo){
+        Ux::setColor(&backgroundColor, setBgTo);
+        hasBackground = true;
+    }
+
     void setBoundaryRectForAnimState(float x, float y, float w, float h, float xH, float yH, float wH, float hH){
         if( is_being_viewed_state ){
             Ux::setRect(&boundryRect, x, y, w, h);

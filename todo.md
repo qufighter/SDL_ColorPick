@@ -58,6 +58,8 @@ images can have a color space????
 
 ##  can do
 
+use setForegroundColor / setBackgroundColor more places (instead of 2 lines of code)
+
 convert or crop cubic coord
 
 more tests for uiList needed...

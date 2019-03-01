@@ -897,6 +897,33 @@ struct UxAnim
         return myAnimChain;
     }
 
+    uiAminChain* flip_hz(Ux::uiObject *uiObject, int durationMs, animationCallbackFn halfFlippedCb, animationCallbackFn fullyFlippedCb){
+        uiAminChain* myAnimChain = new uiAminChain();
+
+        glm::mat4 scaleMat = glm::mat4(1.0);
+        scaleMat = glm::scale(scaleMat, glm::vec3(0.0, 1.0, 1.0) );
+
+       // myAnimChain->addAnim( (new uiAnimation(uiObject))->initialScaleVelocity(-intensity, -intensity)->setDuration(durationMs) );  // duration does not strictly work, its not time bounded.... friction bounded
+        //myAnimChain->addAnim( (new uiAnimation(uiObject))->resetPosition() );
+
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->resetMatrix(scaleMat)->setDuration(durationMs * 0.5) );
+
+        if( halfFlippedCb != nullptr ){
+            myAnimChain->addAnim((new uiAnimation(uiObject))->setAnimationReachedCallback(halfFlippedCb) );
+        }
+
+        myAnimChain->addAnim( (new uiAnimation(uiObject))->resetMatrix(glm::mat4(1.0))->setDuration(durationMs * 0.5) );
+
+        if( fullyFlippedCb != nullptr ){
+            myAnimChain->addAnim((new uiAnimation(uiObject))->setAnimationReachedCallback(fullyFlippedCb) );
+        }
+
+        pushAnimChain(myAnimChain);
+        return myAnimChain;
+    }
+
+
+
 };
 
 #endif

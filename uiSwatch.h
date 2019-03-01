@@ -25,7 +25,7 @@ struct uiSwatch{
 
         uiObjectItself = new uiObject();
         uiObjectItself->myUiController = this;
-        //uiObjectItself->matrixInheritedByDescendants=true; (when you need it)
+        uiObjectItself->matrixInheritedByDescendants=true;
 
         uiObjectItself->setBoundaryRect(&boundaries);
 
@@ -91,6 +91,9 @@ struct uiSwatch{
         return this;
     }
 
+    bool isFlipped(){
+        return displayHexOn && displayBgOn;
+    }
 
     void show(){
         uiObjectItself->showAndAllowInteraction();

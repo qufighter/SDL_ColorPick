@@ -83,6 +83,7 @@ struct Minigames{
         return Ux::randomInt(1,TOTAL_GAMES-1);
     }
     GameListObj* randomGame(){
+        //SDL_Log("rolling random game...");
         int foundGame = gameList->locateIndex(randomGameId());
         if( foundGame > -1 ){
             return gameList->get(foundGame);
@@ -108,13 +109,15 @@ struct Minigames{
 
     typedef enum  {
         GAME0_RESERVED=0,
-        GAME1,
-        GAME2,
+        GAME1_MATCH_MAKER,
+        GAME2_MIX_MASTER,
+        GAME3_FLIP_MASTER,
         TOTAL_GAMES
     } MINIGAMES_ENUM;
 
 #include "MatchMaster/MatchMaster.h"
 #include "MixMaster/MixMaster.h"
+#include "FlipMaster/FlipMaster.h"
 
     Minigames(){
         Ux* myUxRef = Ux::Singleton();
@@ -129,15 +132,14 @@ struct Minigames{
         gameList = new Ux::uiList<GameListObj, Uint8>(maxGames);
         gameList->index(MINIGAMES_ENUM::TOTAL_GAMES, indexForGame);
 
-        MatchMaster* minigame1 = new MatchMaster(MINIGAMES_ENUM::GAME1);
-//        MixMaster* minigame1 = new MixMaster(MINIGAMES_ENUM::GAME1);
-        MixMaster* minigame2 = new MixMaster(MINIGAMES_ENUM::GAME2);
+        MatchMaster* minigame1 = new MatchMaster(MINIGAMES_ENUM::GAME1_MATCH_MAKER);
+//        MixMaster* minigame1 = new MixMaster(MINIGAMES_ENUM::GAME1_MATCH_MAKER);
+        MixMaster* minigame2 = new MixMaster(MINIGAMES_ENUM::GAME2_MIX_MASTER);
+        FlipMaster* minigame3 = new FlipMaster(MINIGAMES_ENUM::GAME3_FLIP_MASTER);
 
-        GameListObj aGame1 = GameListObj(makeGameArgs(minigame1));
-        GameListObj aGame2 = GameListObj(makeGameArgs(minigame2));
-
-        gameList->add(aGame1);
-        gameList->add(aGame2);
+        gameList->add(GameListObj(makeGameArgs(minigame1)));
+        gameList->add(GameListObj(makeGameArgs(minigame2)));
+        gameList->add(GameListObj(makeGameArgs(minigame3)));
 
 //        SDL_Log("testing this out");
 //        for( int i=0;i<99;i++){
@@ -317,7 +319,14 @@ struct Minigames{
     /* external API */
     void beginNextGame(){
         Ux* myUxRef = Ux::Singleton();
-        currentGame = randomGame(); // roll again
+
+        int lastGame = currentGame->gameEnumIndex;
+        int attempts = 0;
+
+        while( lastGame == currentGame->gameEnumIndex && attempts < 10){
+            currentGame = randomGame(); // roll again
+            attempts++;
+        }
 
         gotMinigameAnnounceDone = false;
         Ux::uiAminChain* myAnimChain = myUxRef->defaultScoreDisplay->displayExplanation(" Mini Game ");

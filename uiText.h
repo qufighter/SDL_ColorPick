@@ -97,7 +97,9 @@ struct uiText{
 
         text_itself->setBoundaryRect( -0.5, -0.5, 1.0, 1.0); // on right
 
-        
+
+        //text_position->matrixInheritedByDescendants = true;
+
         uiObjectItself->addChild(text_position);
         text_position->addChild(text_backgr);
         text_position->addChild(text_itself);
