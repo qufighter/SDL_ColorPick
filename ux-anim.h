@@ -900,13 +900,11 @@ struct UxAnim
     uiAminChain* flip_hz(Ux::uiObject *uiObject, int durationMs, animationCallbackFn halfFlippedCb, animationCallbackFn fullyFlippedCb){
         uiAminChain* myAnimChain = new uiAminChain();
 
-        glm::mat4 scaleMat = glm::mat4(1.0);
-        scaleMat = glm::scale(scaleMat, glm::vec3(0.0, 1.0, 1.0) );
-
-       // myAnimChain->addAnim( (new uiAnimation(uiObject))->initialScaleVelocity(-intensity, -intensity)->setDuration(durationMs) );  // duration does not strictly work, its not time bounded.... friction bounded
-        //myAnimChain->addAnim( (new uiAnimation(uiObject))->resetPosition() );
-
+        glm::mat4 scaleMat = glm::scale(glm::mat4(1.0), glm::vec3(0.0, 1.0, 1.0) );
+        //glm::mat4 rotateMat = glm::rotate(glm::mat4(1.0), 90.0f, glm::vec3(0.0f, 1.0f, 0.0f) );
+        // thereis no persp matrix, so these are pretty much equiv for 2d.. ^ probably to exchange if we ever use this 3d?
         myAnimChain->addAnim( (new uiAnimation(uiObject))->resetMatrix(scaleMat)->setDuration(durationMs * 0.5) );
+        //myAnimChain->addAnim( (new uiAnimation(uiObject))->resetMatrix(rotateMat)->setDuration(durationMs * 0.5) );
 
         if( halfFlippedCb != nullptr ){
             myAnimChain->addAnim((new uiAnimation(uiObject))->setAnimationReachedCallback(halfFlippedCb) );

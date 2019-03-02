@@ -299,7 +299,7 @@ struct FlipMaster{
 
         myColorList->sort(&Ux::randomSort);
         myColorList->sort(&Ux::randomSort);
-        myColorList->sort(&Ux::randomSort);
+
 
         //colorPickState->viewport_ratio
 

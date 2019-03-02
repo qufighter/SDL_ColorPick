@@ -84,7 +84,12 @@ struct Minigames{
     }
     GameListObj* randomGame(){
         //SDL_Log("rolling random game...");
+
+        return gameList->get(Ux::randomInt(0,gameList->total()-1));
+
         int foundGame = gameList->locateIndex(randomGameId());
+
+
         if( foundGame > -1 ){
             return gameList->get(foundGame);
         }else{
