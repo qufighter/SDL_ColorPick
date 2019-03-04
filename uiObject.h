@@ -1151,67 +1151,101 @@ struct uiObject
 
 
         if( squarify_enabled ){
+            float item_ratio = renderRect.w / renderRect.h;
+
+            bool to_squarify_hz = squarify_keep_hz; // we only want the value here if not keep contained....
+            bool to_squarify_vt = squarify_keep_vt;
+
             if( squarify_keep_contained ){
 
+                to_squarify_hz=false;
+                to_squarify_vt=false; // probably already false...
+
+//                float item_test_ratio = (renderRect.w  * colorPickState->viewport_ratio) / renderRect.h;
+
+                // this needs a bit of work...
                 float parent_ratio  = (parentRenderRect.w  * colorPickState->viewport_ratio) / parentRenderRect.h;
-                float item_ratio = renderRect.w / renderRect.h;
+
+                // we should PROBABLY just look at item ratio ???? compared with viewport_ratio ????
+
+//                if( item_ratio < colorPickState->viewport_ratio ){
+//                    to_squarify_hz=true;
+//                }else{
+//                    to_squarify_vt=true;
+//                }
 
                 if( parent_ratio < 1.0 ){
                     // taller than wide, squarify_keep_hz
 
-                    renderRect.h *= item_ratio; //squarify itself (this should now match the viewport ratio, so still non square)
-                    renderRect.h *= colorPickState->viewport_ratio;
+//                    if( isDebugObject ){
+//                        SDL_Log("Hello");
+//                    }
 
-                    float diff = collisionRect.h - renderRect.h;
-                    collisionRect.h = renderRect.h;
-                    collisionRect.y += (diff * 0.5);
+//                    if( item_test_ratio > parent_ratio ){
+//                        // lied, its vt?
+//                        to_squarify_vt=true;
+//                    }else{
+//                        to_squarify_hz=true;
+//                    }
+                    to_squarify_hz=true;
+
+                    // now, once this is applied, our item_ratio changes.... and it might mean we should instead pick vt...
+
+//                    renderRect.h *= item_ratio; //squarify itself (this should now match the viewport ratio, so still non square)
+//                    renderRect.h *= colorPickState->viewport_ratio;
+//
+//                    float diff = collisionRect.h - renderRect.h;
+//                    collisionRect.h = renderRect.h;
+//                    collisionRect.y += (diff * 0.5);
 
                 }else{// parent wider than tall
                       // we should match parent height
                       // essentially squarify_keep_vt
 
-                    renderRect.w /= item_ratio; //squarify itself (this should now match the viewport ratio, so still non square)
-                    renderRect.w /= colorPickState->viewport_ratio;
-
-                    float diff = collisionRect.w - renderRect.w;
-                    collisionRect.w = renderRect.w;
-                    collisionRect.x += (diff * 0.5);
+//                    if( item_test_ratio > parent_ratio ){
+//                        to_squarify_hz=true;
+//                    }else{
+//                        to_squarify_vt=true;
+//                    }
+                    to_squarify_vt=true;
+//                    renderRect.w /= item_ratio; //squarify itself (this should now match the viewport ratio, so still non square)
+//                    renderRect.w /= colorPickState->viewport_ratio;
+//
+//                    float diff = collisionRect.w - renderRect.w;
+//                    collisionRect.w = renderRect.w;
+//                    collisionRect.x += (diff * 0.5);
 
                 }
 
-            //if( isDebugObject )
-//                SDL_Log("keeping it real "\
-//                        "\n\t parent_ratio %f, parentRenderRect.w %f, parentRenderRect.h %f"\
-//                        "\n\t item_ratio %f ,renderRect.w %f, renderRect.h %f"\
-//                        "\n\t colorPickState->viewport_ratio %f",
-//                        parent_ratio, parentRenderRect.w, parentRenderRect.h,
-//                        item_ratio,renderRect.w, renderRect.h,
-//                        colorPickState->viewport_ratio);
+//                if( isDebugObject ){
+//                    SDL_Log("keeping it real "\
+//                            "\n\t parent_ratio %f, parentRenderRect.w %f, parentRenderRect.h %f"\
+//                            "\n\t item_ratio %f ,renderRect.w %f, renderRect.h %f"\
+//                            "\n\t colorPickState->viewport_ratio %f",
+//                            parent_ratio, parentRenderRect.w, parentRenderRect.h,
+//                            item_ratio,renderRect.w, renderRect.h,
+//                            colorPickState->viewport_ratio);
+//
+//                }
 
-            }else if( squarify_keep_hz ){
+            }
 
-                float item_ratio = renderRect.w / renderRect.h;
+            if( to_squarify_hz ){
 
                 renderRect.h *= item_ratio; //squarify itself (this should now match the viewport ratio, so still non square)
-
                 renderRect.h *= colorPickState->viewport_ratio;
 
                 float diff = collisionRect.h - renderRect.h;
-
                 collisionRect.h = renderRect.h;
                 collisionRect.y += (diff * 0.5);
 
 
-            }else if ( squarify_keep_vt ){
-
-                float item_ratio = renderRect.w / renderRect.h;
+            }else if ( to_squarify_vt ){
 
                 renderRect.w /= item_ratio; //squarify itself (this should now match the viewport ratio, so still non square)
-
                 renderRect.w /= colorPickState->viewport_ratio;
 
                 float diff = collisionRect.w - renderRect.w;
-
                 collisionRect.w = renderRect.w;
                 collisionRect.x += (diff * 0.5);
 

@@ -472,7 +472,7 @@ struct MixMaster{
         self->halfTileHeight = height * 0.5;
 
         float vertPad = 0.01;
-        float vertPadDist = vertPad / (totalTiles + 0.0f);
+        float vertPadDist = vertPad / (totalTiles - 1.0f);
         height -= vertPad;
 
         //colorPickState->viewport_ratio

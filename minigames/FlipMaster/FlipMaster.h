@@ -14,6 +14,8 @@ struct FlipMaster{
     int startTime;
     int lastTicks;
 
+    int unflipCounter = 0;
+
     int activeSwatches;
     int matchedSwatches;
 
@@ -23,6 +25,7 @@ struct FlipMaster{
     Ux::uiObject* gameRootUi;
     Ux::uiObject* gameSwatchesHolder;
     Ux::uiObject* scoreBreakdownHolder;
+    Ux::uiObject* scoreBreakdownSpacer;
 
     Ux::uiText* scoreBreakdown0;
     Ux::uiText* scoreBreakdown1;
@@ -72,17 +75,19 @@ struct FlipMaster{
 
         // TODO: remove ? score as we go ?? ....
         scoreBreakdownHolder =new Ux::uiObject();
-        //scoreBreakdownHolder->setBoundaryRect(0.05, 0.1, 0.5, 1.0-0.2); // do this in resize instead....
+        scoreBreakdownSpacer =new Ux::uiObject();
+        scoreBreakdownHolder->setBoundaryRect(0.0, 0.0, 0.5, 1.0); // do this in resize instead....
+        scoreBreakdownHolder->addChild(scoreBreakdownSpacer);
         gameRootUi->addChild(scoreBreakdownHolder);
 
         scoreBreakdownHolder->setBackgroundColor(0,0,0,192);
 
         float charSize = 1.0/scoreBreakdownLn;
-        scoreBreakdown0 = (new Ux::uiText(scoreBreakdownHolder, charSize))->margins(-0.5,0.0,0.0,0.0)->print("Score0");
-        scoreBreakdown1 = (new Ux::uiText(scoreBreakdownHolder, charSize))->margins(-0.25,0.0,0.0,0.0)->print("Score1");
-        scoreBreakdown2 = (new Ux::uiText(scoreBreakdownHolder, charSize))->margins(0.0,0.0,0.0,0.0)->print("Score2");
-        scoreBreakdown3 = (new Ux::uiText(scoreBreakdownHolder, charSize))->margins(0.25,0.0,0.0,0.0)->print("Score3");
-        scoreBreakdown4 = (new Ux::uiText(scoreBreakdownHolder, charSize))->margins(0.5,0.0,0.0,0.0)->print("Score4");
+        scoreBreakdown0 = (new Ux::uiText(scoreBreakdownSpacer, charSize))->margins(-0.5,0.0,0.0,0.0)->print("Score0");
+        scoreBreakdown1 = (new Ux::uiText(scoreBreakdownSpacer, charSize))->margins(-0.25,0.0,0.0,0.0)->print("Score1");
+        scoreBreakdown2 = (new Ux::uiText(scoreBreakdownSpacer, charSize))->margins(0.0,0.0,0.0,0.0)->print("Score2");
+        scoreBreakdown3 = (new Ux::uiText(scoreBreakdownSpacer, charSize))->margins(0.25,0.0,0.0,0.0)->print("Score3");
+        scoreBreakdown4 = (new Ux::uiText(scoreBreakdownSpacer, charSize))->margins(0.5,0.0,0.0,0.0)->print("Score4");
 
 
         activeSwatches=0;
@@ -161,10 +166,14 @@ struct FlipMaster{
     static void fullyUnflipped(Ux::uiAnimation* uiAnim){
         OpenGLContext* ogg=OpenGLContext::Singleton();
         FlipMaster* self = (FlipMaster*)ogg->minigames->currentGame->gameItself; // helper?
-        self->flippedA = nullptr;
-        self->flippedB = nullptr;
-        self->flipA = nullptr;
-        self->flipB = nullptr;
+        self->unflipCounter++;
+        if( self->unflipCounter >= 2 ){
+            // only unlock when both unflips done...
+            self->flippedA = nullptr;
+            self->flippedB = nullptr;
+            self->flipA = nullptr;
+            self->flipB = nullptr;
+        }
     }
 
     static void checkIfGameIsCompleted(Ux::uiAnimation* uiAnim){
@@ -198,8 +207,9 @@ struct FlipMaster{
                 self->matchedSwatches += 2; // progress towards win...
             }else{
                 //SDL_Log("no matches");
-                uxInstance->uxAnimations->flip_hz(self->flippedA->uiObjectItself, 1000, &halfUnflipped, &fullyUnflipped);
-                uxInstance->uxAnimations->flip_hz(self->flippedB->uiObjectItself, 1000, &halfUnflipped, &fullyUnflipped);
+                self->unflipCounter=0;
+                uxInstance->uxAnimations->flip_hz(self->flippedA->uiObjectItself, 700, &halfUnflipped, &fullyUnflipped);
+                uxInstance->uxAnimations->flip_hz(self->flippedB->uiObjectItself, 750, &halfUnflipped, &fullyUnflipped);
             }
         }
         //SDL_Log("lets see if the game is done! %i %i", self->matchedSwatches, self->activeSwatches );
@@ -319,13 +329,15 @@ struct FlipMaster{
         float tileHeight = height;
         //float halfTileHeight = height * 0.5;
 
-        float vertPad = 0.01;
-        float vertPadDist = vertPad / (rows + 0.0f);
+        float vertPad = 0.05;
+        float vertPadDist = vertPad / (rows - 1.0f);
         height -= vertPad;
 
-        float hzPad = 0.1;
-        float hzPadDist = hzPad / (columns + 0.0f);
+        float hzPad = 0.2;
+        float hzPadDist = hzPad / (columns - 1.0f);
         width -= hzPad;
+
+        //(*self->pickList->get(0))->uiObjectItself->isDebugObject=true;
 
         for( int x=0; x<self->maxSwatches; x++ ){
 
@@ -339,13 +351,16 @@ struct FlipMaster{
                     row++;
                 }
 
-                float xPosition = (tileWidth * col) + (hzPadDist * col);
+                float xPosition = (tileWidth * col) + (hzPadDist * (col));
 
                 float yPosition = (tileHeight * row) + (vertPadDist * row);
 
                 move->show();
 
                 move->uiObjectItself->setBoundaryRect(xPosition, yPosition, width, height);
+
+//                move->uiObjectItself->setBoundaryRect(0.0, y, 0.4, height);
+//                dest->uiObjectItself->setBoundaryRect(0.6, y, 0.4, height);
 
                 move->hideHex()->hideBg()->update(&myColorList->get(x)->color);
 
@@ -385,11 +400,10 @@ struct FlipMaster{
         SDL_Log("%s resize", self->gameName);
         Ux* uxInstance = Ux::Singleton();
         if( uxInstance->widescreen ){
-            self->scoreBreakdownHolder->setBoundaryRect(0.25, 0.1, 0.25, 1.0-0.2);
+            self->scoreBreakdownSpacer->setBoundaryRect(0.25, 0.1, 0.5, 1.0-0.2);
         }else{
-            self->scoreBreakdownHolder->setBoundaryRect(0.05, 0.1, 0.5, 1.0-0.2);
+            self->scoreBreakdownSpacer->setBoundaryRect(0.05, 0.1, 1.0, 1.0-0.2);
         }
-
         self->gameRootUi->updateRenderPosition();
     }
 

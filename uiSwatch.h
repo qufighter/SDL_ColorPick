@@ -32,6 +32,7 @@ struct uiSwatch{
         uiObjectItself->hasBackground=true;
         Ux::setColor(&uiObjectItself->backgroundColor, 128, 128, 128, 255);
 
+        //uiObjectItself->squarify();
         uiObjectItself->squarifyKeepVt(); //make dynamic??
 
         swatchItself = new uiObject();
