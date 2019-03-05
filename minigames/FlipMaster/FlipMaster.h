@@ -5,7 +5,7 @@
 
 struct FlipMaster{
 
-    const char* gameName = "Flip Master";
+    const char* gameName = "Flip Matcher";
     const int maxSwatches = 12;  // max 6 colors and one match for each
     const int timeLimit = 60000; // one minute....
     const int scoreBreakdownLn = 10;
@@ -42,6 +42,8 @@ struct FlipMaster{
     Ux::uiSwatch* flippedB;
 
     Minigames* minigames;
+
+    bool currentlyEvaluatingWin;
 
     FlipMaster(Uint8 pGameIndex){
         gameIndex = pGameIndex;
@@ -91,6 +93,7 @@ struct FlipMaster{
 
 
         activeSwatches=0;
+        currentlyEvaluatingWin=false;
         //just a reminder.... don't init here, init in show();
 
     }
@@ -105,6 +108,19 @@ struct FlipMaster{
             return; // cannot flip a flipped swatch....
         }
 
+        if( self->flipA != nullptr && self->flipB != nullptr && !self->currentlyEvaluatingWin ){
+            self->currentlyEvaluatingWin = true;
+            // if the above are a match... we can probably reset and let them keep going!...
+            // during this we should arguably LOCK or delay the animation thread that will call checkIfGameIsCompleted.... (animations may not be threaded though... so we won't use semaphore)
+            // the following is probably nearly atomic op though
+            if( Ux::colorEquals(&self->flipA->last_color, &self->flipB->last_color) ){
+                self->flippedA = self->flipA;
+                self->flippedB = self->flipB;
+                self->isGameComplete(); // this should reset it all....
+            }
+            self->currentlyEvaluatingWin = false;
+        }
+
         if( self->flipA == nullptr ){
             // first flip...
             self->flipA = swatch;
@@ -112,7 +128,7 @@ struct FlipMaster{
             // second flip...
             self->flipB = swatch;
         }else{
-            // already have two flips, block it!
+            // already have two flips, (and they didn't match, or we would have reset it above) block it!
             return;
         }
 
@@ -142,7 +158,8 @@ struct FlipMaster{
         }else if( swatch == self->flipB ){
             self->flippedB = swatch;
         }else{
-            SDL_Log("Hmm - seems like a flippin' error - a flipped swatch isn't one we track...");
+            SDL_Log("Hmm - seems like a flippin' error - a flipped swatch isn't one we track... (maybe we already scored it)"); // could be we just already scored that flip since it was a match!
+            return;
         }
 
         if( self->flippedA != nullptr && self->flippedB != nullptr ){
@@ -179,14 +196,27 @@ struct FlipMaster{
     static void checkIfGameIsCompleted(Ux::uiAnimation* uiAnim){
         OpenGLContext* ogg=OpenGLContext::Singleton();
         FlipMaster* self = (FlipMaster*)ogg->minigames->currentGame->gameItself; // helper?
+        int ctr = 0;
+        while( self->currentlyEvaluatingWin && ctr < 50 ){
+            SDL_Delay(10);
+            ctr++;
+        }
+        if( ctr > 49 ){
+            SDL_Log("Error: somehow the win evaluation is not unlocked after 50 attempts.... this should never occur...");
+        }
+        self->currentlyEvaluatingWin=true;
         if( self->isGameComplete() ){
             //SDL_Log("Looks like you won!");
-            if( self->isComplete ) return; // once only.... ???
+            if( self->isComplete ){
+                self->currentlyEvaluatingWin = false;
+                return; // once only.... ???
+            }
             self->isComplete = true; // complete, and won, lock it up!
             self->lastTicks = SDL_GetTicks();
             ogg->minigames->gameIsCompleted(); // save CPUs.
             self->computeGameScore();// and we show the score....
         }
+        self->currentlyEvaluatingWin=false;
     }
 
     bool isGameComplete(){
@@ -281,6 +311,7 @@ struct FlipMaster{
         self->isComplete= false;
         self->solveAttempts = 0;
         self->matchedSwatches = 0;
+        self->currentlyEvaluatingWin = false;
 
         self->flipA = nullptr;
         self->flipB = nullptr;
