@@ -226,6 +226,8 @@ throw out of view - initial velocity maintain... if over threshold?
 128; //derp
   // use const static int then you don't need to derp!
 
+todo, some of our SDL_Log that are maybe Error - are just INFO level
+
 # platform specific todo
 
 > rate it 5 stars

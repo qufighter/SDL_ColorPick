@@ -86,8 +86,11 @@ static void validateProgram(GLuint program) {
     
     glGetProgramInfoLog(program, BUFFER_SIZE, &length, buffer); // Ask OpenGL to give us the log associated with the program
 	if (length > 0){ // If we have any information to display
-        cout << "Program " << program << " link error: " << buffer << endl; // Output the information
-		DebugMessage((buffer));
+//#ifdef COLORPICK_DEBUG_MODE
+//        cout << "Program " << program << " link error: " << buffer << endl; // Output the information
+//#endif
+        SDL_Log("Program %i link error: %s", program, buffer);
+		//DebugMessage((buffer));
 	}
     GLint status;
     glGetProgramiv(program, GL_LINK_STATUS, &status);
@@ -100,8 +103,9 @@ static void validateProgram(GLuint program) {
 
     glGetProgramiv(program, GL_VALIDATE_STATUS, &status); // Find out if the shader program validated correctly
     if (status == GL_FALSE){ // If there was a problem validating
+//#ifdef COLORPICK_DEBUG_MODE
 		cout << "Error validating shader " << program << endl; // Output which program had the error
-        
+//#endif
         GLchar errorLog[1024] = {0};
         glGetProgramInfoLog(program, 1024, NULL, errorLog);
         SDL_Log("Details: %s", errorLog);

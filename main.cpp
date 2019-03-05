@@ -11,15 +11,13 @@
 
 
 void DebugStr(const char *c_str ) {
-#if defined(_DEBUG) || defined(DEBUG) || \
-(defined(__GNUC__) && !defined(__OPTIMIZE__))
+#ifdef COLORPICK_DEBUG_MODE
     SDL_Log("%s", c_str);
 #endif
 }
 
 void debugGLerror(const char *c_str_label){
-#if defined(_DEBUG) || defined(DEBUG) || \
-(defined(__GNUC__) && !defined(__OPTIMIZE__))
+#ifdef COLORPICK_DEBUG_MODE
     GLenum errorno = 1;
     while( errorno != GL_NO_ERROR && errorno ){
         errorno = glGetError();
@@ -739,37 +737,26 @@ void ReshapeWindow(bool fromMain){
 
 int main(int argc, char *argv[]) {
 
+
+#ifdef COLORPICK_DEBUG_MODE
+    // we consider this the "debug" build.... ?
+#else
+    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_ERROR);
+    //SDL_LogSetAllPriority(SDL_LOG_PRIORITY_WARN);
+    // todo, some of our SDL_Log that are maybe Error - are just INFO level....
+    //SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Notice: Log Level Error");
+#endif
+
 //    lastTimerTime = SDL_GetTicks();
 
     //SDL_Renderer *renderer;
     bool result = false;
 
 
-    /*
-     
-SDL_INIT_TIMER
-timer subsystem
-SDL_INIT_AUDIO
-audio subsystem
-SDL_INIT_VIDEO
-video subsystem; automatically initializes the events subsystem
-SDL_INIT_JOYSTICK
-joystick subsystem; automatically initializes the events subsystem
-SDL_INIT_HAPTIC
-haptic (force feedback) subsystem
-SDL_INIT_GAMECONTROLLER
-controller subsystem; automatically initializes the joystick subsystem
-SDL_INIT_EVENTS
-events subsystem
-SDL_INIT_EVERYTHING
-all of the above subsystems
-SDL_INIT_NOPARACHUTE
-compatibility; this flag is ignored
-     
-     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0) {
-     
-     */
-//
+
+
+    SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, "0");
+    SDL_SetHint(SDL_HINT_IDLE_TIMER_DISABLED, "0");
     SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1"); // its trapped by default still as of SDL2-2.0.9 (even though docs say otherwise...)
     SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
     SDL_SetHint(SDL_HINT_MAC_BACKGROUND_APP, "0");  // as far as I can tell.... this only makes the window not re-enter the background once focused - and also becomes incapable of entering the forground (no menu bar)
@@ -777,6 +764,33 @@ compatibility; this flag is ignored
 //#ifdef __ANDROID
 //    SDL_SetHint(SDL_ANDROID_SEPARATE_MOUSE_AND_TOUCH, "1");
 //#endif
+
+
+    /*
+
+     SDL_INIT_TIMER
+     timer subsystem
+     SDL_INIT_AUDIO
+     audio subsystem
+     SDL_INIT_VIDEO
+     video subsystem; automatically initializes the events subsystem
+     SDL_INIT_JOYSTICK
+     joystick subsystem; automatically initializes the events subsystem
+     SDL_INIT_HAPTIC
+     haptic (force feedback) subsystem
+     SDL_INIT_GAMECONTROLLER
+     controller subsystem; automatically initializes the joystick subsystem
+     SDL_INIT_EVENTS
+     events subsystem
+     SDL_INIT_EVERYTHING
+     all of the above subsystems
+     SDL_INIT_NOPARACHUTE
+     compatibility; this flag is ignored
+
+     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0) {
+
+     */
+    //
 
     /* initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER) < 0) {
@@ -842,10 +856,6 @@ compatibility; this flag is ignored
         return 1;
     }
 
-    //
-    //SDL_HINT_IDLE_TIMER_DISABLED
-    SDL_EnableScreenSaver();
-
     colorPickState->viewport_ratio = (win_w+1.0f)/win_h;
 
 
@@ -875,6 +885,7 @@ compatibility; this flag is ignored
     }
 
 
+    SDL_EnableScreenSaver(); // this may set some of the above hints automagically
 
 
 #ifdef COLORPICK_MISSING_MAIN_LOOP

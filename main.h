@@ -238,4 +238,10 @@ static bool didInteract;
 #include <stdio.h>
 
 
+#if defined(_DEBUG) || defined(DEBUG) || (defined(__GNUC__) && !defined(__OPTIMIZE__))
+#define COLORPICK_DEBUG_MODE 1
+#endif
+
+
+
 #endif
