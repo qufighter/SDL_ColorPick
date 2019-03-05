@@ -67,6 +67,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         UI_SETTING_GAME_EASY_MODE,
         UI_SETTING_MINIGAMES_ON,
         UI_SETTING_SHOW_NAV_ARROWS,
+        // YOU MAY ONLY ADD NEW SETTINGS HERE <<<<<<<
 
         UI_ACHEIVEMENT_START = 128, // 0x80
         UI_ACHEIVEMENT_INEXACT, // "*in-exact!!"
@@ -85,6 +86,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         UI_ACHEIVEMENT_100K_HARD,
         UI_ACHEIVEMENT_1M_HARD,
         UI_ACHEIVEMENT_1B_HARD,
+        // YOU MAY ONLY ADD NEW ACHIEVEMENTS HERE <<<<<<<
 
         UI_SETTING_LAST = 255  // 0xFF
     } UI_SETTINGS_ENUM; // settingKey enum ?
@@ -180,7 +182,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
 
 
-        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->pad(0.4,0.001)->print("Pallets")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->pad(0.4,0.001)->print("Palettes")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
         uiObject* row = new uiObject();
@@ -278,6 +280,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         settingsList->add(SettingsListObj((new uiText(dummyContainer, subWidth))->marginLeft(0.05)->print(appVersion)->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
         settingsList->add(SettingsListObj((new uiControlButton(d, "Bugs / Comments", &interactionGoToFeedbackUrl))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiControlButton(d, "? Help", &interactionGoToHelpUrl))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
         settingsList->add(SettingsListObj((new uiObject()), SETTING_TYPES_ENUM::SPACE, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
@@ -593,6 +596,17 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         SDL_free(clrStr);
     }
 
+    static void interactionGoToHelpUrl(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        uiSettingsScroller* self = myUxRef->settingsScroller;
+        const char* urlBase = "http://www.vidsbee.com/ColorPick/Mobile/Help/?appVersion=";
+        long len = SDL_strlen(urlBase) + SDL_strlen(self->appVersion) + 10;
+        char* clrStr = (char*)SDL_malloc( sizeof(char) * len );
+        SDL_snprintf(clrStr, len,  "%s%s", urlBase, self->appVersion);
+        myUxRef->doOpenURL(clrStr);
+        SDL_free(clrStr);
+    }
+
     static void interactionResetScoreBtn(uiObject *interactionObj, uiInteraction *delta){
         Ux* myUxRef = Ux::Singleton();
         myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &interactionResetScore, nullptr);
@@ -667,6 +681,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
     void resize(Float_Rect visible, Float_Rect hidden){
         Ux* uxInstance = Ux::Singleton();
+        uiSettingsScroller* self = uxInstance->settingsScroller;
 
         //holderBg->setBoundaryRectForAnimState(&visible,&hidden);
         holderBg->setBoundaryRect(&visible);
@@ -699,7 +714,9 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
             historyPalleteCloseX->setBoundaryRect( 0.5-0.025, 1.01, 0.05, 0.08);
 
             settingsScrollerItself->setBoundaryRect( 0.0, 0.0, 1.0, 1.0);
+
             settingsScroller->resizeTililngEngine(1, 10);
+            //settingsScroller->resizeTililngEngine(1, self->settingsList->total()); //TEMP testing (screenshots) ONLY
 
         }
 

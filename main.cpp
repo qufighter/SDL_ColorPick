@@ -834,6 +834,7 @@ compatibility; this flag is ignored
                          //| SDL_WINDOW_ALLOW_HIGHDPI
                          | SDL_WINDOW_RESIZABLE
                          //| SDL_WINDOW_MAXIMIZED
+                         //| SDL_WINDOW_FULLSCREEN
                          //| SDL_WINDOW_BORDERLESS
         );
     if (!window) {

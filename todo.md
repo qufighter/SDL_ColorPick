@@ -44,9 +44,11 @@ disable 3d anim (when modal present?) or and optionally ? (no?)
 
 distance based movement time for moveTo used during games (even when its really close, it still takes 1 second to move...) ? (maybe its good, gives user some time)
 
-update icons (default)
-
 verify logging in release mode
+
+make note of when save occurs...
+
+(web) crawlable share URL notice at top....
 
 colorblind detection? (maybe in some minigames... ??)
 

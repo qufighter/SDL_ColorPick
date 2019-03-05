@@ -111,6 +111,7 @@ struct Minigames{
 
     int my_timer_id;
     bool gotMinigameAnnounceDone;
+    bool gameCompleted;
 
     typedef enum  {
         GAME0_RESERVED=0,
@@ -196,6 +197,7 @@ struct Minigames{
 
 
         gameTimer = (new Ux::uiText(controlBarTop, 1.0/5.0))->pad(0.0,0.0)->margins(0.0,0.25,0.0,0.25)->print("00:00");
+        controlBarTop->setClickInteractionCallback(&interactionHeadingClick);
 
 
         gameHeadingHolder = new Ux::uiObject();
@@ -205,6 +207,21 @@ struct Minigames{
 
         //last for on top
         gameHeading = (new Ux::uiText(gameHeadingHolder, 0.1))->pad(0.0,0.0)->margins(0.25,0.0,0.0,0.0)->print("");
+//        gameHeading->text_itself->setClickInteractionCallback(&interactionHeadingClick);
+//        gameHeading->text_itself->doesNotCollide = false;
+    }
+
+    static void interactionHeadingClick(Ux::uiObject *interactionObj, uiInteraction *delta){
+        OpenGLContext* ogg=OpenGLContext::Singleton();
+        Minigames* self = ogg->minigames;
+        Ux* myUxRef = ogg->generalUx;
+        if( self->gameCompleted ){
+            interactionCloseXClicked(interactionObj, delta);
+        }else{
+            myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &interactionCloseXClicked, nullptr);
+            myUxRef->defaultYesNoChoiceDialogue->displayAdditionalMessage("Exit Minigame?");
+            myUxRef->defaultYesNoChoiceDialogue->assignScoringProcessor(nullptr);
+        }
     }
 
     bool minigamesEnabled(){
@@ -342,6 +359,8 @@ struct Minigames{
 
         myUxRef->isMinigameMode = true;
 
+        gameCompleted = false;
+
         currentGame->show(); // we try to call show last, in case show determines it should endGame that it will work right.
 
         //gameHeadingHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
@@ -388,6 +407,7 @@ struct Minigames{
     // we'll stop any timer display from updating needlessly
     void gameIsCompleted(){
         ceaseUpdatingTime();
+        gameCompleted=true;
     }
 
 };

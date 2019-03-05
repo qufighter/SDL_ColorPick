@@ -141,7 +141,8 @@ struct MatchMaster{
             OpenGLContext* ogg=OpenGLContext::Singleton();
             MatchMaster* self = (MatchMaster*)ogg->minigames->currentGame->gameItself; // helper?
 
-            self->checkIfGameIsCompleted(uiAnim); // mostly to reset
+            //self->checkIfGameIsCompleted(uiAnim); // mostly to reset
+            self->isGameComplete(); // mostly to reset
 
             for( int x=0; x<self->activeSwatches; x++ ){
                 Ux::uiSwatch* dest = *self->matchList->get(x);

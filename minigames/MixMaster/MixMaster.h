@@ -167,7 +167,8 @@ struct MixMaster{
             OpenGLContext* ogg=OpenGLContext::Singleton();
             MixMaster* self = (MixMaster*)ogg->minigames->currentGame->gameItself; // helper?
 
-            self->checkIfGameIsCompleted(uiAnim); // mostly to reset
+            //self->checkIfGameIsCompleted(uiAnim); // mostly to reset
+            self->isGameComplete();
 
             for( int x=0; x<self->activeSwatches; x++ ){
                 Ux::uiSwatch* dest = *self->matchList->get(x);
