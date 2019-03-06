@@ -102,6 +102,7 @@ struct Minigames{
     Ux::uiList<GameListObj, Uint8>* gameList;
     GameListObj* currentGame;
     Ux::uiObject* controls;
+    Ux::uiObject* controlBarTopHolder;
     Ux::uiObject* controlBarTop;
     Ux::uiObject* minigamesCloseX;
     Ux::uiObject* minigamesColorPickIcon;
@@ -170,10 +171,13 @@ struct Minigames{
         // TODO use one or more contaienrs for these types of controls!::
 
         controls = new Ux::uiObject();
+        controlBarTopHolder = new Ux::uiObject();
+        controlBarTopHolder->setBoundaryRect(0.0, 0.0, 1.0, 0.1);
         controlBarTop = new Ux::uiObject();
-        controlBarTop->setBoundaryRect(0.0, 0.0, 1.0, 0.1);
+        controlBarTop->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
 
-        controls->addChild(controlBarTop);
+        controls->addChild(controlBarTopHolder);
+
         myUxRef->minigamesUiContainer->addChild(controls);
 
         minigamesCloseX = new Ux::uiObject();
@@ -182,7 +186,7 @@ struct Minigames{
         minigamesCloseX->squarify();
         Ux::setColor(&minigamesCloseX->foregroundColor, 255, 255, 255, 96); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         minigamesCloseX->setClickInteractionCallback(&interactionCloseXClicked);
-        minigamesCloseX->setBoundaryRect(0.05, 0.0, 0.1, 0.1);
+        minigamesCloseX->setBoundaryRect(0.05, 0.0, 0.1, 0.1); // see resize, not really set here...
         controls->addChild(minigamesCloseX);
 
         minigamesColorPickIcon = new Ux::uiObject();
@@ -191,13 +195,26 @@ struct Minigames{
         minigamesColorPickIcon->squarify();
         Ux::setColor(&minigamesColorPickIcon->foregroundColor, 255, 255, 255, 128); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
         minigamesColorPickIcon->setClickInteractionCallback(&interactionCloseXClicked);
-        minigamesColorPickIcon->setBoundaryRect(1.0-0.1-0.05, 0.0, 0.1, 0.1);
+        minigamesColorPickIcon->setBoundaryRect(1.0-0.1-0.05, 0.0, 0.1, 0.1); // see resize, not really set here...
         minigamesColorPickIcon->rotate(-45);
         controls->addChild(minigamesColorPickIcon);
 
 
-        gameTimer = (new Ux::uiText(controlBarTop, 1.0/5.0))->pad(0.0,0.0)->margins(0.0,0.25,0.0,0.25)->print("00:00");
-        controlBarTop->setClickInteractionCallback(&interactionHeadingClick);
+#ifdef COLORPICK_CLOCK_BAR_PRESENT
+        Ux::uiGradientLinear* topGrad = (new Ux::uiGradientLinear(controlBarTopHolder, Float_Rect(0.0,0.0,1.0,1.0)))
+//            ->addStop(0.25, 255,0,0,255)
+//            ->addStop(0.75, 0,0,255,255)
+//            ->addStop(0.5, 0,255,0,255)
+            ->addStop(0.0, 128,128,128,255)
+            //->addStop(0.65, 128,128,128,0)
+            ->addStop(0.65, 0,0,0,255)
+            ->update();
+#endif
+
+        controlBarTopHolder->addChild(controlBarTop);
+
+        gameTimer = (new Ux::uiText(controlBarTop, 1.0/5.0))->pad(0.0,0.0)->margins(0.0,0.35,0.0,0.35)->print("00:00");
+        controlBarTopHolder->setClickInteractionCallback(&interactionHeadingClick);
 
 
         gameHeadingHolder = new Ux::uiObject();
@@ -301,11 +318,32 @@ struct Minigames{
     void resize(){
         Ux* uxInstance = Ux::Singleton();
         if( uxInstance->widescreen ){
-            controlBarTop->setBoundaryRect(0.25, 0.0, 0.5, 0.1);
+
             gameHeadingHolder->setBoundaryRect(0.25, 0.0, 0.5, 1.0);
+
+#ifdef COLORPICK_CLOCK_BAR_PRESENT
+
+            controlBarTop->setBoundaryRect(0.25, 0.5, 0.5, 0.5); // this is really clock holder and nothing more
+            minigamesCloseX->setBoundaryRect(0.05, 0.05, 0.1, 0.1);
+            minigamesColorPickIcon->setBoundaryRect(1.0-0.1-0.05, 0.05, 0.1, 0.1);
+#else
+
+            controlBarTop->setBoundaryRect(0.25, 0.25, 0.5, 0.75); // this is really clock holder and nothing more
+            minigamesCloseX->setBoundaryRect(0.05, 0.0, 0.1, 0.1);
+            minigamesColorPickIcon->setBoundaryRect(1.0-0.1-0.05, 0.0, 0.1, 0.1);
+#endif
+
+
+
+
         }else{
-            controlBarTop->setBoundaryRect(0.0, 0.0, 1.0, 0.1);
             gameHeadingHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+
+            controlBarTop->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+
+            minigamesCloseX->setBoundaryRect(0.05, 0.0, 0.1, 0.1);
+            minigamesColorPickIcon->setBoundaryRect(1.0-0.1-0.05, 0.0, 0.1, 0.1);
+
 
         }
         currentGame->resize();

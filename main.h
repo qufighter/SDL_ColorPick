@@ -243,5 +243,10 @@ static bool didInteract;
 #endif
 
 
+#ifdef __IPHONEOS__
+// not borderless ?
+#define COLORPICK_CLOCK_BAR_PRESENT 1
+#endif
+
 
 #endif

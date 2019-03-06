@@ -9,8 +9,6 @@
 #ifndef ColorPick_iOS_SDL_uiSwatch_h
 #define ColorPick_iOS_SDL_uiSwatch_h
 
-#define STRIPE_MIN_LENGTH 0.10
-#define STRIPE_MAX_EXTENSION 0.20
 
 /*
  aloud: how can this relate to, share API with, otherwise be a descendant of uiViewColor ?  might this be simply another way that a uiViewColor can optionally be represented???

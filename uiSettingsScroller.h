@@ -19,6 +19,15 @@ this is really different from uiHistoryPalleteEditor in that it takes up the ful
 
 struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and is pretty much singleton....
 
+    /*
+     Places to update version strings (incomplete):
+         build.gradle versionCode versionName
+         AndroidManifest.xml versionCode versionName (unused but keep it matched?)
+         Info.plist ios version
+         Info-macosx.plist - may one day be used in a bundle (as of today not yet)
+     and finally, the string below:
+     */
+
     const char* appVersion = "Version-1.0"; // no spaces allowed or we won't be able to open URL
     const static int maxSettings = 45; // the indexing may break at 254....
 

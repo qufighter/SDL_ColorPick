@@ -178,6 +178,8 @@ static Ux* Singleton();
 #include "ux-HueGradientData.h"
 
 #include "uiObject.h" // referrs to Ux:: which referrs to uiObject...
+#include "uiGradientLinear.h"
+
 #include "uiText.h"
 #include "uiEdgeShadow.h"
 #include "uiScrollController.h"
@@ -217,6 +219,16 @@ static Ux* Singleton();
         return result;
     }
 
+    static SDL_Color mixColors(SDL_Color *a, SDL_Color *b, float progressAB){
+        // progress can move from 0.0 (completely A) to 1.0 (completely B)
+        float invProg = 1.0 - progressAB;
+        SDL_Color result;
+        result.r = (a->r * progressAB) + (b->r * invProg);
+        result.g = (a->g * progressAB) + (b->g * invProg);
+        result.b = (a->b * progressAB) + (b->b * invProg);
+        result.a = (a->a * progressAB) + (b->a * invProg);
+        return result;
+    }
 
     static int randomSort(const void *a, const void *b){
         return randomInt(-100, 100);
@@ -243,6 +255,11 @@ static Ux* Singleton();
     static int compareColorListItems(ColorList *a, ColorList *b){
         return compareColor(&a->color, &b->color);
     }
+
+    static int compareGradientStopItems(uiGradientLinear::Gradient_Stop *a, uiGradientLinear::Gradient_Stop *b){
+        return (a->positionPercent * 100) - (b->positionPercent * 100);
+    }
+
 
     Ux(void); // Default constructor
     ~Ux(void); // Destructor for cleaning up our application

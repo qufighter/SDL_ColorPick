@@ -347,6 +347,7 @@ void Ux::updateStageDimension(float w, float h){
 }
 
 void Ux::resizeUiElements(void){
+    SDL_Log("Resize ui elements called, %i", widescreen);
 
     OpenGLContext* ogg=OpenGLContext::Singleton();
 
@@ -445,8 +446,8 @@ void Ux::resizeUiElements(void){
 
             temp = 0.15;
 #ifndef OMIT_SCROLLY_ARROWS
-            movementArrows->resize(Float_Rect(0.27777777777778, 0.0,
-                1.0 - 0.27777777777778 - 0.27777777777778, 1.0));
+            movementArrows->resize(Float_Rect(0.27777777777778, 0.05,
+                1.0 - 0.27777777777778 - 0.27777777777778, 1.0-0.1));
 #endif
             curerntColorPreview->resize(Float_Rect(0.0, ws_clock, 0.27777777777778, 1.0 - ws_clock));
 
@@ -519,6 +520,15 @@ void Ux::resizeUiElements(void){
     }
 
     rootUiObject->updateRenderPosition();
+
+    //  we have an optimization where OOB elements aren't updated by the above, so lets manually update the important ones now....
+    // untrue... boot in widescreen though to see teh issue with these:
+//    historyPalleteEditor->uiObjectItself->testChildCollisionIgnoreBounds=true;
+//    historyPalleteEditor->uiObjectItself->updateRenderPosition();
+//    settingsScroller->uiObjectItself->testChildCollisionIgnoreBounds=true;
+//    settingsScroller->uiObjectItself->updateRenderPosition();
+
+
  //     our "create" caller also updates scrollers at this time??
 }
 
@@ -865,6 +875,7 @@ Ux::uiObject* Ux::create(void){
 
  //    SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 
+    //SDL_Log("ui create done");
 
     return rootUiObject;
 }
