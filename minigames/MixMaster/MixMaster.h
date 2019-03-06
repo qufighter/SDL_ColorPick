@@ -133,7 +133,7 @@ struct MixMaster{
     static void genericExplainColor(Ux::uiObject *interactionObj, uiInteraction *delta){
         Ux* myUxRef = Ux::Singleton();
         Ux::uiSwatch* swatch = (Ux::uiSwatch*)interactionObj->myUiController;
-        SDL_snprintf(myUxRef->print_here, 7,  "%02x%02x%02x", swatch->swatchItself->backgroundColor.r, swatch->swatchItself->backgroundColor.g, swatch->swatchItself->backgroundColor.b);
+        SDL_snprintf(myUxRef->print_here, 7,  "%02x%02x%02x", swatch->last_color.r, swatch->last_color.g, swatch->last_color.b);
         myUxRef->defaultScoreDisplay->displayExplanation(myUxRef->print_here);
 
     }
@@ -146,8 +146,7 @@ struct MixMaster{
         MixMaster* self = (MixMaster*)ogg->minigames->currentGame->gameItself; // helper?
         if( self->isComplete ){
             // lock it up..
-
-            SDL_snprintf(myUxRef->print_here, 7,  "%02x%02x%02x", swatch->swatchItself->backgroundColor.r, swatch->swatchItself->backgroundColor.g, swatch->swatchItself->backgroundColor.b);
+            SDL_snprintf(myUxRef->print_here, 7,  "%02x%02x%02x", swatch->last_color.r, swatch->last_color.g, swatch->last_color.b);
             myUxRef->defaultScoreDisplay->displayExplanation(myUxRef->print_here);
             return;
         }

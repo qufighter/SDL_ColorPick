@@ -104,6 +104,16 @@ struct FlipMaster{
         Ux* myUxRef = ogg->generalUx;
         Ux::uiSwatch* swatch = (Ux::uiSwatch*)interactionObj->myUiController;
 
+
+        if( self->isComplete ){
+            // lock it up..
+            SDL_snprintf(myUxRef->print_here, 7,  "%02x%02x%02x", swatch->last_color.r, swatch->last_color.g, swatch->last_color.b);
+            //SDL_snprintf(myUxRef->print_here, 7,  "%02x%02x%02x", swatch->swatchItself->backgroundColor.r, swatch->swatchItself->backgroundColor.g, swatch->swatchItself->backgroundColor.b);
+            //SDL_snprintf(myUxRef->print_here, 7,  "%02x%02x%02x", interactionObj->childList[0]->backgroundColor.r, interactionObj->childList[0]->backgroundColor.g, interactionObj->childList[0]->backgroundColor.b);
+            myUxRef->defaultScoreDisplay->displayExplanation(myUxRef->print_here);
+            return;
+        }
+
         if( swatch->isFlipped() ){
             return; // cannot flip a flipped swatch....
         }

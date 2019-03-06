@@ -211,6 +211,7 @@ static Ux* Singleton();
     }
 
     static SDL_Color mixColors(SDL_Color *a, SDL_Color *b){
+        // could just call mixColors(a,b,0.5) maybe?.. but this is less maths.... (balanced avg)
         SDL_Color result;
         result.r = (a->r + b->r) * 0.5;
         result.g = (a->g + b->g) * 0.5;
