@@ -118,7 +118,7 @@ struct FlipMaster{
             return; // cannot flip a flipped swatch....
         }
 
-        if( self->flipA != nullptr && self->flipB != nullptr && !self->currentlyEvaluatingWin ){
+        if( self->flipA != nullptr && self->flipB != nullptr && !self->currentlyEvaluatingWin && self->flipA!=swatch && self->flipB !=swatch  ){
             self->currentlyEvaluatingWin = true;
             // if the above are a match... we can probably reset and let them keep going!...
             // during this we should arguably LOCK or delay the animation thread that will call checkIfGameIsCompleted.... (animations may not be threaded though... so we won't use semaphore)
@@ -278,8 +278,9 @@ struct FlipMaster{
 
             int finalScore = (timeBonus * activeSwatches) / solveAttempts;
 
-
-            uxInstance->defaultScoreDisplay->display(gameSwatchesHolder->childList[0], finalScore, SCORE_EFFECTS::MOVE_UP);
+            if(finalScore > 0){
+                uxInstance->defaultScoreDisplay->display(gameSwatchesHolder->childList[1], finalScore, SCORE_EFFECTS::MOVE_UP);
+            }
 
             scoreBreakdownHolder->show();
 

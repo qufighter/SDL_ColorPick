@@ -946,7 +946,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             //        }
 
             // if in easy mode don't loose :)
-            if( self->isGameModeHardMode() ){
+            if( self->isGameModeEnabled() && self->isGameModeHardMode() ){
                 myUxRef->defaultScoreDisplay->displayExplanation("Hard Mode");
                 myUxRef->defaultScoreDisplay->loose(interactionObj, SCORE_EFFECTS::NOMOVE);
             }
@@ -963,6 +963,11 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 //            myUxRef->uxAnimations->scale_bounce(visibleTile, -0.002);
 //        }
 
+    }
+
+    bool isGameModeEnabled(){
+        Ux* uxInstance = Ux::Singleton();
+        return uxInstance->settingsScroller->getBooleanSetting(uiSettingsScroller::UI_SETTING_GAME_ON);
     }
 
     bool isGameModeHardMode(){

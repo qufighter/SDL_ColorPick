@@ -248,9 +248,9 @@ struct MixMaster{
 
             int finalScore = (timeBonus * activeSwatches) / solveAttempts;
 
-
-            uxInstance->defaultScoreDisplay->display(gameSwatchesHolder->childList[0], finalScore, SCORE_EFFECTS::MOVE_UP);
-
+            if(finalScore > 0){
+                uxInstance->defaultScoreDisplay->display(gameSwatchesHolder->childList[0], finalScore, SCORE_EFFECTS::MOVE_UP);
+            }
             scoreBreakdownHolder->show();
 
             SDL_snprintf(uxInstance->print_here, scoreBreakdownLn,  "%i swatch", activeSwatches);
