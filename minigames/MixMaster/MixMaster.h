@@ -40,7 +40,7 @@ struct MixMaster{
     Ux::uiList<Ux::uiSwatch*, Uint8>* matchList; // list of match destinations
 
     Ux::uiList<Ux::uiSwatch*, Uint8>* mixedList; // list of mixed colors (destinations for 2 colors)
-    Ux::uiList<Ux::uiGradientLinear*, Uint8>* mixedShow; // when they pick 2 colors, show how they mix now
+    Ux::uiList<Ux::uiSwatchesGradient*, Uint8>* mixedShow; // when they pick 2 colors, show how they mix now
 
 
     Minigames* minigames;
@@ -65,7 +65,7 @@ struct MixMaster{
         pickList = new Ux::uiList<Ux::uiSwatch*, Uint8>(maxSwatches);
         matchList = new Ux::uiList<Ux::uiSwatch*, Uint8>(maxSwatches);
         mixedList = new Ux::uiList<Ux::uiSwatch*, Uint8>(maxSwatches); //over allocated... meh..
-        mixedShow = new Ux::uiList<Ux::uiGradientLinear*, Uint8>(maxSwatches); //over allocated... meh..
+        mixedShow = new Ux::uiList<Ux::uiSwatchesGradient*, Uint8>(maxSwatches); //over allocated... meh..
 
 
         gameSwatchesHolder->setBoundaryRect(0.1, 0.1, 1.0-0.2, 1.0-0.2); // margins all round
@@ -103,7 +103,7 @@ struct MixMaster{
 
         for( x=0; x<maxSwatches; x++ ){
 
-            Ux::uiGradientLinear* mixedGrad = (new Ux::uiGradientLinear(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)));// ignore these rect....
+            Ux::uiSwatchesGradient* mixedGrad = (new Ux::uiSwatchesGradient(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)));// ignore these rect....
             mixedShow->add(mixedGrad);
         }
 
@@ -303,7 +303,7 @@ struct MixMaster{
         }
 
         for( int x=0; x<totalMixes; x++ ){
-            Ux::uiGradientLinear* mixGrad = *mixedShow->get(x);
+            Ux::uiSwatchesGradient* mixGrad = *mixedShow->get(x);
             mixGrad->show();
         }
     }
@@ -319,7 +319,7 @@ struct MixMaster{
         for( int x=0; x<self->totalMixes; x++ ){
 
             Ux::uiSwatch* mixSwatch = *self->mixedList->get(x);
-            Ux::uiGradientLinear* mixGrad = *self->mixedShow->get(x);
+            Ux::uiSwatchesGradient* mixGrad = *self->mixedShow->get(x);
             Ux::uiSwatch* dest1 = *self->matchList->get(destCtr);
             Ux::uiSwatch* dest2 = *self->matchList->get(destCtr+1);
             destCtr+=2;
@@ -373,18 +373,20 @@ struct MixMaster{
 
     }
 
-    void updateMix(Ux::uiGradientLinear* mixGrad, SDL_Color* destClr1, SDL_Color* destClr2, SDL_Color* mixed){
-        mixGrad->clearStops()->hide()
-//            ->addStop(0.0, destClr1->r, destClr1->g, destClr1->b, 0)
-//            ->addStop(0.1, destClr1)
-            ->addStop(0.2, destClr1)
-            ->addStop(0.4, mixed)
-            ->addStop(0.6, mixed)
-            ->addStop(0.8, destClr2)
-//            ->addStop(0.9, destClr2)
-//            ->addStop(1.0, destClr2->r, destClr2->g, destClr2->b, 0)
-            ->update();
-            //->show();
+    void updateMix(Ux::uiSwatchesGradient* mixGrad, SDL_Color* destClr1, SDL_Color* destClr2, SDL_Color* mixed){
+        // TODO: perhaps the swatch can have a uiSwatchesGradient for better alignment??
+        mixGrad->update(destClr1,destClr2,mixed)->hide();
+//        mixGrad->clearStops()->hide()
+////            ->addStop(0.0, destClr1->r, destClr1->g, destClr1->b, 0)
+////            ->addStop(0.1, destClr1)
+//            ->addStop(0.2, destClr1)
+//            ->addStop(0.4, mixed)
+//            ->addStop(0.6, mixed)
+//            ->addStop(0.8, destClr2)
+////            ->addStop(0.9, destClr2)
+////            ->addStop(1.0, destClr2->r, destClr2->g, destClr2->b, 0)
+//            ->update();
+//            //->show();
     }
 
     bool isGameComplete(){
@@ -400,7 +402,7 @@ struct MixMaster{
         for( int x=0; x<self->totalMixes; x++ ){
 
             Ux::uiSwatch* mixSwatch = *self->mixedList->get(x);
-            Ux::uiGradientLinear* mixGrad = *self->mixedShow->get(x);
+            Ux::uiSwatchesGradient* mixGrad = *self->mixedShow->get(x);
             Ux::uiSwatch* dest1 = *self->matchList->get(destCtr);
             Ux::uiSwatch* dest2 = *self->matchList->get(destCtr+1);
             destCtr+=2;
@@ -522,7 +524,7 @@ struct MixMaster{
             Ux::uiSwatch* move = *self->pickList->get(x);
             Ux::uiSwatch* dest = *self->matchList->get(x);
             Ux::uiSwatch* mixSwatch = *self->mixedList->get(x);
-            Ux::uiGradientLinear* mixGrad = *self->mixedShow->get(x);
+            Ux::uiSwatchesGradient* mixGrad = *self->mixedShow->get(x);
 
             mixGrad->hide();
 

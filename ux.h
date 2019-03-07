@@ -179,6 +179,7 @@ static Ux* Singleton();
 
 #include "uiObject.h" // referrs to Ux:: which referrs to uiObject...
 #include "uiGradientLinear.h"
+#include "uiSwatchesGradient.h"
 
 #include "uiText.h"
 #include "uiEdgeShadow.h"
