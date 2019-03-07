@@ -287,6 +287,7 @@ full history list (8192) out of space achieved
 - add new color to history, it should appear at the top and the colors should all shift by one, all colors should be in position
 
 # sotry
+TODO: pull from ios page for latest...
 
 I remember the good old days
 when all the colors were vibrant
