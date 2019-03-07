@@ -139,14 +139,14 @@ struct Minigames{
         gameList = new Ux::uiList<GameListObj, Uint8>(maxGames);
         gameList->index(MINIGAMES_ENUM::TOTAL_GAMES, indexForGame);
 
-        MatchMaster* minigame1 = new MatchMaster(MINIGAMES_ENUM::GAME1_MATCH_MAKER);
+        MatchMaster* matchmaker = new MatchMaster(MINIGAMES_ENUM::GAME1_MATCH_MAKER);
 //        MixMaster* minigame1 = new MixMaster(MINIGAMES_ENUM::GAME1_MATCH_MAKER);
-        MixMaster* minigame2 = new MixMaster(MINIGAMES_ENUM::GAME2_MIX_MASTER);
-        FlipMaster* minigame3 = new FlipMaster(MINIGAMES_ENUM::GAME3_FLIP_MASTER);
+        MixMaster* mixmaster = new MixMaster(MINIGAMES_ENUM::GAME2_MIX_MASTER);
+        FlipMaster* flipmatcher = new FlipMaster(MINIGAMES_ENUM::GAME3_FLIP_MASTER);
 
-        gameList->add(GameListObj(makeGameArgs(minigame1)));
-        gameList->add(GameListObj(makeGameArgs(minigame2)));
-        gameList->add(GameListObj(makeGameArgs(minigame3)));
+        gameList->add(GameListObj(makeGameArgs(matchmaker)));
+        gameList->add(GameListObj(makeGameArgs(mixmaster)));
+        gameList->add(GameListObj(makeGameArgs(flipmatcher)));
 
 //        SDL_Log("testing this out");
 //        for( int i=0;i<99;i++){

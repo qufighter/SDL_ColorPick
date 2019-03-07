@@ -40,6 +40,7 @@ struct MixMaster{
     Ux::uiList<Ux::uiSwatch*, Uint8>* matchList; // list of match destinations
 
     Ux::uiList<Ux::uiSwatch*, Uint8>* mixedList; // list of mixed colors (destinations for 2 colors)
+    Ux::uiList<Ux::uiGradientLinear*, Uint8>* mixedShow; // when they pick 2 colors, show how they mix now
 
 
     Minigames* minigames;
@@ -64,6 +65,8 @@ struct MixMaster{
         pickList = new Ux::uiList<Ux::uiSwatch*, Uint8>(maxSwatches);
         matchList = new Ux::uiList<Ux::uiSwatch*, Uint8>(maxSwatches);
         mixedList = new Ux::uiList<Ux::uiSwatch*, Uint8>(maxSwatches); //over allocated... meh..
+        mixedShow = new Ux::uiList<Ux::uiGradientLinear*, Uint8>(maxSwatches); //over allocated... meh..
+
 
         gameSwatchesHolder->setBoundaryRect(0.1, 0.1, 1.0-0.2, 1.0-0.2); // margins all round
 
@@ -96,6 +99,12 @@ struct MixMaster{
 
             //tmp1.displayHex(); // testing only...
             pickList->add(tmp1);
+        }
+
+        for( x=0; x<maxSwatches; x++ ){
+
+            Ux::uiGradientLinear* mixedGrad = (new Ux::uiGradientLinear(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)));// ignore these rect....
+            mixedShow->add(mixedGrad);
         }
 
         scoreBreakdownHolder =new Ux::uiObject();
@@ -291,7 +300,11 @@ struct MixMaster{
                 move->displayHex();
                 move->refresh();
             }
+        }
 
+        for( int x=0; x<totalMixes; x++ ){
+            Ux::uiGradientLinear* mixGrad = *mixedShow->get(x);
+            mixGrad->show();
         }
     }
 
@@ -306,6 +319,7 @@ struct MixMaster{
         for( int x=0; x<self->totalMixes; x++ ){
 
             Ux::uiSwatch* mixSwatch = *self->mixedList->get(x);
+            Ux::uiGradientLinear* mixGrad = *self->mixedShow->get(x);
             Ux::uiSwatch* dest1 = *self->matchList->get(destCtr);
             Ux::uiSwatch* dest2 = *self->matchList->get(destCtr+1);
             destCtr+=2;
@@ -332,10 +346,13 @@ struct MixMaster{
 
                 SDL_Color mixed = Ux::mixColors( &dest1move->last_color, &dest2move->last_color );
 
+                //showMix(mixGrad, &dest1move->last_color, &dest2move->last_color, &mixed);
+                mixGrad->show();
+
                 if( !Ux::colorEquals(&mixed, &mixSwatch->last_color ) ){
                     SDL_snprintf(uxInstance->print_here, 7,  "   "); // once at boot....
-                    dest1move->hexDisplay->color(mixed.r, mixed.g, mixed.b, mixed.a); // lets show what color it mixes to somewhares...
-                    dest2move->hexDisplay->color(mixed.r, mixed.g, mixed.b, mixed.a); // lets show what color it mixes to somewhares...
+//                    dest1move->hexDisplay->color(mixed.r, mixed.g, mixed.b, mixed.a); // lets show what color it mixes to somewhares...
+//                    dest2move->hexDisplay->color(mixed.r, mixed.g, mixed.b, mixed.a); // lets show what color it mixes to somewhares...
                     // mayhaps this is swatch border color ??? could help.. .but we'll need to make sure this gets reset tho.... ( add to swatch ->update() to auto fix it ?? )
                     dest1move->print(uxInstance->print_here);
                     dest2move->print(uxInstance->print_here);
@@ -356,6 +373,19 @@ struct MixMaster{
 
     }
 
+    void updateMix(Ux::uiGradientLinear* mixGrad, SDL_Color* destClr1, SDL_Color* destClr2, SDL_Color* mixed){
+        mixGrad->clearStops()->hide()
+//            ->addStop(0.0, destClr1->r, destClr1->g, destClr1->b, 0)
+//            ->addStop(0.1, destClr1)
+            ->addStop(0.2, destClr1)
+            ->addStop(0.4, mixed)
+            ->addStop(0.6, mixed)
+            ->addStop(0.8, destClr2)
+//            ->addStop(0.9, destClr2)
+//            ->addStop(1.0, destClr2->r, destClr2->g, destClr2->b, 0)
+            ->update();
+            //->show();
+    }
 
     bool isGameComplete(){
         Ux* uxInstance = Ux::Singleton();
@@ -370,6 +400,7 @@ struct MixMaster{
         for( int x=0; x<self->totalMixes; x++ ){
 
             Ux::uiSwatch* mixSwatch = *self->mixedList->get(x);
+            Ux::uiGradientLinear* mixGrad = *self->mixedShow->get(x);
             Ux::uiSwatch* dest1 = *self->matchList->get(destCtr);
             Ux::uiSwatch* dest2 = *self->matchList->get(destCtr+1);
             destCtr+=2;
@@ -408,16 +439,18 @@ struct MixMaster{
 
             if( dest1move != nullptr  && dest2move != nullptr ){
 
-                if(!isWin) continue; // arguably if we are going to save another loop later, we'd instead keep going here.....
+                //if(!isWin) continue; // arguably if we are going to save another loop later, we'd instead keep going here.....
 
-                // note: isWin could already be false.... no matter really ??
                 SDL_Color mixed = Ux::mixColors( &dest1move->last_color, &dest2move->last_color );
+
+                updateMix(mixGrad, &dest1move->last_color, &dest2move->last_color, &mixed); // we want to keep these hidden... until we know is ready to score.. then show them all...
 
                 if( !Ux::colorEquals(&mixed, &mixSwatch->last_color ) ){
                     isWin = false;
                 }
 
             }else{
+                mixGrad->hide(); // it hides in both if and else, but it updates above too
                 isReadyToScore = false;
                 isWin = false;
             }
@@ -489,6 +522,9 @@ struct MixMaster{
             Ux::uiSwatch* move = *self->pickList->get(x);
             Ux::uiSwatch* dest = *self->matchList->get(x);
             Ux::uiSwatch* mixSwatch = *self->mixedList->get(x);
+            Ux::uiGradientLinear* mixGrad = *self->mixedShow->get(x);
+
+            mixGrad->hide();
 
             if( x < self->activeSwatches ){
 
@@ -514,6 +550,9 @@ struct MixMaster{
                     y = (self->tileHeight * x * 2) + (vertPadDist * x * 2) + (vertPadDist * 2);
 
                     mixSwatch->uiObjectItself->setBoundaryRect(0.5/*0.6-0.1*/, y, 0.4, height * 2);
+
+                    //mixGrad->uiObjectItself->setBoundaryRect(0.9/*0.6-0.1*/, y + self->halfTileHeight, 0.1, height);
+                    mixGrad->uiObjectItself->setBoundaryRect(0.5/*0.6-0.1*/, y + self->halfTileHeight, 0.1, height);
 
                     SDL_Color mixed = Ux::mixColors( &myDestList->get(mixIndex)->color, &myDestList->get(mixIndex+1)->color );
                     mixSwatch->update( &mixed );

@@ -43,7 +43,7 @@ struct uiGradientLinear{
 
         Ux* uxInstance = Ux::Singleton();
 
-        gradientStops = new uiList<Gradient_Stop, Uint8>(5); // max 5 stops right now.... plenty...
+        gradientStops = new uiList<Gradient_Stop, Uint8>(10); // max 10 stops right now.... plenty...
 
         uiObjectItself = new uiObject();
         uiObjectItself->myUiController = this;
@@ -51,7 +51,7 @@ struct uiGradientLinear{
 
         uiObjectItself->setBoundaryRect(&boundaries);
 
-        detail = 32;
+        detail = 48;
         angle = 0;
 
         
@@ -61,30 +61,38 @@ struct uiGradientLinear{
         resize();
     }
 
-
+    uiGradientLinear* clearStops(){
+        gradientStops->clear();
+        return this;
+    }
 
     uiGradientLinear* addStop(float percentage, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
         gradientStops->add(Gradient_Stop(percentage, r, g, b, a));
         return this;
     }
 
-    void show(){
-        uiObjectItself->showAndAllowInteraction();
+    uiGradientLinear* addStop(float percentage, SDL_Color* clr){
+        gradientStops->add(Gradient_Stop(percentage, clr));
+        return this;
     }
 
-    void hide(){
+    uiGradientLinear* show(){
+        uiObjectItself->showAndAllowInteraction();
+        return this;
+    }
+
+    uiGradientLinear* hide(){
         uiObjectItself->hideAndNoInteraction();
+        return this;
     }
 
     void resize(){
 
     }
 
-    void print(const char* txtToShow){
-        //hexDisplay->print(txtToShow);
-    }
-
     uiGradientLinear* update(){
+
+        // if you get strange truncations, make sure we alloacted enough gradientStops
 
         // first lets allocate our child objects if they aren't already there...
 
@@ -103,11 +111,11 @@ struct uiGradientLinear{
         for( int x=0; x<detail; x++){
             prog = x / (detail + 0.0f);
             uiObject* child;
-            if( x < uiObjectItself->childListIndex + 1 ){
+            if( x < uiObjectItself->childListIndex ){ // see getOrCreateMenuItem
+                child = uiObjectItself->childList[x];
+            }else{
                 child = new uiObject();
                 uiObjectItself->addChild(child);
-            }else{
-                child = uiObjectItself->childList[x];
             }
 
             if( prog > stop->positionPercent ){
@@ -123,7 +131,7 @@ struct uiGradientLinear{
 
             child->setBoundaryRect(0.0, x*eachRow, 1.0, eachRow);
 
-            child->setBackgroundColor(&stop->color);
+            //child->setBackgroundColor(&stop->color);
 
 
             float stopDist = stop->positionPercent - prevStop->positionPercent;
@@ -135,19 +143,20 @@ struct uiGradientLinear{
             if( stopProg < 0 ) stopProg = 0;
 
 //
-//            SDL_Log("gradient stop prev %f %i %i %i", prevStop->positionPercent, prevStop->color.r, prevStop->color.g, prevStop->color.b);
-//            SDL_Log("gradient stop curr %f %i %i %i", stop->positionPercent, stop->color.r, stop->color.g, stop->color.b);
+//            SDL_Log("gradient stop prev %f %i %i %i %i", prevStop->positionPercent, prevStop->color.r, prevStop->color.g, prevStop->color.b, prevStop->color.a);
+//            SDL_Log("gradient stop curr %f %i %i %i %i", stop->positionPercent, stop->color.r, stop->color.g, stop->color.b, stop->color.a);
 //            SDL_Log("overall prog:  %f inter-stop prog %f", prog, stopProg);
 
 
             SDL_Color mixed = Ux::mixColors(&prevStop->color, &stop->color, 1.0 - (stopProg * multipl));
 
-            //SDL_Log("result %i %i %i", mixed.r, mixed.g, mixed.b);
+//            SDL_Log("result %i %i %i %i", mixed.r, mixed.g, mixed.b, mixed.a);
 
 
             child->setBackgroundColor(&mixed);
             
             lastStop = stop;
+
         }
 
         /*
@@ -167,6 +176,8 @@ struct uiGradientLinear{
 
 
         SDL_free(stopIterator);
+
+        uiObjectItself->updateRenderPosition();
 
         return this;
     }
