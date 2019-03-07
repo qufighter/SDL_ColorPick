@@ -45,6 +45,9 @@ struct uiSwatch{
         Ux::setColor(&swatchItself->backgroundColor, 0, 0, 0, 255);
         uiObjectItself->addChild(swatchItself);
 
+        gradientDisplay = (new Ux::uiSwatchesGradient(swatchItself, Float_Rect(0.0,0.25,0.4,0.5)));
+        gradientDisplay->hide();
+
 //        swatchItself->hasForeground=true;
 //        Ux::setColor(&swatchItself->foregroundColor, 192, 192, 192, 255);
 //        uxInstance->printCharToUiObject(swatchItself, CHAR_ZOOM_SPEEDY_GUY, DO_NOT_RESIZE_NOW);
@@ -64,6 +67,8 @@ struct uiSwatch{
     uiObject* uiObjectItself; //BTW: this is the border too...  // no real inheritance here, this its the uiSwatch, I would use self->
     uiObject* swatchItself;
     Ux::uiText* hexDisplay;
+
+    Ux::uiSwatchesGradient* gradientDisplay;
 
     SDL_Color last_color;
 
@@ -90,6 +95,21 @@ struct uiSwatch{
         return this;
     }
 
+    uiSwatch* hideGradient(){
+        gradientDisplay->hide();
+        return this;
+    }
+
+    uiSwatch* showGradient(){
+        gradientDisplay->show();
+        return this;
+    }
+
+    uiSwatch* updateGradient(SDL_Color* destClr1, SDL_Color* destClr2, SDL_Color* mixed){
+        gradientDisplay->update(destClr1, destClr2, mixed);
+        return this;
+    }
+
     bool isFlipped(){
         return displayHexOn && displayBgOn;
     }
@@ -109,6 +129,7 @@ struct uiSwatch{
     void print(const char* txtToShow){
         hexDisplay->print(txtToShow);
     }
+
 
     bool update(SDL_Color* color){
 

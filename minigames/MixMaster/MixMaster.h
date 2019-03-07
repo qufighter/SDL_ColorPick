@@ -38,9 +38,7 @@ struct MixMaster{
 
     Ux::uiList<Ux::uiSwatch*, Uint8>* pickList; // this is list of movable colors
     Ux::uiList<Ux::uiSwatch*, Uint8>* matchList; // list of match destinations
-
     Ux::uiList<Ux::uiSwatch*, Uint8>* mixedList; // list of mixed colors (destinations for 2 colors)
-    Ux::uiList<Ux::uiSwatchesGradient*, Uint8>* mixedShow; // when they pick 2 colors, show how they mix now
 
 
     Minigames* minigames;
@@ -65,7 +63,6 @@ struct MixMaster{
         pickList = new Ux::uiList<Ux::uiSwatch*, Uint8>(maxSwatches);
         matchList = new Ux::uiList<Ux::uiSwatch*, Uint8>(maxSwatches);
         mixedList = new Ux::uiList<Ux::uiSwatch*, Uint8>(maxSwatches); //over allocated... meh..
-        mixedShow = new Ux::uiList<Ux::uiSwatchesGradient*, Uint8>(maxSwatches); //over allocated... meh..
 
 
         gameSwatchesHolder->setBoundaryRect(0.1, 0.1, 1.0-0.2, 1.0-0.2); // margins all round
@@ -99,12 +96,6 @@ struct MixMaster{
 
             //tmp1.displayHex(); // testing only...
             pickList->add(tmp1);
-        }
-
-        for( x=0; x<maxSwatches; x++ ){
-
-            Ux::uiSwatchesGradient* mixedGrad = (new Ux::uiSwatchesGradient(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)));// ignore these rect....
-            mixedShow->add(mixedGrad);
         }
 
         scoreBreakdownHolder =new Ux::uiObject();
@@ -303,8 +294,8 @@ struct MixMaster{
         }
 
         for( int x=0; x<totalMixes; x++ ){
-            Ux::uiSwatchesGradient* mixGrad = *mixedShow->get(x);
-            mixGrad->show();
+            Ux::uiSwatch* mixSwatch = *mixedList->get(x);
+            mixSwatch->showGradient();
         }
     }
 
@@ -319,7 +310,6 @@ struct MixMaster{
         for( int x=0; x<self->totalMixes; x++ ){
 
             Ux::uiSwatch* mixSwatch = *self->mixedList->get(x);
-            Ux::uiSwatchesGradient* mixGrad = *self->mixedShow->get(x);
             Ux::uiSwatch* dest1 = *self->matchList->get(destCtr);
             Ux::uiSwatch* dest2 = *self->matchList->get(destCtr+1);
             destCtr+=2;
@@ -346,8 +336,7 @@ struct MixMaster{
 
                 SDL_Color mixed = Ux::mixColors( &dest1move->last_color, &dest2move->last_color );
 
-                //showMix(mixGrad, &dest1move->last_color, &dest2move->last_color, &mixed);
-                mixGrad->show();
+                mixSwatch->showGradient();
 
                 if( !Ux::colorEquals(&mixed, &mixSwatch->last_color ) ){
                     SDL_snprintf(uxInstance->print_here, 7,  "   "); // once at boot....
@@ -373,21 +362,7 @@ struct MixMaster{
 
     }
 
-    void updateMix(Ux::uiSwatchesGradient* mixGrad, SDL_Color* destClr1, SDL_Color* destClr2, SDL_Color* mixed){
-        // TODO: perhaps the swatch can have a uiSwatchesGradient for better alignment??
-        mixGrad->update(destClr1,destClr2,mixed)->hide();
-//        mixGrad->clearStops()->hide()
-////            ->addStop(0.0, destClr1->r, destClr1->g, destClr1->b, 0)
-////            ->addStop(0.1, destClr1)
-//            ->addStop(0.2, destClr1)
-//            ->addStop(0.4, mixed)
-//            ->addStop(0.6, mixed)
-//            ->addStop(0.8, destClr2)
-////            ->addStop(0.9, destClr2)
-////            ->addStop(1.0, destClr2->r, destClr2->g, destClr2->b, 0)
-//            ->update();
-//            //->show();
-    }
+
 
     bool isGameComplete(){
         Ux* uxInstance = Ux::Singleton();
@@ -402,7 +377,6 @@ struct MixMaster{
         for( int x=0; x<self->totalMixes; x++ ){
 
             Ux::uiSwatch* mixSwatch = *self->mixedList->get(x);
-            Ux::uiSwatchesGradient* mixGrad = *self->mixedShow->get(x);
             Ux::uiSwatch* dest1 = *self->matchList->get(destCtr);
             Ux::uiSwatch* dest2 = *self->matchList->get(destCtr+1);
             destCtr+=2;
@@ -444,15 +418,15 @@ struct MixMaster{
                 //if(!isWin) continue; // arguably if we are going to save another loop later, we'd instead keep going here.....
 
                 SDL_Color mixed = Ux::mixColors( &dest1move->last_color, &dest2move->last_color );
+                mixSwatch->hideGradient()->updateGradient(&dest1move->last_color, &dest2move->last_color, &mixed);
 
-                updateMix(mixGrad, &dest1move->last_color, &dest2move->last_color, &mixed); // we want to keep these hidden... until we know is ready to score.. then show them all...
 
                 if( !Ux::colorEquals(&mixed, &mixSwatch->last_color ) ){
                     isWin = false;
                 }
 
             }else{
-                mixGrad->hide(); // it hides in both if and else, but it updates above too
+                mixSwatch->hideGradient();
                 isReadyToScore = false;
                 isWin = false;
             }
@@ -524,9 +498,8 @@ struct MixMaster{
             Ux::uiSwatch* move = *self->pickList->get(x);
             Ux::uiSwatch* dest = *self->matchList->get(x);
             Ux::uiSwatch* mixSwatch = *self->mixedList->get(x);
-            Ux::uiSwatchesGradient* mixGrad = *self->mixedShow->get(x);
 
-            mixGrad->hide();
+            mixSwatch->hideGradient();
 
             if( x < self->activeSwatches ){
 
@@ -552,9 +525,6 @@ struct MixMaster{
                     y = (self->tileHeight * x * 2) + (vertPadDist * x * 2) + (vertPadDist * 2);
 
                     mixSwatch->uiObjectItself->setBoundaryRect(0.5/*0.6-0.1*/, y, 0.4, height * 2);
-
-                    //mixGrad->uiObjectItself->setBoundaryRect(0.9/*0.6-0.1*/, y + self->halfTileHeight, 0.1, height);
-                    mixGrad->uiObjectItself->setBoundaryRect(0.5/*0.6-0.1*/, y + self->halfTileHeight, 0.1, height);
 
                     SDL_Color mixed = Ux::mixColors( &myDestList->get(mixIndex)->color, &myDestList->get(mixIndex+1)->color );
                     mixSwatch->update( &mixed );
