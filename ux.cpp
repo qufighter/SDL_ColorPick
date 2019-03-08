@@ -58,7 +58,7 @@ void Ux::endModal(uiObject *oldModal){
 void Ux::endCurrentModal(){
     if( hasCurrentModal() ){
         // NOTE: just using  currentInteraction here could have SIDE EFFECTS (key presses could reset those???)
-        currentModal->modalDismissal(currentModal, &currentInteraction);
+        currentModal->modalDismissal(currentModal, &currentInteractions[0]); // NOTE this BAD hack... lucky most modal dismissals dont' care much about the interaction details......
         // endModal(currentModal); // the modal dismissal SHOULD call end modal automatically!  if not you probably did it wrong
     }else{
 #if __ANDROID__
@@ -94,10 +94,10 @@ Ux::Ux(void) {
     lastHue = new HSV_Color();
     currentlyPickedColor = new SDL_Color();
 
-    isInteracting = false;
-    currentInteraction = uiInteraction();
+    for( int f=0; f<MAX_SUPPORTED_FINGERS_MICE; f++ ){
+        currentInteractions[f] = uiInteraction();
+    }
 
-    interactionObject = nullptr;
     currentModal = nullptr;
 //    for( int x=0; x<COLOR_INDEX_MAX; x++ ){
 //        palleteColorsIndex[x] = palleteMax; //-1; // largest Uint..
@@ -1071,35 +1071,69 @@ void Ux::printCharOffsetUiObject(uiObject* letter, int charOffset){
                 text_xStep,              text_yStep);
 }
 
-bool Ux::triggerInteraction(bool isStart){ // mouseup, mouse didn't move
 
-    bool hasInteraction = objectCollides(currentInteraction.px, currentInteraction.py);
+
+uiInteraction* Ux::interactionForPointerEvent(SDL_Event* event){
+
+    // it may not be a pointer event afterall... so watch out!
+    // for mouse, we may look at     Uint32 which;       /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
+    // to support multi mouse
+    // but for multi touch......
+
+    int fingerDevice = 0; // SDL supports 64 bits of finger devices (and 32 bits of mouse devices...), we support maybe.. 10 ?
+
+    if( event->type == SDL_FINGERDOWN || event->type == SDL_FINGERMOTION || event->type == SDL_FINGERUP ){
+         fingerDevice = event->tfinger.fingerId;
+    }// else if its mouse, look at which (see above) for multi mouse support :)
+
+    if( fingerDevice >= MAX_SUPPORTED_FINGERS_MICE ){
+        fingerDevice = MAX_SUPPORTED_FINGERS_MICE - 1;
+    }
+
+    return &currentInteractions[fingerDevice];
+
+    // NOTE; if the interaction already has fingerStateDown then a buttion is ALREADY pressed....... (handled elsewhere but good to know)
+}
+
+bool Ux::triggerInteraction(uiInteraction* which, bool isStart){ // mouseup, mouse didn't move
+
+    bool hasInteraction = objectCollides(which);
+
+    uiObject* iinteractionObject = (uiObject*)which->interactionObject;
 
  //    interactionObject  currentInteraction
-    if( hasInteraction && isStart ){
-        if( lastInteractionObject == interactionObject ){
+    if( hasInteraction && isStart && iinteractionObject != nullptr ){
+        if( which->lastInteractionObject == iinteractionObject ){
             // second click
-            currentInteraction.isSecondInteraction=true;
+            which->isSecondInteraction=true;
         }
-        if( interactionObject->interactionBeginCallback != nullptr ){
-            interactionObject->interactionBeginCallback(interactionObject, &currentInteraction);
+        if( iinteractionObject->interactionBeginCallback != nullptr ){
+            iinteractionObject->interactionBeginCallback(iinteractionObject, which);
         }
+
+
     }else{
-        lastInteractionObject = interactionObject;
+        which->lastInteractionObject = iinteractionObject;
     }
+
+    which->didCollideWithObject = hasInteraction;
+
     return hasInteraction;
 }
 
 // by default, its the start of interaction when this is called...
-bool Ux::triggerInteraction(void){ // mouseup, mouse didn't move
-    return triggerInteraction(true);
+bool Ux::triggerInteraction(uiInteraction* which){ // mouseup, mouse didn't move
+    return triggerInteraction(which, true);
 }
 
-bool Ux::objectCollides(float x, float  y){
-    return objectCollides(rootUiObject, x, y);
+bool Ux::objectCollides(uiInteraction* which){
+    return objectCollides(rootUiObject, which);
 }
 
-bool Ux::objectCollides(uiObject* renderObj, float x, float y){
+bool Ux::objectCollides(uiObject* renderObj, uiInteraction* which){
+
+    float x = which->px;
+    float y = which->py;
 
     bool collides = false;
     bool childCollides = false;
@@ -1121,15 +1155,14 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
             if( renderObj->hasInteraction || renderObj->hasInteractionCb ){
                 // quite arguable we can return here, continuing to seek interaction on child objects may produce odd effects
 
-                interactionObject = renderObj;
-
-                //SDL_Log("WE DID FIND ANOTHER MATCH");
-
-                isInteracting = true;
                     // I will argue we want the deepest interaction to tell us if it can be activated currently....
                     // and should not return at once..
                 //return collides;
                 //collides = true;
+
+                which->isInteracting = true;
+                which->interactionObject = renderObj;
+
             }
 
 
@@ -1143,7 +1176,7 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
             // we need to check the children in reverse, the ones that render last are on top
             for( int ix=renderObj->childListIndex-1; ix>-1; ix-- ){
                 // if already has collides and already isInteracting then return it?????
-                childCollides = objectCollides(renderObj->childList[ix], x, y);// || collides;
+                childCollides = objectCollides(renderObj->childList[ix], which);// || collides;
 
                 if( childCollides ) {
                     return childCollides;
@@ -1159,21 +1192,23 @@ bool Ux::objectCollides(uiObject* renderObj, float x, float y){
     return collides;
 }
 
+// TODO this needs uiInteraction *delta arg now.... which is jsut better than float all around anyway right?.0
 // we should split this out, this is for wheeel interaction only....
-void Ux::wheelOrPinchInteraction(float delta){
-    if( interactionObject == nullptr ) return;
-    uiObject* wheelIntObj = interactionObject->findWheelOrPinchInteractionObject();
+void Ux::wheelOrPinchInteraction(uiInteraction *delta, float wheeldelta){
+    uiObject* iinteractionObject = (uiObject*)delta->interactionObject;
+    if( iinteractionObject == nullptr ) return;
+    uiObject* wheelIntObj = iinteractionObject->findWheelOrPinchInteractionObject();
     if( wheelIntObj != nullptr ){
-        currentInteraction.wheel = delta;
-        wheelIntObj->interactionWheelCallback(wheelIntObj, &currentInteraction);
+        delta->wheel = wheeldelta; // arguably begin should have alreay set this for us.......
+        wheelIntObj->interactionWheelCallback(wheelIntObj, delta);
     }
 }
 
 // todo investigate dropping this function?  much of this should be split into a different file otherwise
-bool Ux::bubbleCurrentInteraction(){ // true if we found a match
-    uiObject* anObj = interactionObject->bubbleInteraction();
+bool Ux::bubbleCurrentInteraction(uiObject *interactionObj, uiInteraction *delta){ // true if we found a match
+    uiObject* anObj = interactionObj->bubbleInteraction();
     if( anObj != nullptr ){
-        interactionObject = anObj;
+        delta->interactionObject = anObj; // this events object changed...
         return true;
     }
     return false;
@@ -1182,18 +1217,19 @@ bool Ux::bubbleCurrentInteraction(){ // true if we found a match
 bool Ux::interactionUpdate(uiInteraction *delta){
  //     TODO ret bool determine modification?
 
-    uiObject* orig = interactionObject;
+    uiObject* orig = (uiObject*)delta->interactionObject;
+    uiObject* iinteractionObject = (uiObject*)delta->interactionObject;
 
-    if( isInteracting && (interactionObject->hasInteraction || interactionObject->interactionCallback ) ){
+    if( delta->isInteracting && (iinteractionObject->hasInteraction || iinteractionObject->interactionCallback ) ){
 
         // IF the object has a 'drop interaction' function and we can instead gift the animation to the parent object if it collides..... we will do so now....
-        if( interactionObject->shouldCeaseInteractionChecker == nullptr ||
-           interactionObject->shouldCeaseInteractionChecker(interactionObject, delta) ){
+        if( iinteractionObject->shouldCeaseInteractionChecker == nullptr ||
+           iinteractionObject->shouldCeaseInteractionChecker(iinteractionObject, delta) ){
             // if we did cease interaction, it is a point of note that interactionObject just changed
-            if( orig == interactionObject ){
+            if( orig == iinteractionObject ){
                 // however it is also possible we have the same object here, and also possible we merly have interactionCallback
-                if( interactionObject->hasInteraction ){
-                    interactionObject->interactionFn(interactionObject, delta);
+                if( iinteractionObject->hasInteraction ){
+                    iinteractionObject->interactionFn(iinteractionObject, delta);
                 }
                 return true;
             }else{
@@ -1208,16 +1244,16 @@ bool Ux::interactionUpdate(uiInteraction *delta){
 
 bool Ux::interactionComplete(uiInteraction *delta){
 
-    uiObject* origInteractionObj = interactionObject;
-    interactionObject = nullptr;
-    triggerInteraction(false); // interaction obj might change!!!!
+    uiObject* origInteractionObj = (uiObject*)delta->interactionObject;
+    delta->interactionObject = nullptr;
+    triggerInteraction(delta, false); // interaction obj might change!!!!
 
-    if( !interactionObject || origInteractionObj != interactionObject ){
+    if( !delta->interactionObject || origInteractionObj != (uiObject*)delta->interactionObject ){
         if( !origInteractionObj || origInteractionObj->interactionCallbackTypeClick ){
             return false; // if interaction type is click and we moved objects; or if we never had an origional click object
         }else{
             /// otherwise reset it
-            interactionObject = origInteractionObj;
+            delta->interactionObject = origInteractionObj;
         }
     }
 
@@ -1226,9 +1262,11 @@ bool Ux::interactionComplete(uiInteraction *delta){
 
  //     so in some cases, the interaction is complete even if the object changed!?!
 
-    if( isInteracting && interactionObject->hasInteractionCb && interactionObject->interactionCallback != nullptr ){
-        isInteracting = false;
-        interactionObject->interactionCallback(interactionObject, delta);
+    uiObject* iinteractionObject = (uiObject*)delta->interactionObject;
+
+    if( delta->isInteracting && iinteractionObject->hasInteractionCb && iinteractionObject->interactionCallback != nullptr ){
+        delta->isInteracting = false;
+        iinteractionObject->interactionCallback(iinteractionObject, delta);
         return true;
     }
 
@@ -1319,8 +1357,8 @@ void Ux::hueClickedPickerHsv(SDL_Color* c){
     Ux* myUxRef = Ux::Singleton();
     myUxRef->lastHue->fromColor(c);
     ogg->pickerForHue(myUxRef->lastHue, c);
-    myUxRef->historyPalleteEditor->interactionToggleHistory(myUxRef->interactionObject, &myUxRef->currentInteraction);
- //    interactionToggleHistory(nullptr, nullptr);
+    //myUxRef->historyPalleteEditor->interactionToggleHistory(myUxRef->interactionObject, &myUxRef->currentInteraction);
+    myUxRef->historyPalleteEditor->interactionToggleHistory(nullptr, nullptr);
 }
 
 // unused...
@@ -1554,7 +1592,7 @@ bool Ux::bubbleInteractionIfNonClickOrHiddenPalletePreview(uiObject *interaction
  //     see also interactionUpdate
 
     if( !self->historyPalleteEditor->palleteSelectionPreviewHolder->is_being_viewed_state || delta->dy != 0 || delta->dx != 0 ){
-        return self->bubbleCurrentInteraction(); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
+        return self->bubbleCurrentInteraction(interactionObj, delta); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
     }
 
     return true;
@@ -1569,7 +1607,7 @@ bool Ux::bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *de
  //     see also interactionUpdate
 
     if( delta->dy != 0 || delta->dx != 0 ){
-        return self->bubbleCurrentInteraction(); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
+        return self->bubbleCurrentInteraction(interactionObj, delta); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
     }
 
     return true;
@@ -1578,7 +1616,7 @@ bool Ux::bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *de
 bool Ux::bubbleWhenHidden(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
     Ux* self = Ux::Singleton();
     if( interactionObj->isInHiddenState() /*|| interactionObj->isInAnimation()*/ ){
-        return self->bubbleCurrentInteraction();
+        return self->bubbleCurrentInteraction(interactionObj, delta);
     }
     return true;
 }
@@ -1589,7 +1627,7 @@ bool Ux::bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiIn
     Ux* self = Ux::Singleton();
 
     if( interactionObj->isInHiddenState() ){
-        return self->bubbleCurrentInteraction();
+        return self->bubbleCurrentInteraction(interactionObj, delta);
     }
  //    SDL_Log("we are looking at the fabs %f %f ", fabs(delta->dy), fabs(delta->dx) );
     if( !interactionObj->doesInFactRender
@@ -1601,7 +1639,7 @@ bool Ux::bubbleInteractionIfNonHorozontalMovement(uiObject *interactionObj, uiIn
             interactionObj->interactionCallback(interactionObj, delta);
         }
 
-        return self->bubbleCurrentInteraction();
+        return self->bubbleCurrentInteraction(interactionObj, delta);
     }
 
     return true;
@@ -1629,7 +1667,7 @@ bool Ux::bubbleInteractionIfNonHorozontalMovementScroller(uiObject *interactionO
  //     this means we should also bubble...
 
     if( interactionObj->isInHiddenState() /*|| interactionObj->isInAnimation()*/ ){
-        return self->bubbleCurrentInteraction();
+        return self->bubbleCurrentInteraction(interactionObj, delta);
     }
 
     if( !interactionObj->doesInFactRender
@@ -1642,7 +1680,7 @@ bool Ux::bubbleInteractionIfNonHorozontalMovementScroller(uiObject *interactionO
         }
 
         //SDL_Log("00))))0000000000000000000000000 y:%i x:%f",delta ->dy, fabs(0.0f-delta->dx));
-        return self->bubbleCurrentInteraction(); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
+        return self->bubbleCurrentInteraction(interactionObj, delta); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
     }
 
     return true;

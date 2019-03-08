@@ -226,7 +226,7 @@ static float ui_mmv_scale = 2.0; // Device Scale!?
 
 
 
-static bool didInteract;
+//static bool didInteract; instead each interaction will have one of these!
 
 
 #include "ColorPickState.h"

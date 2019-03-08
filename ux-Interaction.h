@@ -25,6 +25,14 @@ struct uiInteraction
 //        friction = 4.2;
         friction = 2.2;
 
+        isSecondInteraction=false;
+        fingerStateDown = false; // its set to true externally..... if requierd...
+        didCollideWithObject=false;
+        isInteracting=false;
+
+        interactionObject = nullptr;
+        lastInteractionObject = nullptr;
+
         useInstantaneousVelocity=false;
     }
     void begin(float x, float y){
@@ -43,6 +51,14 @@ struct uiInteraction
         vy=0;
         wheel = 0;
         isSecondInteraction=false;
+
+        fingerStateDown = false; // its set to true externally..... if requierd...
+        didCollideWithObject=false;
+        isInteracting=false;
+
+//        interactionObject = nullptr;
+//        lastInteractionObject = nullptr;
+
         lastUpdate=SDL_GetTicks();
         //        mvx=0;
         //        mvy=0;
@@ -165,6 +181,11 @@ struct uiInteraction
     float friction;
     //screenpixels: Float_Point
 
+    bool fingerStateDown; // todo: for mousStateDown - seems pertty obvious.... but this should go back to false when the interaction is expired....
+    bool didCollideWithObject;// did collide??
+    bool isInteracting;
+    void* interactionObject;
+    void* lastInteractionObject; // if the finger/mouse changed objects....
 
     int lastUpdate;
     bool isSecondInteraction;

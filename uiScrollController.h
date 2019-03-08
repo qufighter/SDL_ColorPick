@@ -206,7 +206,7 @@ struct uiScrollController{
         // THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
         uiScrollController* self = interactionObj->myScrollController;
         if( self->uiObjectItself->isInHiddenState() /*|| self->uiObjectItself->isInAnimation()*/ ){
-            return uxInstance->bubbleCurrentInteraction();
+            return uxInstance->bubbleCurrentInteraction(interactionObj, delta);
         }
         return true;
     }
@@ -217,7 +217,7 @@ struct uiScrollController{
         uiScrollController* self = interactionObj->myScrollController;
 
         if( self->uiObjectItself->isInHiddenState() /*|| self->uiObjectItself->isInAnimation()*/ ){
-            return uxInstance->bubbleCurrentInteraction();
+            return uxInstance->bubbleCurrentInteraction(interactionObj, delta);
         }
 
         if( uxInstance->widescreen ){
@@ -227,13 +227,13 @@ struct uiScrollController{
                 //SDL_Log("00))))0000000000000000000000000x y:%f x:%f  OK...",fabs(delta->dy), delta->dx);
 
                 //Ux* uxInstance = Ux::Singleton();
-                return uxInstance->bubbleCurrentInteraction();
+                return uxInstance->bubbleCurrentInteraction(interactionObj, delta);
             }
 
         }else{
             if( !self->allowUp && delta->dy > 0 ){ // possibly allowAllowUp or much better configurability of what edge of scrolling might yield the scroll event to another object....
                 //Ux* uxInstance = Ux::Singleton();
-                return uxInstance->bubbleCurrentInteraction(); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
+                return uxInstance->bubbleCurrentInteraction(interactionObj, delta); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
             }
         }
         // this does not work for some reason! possibly known
@@ -325,7 +325,7 @@ struct uiScrollController{
         self->reflowTiles(/*updateScrollyThumb=*/false); // we do not need to updateScrollProgIndicator though !!!!!
 
         Ux* uxInstance = Ux::Singleton();
-        self->weGotFocus(interactionObj, &uxInstance->currentInteraction);
+        self->weGotFocus(interactionObj, &uxInstance->currentInteractions[0]); // todo fix bad hack here... anAnimationPercentCallback should just get the relevant delta even if its unused
     }
 
     // this is an instance of animationUpdateCallbackFn

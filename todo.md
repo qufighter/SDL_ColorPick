@@ -52,6 +52,14 @@ make note of when save occurs...
 
 colorblind detection? (maybe in some minigames... ??)
 
+hide2 nav arrows when in the corner?????
+
+## WEB TODO
+
+make mobile help page (and possibly entire site) mobile responsive....
+
+update exts
+
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
 images can have a color space????
@@ -257,6 +265,7 @@ drop image when history holder present - we should hide it (other modals should 
 osx application bundle (see readme and  see   Use pbxbuild in the same directory as your .pbproj file)
 energy usage -> we can improve this if we allow nap or disable the main loop when the app enters the background (somehow!) SDL_Delay (33 works good desktop but poor on android )
 window border mouse drag listen limit
+use the same xcassets as on the touchy devices ?? (why not just use a icns file instead.... )
 
 ### win
 win impl
@@ -287,21 +296,22 @@ full history list (8192) out of space achieved
 - add new color to history, it should appear at the top and the colors should all shift by one, all colors should be in position
 
 # sotry
-TODO: pull from ios page for latest...
+
+The Eyedropper's Backstory...
 
 I remember the good old days
 when all the colors were vibrant
 the hues were saturated with luminosity
-and I could pick all the colors I ever wanted
+and I could pick all the colōrētur I ever wanted
 with zero consequences.
 
 Now the world has changed, and
 You can't double pick the same color twice anymore
 this might not be such a big deal
 but my entire life I have double clicked to pick colors
-this change has been devestating.
+this change has been devastating.
 
-There are still vibrante hues out there
+There are still vibrant hues out there
 waiting to be discovered and shared with the world;
 a world that has become bitter
 and obsessed with points... as if that even matters.
@@ -311,4 +321,4 @@ I will bring color to the world
 And in doing so will strive to teach the truth.
 That points are not reality.
 That the score does not matter.
-I will find the hue you seek and set us free...
+Let us find the hue you seek and set everyone free...

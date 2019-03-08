@@ -1162,7 +1162,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         Ux* myUxRef = Ux::Singleton();
         uiHistoryPalleteEditor* self = myUxRef->historyPalleteEditor;
         if( !self->historyPalleteHolder->is_being_viewed_state ){
-            return myUxRef->bubbleCurrentInteraction();
+            return myUxRef->bubbleCurrentInteraction(interactionObj, delta);
         }
         return true;
     }

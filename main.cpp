@@ -94,8 +94,13 @@ void debugGLerror(const char *c_str_label){
 typedef void (*voidvoidp)(void *someParam);
 
 int fileDropsAllowed = 0;
-int mousStateDown = 0; // really should count fingers down possibly, finger event support multi touch, mosue events dont!
-bool multiTouchMode = false;
+
+// TODO we need to drop mousStateDown
+//int mousStateDown = 0; // really should count fingers down possibly, finger event support multi touch, mosue events dont!
+//bool multiTouchMode = false; // UNUSED VAR!!!! always on though right?
+
+int fingerDeviceDownCounter = 0;
+bool isLockedForZoomUntilFingersZeros=false;
 int tx,ty;
 
 /* forward declarations */
@@ -103,48 +108,96 @@ void mouseDownEvent(SDL_Event* event);
 void mouseMoveEvent(SDL_Event* event);
 void mouseUpEvent(SDL_Event* event);
 
-void beginInteraction(bool isStart){
-    SDL_GetMouseState(&tx, &ty);
+SDL_Point getMouseXYforEvent(SDL_Event* event){
+    SDL_Point result = {0,0};
+    if( event->type == SDL_FINGERDOWN || event->type == SDL_FINGERMOTION || event->type == SDL_FINGERUP ){
+        result.x = (int)(event->tfinger.x * win_w);
+        result.y = (int)(event->tfinger.y * win_h);
+//    }else if ( event->type == SDL_MOUSEBUTTONDOWN || event->type == SDL_MOUSEMOTION || event->type == SDL_MOUSEBUTTONUP ){
+//        result.x = event->motion.x;
+//        result.y = event->motion.y; // commented this out since its basically teh same as our default handler below... - until we formerly support multi-mouse - then we should handle both up here probably!
+    }else{
+        //SDL_Log("this is unexpected... (probably occurs but unexpected none the less...)");
+        // note: this is basically equivilent to the above, and works perfectly for ALL mosue related events (even SDL_MOUSEWHEEL which is how we get here...)
+        SDL_GetMouseState(&result.x, &result.y);
+    }
+    return result;
+}
+
+uiInteraction* beginInteraction(SDL_Event* event, bool isStart){
+    SDL_Point tmp = getMouseXYforEvent(event);
+    tx = tmp.x; ty=tmp.y; // TODO: lets remove tx ty too...
+    //SDL_GetMouseState(&tx, &ty);
     //SDL_Log("MOUSE xy %d %d", tx,ty);
     openglContext->pixelInteraction.begin(tx, ty);
-    openglContext->generalUx->currentInteraction.begin( (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h );
+    //openglContext->generalUx->currentInteraction.begin( (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h ); // deprecated....
+
+    uiInteraction* fingerInteraction = openglContext->generalUx->interactionForPointerEvent(event);
+
+    // NOTE: if our interaction already has fingerInteraction->fingerStateDown its a second mosue button - and we should cancel - handle it...
+    if( fingerInteraction->fingerStateDown ){
+        return fingerInteraction; //
+    }
+
+    fingerInteraction->begin( (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h );
+    if( isStart ){
+        fingerInteraction->fingerStateDown = true; // maybe use an integer for better tracking?  fingers only have one button though....
+        openglContext->pixelInteraction.fingerStateDown = true;
+    }
+
     //SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
-    didInteract = openglContext->generalUx->triggerInteraction(isStart);
+    /*didInteract = actually this meant did collide, now we haev fingerInteraction->didCollideWithObject */
+    openglContext->generalUx->triggerInteraction(fingerInteraction, isStart);
+
+    return fingerInteraction;
 }
 
 void mouseDownEvent(SDL_Event* event){
-    mousStateDown += 1;
-    //SDL_Log("finger count %i", event->tfinger.);
-    if( mousStateDown > 1 ){
-        //second touch....
-        //SDL_Log("SDL_FINGERDOWN second touch (or second mouse button...)");
-        if( event->type == SDL_FINGERDOWN ){
-            SDL_Log("SDL_FINGERDOWN second touch finger %i", event->tfinger.fingerId ); // fingers 0,1,2,3.... 1.844674407370955e19
-        }
-        mousStateDown--; // doing this so mouseUpEvent has an effect....
-        mouseUpEvent(event); // lets treat it as if they stopped interacting....
-        //mousStateDown++;
-        didInteract=false;
-        return;
+    fingerDeviceDownCounter+=1;
+    if( fingerDeviceDownCounter > 1 ){
+        isLockedForZoomUntilFingersZeros = true;
     }
+//    mousStateDown += 1;
+//    //SDL_Log("finger count %i", event->tfinger.);
+//    if( mousStateDown > 1 ){
+//        //second touch....
+//        //SDL_Log("SDL_FINGERDOWN second touch (or second mouse button...)");
+//        if( event->type == SDL_FINGERDOWN ){
+//            SDL_Log("SDL_FINGERDOWN second touch finger %i", event->tfinger.fingerId ); // fingers 0,1,2,3.... 1.844674407370955e19
+//        }
+//        mousStateDown--; // doing this so mouseUpEvent has an effect....
+//        mouseUpEvent(event); // lets treat it as if they stopped interacting....
+//        //mousStateDown++;
+//        didInteract=false;
+//        return;
+//    }
     openglContext->clearVelocity(); // stop any active panning
     //SDL_SetRelativeMouseMode(SDL_TRUE);
     //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
     // SDL_TouchFingerEvent event->tfinger
     //SDL_GetRelativeMouseState(&tx, &ty);
-    beginInteraction(true);
+    uiInteraction* fingerInteraction = beginInteraction(event, true); // returns uiInteraction* fingerInteraction
     openglContext->renderShouldUpdate = true; // android??
+
+
 }
 
 void mouseMoveEvent(SDL_Event* event){
-    if( mousStateDown == 1 ){
+    uiInteraction* fingerInteraction = openglContext->generalUx->interactionForPointerEvent(event);
+
+    if( fingerInteraction->fingerStateDown /* == 1 */ ){
+
+        uiInteraction* fingerInteraction = openglContext->generalUx->interactionForPointerEvent(event);
+
         //SDL_Log("mousStateDown SDL_FINGERMOTION SDL_MOUSEMOTION");
-        if( !didInteract ){
+        if( /*!didInteract*/ !fingerInteraction->didCollideWithObject && fingerDeviceDownCounter == 1 && !isLockedForZoomUntilFingersZeros ){
             //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 #if __ANDROID__
             bool wasZero = openglContext->pixelInteraction.isZeroed();  // on android this event won't fire right away - in fact it takes quite a LOT of movement to reach SDL_FINGERMOTION here....
 #endif
-            SDL_GetMouseState(&tx, &ty);
+            SDL_Point tmp = getMouseXYforEvent(event);
+            tx = tmp.x; ty=tmp.y;
+//            SDL_GetMouseState(&tx, &ty);
             //SDL_Log("MOUSE xy %d %d", tx,ty);
             openglContext->pixelInteraction.update(tx, ty);
 #if __ANDROID__
@@ -166,13 +219,15 @@ void mouseMoveEvent(SDL_Event* event){
         }else{
             //colorPickState->mmovex = event->motion.xrel;
             //colorPickState->mmovey = event->motion.yrel;
-            SDL_GetMouseState(&tx, &ty);
+            SDL_Point tmp = getMouseXYforEvent(event);
+            tx = tmp.x; ty=tmp.y;
+//            SDL_GetMouseState(&tx, &ty);
             //SDL_Log("MOUSE xy %d %d", tx,ty);
-            openglContext->generalUx->currentInteraction.update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h);
+            fingerInteraction->update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h);
             //SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
             //SDL_Log("MOUSE xy delta %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
             // todo combine above into the following call?
-            openglContext->generalUx->interactionUpdate(&openglContext->generalUx->currentInteraction); // todo whyarg, BETTERARG
+            openglContext->generalUx->interactionUpdate(fingerInteraction); // todo whyarg, BETTERARG
             // todo the above would appear to return a "should update??"
             openglContext->renderShouldUpdate = true; /// TODO interactionUpdate calls generalUx->updateRenderPositions() should cause the UI to update... for now we just redraw everything
         }
@@ -180,20 +235,31 @@ void mouseMoveEvent(SDL_Event* event){
 }
 
 void mouseUpEvent(SDL_Event* event){
-    if( didInteract ){
+    fingerDeviceDownCounter-=1;
+    if( fingerDeviceDownCounter < 1 ){
+        isLockedForZoomUntilFingersZeros = false;
+    }
+
+    uiInteraction* fingerInteraction = openglContext->generalUx->interactionForPointerEvent(event);
+
+    if( /*didInteract*/ fingerInteraction->didCollideWithObject ){
         // we may be able to add this, but we need to track velocity better
-        SDL_GetMouseState(&tx, &ty);
+        SDL_Point tmp = getMouseXYforEvent(event);
+        tx = tmp.x; ty=tmp.y;
+//        SDL_GetMouseState(&tx, &ty);
         //SDL_Log("MOUSE xy %d %d", tx,ty);
-        openglContext->generalUx->currentInteraction.update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h);
+        fingerInteraction->update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h);
         //SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
         //SDL_Log("MOUSE xy delta %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
     }else{
-        SDL_GetMouseState(&tx, &ty);
+        SDL_Point tmp = getMouseXYforEvent(event);
+        tx = tmp.x; ty=tmp.y;
+//        SDL_GetMouseState(&tx, &ty);
         //SDL_Log("MOUSE xy %d %d", tx,ty);
         openglContext->pixelInteraction.done(tx, ty );
 
     }
-    if( mousStateDown == 1 && openglContext->pixelInteraction.dx == 0 && openglContext->pixelInteraction.dy == 0 ){
+    if( fingerInteraction->fingerStateDown /*== 1*/ && openglContext->pixelInteraction.dx == 0 && openglContext->pixelInteraction.dy == 0 ){
         // it was a single touch
         //SDL_Log("SDL_FINGERUP was reachd - position did not change" );
         //SDL_Log("MOUSE xy delta %f %f", openglContext->pixelInteraction.dx, openglContext->pixelInteraction.dy );
@@ -202,9 +268,9 @@ void mouseUpEvent(SDL_Event* event){
         // which could be good or mediocure if we are currently doing a drag and drop
         // but in this case we don't want to overwrite our interaction if we already have one
 
-        // I do not think this following code is needed....
-        if( !didInteract ){ // didInteract really means didInteractWithUi and when we are, we leave the collected_x and collected_y zero at this time....
-            didInteract = openglContext->generalUx->triggerInteraction();
+        // I do not think this following code is needed.... (but may change some things if removed.... this lets us have "mouseup" inetractions without correspondign "mouse down"...
+        if( /*!didInteract*/ !fingerInteraction->didCollideWithObject ){ // didInteract really means didInteractWithUi and when we are, we leave the collected_x and collected_y zero at this time....
+            /*didInteract = */ openglContext->generalUx->triggerInteraction(fingerInteraction);
         }
 
         // didInteract = openglContext->generalUx->triggerInteraction() || didInteract; /// !!! collexted x + y is zero
@@ -214,7 +280,7 @@ void mouseUpEvent(SDL_Event* event){
         // TODO the following may be important for swipey events since fingerup will have velocity or not????
         // todo openglContext->generalUx->currentInteraction.update not called anywhere here ! (except we are now, rbove)
         // maybe its okay?
-        if( ! didInteract ){
+        if( /*!didInteract*/ !fingerInteraction->didCollideWithObject ){
             // we have missed the UI and BG clicked oh now what
             // this breaks multigesture somehow
             // this feature will move
@@ -234,18 +300,18 @@ void mouseUpEvent(SDL_Event* event){
         openglContext->triggerVelocity(openglContext->pixelInteraction.vx, openglContext->pixelInteraction.vy); // args unused....
     }
 
-    if( mousStateDown == 1 ){
-        didInteract = false;
-        didInteract = openglContext->generalUx->interactionComplete(&openglContext->generalUx->currentInteraction); // MOUSEUP
+    if( fingerInteraction->fingerStateDown /* == 1 */ ){
         // at this point we culd really need to render an update
-        if( didInteract ){
+        if( openglContext->generalUx->interactionComplete(fingerInteraction) ){ // MOUSEUP
             //SDL_Log("MARKED FOR UPDATE - WILL IT RENDER????");
             openglContext->renderShouldUpdate=true;
             // this seems to not guarantee render?!
         }
     }
-    didInteract = false;
-    mousStateDown = 0; // because each finger being released will reach this block... we need to avoid the last finger from being treated as click still...
+    //didInteract = false;
+    fingerInteraction->didCollideWithObject = false; // because we are done now.... not sure if this is really needed since begin will reset it, but just to be safe....
+    fingerInteraction->fingerStateDown = false; // or decrement?
+    //mousStateDown = 0; // because each finger being released will reach this block... we need to avoid the last finger from being treated as click still...
     //            mousStateDown -= 1;
     //            if( mousStateDown < 0 ){
     //                mousStateDown=0;
@@ -382,8 +448,9 @@ int EventFilter(void* userdata, SDL_Event* event){
                 // we may need to see what item is under our pointer....
                 // only trouble comes if we are already clicked when scrolling ?
 
-                beginInteraction(false);  // we can see if the last interaction is complete first????
-                openglContext->generalUx->wheelOrPinchInteraction(event->wheel.y);
+                // fingerInteraction is a bad name... fingerOrMouseInteraction is better.....
+                uiInteraction* fingerInteraction = beginInteraction(event, false);  // we can see if the last interaction is complete first????
+                openglContext->generalUx->wheelOrPinchInteraction(fingerInteraction, event->wheel.y);
 
             }else{
                 openglContext->clearVelocity();
@@ -466,26 +533,6 @@ int EventFilter(void* userdata, SDL_Event* event){
 //SDL_IsScreenKeyboardShown(SDL_Window *window);
 
             return 0;
-//        case SDL_MOUSEBUTTONDOWN:
-//        //    mousStateDown += 1;
-//            //SDL_SetRelativeMouseMode(SDL_TRUE);
-//            //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
-//
-//            return 0;
-//        case SDL_MOUSEMOTION:
-//            // SDL_Log("Mouse Motion X,Y %d,%d", event->motion.xrel, event->motion.yrel);
-//            if( mousStateDown = 1 ){
-//                //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
-//                //colorPickState->mmovex = event->motion.xrel;
-//                //colorPickState->mmovey = event->motion.yrel; // still like simplicity of these, not working well once SDL_SetRelativeMouseMode(SDL_TRUE), which captures hte cursor nicely and is OK in window mode....
-//            }
-//            return 0;
-//        case SDL_MOUSEBUTTONUP:
-//        //    mousStateDown -= 1;
-//            //SDL_SetRelativeMouseMode(SDL_FALSE);
-//            //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
-//
-//            return 0;
 
         case SDL_APP_LOWMEMORY:{
             SDL_Log("Memory Warning !!!!");
@@ -527,7 +574,10 @@ int EventFilter(void* userdata, SDL_Event* event){
             /* This call happens when your app is coming back to the foreground.
              Restore all your state here.
              */
-            mousStateDown = 0; // zero finger counter
+            //mousStateDown = 0; // zero finger counter
+            // maybe we should go through all our currentInteractions and zero those out???
+            fingerDeviceDownCounter = 0;
+            isLockedForZoomUntilFingersZeros = false;
             colorPickState->appInForeground = true;
             openglContext->renderShouldUpdate = true;
 

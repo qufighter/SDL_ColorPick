@@ -9,6 +9,8 @@
 #ifndef __ColorPick_iOS_SDL__ux__
 #define __ColorPick_iOS_SDL__ux__
 
+#define MAX_SUPPORTED_FINGERS_MICE 32
+
 #define SIX_ACROSS 6.0
 #define SIX_ACROSS_RATIO 0.16666666666667  // 1.0 / SIX_ACROSS
 
@@ -16,7 +18,6 @@
 //#define COLOR_INDEX_MAX 16777217 //  256^3 +1
 //#define COLOR_INDEX_MAX 16843009 // 16777216 + 65536 + 256 + 1 ( this is over allocated)
 #define COLOR_INDEX_MAX 16777216 // 16711680 + 65280 + 255 + 1
-
 
 
 #define RESIZE_NOW true
@@ -294,17 +295,19 @@ static Ux* Singleton();
     void printCharOffsetUiObject(uiObject* letter, int charOffset);
     void hideHistoryPalleteIfShowing();
 
-    bool objectCollides(float x, float y);
-    bool objectCollides(uiObject* testObj, float x, float y);
+    uiInteraction* interactionForPointerEvent(SDL_Event* event);
 
-    bool triggerInteraction(); // mouseup, mouse didn't move
-    bool triggerInteraction(bool isStart); // mouseup, mouse didn't move
+    bool objectCollides(uiInteraction* which);
+    bool objectCollides(uiObject* testObj, uiInteraction* which);
 
-    void wheelOrPinchInteraction(float delta);
+    bool triggerInteraction(uiInteraction* which); // mouseup, mouse didn't move
+    bool triggerInteraction(uiInteraction* which, bool isStart); // mouseup, mouse didn't move
+
+    void wheelOrPinchInteraction(uiInteraction *delta, float wheeldelta);
 
     void doOpenURL(char* url);
 
-    bool bubbleCurrentInteraction();
+    bool bubbleCurrentInteraction(uiObject *interactionObj, uiInteraction *delta);
     bool interactionUpdate(uiInteraction *delta);
     bool interactionComplete(uiInteraction *delta);
 
@@ -397,7 +400,9 @@ static Ux* Singleton();
 
     uxHueGradientData* hueGradientData;
 
-    uiInteraction currentInteraction;
+    //uiInteraction currentInteraction; // to deprecate this var to support multi touch...
+    uiInteraction currentInteractions[MAX_SUPPORTED_FINGERS_MICE]; // we support up to N fingers/mice.....
+
     uiObject *rootUiObject; // there is a root ui object
 
     uiObject *mainUiContainer;
@@ -447,9 +452,10 @@ static Ux* Singleton();
 //        uiObject *renderedletters[2048]; // we should just make ach letter once
 //        int renderedLettersCtr=0;
 
-    bool isInteracting = false;
-    uiObject* interactionObject; // if we are dragging or have clicked and object the refrence will be here
-    uiObject* lastInteractionObject; // to help detect double click
+//    bool isInteracting = false;
+//    // TODO we strive to remove the above AND below.... .... too soon to comment it now though.....
+//    uiObject* interactionObject; // if we are dragging or have clicked and object the refrence will be here
+//    uiObject* lastInteractionObject; // to help detect double click
 
 
 
