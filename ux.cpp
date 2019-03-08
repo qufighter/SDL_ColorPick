@@ -1207,8 +1207,9 @@ void Ux::wheelOrPinchInteraction(uiInteraction *delta, float wheeldelta){
 // todo investigate dropping this function?  much of this should be split into a different file otherwise
 bool Ux::bubbleCurrentInteraction(uiObject *interactionObj, uiInteraction *delta){ // true if we found a match
     uiObject* anObj = interactionObj->bubbleInteraction();
+    //uiObject* anObj = ((uiObject*)(delta->interactionObject))->bubbleInteraction(); // note, maybe the first arg is misguided - it may not match anyway depending on where we call and which obj we provide... we could use this instead...
     if( anObj != nullptr ){
-        delta->interactionObject = anObj; // this events object changed...
+        delta->interactionObject = anObj; // this event's object changed...
         return true;
     }
     return false;
@@ -1217,16 +1218,16 @@ bool Ux::bubbleCurrentInteraction(uiObject *interactionObj, uiInteraction *delta
 bool Ux::interactionUpdate(uiInteraction *delta){
  //     TODO ret bool determine modification?
 
-    uiObject* orig = (uiObject*)delta->interactionObject;
     uiObject* iinteractionObject = (uiObject*)delta->interactionObject;
+    uiObject* orig = iinteractionObject;
 
     if( delta->isInteracting && (iinteractionObject->hasInteraction || iinteractionObject->interactionCallback ) ){
 
         // IF the object has a 'drop interaction' function and we can instead gift the animation to the parent object if it collides..... we will do so now....
         if( iinteractionObject->shouldCeaseInteractionChecker == nullptr ||
            iinteractionObject->shouldCeaseInteractionChecker(iinteractionObject, delta) ){
-            // if we did cease interaction, it is a point of note that interactionObject just changed
-            if( orig == iinteractionObject ){
+            // if we did cease interaction, it is a point of note that interactionObject (on delta) just changed
+            if( orig == (uiObject*)delta->interactionObject ){
                 // however it is also possible we have the same object here, and also possible we merly have interactionCallback
                 if( iinteractionObject->hasInteraction ){
                     iinteractionObject->interactionFn(iinteractionObject, delta);

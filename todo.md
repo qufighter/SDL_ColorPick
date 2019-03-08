@@ -54,6 +54,11 @@ colorblind detection? (maybe in some minigames... ??)
 
 hide2 nav arrows when in the corner?????
 
+somethign broken with event bubbling in scrollers (delete x stays visible after bubble) in f56775efdc45a8c02b0ccd444302f3a5371a5fe7
+
+interaction could store also the current background color being interacted with (in scroller) so if we are mid sowing delet X and scroll our event will be dropped instead of showing the delete X on a different (wrong) tile...
+  eitehr that or multi touch can be disabled in teh scroller.....
+
 ## WEB TODO
 
 make mobile help page (and possibly entire site) mobile responsive....
