@@ -25,6 +25,7 @@ OpenGLContext::OpenGLContext(void) {
 //    colorPickState->mmovex=0;
 //    colorPickState->mmovey=0;
 
+    setup_complete=false;
     textureNone=0;
     lastHue=nullptr;
     position_x = 0;
@@ -94,7 +95,9 @@ void OpenGLContext::keyUp(SDL_Keycode k){
                 break;
             case SDLK_RETURN:
             case SDLK_KP_ENTER:
-                generalUx->addCurrentToPickHistory();
+                if( setup_complete ){ // this check is specifically to guard the enter key durign shader compilation error messaage box...
+                    generalUx->addCurrentToPickHistory();
+                }
                 break;
         }
 
@@ -728,6 +731,8 @@ void OpenGLContext::setupScene(void) {
     debugGLerror("setupScene completely done");
 
     begin3dDropperAnimation(); // gets the ticks....
+
+    setup_complete = true;
 }
 
 void OpenGLContext::loadShaders(void){
@@ -1692,4 +1697,18 @@ void OpenGLContext::createSquare(void) {
     delete [] colors; // Delete our vertices from memory 
     delete [] texCoord;
     delete [] normals;
+}
+
+void OpenGLContext::doOpenURL(char* url){ // note: any spaces in the URL will cause this to not work (osx)... replace with + or encode to %20 ?
+
+    char * i;
+    for (i=url; *i; i++) {
+        if( *i == ' ' ){
+            *i = '+'; // space to +
+        }else if( *i == '\n' ){
+            *i = '~'; // newline to ~
+        }
+    }
+    SDL_Log("now opening %s", url);
+    openURL(url); // uses platform specific version from FileChooser.h
 }

@@ -217,7 +217,7 @@ public:
     void reloadShaders(void);
     bool renderShouldUpdate = true;
 
-
+    void doOpenURL(char* url);
 
 private:
 
@@ -227,6 +227,8 @@ private:
     int position_y = 0;
     int position_x_was = 0;
     int position_y_was = 0;
+
+    bool setup_complete = false;
 
     int loadedImageMaxSize = 0;
 

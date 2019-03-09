@@ -1290,8 +1290,10 @@ void Ux::interactionNoOp(uiObject *interactionObj, uiInteraction *delta){
 
 }
 
-void Ux::doOpenURL(char* url){ // note: any spaces in the URL will cause this to not work (osx)... replace with + or encode to %20 ?
-    openURL(url); // uses platform specific version from FileChooser.h
+void Ux::doOpenURL(char* url){ // note spaces and newlines should be auto replaced, but other whitespace may break the URL opening... (platform dependent?)
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    ogg->doOpenURL(url);
+    //openURL(url); // uses platform specific version from FileChooser.h
 }
 
 void Ux::hideHistoryPalleteIfShowing(){

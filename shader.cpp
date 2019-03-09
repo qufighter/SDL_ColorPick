@@ -2,6 +2,9 @@
 #include <string>
 #include <fstream>
 
+#include "ColorPick.h"
+
+
 using namespace std; // Include the standard namespace
 
 /**
@@ -57,6 +60,52 @@ static string textFileRead(const char *fileName) {
     return fileString; // Return our string
 }
 
+
+static void messageBoxTime(const char* file, char* buffer){
+    const unsigned int REPORT_SIZE = 512;
+    char* shader_error_report = (char*)SDL_malloc( sizeof(char) * REPORT_SIZE );
+
+    SDL_snprintf(shader_error_report, REPORT_SIZE, "%s\n%s", file, buffer);
+
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    int selected;
+    SDL_MessageBoxData messagebox;
+    SDL_MessageBoxButtonData buttons[] = {
+        {   0,  SDL_ASSERTION_RETRY,            "Continue" },
+        {   SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,  SDL_ASSERTION_BREAK,            "Report" },
+        {   SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,  SDL_ASSERTION_ABORT,            "Quit" }
+    };
+
+    SDL_zero(messagebox);
+    messagebox.flags = SDL_MESSAGEBOX_WARNING;
+    messagebox.window = ogg->sdlWindow;
+    messagebox.title = "Sorry - Shader Compile Issue on Device";
+    messagebox.message = shader_error_report;// "test message1";
+    messagebox.numbuttons = SDL_arraysize(buttons);
+    messagebox.buttons = buttons;
+    if (SDL_ShowMessageBox(&messagebox, &selected) == 0) {
+        //SDL_Log("itz zero pretty much no matter what");
+        //SDL_Log("--- itz %d", selected);
+
+        if( selected == 2 ){
+            // quit...
+            SDL_free(shader_error_report);
+            SDL_Quit();
+            exit(1);
+            return;
+        }else if(selected == 1 ){
+            // report
+            const char* urlBase = "http://www.vidsbee.com/Contact/?browserinfo=App:NativeColorPick";
+            SDL_snprintf(shader_error_report, REPORT_SIZE, "%s:%s\n%s", urlBase, file, buffer);
+            ogg->doOpenURL(shader_error_report); // TODO: we really need to defer this....
+        }else{
+            // shrug
+        }
+    }
+
+    SDL_free(shader_error_report);
+}
+
 /**
 	Given a shader and the filename associated with it, validateShader will
 	then get information from OpenGl on whether or not the shader was compiled successfully
@@ -69,8 +118,13 @@ static void validateShader(GLuint shader, const char* file = 0) {
     GLsizei length = 0;
     
     glGetShaderInfoLog(shader, BUFFER_SIZE, &length, buffer); // Ask OpenGL to give us the log associated with the shader
-    if (length > 0) // If we have any information to display
+    if (length > 0){ // If we have any information to display
         cout << "Shader " << shader << " (" << (file?file:"") << ") compile error: " << buffer << endl; // Output the information
+
+        messageBoxTime(file, buffer);
+
+
+    }
 }
 
 /**
@@ -97,8 +151,7 @@ static void validateProgram(GLuint program) {
     if (status == 0){
         SDL_Log("LINK STATUS is 0, so this probably failed to link completely");
     }
-    
-    
+
     glValidateProgram(program); // Get OpenGL to try validating the program
 
     glGetProgramiv(program, GL_VALIDATE_STATUS, &status); // Find out if the shader program validated correctly
