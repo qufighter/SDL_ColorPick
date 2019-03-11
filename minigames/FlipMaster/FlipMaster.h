@@ -14,7 +14,7 @@ struct FlipMaster{
     int startTime;
     int lastTicks;
 
-    int unflipCounter = 0;
+    //int unflipCounter = 0;
 
     int activeSwatches;
     int matchedSwatches;
@@ -142,7 +142,7 @@ struct FlipMaster{
             return;
         }
 
-        myUxRef->uxAnimations->flip_hz(interactionObj, 1000, &halfFlipped, &fullyFlipped);
+        interactionObj->setAnimation(myUxRef->uxAnimations->flip_hz(interactionObj, 1000, &halfFlipped, &fullyFlipped));
     }
 
     static void halfFlipped(Ux::uiAnimation* uiAnim){
@@ -191,16 +191,16 @@ struct FlipMaster{
     }
 
     static void fullyUnflipped(Ux::uiAnimation* uiAnim){
-        OpenGLContext* ogg=OpenGLContext::Singleton();
-        FlipMaster* self = (FlipMaster*)ogg->minigames->currentGame->gameItself; // helper?
-        self->unflipCounter++;
-        if( self->unflipCounter >= 2 ){
-            // only unlock when both unflips done...
-            self->flippedA = nullptr;
-            self->flippedB = nullptr;
-            self->flipA = nullptr;
-            self->flipB = nullptr;
-        }
+//        OpenGLContext* ogg=OpenGLContext::Singleton();
+//        FlipMaster* self = (FlipMaster*)ogg->minigames->currentGame->gameItself; // helper?
+//        self->unflipCounter++;
+//        if( self->unflipCounter >= 2 ){
+//            // only unlock when both unflips done...
+////            self->flippedA = nullptr;
+////            self->flippedB = nullptr;
+////            self->flipA = nullptr;
+////            self->flipB = nullptr;
+//        }
     }
 
     static void checkIfGameIsCompleted(Ux::uiAnimation* uiAnim){
@@ -247,9 +247,15 @@ struct FlipMaster{
                 self->matchedSwatches += 2; // progress towards win...
             }else{
                 //SDL_Log("no matches");
-                self->unflipCounter=0;
-                uxInstance->uxAnimations->flip_hz(self->flippedA->uiObjectItself, 700, &halfUnflipped, &fullyUnflipped);
-                uxInstance->uxAnimations->flip_hz(self->flippedB->uiObjectItself, 750, &halfUnflipped, &fullyUnflipped);
+                //self->unflipCounter=0;
+
+                self->flippedA->uiObjectItself->setAnimation(uxInstance->uxAnimations->flip_hz(self->flippedA->uiObjectItself, 700, &halfUnflipped, &fullyUnflipped));
+                self->flippedB->uiObjectItself->setAnimation(uxInstance->uxAnimations->flip_hz(self->flippedB->uiObjectItself, 750, &halfUnflipped, &fullyUnflipped));
+
+                self->flippedA = nullptr;
+                self->flippedB = nullptr;
+                self->flipA = nullptr;
+                self->flipB = nullptr;
             }
         }
         //SDL_Log("lets see if the game is done! %i %i", self->matchedSwatches, self->activeSwatches );
