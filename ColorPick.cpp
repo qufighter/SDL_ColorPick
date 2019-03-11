@@ -99,6 +99,9 @@ void OpenGLContext::keyUp(SDL_Keycode k){
                     generalUx->addCurrentToPickHistory();
                 }
                 break;
+//            case SDLK_p:
+//                textures->screenshot("test-snap.png", win_w, win_h);
+//                break;
         }
 
         has_velocity=false;

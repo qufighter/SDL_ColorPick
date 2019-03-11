@@ -1106,12 +1106,13 @@ void Textures::screenshot(char* filename,int x, int y)//width height
     unsigned char * pixels = new unsigned char[x*y*bpp]; // 4 bytes for RGBA
     unsigned char * pixels2 = new unsigned char[x*y*bpp];
 
-    glReadPixels(0,0,x, y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    //glReadPixels(0,0,x, y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glReadPixels(0,0,x, y, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
 
     //flip
     int stride = x*bpp;
     for(int row =0; row<y; row++){
-        std::memcpy(&pixels2[row*stride],&pixels[(y-row)*stride],stride);
+        std::memcpy(&pixels2[row*stride],&pixels[(y-row-1)*stride],stride);
     }
 
     SDL_Surface * surf = SDL_CreateRGBSurfaceFrom(pixels2, x, y, 8*4, x*bpp, 0,0,0,0);

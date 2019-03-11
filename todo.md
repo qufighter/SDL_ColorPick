@@ -44,8 +44,6 @@ disable 3d anim (when modal present?) or and optionally ? (no?)
 
 distance based movement time for moveTo used during games (even when its really close, it still takes 1 second to move...) ? (maybe its good, gives user some time)
 
-verify logging in release mode
-
 make note of when save occurs...
 
 (web) crawlable share URL notice at top....
@@ -63,7 +61,7 @@ interaction could store also the current background color being interacted with 
 
 make mobile help page (and possibly entire site) mobile responsive....
 
-update exts
+//tips / help - how to find decimal->hex in the app (no?)
 
 ## bugs
 osx/ios jpg rotation not respected (is this exif rotation???)
@@ -266,6 +264,8 @@ drop image when history holder present - we should hide it (other modals should 
 //TODO recall window position?  useful possibly for desktop platforms.... ( dubious ) see win_pos_x
 // only trouble comes if we are already clicked when scrolling ?
 
+textures->screenshot when P key is pressed... disable this?
+
 ### osx
 osx application bundle (see readme and  see   Use pbxbuild in the same directory as your .pbproj file)
 energy usage -> we can improve this if we allow nap or disable the main loop when the app enters the background (somehow!) SDL_Delay (33 works good desktop but poor on android )
@@ -301,6 +301,7 @@ full history list (8192) out of space achieved
 - add new color to history, it should appear at the top and the colors should all shift by one, all colors should be in position
 
 # sotry
+(not latest version)
 
 The Eyedropper's Backstory...
 

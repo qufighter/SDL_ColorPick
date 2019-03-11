@@ -195,6 +195,10 @@ struct uniformLocationStruct
 #ifdef COLORPICK_PLATFORM_DESKTOP
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 480
+
+//#define SCREEN_WIDTH 640
+//#define SCREEN_HEIGHT 960
+
 #else
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 960
