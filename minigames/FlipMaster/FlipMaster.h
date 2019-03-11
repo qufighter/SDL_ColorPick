@@ -268,6 +268,7 @@ struct FlipMaster{
 
     int computeGameScore(){
         Ux* uxInstance = Ux::Singleton();
+        OpenGLContext* ogg=OpenGLContext::Singleton();
 
         if( solveAttempts > 0 ){
 
@@ -286,6 +287,10 @@ struct FlipMaster{
 
             if(finalScore > 0){
                 uxInstance->defaultScoreDisplay->display(gameSwatchesHolder->childList[1], finalScore, SCORE_EFFECTS::MOVE_UP);
+
+                if( timeBonus > 50 && solveAttempts < 4 ){
+                    ogg->doRequestReview();
+                }
             }
 
             scoreBreakdownHolder->show();

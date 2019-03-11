@@ -18,6 +18,7 @@
 void getImagePathFromMainThread();
 void beginImageSelector();
 bool openURL(char* &url);
+void requestReview();
 
 #endif
 #endif

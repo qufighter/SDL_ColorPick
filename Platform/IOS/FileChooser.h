@@ -19,4 +19,7 @@
 void beginImageSelector();
 bool openURL(const std::string &url);
 
+void requestReview();
+
+
 #endif

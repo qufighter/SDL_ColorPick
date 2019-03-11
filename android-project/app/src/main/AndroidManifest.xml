@@ -4,7 +4,7 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.vidsbee.colorpicksdl"
-    android:versionCode="103"
+    android:versionCode="104"
     android:versionName="1.0"
     android:installLocation="auto">
     <!-- The version above is unused - edit buld.grade instead/too ... ./gradlew check -->

@@ -94,6 +94,7 @@ Ux::Ux(void) {
     lastHue = new HSV_Color();
     currentlyPickedColor = new SDL_Color();
 
+    //nextFingerIndex = 0; // next "unknown" finger...
     for( int f=0; f<MAX_SUPPORTED_FINGERS_MICE; f++ ){
         currentInteractions[f] = uiInteraction();
     }
@@ -1082,15 +1083,58 @@ uiInteraction* Ux::interactionForPointerEvent(SDL_Event* event){
 
     int fingerDevice = 0; // SDL supports 64 bits of finger devices (and 32 bits of mouse devices...), we support maybe.. 10 ?
 
+    int touchIndex = -1;
+
     if( event->type == SDL_FINGERDOWN || event->type == SDL_FINGERMOTION || event->type == SDL_FINGERUP ){
-         fingerDevice = event->tfinger.fingerId;
+         fingerDevice = (int)event->tfinger.fingerId;
     }// else if its mouse, look at which (see above) for multi mouse support :)
 
-    if( fingerDevice >= MAX_SUPPORTED_FINGERS_MICE ){
-        fingerDevice = MAX_SUPPORTED_FINGERS_MICE - 1;
+    // origionally we used this, and it worked on android...
+    // problems include: fingerDevice could be negative ( we had no guard )
+    // ios fingerId's are all over the place
+//
+//    SDL_Log("Finger device: %i", fingerDevice);
+//
+//    if( fingerDevice >= MAX_SUPPORTED_FINGERS_MICE ){
+//        //fingerDevice = 0;// MAX_SUPPORTED_FINGERS_MICE - 1;
+//        fingerDevice = MAX_SUPPORTED_FINGERS_MICE - 1;
+//    }
+//
+//    if( fingerDevice < 0 ){
+//        fingerDevice = 0;
+//    }
+//    return &currentInteractions[fingerDevice];
+
+    for( int f=0; f<MAX_SUPPORTED_FINGERS_MICE; f++ ){
+        // search for finger...
+        if( currentInteractions[f].fingerId == fingerDevice ){
+            touchIndex = f;
+            break;
+        }
     }
 
-    return &currentInteractions[fingerDevice];
+    if( touchIndex < 0 ){
+        // guess it's a new finger...
+
+        for( int f=0; f<MAX_SUPPORTED_FINGERS_MICE; f++ ){
+            // for a new interaction??
+            if( !currentInteractions[f].fingerStateDown ){
+                currentInteractions[f].fingerId = fingerDevice;
+                touchIndex = f;
+                break;
+            }
+        }
+
+        if( touchIndex < 0 ){
+            //SDL_Log("too many fingers?");
+            touchIndex = 0;
+        }
+    }
+
+
+    //SDL_Log("Finger id: %i", touchIndex);
+
+    return &currentInteractions[touchIndex];
 
     // NOTE; if the interaction already has fingerStateDown then a buttion is ALREADY pressed....... (handled elsewhere but good to know)
 }

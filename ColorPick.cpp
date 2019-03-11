@@ -1715,3 +1715,8 @@ void OpenGLContext::doOpenURL(char* url){ // note: any spaces in the URL will ca
     SDL_Log("now opening %s", url);
     openURL(url); // uses platform specific version from FileChooser.h
 }
+
+void OpenGLContext::doRequestReview(){
+    SDL_Log("calling request review...");
+    requestReview(); // uses platform specific version from FileChooser.h
+}

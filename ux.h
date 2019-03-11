@@ -9,7 +9,7 @@
 #ifndef __ColorPick_iOS_SDL__ux__
 #define __ColorPick_iOS_SDL__ux__
 
-#define MAX_SUPPORTED_FINGERS_MICE 32
+#define MAX_SUPPORTED_FINGERS_MICE 16
 
 #define SIX_ACROSS 6.0
 #define SIX_ACROSS_RATIO 0.16666666666667  // 1.0 / SIX_ACROSS
@@ -402,6 +402,7 @@ static Ux* Singleton();
 
     //uiInteraction currentInteraction; // to deprecate this var to support multi touch...
     uiInteraction currentInteractions[MAX_SUPPORTED_FINGERS_MICE]; // we support up to N fingers/mice.....
+    //int nextFingerIndex;
 
     uiObject *rootUiObject; // there is a root ui object
 

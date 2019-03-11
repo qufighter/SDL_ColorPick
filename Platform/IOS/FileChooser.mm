@@ -9,6 +9,7 @@
 #import "FileChooser.h"
 //#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <StoreKit/StoreKit.h>
 
 // USED BY IOS EXCLUSIVELY MOVE TO IOS FOLDER
 
@@ -363,4 +364,16 @@ bool openURL(const std::string &url)
     }
 
     return success;
+}
+
+void requestReview()
+{
+//    NSOperatingSystemVersion ios103 = (NSOperatingSystemVersion){10, 3, 0};
+//    if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:ios103]) {
+//        [SKStoreReviewController requestReview];
+//    }
+
+    if (@available(iOS 10.3, *)) {
+        [SKStoreReviewController requestReview];
+    }
 }

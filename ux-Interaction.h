@@ -34,6 +34,8 @@ struct uiInteraction
         lastInteractionObject = nullptr;
 
         useInstantaneousVelocity=false;
+
+        fingerId=0;
     }
     void begin(float x, float y){
 
@@ -181,6 +183,7 @@ struct uiInteraction
     float friction;
     //screenpixels: Float_Point
 
+    Sint64 fingerId;
     bool fingerStateDown; // todo: for mousStateDown - seems pertty obvious.... but this should go back to false when the interaction is expired....
     bool didCollideWithObject;// did collide??
     bool isInteracting;

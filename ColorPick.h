@@ -218,6 +218,7 @@ public:
     bool renderShouldUpdate = true;
 
     void doOpenURL(char* url);
+    void doRequestReview();
 
 private:
 

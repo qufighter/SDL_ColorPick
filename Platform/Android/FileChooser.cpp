@@ -203,7 +203,9 @@ bool openURL(char* &url)
     return success;
 }
 
-
+void requestReview(){
+    
+}
 
 /*
  "JNI tips  |  Android NDK  |  Android Developers"

@@ -67,3 +67,7 @@ bool openURL(const std::string &url)
 
     return success;
 }
+
+void requestReview(){
+
+}

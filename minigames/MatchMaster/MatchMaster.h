@@ -208,6 +208,7 @@ struct MatchMaster{
 
     int computeGameScore(){
         Ux* uxInstance = Ux::Singleton();
+        OpenGLContext* ogg=OpenGLContext::Singleton();
 
         if( solveAttempts > 0 ){
 
@@ -224,6 +225,10 @@ struct MatchMaster{
 
             if(finalScore > 0){
                 uxInstance->defaultScoreDisplay->display(gameSwatchesHolder->childList[0], finalScore, SCORE_EFFECTS::MOVE_UP);
+
+                if( timeBonus > 55 && solveAttempts < 3 ){
+                    ogg->doRequestReview();
+                }
             }
             scoreBreakdownHolder->show();
 
