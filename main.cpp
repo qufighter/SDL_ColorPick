@@ -804,7 +804,7 @@ int main(int argc, char *argv[]) {
 
 
 
-
+    //SDL_SetHint(SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH, "1"); // setting this for fear of a duplicate event, we really want one type or the ohter???  // NEVERMIND: we only listen for ONE type of event (#ifndef COLORPICK_PLATFORM_DESKTOP then fingers), so we need both driggered.
     SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, "0");
     SDL_SetHint(SDL_HINT_IDLE_TIMER_DISABLED, "0");
     SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1"); // its trapped by default still as of SDL2-2.0.9 (even though docs say otherwise...)

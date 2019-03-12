@@ -99,9 +99,11 @@ void OpenGLContext::keyUp(SDL_Keycode k){
                     generalUx->addCurrentToPickHistory();
                 }
                 break;
-//            case SDLK_p:
-//                textures->screenshot("test-snap.png", win_w, win_h);
-//                break;
+#ifdef COLORPICK_DEBUG_MODE
+            case SDLK_p:
+                textures->screenshot("test-snap.png", windowWidth, windowHeight);
+                break;
+#endif
         }
 
         has_velocity=false;
@@ -1718,5 +1720,6 @@ void OpenGLContext::doOpenURL(char* url){ // note: any spaces in the URL will ca
 
 void OpenGLContext::doRequestReview(){
     SDL_Log("calling request review...");
+    // TODO: we will also check the score here... to see if they are also successful overall at using the app....
     requestReview(); // uses platform specific version from FileChooser.h
 }
