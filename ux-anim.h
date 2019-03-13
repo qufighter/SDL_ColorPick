@@ -402,8 +402,8 @@ struct uiAminChain
     bool result_done;
     int animListCurrent;
     int animListIndex;
-    int animListMaxLen = 5; //derp
-    uiAnimation* animList[5]; //  each chain can hold 5 animiations in queue
+    static const int animListMaxLen = 5; //  each chain can hold 5 animiations in queue
+    uiAnimation* animList[animListMaxLen];
 
     void startEventForCurrentAnim(){
         this->animList[animListCurrent]->start();

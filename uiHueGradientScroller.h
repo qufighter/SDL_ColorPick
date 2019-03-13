@@ -68,7 +68,7 @@ struct uiHueGradientScroller{
 
         //uiObjectItself->setInteractionCallback(Ux::interactionNoOp);
         parentObj->addChild(uiObjectItself);
-        resize(boundaries);
+        resize(boundaries, true);
     }
 
 
@@ -142,11 +142,7 @@ struct uiHueGradientScroller{
         return &uxInstance->hueGradientData->manyColors[clrOffset];
     }
 
-
-    void resize(Float_Rect boundaries){
-
-        uiObjectItself->setBoundaryRect(&boundaries);
-
+    void resize(bool skipUpdate){
         Ux* uxInstance = Ux::Singleton();
 
         if( uxInstance->widescreen ){ // widescreen
@@ -156,7 +152,17 @@ struct uiHueGradientScroller{
             hueGradientHolder->setChildNodeDirection(TEXT_DIR_ENUM::LTR, true);
         }
 
-        update();
+        if( !skipUpdate ){
+            update();
+        }
+    }
+
+
+    void resize(Float_Rect boundaries, bool skipUpdate){
+
+        uiObjectItself->setBoundaryRect(&boundaries);
+
+        resize(skipUpdate);
     }
 
     void update(){ // w/h

@@ -26,7 +26,7 @@ struct uiHueGradient{
 //        hueGradientHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
 //        uiObjectItself->addChild(hueGradientHolder); // add first so controller proagates
         hueGradient = new uiHueGradientScroller(uiObjectItself, Float_Rect(0.0,0.0,1.0,1.0), false); // we dissable scrolling
-        hueGradientHolder = hueGradient->hueGradientHolder;
+//        hueGradientHolder = hueGradient->hueGradientHolder;
 
 
         huePositionMarker = new uiObject();
@@ -59,7 +59,7 @@ struct uiHueGradient{
 
     uiObject* uiObjectItself; // no real inheritance here, this its the uiSqware, I would use self->
     uiHueGradientScroller* hueGradient;
-    uiObject* hueGradientHolder; // the above's hueGradientHolder is hueGradientHolder, there is still hueGradient->uiObjectItself between though...
+    //uiObject* hueGradientHolder; // the above's hueGradientHolder is hueGradientHolder, there is still hueGradient->uiObjectItself between though...
     uiObject* huePositionMarker;
     bool hueSliderVisible;
 
@@ -178,9 +178,10 @@ struct uiHueGradient{
         float markerOutset=0.25;
         float hueMarkerWidth = 0.08;
 
+        hueGradient->resize(true);
+
         if( uxInstance->widescreen ){ // widescreen
             markerHeight=0.45;
-            hueGradientHolder->setChildNodeDirection(TEXT_DIR_ENUM::TTB, true); // TODO maybe just call resize (without update render position) on hueGradient->resize() instead of handling it here???
             huePositionMarker->setBoundaryRect(-markerOutset, 0.0, 1.0+markerOutset+markerOutset, hueMarkerWidth);
             markerTop->setBoundaryRect(0.0, 0.0, markerHeight, 1.0);
             markerBtm->setBoundaryRect(1.0-markerHeight, 0.0, markerHeight, 1.0);
@@ -189,7 +190,6 @@ struct uiHueGradient{
             uxInstance->printCharToUiObject(markerBtm, CHAR_ARR_LEFT, DO_NOT_RESIZE_NOW);
 
         }else{
-            hueGradientHolder->setChildNodeDirection(TEXT_DIR_ENUM::LTR, true); // TODO maybe just call resize (without update render position) on hueGradient->resize() instead of handling it here???
             huePositionMarker->setBoundaryRect(0.0, -markerOutset, hueMarkerWidth, 1.0+markerOutset+markerOutset);
             markerTop->setBoundaryRect(0.0, 0.0, 1.0, markerHeight);
             markerBtm->setBoundaryRect(0.0, 1.0-markerHeight, 1.0, markerHeight);

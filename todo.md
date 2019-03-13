@@ -44,18 +44,14 @@ disable 3d anim (when modal present?) or and optionally ? (no?)
 
 distance based movement time for moveTo used during games (even when its really close, it still takes 1 second to move...) ? (maybe its good, gives user some time)
 
-make note of when save occurs...
-
-(web) crawlable share URL notice at top....
-
 colorblind detection? (maybe in some minigames... ??)
 
 hide2 nav arrows when in the corner?????
 
-somethign broken with event bubbling in scrollers (delete x stays visible after bubble) in f56775efdc45a8c02b0ccd444302f3a5371a5fe7
-
 interaction could store also the current background color being interacted with (in scroller) so if we are mid sowing delet X and scroll our event will be dropped instead of showing the delete X on a different (wrong) tile...
   eitehr that or multi touch can be disabled in teh scroller.....
+  
+  tickle - tehehehe
 
 ## WEB TODO
 
@@ -71,6 +67,8 @@ images can have a color space????
 
 ##  can do
 
+an "exit without save" button
+
 use setForegroundColor / setBackgroundColor more places (instead of 2 lines of code)
 
 convert or crop cubic coord
@@ -80,15 +78,15 @@ more tests for uiList needed...
 
 
 additional sorts (dark->light->dark) (dull -> vivid -> dull)
+sort dialogue initial text -> "Sort?" <- add more sort choices here 
+goto history style
 
 the adjustments histogram/curves/gamma correction/etc for image
    the rotation of the image
 
-- URL shorteners - how friendly with location hash ?
-        most are ok with it....  web solution seems plausible....
-
 SDL_ShowMessageBox > allocate buttons once....
 > check update policy
+ > rating prompt for android?
 
 // UX read settings begin....
 
@@ -124,12 +122,15 @@ add all button cannot achieve achievement (due to mulitple achievement of achiev
 running out of animation chains can break some ux expectations.... (dismisssal of modals, etc...)... git show 772a29a4a46f66c9fc689d2c61f2535cc9478baf
 
 // so if we are showing removeButton and our color changed, we know that something changed and we should hide our deleteX simple as that 
+  ^ we can consider reseting some other things here too (the zoom animation for example... for tapped colors...)
 
-sort dialogue initial text -> "Sort?" <- add more sort choices here 
-goto history style
 
-// lets treat it as if they stopped interacting....
--- we can zoom the scrollers?   
+// lets treat it as if they stopped interacting.... (no longer relevant as of multi-touch)
+
+-- we can zoom the scrollers?   (wheelOrPinchInteraction needs to be split up, each is different)
+    zoom scrollers?  maybe both would zoom at same time??? not sure...
+    
+squarilate scroller
 
 settings -
 - goto history style
@@ -158,6 +159,7 @@ collisionRect; // this rect has good w/h that we can use (its scaled to boundary
 ^ while true, when is it scaled?  we may use this sometimes before it is scaled.
 
 this helper goes elsewhere?? static int compareColor (it was once moved....) probably not to final place
+  now moved 2x, in ux - maybe its OK here (lots of other helpers here should possibly ALSO move... but they are here)
 
 we need test colors like:
 0,7,255
@@ -182,62 +184,53 @@ hisotry sorted like
 #255,95,0
 does it dedupe (yes now, it sorts)
 
-score explanation - bg for readability?
+score explanation - bg for readability?  (SA: slow announcments texts option)
 
 score_size_scaling > score_position->origBoundryRect.w ){ // enforce "max" (default) size
   for score the above will be overwritten right??? 
   what this does is effectively keep things from ever getting larger than the smallest size ever reached..... strange right?  maybe needs testing with SDL_MAX_SINT32
 
 HMM this is really something totally different than containText which is used for responsive.....
+     ^ see note, it is confusing/misleading and some unification / clarification of api needed
 
-"%cAll" really many/several or all....
+"%cAll" really many/several or all.... (who will +999 manually ticked items...?)
 
 a way to expand collision bounds outside object bounds automatically to contain child objects??????
   or just use testChildCollisionIgnoreBounds ??
 
-squarilate scroller
-
-zoom scrollers?  maybe both would zoom at same time??? not sure...
-
 
 arrow interaction repeat....
 
-home pressed - maybe ios screenshot? time for gimicky marketing ploy
+home pressed - maybe ios screenshot? time for gimicky marketing ploy (doesn't work...)
 
 pallete swatch color -> huePicker for adjustment ( see cp_set_from_hsv )
 ^ above is basically "done" but further optimizations could be good
+  - meaning we should really optimize the way we rule out search vectors more agressively in directional scan....
 
-sort pallete colors
-^ (web interface? / later - watch out for index?)
-
-dedupe history (when out of space?) (occurs on sort)
 
 remove myScrollController just use myUiController instead of the 1off (not necessarily removable when child elements have different controllers)
 remove hasInteraction hasInteractionCb just use nullptr check... (meh)
-fix crop of rounded corners in scrollers (see cleanup shader code)
+
+fix crop of rounded corners in scrollers 
 
 maths keyworkd
 leak / leaking keyword (done 2019)
     ^  "maybe we should copy it instead "
 
- lookup trilinear or aniostropic filteirng (better texture scaling??)
+ lookup trilinear or aniostropic filteirng (better texture scaling??)  (something tells me ES2.0 will balk at this)
 
  main thread animations for less jitter see MAIN_THREAD_ANIMATIONS (meh?)
 
-cleanup shader code
-
 perhaps one must swipe too far left to show delete button // swipe left (on desktop this is fine though)
 
-NOTE: just using  currentInteraction here could have SIDE EFFECTS
+NOTE: just using  currentInteraction here could have SIDE EFFECTS -
+    so thats gone now, but this one lingers... no bad effect really but still: currentInteractions[0]
 
-throw out of view - initial velocity maintain... if over threshold?
+throw out of view - initial velocity maintain... if over threshold? (huh?  doesn't this work?)
 
-// TODO maybe just call resize (without update render position) on hueGradient->resize() instead of handling it here???
+todo, some of our SDL_Log that are maybe Error - "are just INFO level" (or warning) 
 
-128; //derp
-  // use const static int then you don't need to derp!
-
-todo, some of our SDL_Log that are maybe Error - are just INFO level
+ellipsis when sorting large lists (instead of blank space)
 
 # platform specific todo
 
@@ -276,18 +269,21 @@ use the same xcassets as on the touchy devices ?? (why not just use a icns file 
 win impl
 
 ## mobile any
-> check update policy 
+
 
 ### android
 // (done?) timer keeps firign in background if file chooser is left open... // we tried this but we can't pick an image... not quite sure why yet... compare logs?
 contribute to sdl multi-window support, (see multi-window html) and android:resizeableActivity="false"
+try SDL downgrade, SDL2-2.0.9 or somethign else broke S3 phone, etc (can test it in firebase)
 
 ### ios
 anything using main loop timers (processed on main loop) are not processed....
   ^ uncomment lines above pickerForPercentV(&percent); to test it out... eg USER EVENT 1
   ^ this is at least addressed / worked around.... potential for future issues though since these custom events are just not processed
+  ^ oh yea, we fixed this!  MainThreadUserEventHandler is called (on showFrame....)  
 10 phone special stuffs?
   ^ there is "no clock bar" on iphone 10
+  ^ we sort of handled this too I think...
 
 # tests
 test history overwrote final color in index that it is released from the index (pretty sure it is...)
@@ -300,8 +296,9 @@ full history list (8192) out of space achieved
 - then delete any colory, the top and bottom most  should not change, all colors should be in position
 - add new color to history, it should appear at the top and the colors should all shift by one, all colors should be in position
 
+check out more firebase api
+
 # sotry
-(not latest version)
 
 The Eyedropper's Backstory...
 
@@ -310,21 +307,24 @@ when all the colors were vibrant
 the hues were saturated with luminosity
 and I could pick all the colōrētur I ever wanted
 with zero consequences.
+<br/><br/>
 
 Now the world has changed, and
 You can't double pick the same color twice anymore
 this might not be such a big deal
-but my entire life I have double clicked to pick colors
+but my entire life I have double clicked to pick colors.
 this change has been devastating.
+<br/><br/>
 
 There are still vibrant hues out there
 waiting to be discovered and shared with the world;
 a world that has become bitter
 and obsessed with points... as if that even matters.
 The discovery of color, tantalizes.
+<br/><br/>
 
 I will bring color to the world
 And in doing so will strive to teach the truth.
-That points are not reality.
-That the score does not matter.
-Let us find the hue you seek and set everyone free...
+The points are not reality.
+That the score is not reflective.
+Let's find the hue you seek and set everyone free...
