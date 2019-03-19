@@ -53,6 +53,8 @@ interaction could store also the current background color being interacted with 
   
   tickle - tehehehe
 
+own geolocate landing page
+
 ## WEB TODO
 
 make mobile help page (and possibly entire site) mobile responsive....
