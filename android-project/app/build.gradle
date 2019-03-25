@@ -24,6 +24,7 @@ android {
     defaultConfig {
         if (buildAsApplication) {
             applicationId "com.vidsbee.colorpicksdl"
+//            applicationId "com.vidsbee.colorpickbasicsdl"
         }
         minSdkVersion 16
         targetSdkVersion 26

@@ -150,6 +150,12 @@ struct uiViewColor{
         parentObj->addChild(uiObjectItself);
 
         alphaMulitiplier = 1.0;
+
+        Ux::setColor(&maybeGeyedOutBg, 255, 255, 255, 192);
+#ifdef COLORPICK_BASIC_MODE
+        Ux::setColor(&maybeGeyedOutBg, 255, 255, 255, 64);
+#endif
+
     }
 
     uiEdgeShadow* myEdgeShadow;
@@ -168,6 +174,8 @@ struct uiViewColor{
     uiObject *rgbBlueBg;
 
     uiObject *hueBtn;
+
+    SDL_Color maybeGeyedOutBg;
 
 
     char* resultText6char; // seems that we should reuse this and not free it
@@ -210,6 +218,13 @@ struct uiViewColor{
 
     static void copyHexValueClicked(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
+
+#ifdef COLORPICK_BASIC_MODE
+        uxInstance->rClickMenu->hide();
+        uxInstance->showBasicUpgradeMessage();
+        return;
+#endif
+
         uiViewColor* self = ((uiViewColor*)interactionObj->interactionProxy->myUiController);
         //SDL_Log("REACHED COPY HEX CALLBACK");
         SDL_SetClipboardText(self->getHexString(""));
@@ -229,6 +244,13 @@ struct uiViewColor{
 
     static void copyRgbValueClicked(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
+
+#ifdef COLORPICK_BASIC_MODE
+        uxInstance->rClickMenu->hide();
+        uxInstance->showBasicUpgradeMessage();
+        return;
+#endif
+
         uiViewColor* self = ((uiViewColor*)interactionObj->interactionProxy->myUiController);
         //SDL_Log("REACHED COPY RGB CALLBACK");
         SDL_SetClipboardText(self->getRgbString(""));
@@ -256,9 +278,9 @@ struct uiViewColor{
         if( delta->isSecondInteraction ){
             //SDL_Log("Double touched color preview......");
             uxInstance->rClickMenu->clearMenuItems();
-            uxInstance->rClickMenu->addMenuItem(self->hexBg, self->getHexString(ECOPY_PREFIX"  ", true), &copyHexValueOmitHashClicked);
+            uxInstance->rClickMenu->addMenuItem(self->hexBg, self->getHexString(ECOPY_PREFIX"  ", true), &copyHexValueOmitHashClicked, nullptr);
             showPaperClippy();
-            uxInstance->rClickMenu->addMenuItem(self->hexBg, self->getHexString(ECOPY_PREFIX" "), &copyHexValueClicked);
+            uxInstance->rClickMenu->addMenuItem(self->hexBg, self->getHexString(ECOPY_PREFIX" "), &copyHexValueClicked, &self->maybeGeyedOutBg);
             showPaperClippy();
 
             if( uxInstance->widescreen ){
@@ -280,15 +302,15 @@ struct uiViewColor{
             //SDL_Log("Double touched rgb color preview......");
             uxInstance->rClickMenu->clearMenuItems();
 
-            uxInstance->rClickMenu->addMenuItem(self->rgbRedBg, self->getVanillaRgbString(ECOPY_PREFIX" "), &copyVanillaRgbValueClicked);
+            uxInstance->rClickMenu->addMenuItem(self->rgbRedBg, self->getVanillaRgbString(ECOPY_PREFIX" "), &copyVanillaRgbValueClicked, nullptr);
             showPaperClippy();
 
-            uxInstance->rClickMenu->addMenuItem(self->rgbRedBg, ECOPY_PREFIX" rgb(,,)" /*self->getRgbString("Copy ")*/, &copyRgbValueClicked);
+            uxInstance->rClickMenu->addMenuItem(self->rgbRedBg, ECOPY_PREFIX" rgb(,,)" /*self->getRgbString("Copy ")*/, &copyRgbValueClicked, &self->maybeGeyedOutBg);
             showPaperClippy();
             //uxInstance->rClickMenu->addMenuItem("Copy hsv(0,0,0)", &copyHsvValueClicked);
-            uxInstance->rClickMenu->addMenuItem(self->rgbRedBg, self->getHexString(ECOPY_PREFIX" "), &copyHexValueClicked);
+            uxInstance->rClickMenu->addMenuItem(self->rgbRedBg, self->getHexString(ECOPY_PREFIX" "), &copyHexValueClicked, &self->maybeGeyedOutBg);
             showPaperClippy();
-            uxInstance->rClickMenu->addMenuItem(self->hexBg, self->getHexString(ECOPY_PREFIX"  ", true), &copyHexValueOmitHashClicked);
+            uxInstance->rClickMenu->addMenuItem(self->hexBg, self->getHexString(ECOPY_PREFIX"  ", true), &copyHexValueOmitHashClicked, nullptr);
             showPaperClippy();
 
             if( uxInstance->widescreen ){

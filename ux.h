@@ -319,6 +319,7 @@ static Ux* Singleton();
     static void interactionReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta);
     static void interactionBeginReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta);
     static void interactionVisitSettings(uiObject *interactionObj, uiInteraction *delta);
+    static void interactionUpgradeFromBasic(uiObject *interactionObj, uiInteraction *delta);
     static void interactionAddHistory(uiObject *interactionObj, uiInteraction *delta);
     static void clickZoomSliderBg(uiObject *interactionObj, uiInteraction *delta);
     static void interactionHZ(uiObject *interactionObj, uiInteraction *delta);
@@ -384,6 +385,7 @@ static Ux* Singleton();
     uiObject *minigameCounterText;
 
     void updateColorValueDisplay(SDL_Color* color);
+    void showBasicUpgradeMessage();
     void addCurrentToPickHistory();
     void updatePickHistoryPreview();
     void updatePalleteScroller();

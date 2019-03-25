@@ -200,6 +200,10 @@ struct uiText{
         return this;
     }
 
+    uiText* backgroundColor(SDL_Color* clr){
+        return this->backgroundColor(clr->r, clr->g, clr->b, clr->a);
+    }
+
     uiText* backgroundColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a){
         textBackground = true;
         text_backgr->show();

@@ -261,6 +261,8 @@ drop image when history holder present - we should hide it (other modals should 
 
 textures->screenshot when P key is pressed... disable this?
 
+enter key in yes no choice, respecting fast mode....
+
 ### osx
 osx application bundle (see readme and  see   Use pbxbuild in the same directory as your .pbproj file)
 energy usage -> we can improve this if we allow nap or disable the main loop when the app enters the background (somehow!) SDL_Delay (33 works good desktop but poor on android )

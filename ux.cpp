@@ -1381,6 +1381,15 @@ void Ux::interactionVisitSettings(uiObject *interactionObj, uiInteraction *delta
     myUxRef->settingsScroller->interactionToggleSettings(interactionObj, delta);
 }
 
+//static
+void Ux::interactionUpgradeFromBasic(uiObject *interactionObj, uiInteraction *delta){
+    Ux* myUxRef = Ux::Singleton();
+#if __ANDROID__
+    myUxRef->doOpenURL("https://play.google.com/store/apps/details?id=com.vidsbee.colorpicksdl");
+#else
+    myUxRef->doOpenURL("https://itunes.apple.com/us/app/colorpick-eyedropper/id1455143862");
+#endif
+}
 
 //static
 void Ux::interactionAddHistory(uiObject *interactionObj, uiInteraction *delta){
@@ -1749,7 +1758,15 @@ bool Ux::wouldLooseIfColorAdded(){
 }
 
 
+void Ux::showBasicUpgradeMessage(){
+    defaultYesNoChoiceDialogue->display(addHistoryBtn, &interactionUpgradeFromBasic, nullptr);
+    defaultYesNoChoiceDialogue->displayAdditionalMessage("Basic:Upgrade?");
+    defaultYesNoChoiceDialogue->assignScoringProcessor(nullptr);
+    defaultYesNoChoiceDialogue->allowFastYes();
+}
+
 void Ux::addCurrentToPickHistory(){
+
 
 //  TODO consider eliminating lastPickHistoryIndex instead
  //    / i.e pickHistoryIndex = lastPickHistoryIndex
@@ -1758,6 +1775,12 @@ void Ux::addCurrentToPickHistory(){
 
  //     IMPORTANT remember ot text with pickHistoryMax = <5
  //     IMPORTANT remember to check more than 10 colors
+
+
+#ifdef COLORPICK_BASIC_MODE
+    showBasicUpgradeMessage();
+    return;
+#endif
 
     OpenGLContext* ogg=OpenGLContext::Singleton();
 

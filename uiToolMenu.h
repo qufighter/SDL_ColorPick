@@ -105,7 +105,7 @@ struct uiToolMenu{
 
 
             text->backgroundClickCallback(&touchMenuChoice)
-                ->backgroundColor(255, 255, 255, 192)
+                //->backgroundColor(255, 255, 255, 192) .. its always set later
                 ->color(64, 64, 64, 255)
                 ->scale(1.21);
 
@@ -137,7 +137,7 @@ struct uiToolMenu{
         }
     }
 
-    void addMenuItem(uiObject *p_cbUiObject, const char* menuText, anInteractionFn p_interactionCallback){
+    void addMenuItem(uiObject *p_cbUiObject, const char* menuText, anInteractionFn p_interactionCallback, SDL_Color* bgOverride){
         //Ux* uxInstance = Ux::Singleton();
 
         lastMenuItemIndex += 1;
@@ -153,6 +153,11 @@ struct uiToolMenu{
 
         menu_item->showAndAllowInteraction();
 
+        if( bgOverride!=nullptr ){
+            text->backgroundColor(bgOverride);
+        }else{
+            text->backgroundColor(255, 255, 255, 192);
+        }
 
         text->print(menuText);
         //uxInstance->printStringToUiObject(menu_item_txt, menuText, DO_NOT_RESIZE_NOW);

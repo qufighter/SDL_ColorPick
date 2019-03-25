@@ -484,6 +484,14 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             //            self->updateModal(self->palleteSelectionPreviewHolder, &Ux::interactionTogglePalletePreview);
             //        }
         }
+
+
+#ifdef COLORPICK_BASIC_MODE
+        if( self->historyPalleteHolder->is_being_viewed_state ){
+            interactionToggleHistory(nullptr, nullptr);
+            myUxRef->showBasicUpgradeMessage();
+        }
+#endif
     }
 
 

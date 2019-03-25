@@ -22,6 +22,16 @@
 #endif
 
 
+
+// ColorPick BASIC....
+//#define COLORPICK_BASIC_MODE 1
+// we ALSO neeed to swap out the following:
+// 1) icons (and exe name??? maybe icon only)
+// 2) splash?
+// 3) com.vidsbee.appID
+
+
+
 #ifdef __IPHONEOS__
 #include "SDL_opengl.h"
 #import <OpenGLES/ES3/gl.h>
