@@ -1776,63 +1776,62 @@ void Ux::addCurrentToPickHistory(){
  //     IMPORTANT remember ot text with pickHistoryMax = <5
  //     IMPORTANT remember to check more than 10 colors
 
+    ColorList anEntry = ColorList(*currentlyPickedColor);
+    bool historyEnabled = true;
+    float bounceIntensity = -0.001;
 
 #ifdef COLORPICK_BASIC_MODE
     showBasicUpgradeMessage();
-    return;
+    historyEnabled = false;
 #endif
+
 
     OpenGLContext* ogg=OpenGLContext::Singleton();
 
-    float bounceIntensity = -0.001;
+    if( historyEnabled ){
+     //     if we have a lastPickHistoryIndex
+        if( pickHistoryList->total() > 0  ){
+            // the new color must be unique
+            if( wouldLooseIfColorAdded() ){
 
- //     if we have a lastPickHistoryIndex
-    if( pickHistoryList->total() > 0  ){
-        // the new color must be unique
-        if( wouldLooseIfColorAdded() ){
+                // we already had this color added to the end of the history... indicate this with an effect and do not continue
 
-            // we already had this color added to the end of the history... indicate this with an effect and do not continue
-
-            uiObject * colora = historyPreview->childList[0];
-            //colora->boundryRect.y -= 0.1;
-            //colora->updateRenderPosition();
-            // openglContext->
-            bounceIntensity = -0.01;
+                uiObject * colora = historyPreview->childList[0];
+                //colora->boundryRect.y -= 0.1;
+                //colora->updateRenderPosition();
+                // openglContext->
+                bounceIntensity = -0.01;
 
 
-            uxAnimations->emphasizedBounce(colora, widescreen?bounceIntensity:0, widescreen?0:bounceIntensity);
-            defaultScoreDisplay->loose(historyPreview->childList[0]);
+                uxAnimations->emphasizedBounce(colora, widescreen?bounceIntensity:0, widescreen?0:bounceIntensity);
+                defaultScoreDisplay->loose(historyPreview->childList[0]);
 
-            return;
+                return;
+            }else{
+                uxAnimations->softBounce(historyPreview, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0);
+            }
         }else{
             uxAnimations->softBounce(historyPreview, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0);
         }
-    }else{
-        uxAnimations->softBounce(historyPreview, widescreen?0:bounceIntensity, widescreen?bounceIntensity:0);
+
+        pickHistoryList->add(anEntry);
+        if( pickHistoryList->_out_of_space ){
+            defaultScoreDisplay->display(historyPreview->childList[0], 2);
+            //defaultScoreDisplay->displayExplanation("out of space!");
+            defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_GREATER_NOSPACE);
+        }else{
+            defaultScoreDisplay->display(historyPreview->childList[0], 1);
+        }
+        updatePickHistoryPreview();
+        //     move logic into historyPalleteEditor
+        if( historyPalleteEditor->historyPalleteHolder->isInBounds ){
+            historyPalleteEditor->historyScroller->scrollToItemByIndex(0);
+        }else{
+            historyPalleteEditor->historyScroller->scrolly = 0;
+        }
     }
 
     ogg->begin3dDropperAnimation(OpenGLContext::ANIMATION_ADD_COLOR, currentlyPickedColor);
-
-    ColorList anEntry = ColorList(*currentlyPickedColor);
-    pickHistoryList->add(anEntry);
-    if( pickHistoryList->_out_of_space ){
-        defaultScoreDisplay->display(historyPreview->childList[0], 2);
-        //defaultScoreDisplay->displayExplanation("out of space!");
-        defaultScoreDisplay->displayAchievement(Ux::uiSettingsScroller::UI_ACHEIVEMENT_GREATER_NOSPACE);
-    }else{
-        defaultScoreDisplay->display(historyPreview->childList[0], 1);
-    }
-
-
-    updatePickHistoryPreview();
-
- //     move logic into historyPalleteEditor
-    if( historyPalleteEditor->historyPalleteHolder->isInBounds ){
-        historyPalleteEditor->historyScroller->scrollToItemByIndex(0);
-    }else{
-        historyPalleteEditor->historyScroller->scrolly = 0;
-    }
-
 
  //     now we also update our minigame list....
     if( ogg->minigames->minigamesEnabled() ){

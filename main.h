@@ -28,8 +28,7 @@
 // we ALSO neeed to swap out the following:
 // 1) icons (and exe name??? maybe icon only)
 // 2) splash?
-// 3) com.vidsbee.appID
-
+// 3) com.vidsbee.colorpicksdl com.vidsbee.colorpickbasicsdl
 
 
 #ifdef __IPHONEOS__
