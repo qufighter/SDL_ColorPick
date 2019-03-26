@@ -9,11 +9,9 @@ mkdir app/src/main/assets
 cp -R ../shaders app/src/main/assets
 cp -R ../textures app/src/main/assets
 
-cp -f ../icons/icon72.png app/src/main/res/mipmap-hdpi/ic_launcher.png
-cp -f ../icons/icon48.png app/src/main/res/mipmap-mdpi/ic_launcher.png
-cp -f ../icons/icon96.png app/src/main/res/mipmap-xhdpi/ic_launcher.png
-cp -f ../icons/icon144.png app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-cp -f ../icons/icon192.png app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+echo "Please run the correct buildIcons script for your build before continuing!!!!"
+# ./buildIcons.sh
+# TODO: need a way to copy the BASIC icons instead....
 
 #./gradlew tasks
 ./gradlew installDebug

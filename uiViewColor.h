@@ -223,6 +223,13 @@ struct uiViewColor{
         uxInstance->rClickMenu->hide();
         uxInstance->showBasicUpgradeMessage();
         return;
+
+        // so if they use a copy that works (not this one)
+        // lets start to count how many??
+        //after enoough copies lets request a review...
+        //OpenGLContext* ogg=OpenGLContext::Singleton();
+        //ogg->doRequestReview();
+
 #endif
 
         uiViewColor* self = ((uiViewColor*)interactionObj->interactionProxy->myUiController);
