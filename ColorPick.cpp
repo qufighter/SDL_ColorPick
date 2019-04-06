@@ -1340,6 +1340,7 @@ void OpenGLContext::render3dDropperAnimation(void) {
         }else{
             animationDropper3dId = DROPPER_ANIMATION_ENUM::NO_ANIMATION;
             minigames->beginNextGame();
+            renderUi(); // we ALREADY rendered the UI, but it was underneath the dropper and the minigame...
         }
         return; // custom progress handling.... for end events...
     } else if( animationDropper3dId == ANIMATION_DEFAULT ){
