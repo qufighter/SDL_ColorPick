@@ -9,12 +9,8 @@
 #include "ux.h"
 
 
-#if __ANDROID__
-#include "Platform/Android/AndroidFileChooser.h" // platform specific include!
-#else
-#include "FileChooser.h" // platform specific include!  this is for ios (and osx...)
-#endif
-// #include "FileChooser.h" // includes openglContext
+#include "FileChooserInclude.h"
+
 
 
 bool Ux::ms_bInstanceCreated = false;

@@ -954,6 +954,8 @@ GLuint Textures::LoadTexture(const char* filename, GLuint& textureid) {
 
 SDL_Surface* Textures::LoadSurface(const char* filename) {
 
+    SDL_Log("Loading texture %s", filename);
+
     SDL_Surface* surface = IMG_Load(filename); // this probably does the below... in one line
 //    SDL_RWops* fileref = SDL_RWFromFile(filename, "r");
 //    SDL_Surface *surface = IMG_Load_RW(fileref, 0); // it can be done in two lines

@@ -35,6 +35,10 @@ GLuint Meshes::GenerateTexture(){
     return textureid;
 }
 
+#ifndef MAXFLOAT
+#define MAXFLOAT    0x1.fffffep+127f
+#endif
+
 // make the following into member functions?
 float readFloat32(SDL_RWops* fileref){
     Uint8* bytes = new Uint8[4];
@@ -650,7 +654,6 @@ void Meshes::completeMeshLoading(){
     hasLoadedToProcess = false;
     for( std::vector<Mesh*>::iterator i=allMeshes.begin(); i!=allMeshes.end(); ++i){
         Mesh* mesh = (*i);
-        SDL_Log("Mesh vert count and loaded status %s %i %i",mesh->filename,mesh->vertex_count,mesh->is_fully_loaded);
 
         if( mesh->file_loaded && !mesh->is_fully_loaded ){
             mesh->file_loaded = false; // lets try to only get here ONCE for any given mesh...
@@ -669,6 +672,8 @@ void Meshes::completeMeshLoading(){
             if( mesh->colors != nullptr   ){ delete [] mesh->colors;}
             if( mesh->texCoords != nullptr){ delete [] mesh->texCoords;}
         }
+
+        SDL_Log("Mesh vert count and loaded status %s %i %i",mesh->filename,mesh->vertex_count,mesh->is_fully_loaded);
     }
 }
 
@@ -680,7 +685,10 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
     SDL_Thread *thread;
     thread = SDL_CreateThread(LoadObjectPLYThread, "MeshLoadPLY", (void *)mesh);
     if (NULL == thread) {
-        printf("Mesh Loading: SDL_CreateThread failed: %s\n", SDL_GetError());
+        SDL_Log("Mesh Loading: SDL_CreateThread failed (falling back to non threaded loading...): %s\n", SDL_GetError());
+        LoadObjectPLYThread((void *)mesh);
+        completeMeshLoading();
+        SDL_Log("non threaded loading done...");
     }
 
 

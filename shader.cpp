@@ -204,7 +204,9 @@ void Shader::reload() {
     string vsText = textFileRead(vsFile); // Read in the vertex shader
     string fsText = textFileRead(fsFile); // Read in the fragment shader
 
-    //SDL_Log("SHADER FILE CONTENTS (first blob) %s", vsText.c_str());
+//    SDL_Log("SHADER FILE CONTENTS (first blob %s) %s", vsFile, vsText.c_str());
+//    SDL_Log("SHADER FILE CONTENTS (second blob %s) %s", fsFile, fsText.c_str());
+
 
     const char *vertexText = vsText.c_str();
 	const char *fragmentText = fsText.c_str();

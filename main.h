@@ -11,13 +11,17 @@
 
 
 #define GL_GLEXT_PROTOTYPES 1
-#include "SDL.h"
 
+//#ifdef __EMSCRIPTEN__
+//#include "SDL2/SDL.h"
+//#else
+#include "SDL.h"
+//#endif
 
 
 //#elif defined(__MACOSX__) && defined(__LP64__)  /* this is deprecated in 10.12 sdk; favor gcc atomics. */
 
-#if defined(__MACOSX__) || defined(__WIN32__)
+#if defined(__MACOSX__) || defined(__WIN32__) || defined(__EMSCRIPTEN__)
 #define COLORPICK_PLATFORM_DESKTOP 1
 #endif
 
@@ -30,13 +34,24 @@
 // 2) com.vidsbee.colorpicksdl com.vidsbee.colorpickbasicsdl < for android this means check build.gradle (only there, not AndroidManifest), to result in
 //     com.vidsbee.colorpickbasicsdl/com.vidsbee.colorpicksdl.SDLColorPickActivity )
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#define COLORPICK_MISSING_MAIN_LOOP 1
+
+#define SDL_ceilf SDL_ceil
+#define SDL_fabsf SDL_fabs
+#define SDL_floorf SDL_floor
+#define SDL_powf SDL_pow
+
+
+#endif
 
 #ifdef __IPHONEOS__
 #include "SDL_opengl.h"
 #import <OpenGLES/ES3/gl.h>
 #import <OpenGLES/ES3/glext.h>
 #define COLORPICK_MISSING_MAIN_LOOP 1
-#elif __ANDROID__
+#elif __ANDROID__ || __EMSCRIPTEN__
 
 #define GL_GLEXT_PROTOTYPES 1
 #define NO_SDL_GLEXT 1

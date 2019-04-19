@@ -8,8 +8,6 @@
 #include "ColorPick.h" // includes openglContext
 #include <time.h>
 
-
-
 void DebugStr(const char *c_str ) {
 #ifdef COLORPICK_DEBUG_MODE
     SDL_Log("%s", c_str);
@@ -633,6 +631,10 @@ int EventFilter(void* userdata, SDL_Event* event){
     return 1;/* No special processing, add it to the event queue */
 }
 
+void ShowFrame() {
+    ShowFrame(nullptr);
+}
+
 void ShowFrame(void*)
 {
 
@@ -805,12 +807,18 @@ int main(int argc, char *argv[]) {
 
 
     //SDL_SetHint(SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH, "1"); // setting this for fear of a duplicate event, we really want one type or the ohter???  // NEVERMIND: we only listen for ONE type of event (#ifndef COLORPICK_PLATFORM_DESKTOP then fingers), so we need both driggered.
+
+#ifndef __EMSCRIPTEN__
+
     SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, "0");
     SDL_SetHint(SDL_HINT_IDLE_TIMER_DISABLED, "0");
     SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1"); // its trapped by default still as of SDL2-2.0.9 (even though docs say otherwise...)
     SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
     SDL_SetHint(SDL_HINT_MAC_BACKGROUND_APP, "0");  // as far as I can tell.... this only makes the window not re-enter the background once focused - and also becomes incapable of entering the forground (no menu bar)
-//    SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "1");
+#endif
+
+
+    //    SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "1");
 //#ifdef __ANDROID
 //    SDL_SetHint(SDL_ANDROID_SEPARATE_MOUSE_AND_TOUCH, "1");
 //#endif
@@ -864,8 +872,8 @@ int main(int argc, char *argv[]) {
 
 // UX read settings begin....
 
-#ifndef __ANDROID__
-    // OES is already core?? (ish?)
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+    // OES (egl?) is already core?? (ish?)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 #endif
@@ -940,15 +948,22 @@ int main(int argc, char *argv[]) {
 
 #ifdef COLORPICK_MISSING_MAIN_LOOP
 
-//    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+#ifdef __EMSCRIPTEN__
+    // void emscripten_set_main_loop(em_callback_func func, int fps, int simulate_infinite_loop);
+    //emscripten_set_main_loop(ShowFrame, 60, 1); 
+
+    emscripten_set_main_loop(ShowFrame, 0, 1);
+#else
+    //    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
     SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
 
     //SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256);
 
     //SDL_iPhoneSetEventPump(SDL_TRUE);
     SDL_iPhoneSetAnimationCallback(window, 1, ShowFrame, NULL);
+#endif
 
-#else
+#else // not COLORPICK_MISSING_MAIN_LOOP
     int done = 0;
     SDL_Event event;
 

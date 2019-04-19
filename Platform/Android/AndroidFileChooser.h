@@ -9,8 +9,8 @@
 // USED BY ANDROID
 #ifdef __ANDROID__
 
-#ifndef ColorPick_iOS_SDL_FileChooser_h
-#define ColorPick_iOS_SDL_FileChooser_h
+#ifndef ColorPick_android_SDL_FileChooser_h
+#define ColorPick_android_SDL_FileChooser_h
 
 #include "../../ColorPick.h"
 

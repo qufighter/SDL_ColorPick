@@ -15,9 +15,11 @@ uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform sampler2D texture3;
 
-bool oobCheck(vec2 c){
-    return c.x < 0.0 || c.x > 1.0 || c.y < 0.0 || c.y > 1.0;
-}
+//bool oobCheck(vec2 c){
+//    return c.x < 0.0 || c.x > 1.0 || c.y < 0.0 || c.y > 1.0;
+//}
+
+#define oobCheckMacro(vec2c) vec2c.x < 0.0 || vec2c.x > 1.0 || vec2c.y < 0.0 || vec2c.y > 1.0
 
 void main()
 {
@@ -91,7 +93,7 @@ void main()
 //        }
 
         if( bcolor.a == 0.0){
-            if( oobCheck(backgroundTexCoord) ){
+            if( oobCheckMacro(backgroundTexCoord) ){
                 ocolor=vec4(0.0,0.0,0.0,1.0);
             }else{
                 ocolor=texture2D(texture2, backgroundTexCoord);
@@ -102,7 +104,7 @@ void main()
         gl_FragColor = bcolor;
 
     }else{
-        if( oobCheck(backgroundTexCoord) ){
+        if( oobCheckMacro(backgroundTexCoord) ){
             ocolor=vec4(0.0,0.0,0.0,1.0);
         }else{
             ocolor=texture2D(texture2, backgroundTexCoord);

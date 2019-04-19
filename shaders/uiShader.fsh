@@ -14,12 +14,16 @@ uniform vec4 ui_corner_radius;
 const float fuzz = 0.0078125; // 0.025;
 const float hfuzz =(fuzz * 0.5);
 
-void roundCorner(vec2 OrigTexCoordOut, vec2 center, float radius, float fuzz) {
-    float dis = distance(OrigTexCoordOut, center);
-    if( dis >= radius ){
-        gl_FragColor.a = gl_FragColor.a * (((radius + fuzz) - dis) / fuzz);
-    }
-}
+//void roundCorner(vec2 OrigTexCoordOut, vec2 center, float radius, float fuzz) {
+//    float dis = distance(OrigTexCoordOut, center);
+//    if( dis >= radius ){
+//        gl_FragColor.a = gl_FragColor.a * (((radius + fuzz) - dis) / fuzz);
+//    }
+//}
+
+//#define roundCornerMacro(OrigTexCoordOut, center, radius, fuzz) \
+
+#define ROUND_CORNER_MACRO float dis = distance(OrigTexCoordOut, center);if( dis >= radius ){gl_FragColor.a = gl_FragColor.a * (((radius + fuzz) - dis) / fuzz);}
 
 void main()
 {
@@ -49,8 +53,9 @@ void main()
 
         if( OrigTexCoordOut.y <= fuzzradius ){
             if( OrigTexCoordOut.x <= fuzzradius ) {
+                vec2 center = vec2(fuzzradius,fuzzradius);
                 // TOP LEFT
-                roundCorner(OrigTexCoordOut, vec2(fuzzradius,fuzzradius), radius, fuzz);
+                ROUND_CORNER_MACRO
             }
         }
     }
@@ -62,10 +67,12 @@ void main()
         float fuzzradius = radius + hfuzz;
         float rfuzzzradius = rradius - hfuzz;
 
+
         if( OrigTexCoordOut.y <= fuzzradius ){
             if(OrigTexCoordOut.x >= rfuzzzradius ) {
+                vec2 center = vec2(rfuzzzradius ,fuzzradius);
                 // TOP RIGHT
-                roundCorner(OrigTexCoordOut, vec2(rfuzzzradius ,fuzzradius), radius, fuzz);
+                ROUND_CORNER_MACRO
             }
         }
     }
@@ -77,8 +84,9 @@ void main()
 
         if (OrigTexCoordOut.y >= rfuzzzradius){
             if(OrigTexCoordOut.x >= rfuzzzradius ) {
+                vec2 center = vec2(rfuzzzradius ,rfuzzzradius);
                 // BOTTOM RIGHT
-                roundCorner(OrigTexCoordOut, vec2(rfuzzzradius ,rfuzzzradius), radius, fuzz);
+                ROUND_CORNER_MACRO
             }
         }
     }
@@ -92,8 +100,9 @@ void main()
 
         if (OrigTexCoordOut.y >= rfuzzzradius){
             if( OrigTexCoordOut.x <= fuzzradius ) {
+                vec2 center = vec2(fuzzradius,rfuzzzradius);
                 // BOTTOM LEFT
-                roundCorner(OrigTexCoordOut, vec2(fuzzradius,rfuzzzradius), radius, fuzz);
+                ROUND_CORNER_MACRO
 
             }
         }
