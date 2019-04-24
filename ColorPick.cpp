@@ -32,6 +32,7 @@ OpenGLContext::OpenGLContext(void) {
     position_y = 0;
     last_mode_hue_picker = false;
     lastTrueFullPickImgSurface=nullptr;
+    no_more_shader_message_boxes=false;
 
     pixelInteraction.friction=6.9;
     pixelInteraction.useInstantaneousVelocity=true;

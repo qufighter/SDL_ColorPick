@@ -176,6 +176,7 @@ public:
     int mmovex, mmovey; /// needs to be ux accessible singleton.......
 
 
+    bool no_more_shader_message_boxes;
 
     float fishEyeScale = 7.0f;
     float fishEyeScalePct = fishEyeScale / MAX_FISHEYE_ZOOM;

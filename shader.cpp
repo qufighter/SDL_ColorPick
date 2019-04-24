@@ -60,20 +60,24 @@ static string textFileRead(const char *fileName) {
     return fileString; // Return our string
 }
 
-
 static void messageBoxTime(const char* file, char* buffer){
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    if( ogg->no_more_shader_message_boxes ){
+        return;
+    }
+
     const unsigned int REPORT_SIZE = 512;
     char* shader_error_report = (char*)SDL_malloc( sizeof(char) * REPORT_SIZE );
 
     SDL_snprintf(shader_error_report, REPORT_SIZE, "%s\n%s", file, buffer);
 
-    OpenGLContext* ogg=OpenGLContext::Singleton();
     int selected;
     SDL_MessageBoxData messagebox;
     SDL_MessageBoxButtonData buttons[] = {
         {   0,  SDL_ASSERTION_RETRY,            "Continue" },
+        {   SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, SDL_ASSERTION_IGNORE,           "Ignore All" },
         {   SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,  SDL_ASSERTION_BREAK,            "Report" },
-        {   SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,  SDL_ASSERTION_ABORT,            "Quit" }
+        {   0,  SDL_ASSERTION_ABORT,            "Quit" }
     };
 
     SDL_zero(messagebox);
@@ -84,22 +88,23 @@ static void messageBoxTime(const char* file, char* buffer){
     messagebox.numbuttons = SDL_arraysize(buttons);
     messagebox.buttons = buttons;
     if (SDL_ShowMessageBox(&messagebox, &selected) == 0) {
-        //SDL_Log("itz zero pretty much no matter what");
         //SDL_Log("--- itz %d", selected);
 
-        if( selected == 2 ){
+        if( selected == SDL_ASSERTION_ABORT ){
             // quit...
             SDL_free(shader_error_report);
             SDL_Quit();
             exit(1);
             return;
-        }else if(selected == 1 ){
+        }else if(selected == SDL_ASSERTION_BREAK ){
             // report
             const char* urlBase = "http://www.vidsbee.com/Contact/?browserinfo=App:NativeColorPick";
             SDL_snprintf(shader_error_report, REPORT_SIZE, "%s:%s\n%s", urlBase, file, buffer);
             ogg->doOpenURL(shader_error_report); // TODO: we really need to defer this....
+        }else if(selected == SDL_ASSERTION_IGNORE ){
+            ogg->no_more_shader_message_boxes=true;
         }else{
-            // shrug
+            // shrug SDL_ASSERTION_RETRY
         }
     }
 
@@ -118,12 +123,9 @@ static void validateShader(GLuint shader, const char* file = 0) {
     GLsizei length = 0;
     
     glGetShaderInfoLog(shader, BUFFER_SIZE, &length, buffer); // Ask OpenGL to give us the log associated with the shader
-    if (length > 0){ // If we have any information to display
+    if (length > 0 && buffer[0] != 'S' ){ // If we have any information to display, some devices report "Success.\nWARNING: - known error reports may start with E
         cout << "Shader " << shader << " (" << (file?file:"") << ") compile error: " << buffer << endl; // Output the information
-
         messageBoxTime(file, buffer);
-
-
     }
 }
 
