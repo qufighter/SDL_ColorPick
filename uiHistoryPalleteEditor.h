@@ -472,6 +472,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             myUxRef->endModal(self->historyPalleteHolder);
         }else{
             self->historyPalleteHolder->isInBounds = true; // nice hack
+            self->historyPalleteHolder->updateRenderPosition();
             myUxRef->updatePickHistoryPreview();
             self->palleteScroller->updateTiles();
             self->historyPalleteHolder->setAnimation( myUxRef->uxAnimations->resetPosition(self->historyPalleteHolder) ); // returns uiAminChain*

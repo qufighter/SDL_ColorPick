@@ -49,13 +49,18 @@ void main()
 
     vec4 ocolor;
 
+    vec4 ccolor = vec4(0.0,0.0,0.0,1.0);//crosshair color
+
+    // to support/avoid certain "gradient calculation inside conditional block" issues... we do all our texutre lookups in advance
+    // some of these texutre lookups are not needed but this seems likely to be the most compatible way
+
+    vec4 bcolor=texture2D(texture1,  pixelPosition); //maths
+
+    vec4 pcolor=texture2D(texture1, ctr / texWidthLessOne );
+
+    vec4 bgcolor = texture2D(texture2, backgroundTexCoord);
+
     if( pixelPosition.x > 0.0 && pixelPosition.x < 1.0 && pixelPosition.y > 0.0 && pixelPosition.y < 1.0){
-
-		vec4 bcolor=texture2D(texture1,  pixelPosition); //maths
-
-        vec4 pcolor=texture2D(texture1, ctr / texWidthLessOne );
-
-        vec4 ccolor = vec4(0.0,0.0,0.0,1.0);//crosshair color
 
         if(pcolor.r + pcolor.g + pcolor.b < 1.5){
 			ccolor = vec4(1.0,1.0,1.0,1.0);
@@ -96,7 +101,7 @@ void main()
             if( oobCheckMacro(backgroundTexCoord) ){
                 ocolor=vec4(0.0,0.0,0.0,1.0);
             }else{
-                ocolor=texture2D(texture2, backgroundTexCoord);
+                ocolor=bgcolor;
             }
 
             bcolor=ocolor;
@@ -107,7 +112,7 @@ void main()
         if( oobCheckMacro(backgroundTexCoord) ){
             ocolor=vec4(0.0,0.0,0.0,1.0);
         }else{
-            ocolor=texture2D(texture2, backgroundTexCoord);
+            ocolor=bgcolor;
         }
         gl_FragColor=ocolor;
     }

@@ -346,6 +346,10 @@ struct uiAnimation
 
             myUiObject->matrix = initial_matrix + (diffMatrix * progressBar);
 
+            if( progressBar == 1.0 ){
+                myUiObject->matrix = dest_matrix;
+            }
+
 //            initial_matrix = glm::mat4(myUiObject->matrix);
 //            dest_matrix
 

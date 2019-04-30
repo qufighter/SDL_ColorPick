@@ -14,12 +14,15 @@
 
 #include "../../ColorPick.h"
 
-int testversion(); // export for EMscripen only... test is this is needed or not??
+//EMSCRIPTEN_KEEPALIVE int testversion(); // export for EMscripen only... the keepalive can go here.... or...
 
 void getImagePathFromMainThread();
 void beginImageSelector();
 bool openURL(char* &url);
 void requestReview();
+
+void emscripen_copy_to_clipboard(char* url);
+
 
 #endif
 #endif

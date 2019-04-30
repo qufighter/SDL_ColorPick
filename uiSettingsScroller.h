@@ -554,6 +554,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
         }else{
             self->uiObjectItself->isInBounds = true; // nice hack
+            self->uiObjectItself->updateRenderPosition();
             //myUxRef->updatePickHistoryPreview();
 
             self->settingsScroller->updateTiles();

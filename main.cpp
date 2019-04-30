@@ -437,6 +437,33 @@ int EventFilter(void* userdata, SDL_Event* event){
             }
             return 0;
         }
+        /*
+event is maybe going to have
+         SDL_ControllerAxisEvent caxis;
+            SDL_ControllerButtonEvent cbutton;
+            SDL_ControllerDeviceEvent cdevice;
+         */
+        case SDL_CONTROLLERDEVICEADDED:
+            SDL_Log("Controller was added %i (need to open it)", event->cdevice.which);
+            //see SDL_GameControllerOpen
+            break;
+
+        case SDL_CONTROLLERDEVICEREMOVED:
+            SDL_Log("Controller was rm %i (need to close it?)", event->cdevice.which);
+            break;
+
+        case SDL_CONTROLLERBUTTONDOWN:
+            SDL_Log("Controller button down %i (SDL_GameControllerButton)", event->cbutton.button);
+            break;
+
+        case SDL_CONTROLLERBUTTONUP:
+            SDL_Log("Controller button up %i (SDL_GameControllerButton)", event->cbutton.button);
+            break;
+
+        case SDL_CONTROLLERAXISMOTION:
+            SDL_Log("Controller axis motion %i (SDL_GameControllerAxis) value %i", event->caxis.axis, event->caxis.value);
+            break;
+
 #ifdef COLORPICK_PLATFORM_DESKTOP
         case SDL_MOUSEWHEEL:
             //SDL_Log("Hello Wheel!!");
@@ -851,9 +878,20 @@ int main(int argc, char *argv[]) {
     //
 
     /* initialize SDL */
-    if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_GAMECONTROLLER) < 0) {
         printf("Could not initialize SDL\n");
         return 1;
+    }
+
+    if( SDL_NumJoysticks() > 0 ){
+        SDL_Log("joysticks found %i", SDL_NumJoysticks());
+        if( SDL_IsGameController(0) ){
+            SDL_GameControllerOpen(0); // returns an SDL_GameController*
+            SDL_Log("game controller open");
+        }else{
+            SDL_JoystickOpen(0);
+            SDL_Log("joystick open");
+        }
     }
 
     /* seed random number generator */
@@ -876,6 +914,8 @@ int main(int argc, char *argv[]) {
     // OES (egl?) is already core?? (ish?)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
+#else
+    //SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl"); // this plus manifest change = opengles 1.0 ??  not worth it imo (after testing on amz device bench)
 #endif
 //    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);

@@ -210,7 +210,7 @@ struct uiViewColor{
     static void copyHexValueOmitHashClicked(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
         uiViewColor* self = ((uiViewColor*)interactionObj->interactionProxy->myUiController);
-        SDL_SetClipboardText(self->getHexString("", true));
+        uxInstance->setClipboardText(self->getHexString("", true));
         uxInstance->defaultScoreDisplay->displayExplanation(" Paste Ready ");
         uxInstance->rClickMenu->hide();
 
@@ -234,7 +234,7 @@ struct uiViewColor{
 
         uiViewColor* self = ((uiViewColor*)interactionObj->interactionProxy->myUiController);
         //SDL_Log("REACHED COPY HEX CALLBACK");
-        SDL_SetClipboardText(self->getHexString(""));
+        uxInstance->setClipboardText(self->getHexString(""));
         uxInstance->defaultScoreDisplay->displayExplanation(" Paste Ready ");
         uxInstance->rClickMenu->hide();
     }
@@ -243,7 +243,7 @@ struct uiViewColor{
         Ux* uxInstance = Ux::Singleton();
         uiViewColor* self = ((uiViewColor*)interactionObj->interactionProxy->myUiController);
         //SDL_Log("REACHED COPY RGB CALLBACK");
-        SDL_SetClipboardText(self->getVanillaRgbString(""));
+        uxInstance->setClipboardText(self->getVanillaRgbString(""));
         uxInstance->defaultScoreDisplay->displayExplanation(" Paste Ready ");
         uxInstance->rClickMenu->hide();
     }
@@ -260,7 +260,7 @@ struct uiViewColor{
 
         uiViewColor* self = ((uiViewColor*)interactionObj->interactionProxy->myUiController);
         //SDL_Log("REACHED COPY RGB CALLBACK");
-        SDL_SetClipboardText(self->getRgbString(""));
+        uxInstance->setClipboardText(self->getRgbString(""));
         uxInstance->defaultScoreDisplay->displayExplanation(" Paste Ready ");
         uxInstance->rClickMenu->hide();
     }

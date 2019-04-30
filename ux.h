@@ -306,6 +306,7 @@ static Ux* Singleton();
     void wheelOrPinchInteraction(uiInteraction *delta, float wheeldelta);
 
     void doOpenURL(char* url);
+    void setClipboardText(char* txt);
 
     bool bubbleCurrentInteraction(uiObject *interactionObj, uiInteraction *delta);
     bool interactionUpdate(uiInteraction *delta);

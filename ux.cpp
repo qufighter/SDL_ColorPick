@@ -1336,6 +1336,14 @@ void Ux::doOpenURL(char* url){ // note spaces and newlines should be auto replac
     //openURL(url); // uses platform specific version from FileChooser.h
 }
 
+void Ux::setClipboardText(char* txt){
+#ifdef __EMSCRIPTEN__
+    emscripen_copy_to_clipboard(txt);
+#else
+    SDL_SetClipboardText(txt);
+#endif
+}
+
 void Ux::hideHistoryPalleteIfShowing(){
     if( historyPalleteEditor->historyPalleteHolder->is_being_viewed_state ) {
         historyPalleteEditor->interactionToggleHistory(nullptr, nullptr);

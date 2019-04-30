@@ -272,6 +272,9 @@ use the same xcassets as on the touchy devices ?? (why not just use a icns file 
 ### win
 win impl
 
+### emscripten
+// EMSCRIPTEN has no threading, so we run out of animation chains somehow.... canfix
+
 ## mobile any
 
 

@@ -123,9 +123,11 @@ static void validateShader(GLuint shader, const char* file = 0) {
     GLsizei length = 0;
     
     glGetShaderInfoLog(shader, BUFFER_SIZE, &length, buffer); // Ask OpenGL to give us the log associated with the shader
-    if (length > 0 && buffer[0] != 'S' ){ // If we have any information to display, some devices report "Success.\nWARNING: - known error reports may start with E
+    if (length > 0 ){
         cout << "Shader " << shader << " (" << (file?file:"") << ") compile error: " << buffer << endl; // Output the information
-        messageBoxTime(file, buffer);
+        if( buffer[0] != 'S' && buffer[0] != 'C' ){ // If we have any information to display, some devices report "Success.\nWARNING:" others start with "Complete" - known error reports may start with E
+            messageBoxTime(file, buffer);
+        }
     }
 }
 
