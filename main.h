@@ -25,6 +25,7 @@
 #define COLORPICK_PLATFORM_DESKTOP 1
 #endif
 
+//#define NO_MESH_LOADING 1
 
 
 // ColorPick BASIC....
@@ -222,6 +223,10 @@ struct uniformLocationStruct
 
 //#define SCREEN_WIDTH 640
 //#define SCREEN_HEIGHT 960
+
+//ws boot test (passed)
+//#define SCREEN_WIDTH 480
+//#define SCREEN_HEIGHT 320
 
 #else
 #define SCREEN_WIDTH 640

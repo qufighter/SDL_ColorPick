@@ -452,10 +452,46 @@ event is maybe going to have
             SDL_Log("Controller was rm %i (need to close it?)", event->cdevice.which);
             break;
 
-        case SDL_CONTROLLERBUTTONDOWN:
+        case SDL_CONTROLLERBUTTONDOWN:{
             SDL_Log("Controller button down %i (SDL_GameControllerButton)", event->cbutton.button);
-            break;
 
+
+            switch(event->cbutton.button){
+                case SDL_CONTROLLER_BUTTON_DPAD_UP:
+                    colorPickState->mmovey=1;
+                    break;
+                case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+                    colorPickState->mmovey=-1;
+                    break;
+                case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+                    colorPickState->mmovex=-1;
+                    break;
+                case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+                    colorPickState->mmovex=1;
+                    break;
+            }
+
+
+            //openglContext->has_velocity=false;
+            openglContext->renderShouldUpdate=true;
+
+            /*
+
+             case SDLK_UP:
+             colorPickState->mmovey=1;
+             break;
+             case SDLK_DOWN:
+             colorPickState->mmovey=-1;
+             break;
+             case SDLK_RIGHT:
+             colorPickState->mmovex=-1;
+             break;
+             case SDLK_LEFT:
+             colorPickState->mmovex=1;
+             */
+
+            break;
+        }
         case SDL_CONTROLLERBUTTONUP:
             SDL_Log("Controller button up %i (SDL_GameControllerButton)", event->cbutton.button);
             break;
@@ -905,8 +941,8 @@ int main(int argc, char *argv[]) {
     // TODO recall window position?  useful possibly for desktop platforms....
 
 
-//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3); // to try 3.0 headers, and manifest no.. see OpenGL ES  _  Android Developers.html ... if that fails try sdl 2.0.8 ?
+//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
 // UX read settings begin....
 
@@ -915,6 +951,9 @@ int main(int argc, char *argv[]) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 #else
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+
     //SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl"); // this plus manifest change = opengles 1.0 ??  not worth it imo (after testing on amz device bench)
 #endif
 //    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);

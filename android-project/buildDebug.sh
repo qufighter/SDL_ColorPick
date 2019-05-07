@@ -27,4 +27,5 @@ echo "arg $1"
 echo "watching logs"
 
 #we can watch the logs on device..
-~/Library/Android/sdk/platform-tools/adb -d logcat | grep "$1"
+# removed adb -d (usb only)
+~/Library/Android/sdk/platform-tools/adb logcat | grep "$1"

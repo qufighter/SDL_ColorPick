@@ -682,6 +682,7 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
     Mesh* mesh = new Mesh(filename);
     allMeshes.push_back(mesh);
 
+#ifndef NO_MESH_LOADING
     SDL_Thread *thread;
     thread = SDL_CreateThread(LoadObjectPLYThread, "MeshLoadPLY", (void *)mesh);
     if (NULL == thread) {
@@ -690,7 +691,7 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
         completeMeshLoading();
         SDL_Log("non threaded loading done...");
     }
-
+#endif
 
 
     //    buildMesh(mesh, vIdx,

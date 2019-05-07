@@ -292,6 +292,73 @@ anything using main loop timers (processed on main loop) are not processed....
   ^ there is "no clock bar" on iphone 10
   ^ we sort of handled this too I think...
 
+### fire tv/ controllers
+
+
+typedef enum
+{
+SDL_CONTROLLER_BUTTON_INVALID = -1,
+SDL_CONTROLLER_BUTTON_A,
+SDL_CONTROLLER_BUTTON_B,
+SDL_CONTROLLER_BUTTON_X,
+SDL_CONTROLLER_BUTTON_Y,
+SDL_CONTROLLER_BUTTON_BACK,
+SDL_CONTROLLER_BUTTON_GUIDE,
+SDL_CONTROLLER_BUTTON_START,
+SDL_CONTROLLER_BUTTON_LEFTSTICK,
+SDL_CONTROLLER_BUTTON_RIGHTSTICK,
+SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
+SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
+SDL_CONTROLLER_BUTTON_DPAD_UP,
+SDL_CONTROLLER_BUTTON_DPAD_DOWN,
+SDL_CONTROLLER_BUTTON_DPAD_LEFT,
+SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
+SDL_CONTROLLER_BUTTON_MAX
+} SDL_GameControllerButton;
+
+
+I/SDL/APP (13176): Controller button down 11 (SDL_GameControllerButton) // UP (hope its SDL_CONTROLLER_BUTTON_DPAD_UP
+I/SDL/APP (13176): unrecognized event; type 1539
+I/SDL/APP (13176): Controller button up 11 (SDL_GameControllerButton)
+I/SDL/APP (13176): unrecognized event; type 1540
+I/SDL/APP (13176): Controller button down 14 (SDL_GameControllerButton) // RIGHT SDL_CONTROLLER_BUTTON_DPAD_RIGHT
+I/SDL/APP (13176): unrecognized event; type 1539
+I/SDL/APP (13176): Controller button up 14 (SDL_GameControllerButton)
+I/SDL/APP (13176): unrecognized event; type 1540
+I/SDL/APP (13176): Controller button down 12 (SDL_GameControllerButton) // DOWN SDL_CONTROLLER_BUTTON_DPAD_DOWN
+I/SDL/APP (13176): unrecognized event; type 1539
+I/SDL/APP (13176): Controller button up 12 (SDL_GameControllerButton)
+I/SDL/APP (13176): unrecognized event; type 1540
+I/SDL/APP (13176): Controller button down 13 (SDL_GameControllerButton) // LEFT SDL_CONTROLLER_BUTTON_DPAD_LEFT
+I/SDL/APP (13176): unrecognized event; type 1539
+I/SDL/APP (13176): Controller button up 13 (SDL_GameControllerButton)
+I/SDL/APP (13176): unrecognized event; type 1540
+I/SDL/APP (13176): Controller button down 0 (SDL_GameControllerButton)  // ENTER / MIDDLE BUTTON (hope its SDL_CONTROLLER_BUTTON_A )
+I/SDL/APP (13176): unrecognized event; type 1539
+I/SDL/APP (13176): Controller button up 0 (SDL_GameControllerButton)
+I/SDL/APP (13176): unrecognized event; type 1540
+I/SDL/APP (13176): Controller button down 1 (SDL_GameControllerButton)   // BACK BUTTON (hope its SDL_CONTROLLER_BUTTON_B )
+I/SDL/APP (13176): unrecognized event; type 1539
+I/SDL/APP (13176): Controller button up 1 (SDL_GameControllerButton)
+I/SDL/APP (13176): unrecognized event; type 1540
+
+// if we get lost, to figure this out we can use....
+ can we use SDL_GetKeyName(SDL_Keycode key) ???
+ or SDL_GetScancodeName(SDL_Scancode scancode)
+ 
+ we can do this SDL_Scancode SDLCALL SDL_GetScancodeFromKey(SDL_Keycode key)
+ or this SDL_GetKeyFromScancode(SDL_Scancode scancode)
+ 
+I/SDL/APP (13176): keyup 1073741942 // this key is the "menu" key (not controller??? (theoretically its SDLK_MENU pls test it?)
+I/SDL/APP (13176): keyup 1073742109 // this key is the "rewind" key "  ( is it SDLK_AUDIOPREV ?? )
+I/SDL/APP (13176): keyup 1073742085 // this key is the "play/pause" key "  (is it SDLK_AUDIOPLAY ??)
+I/SDL/APP (13176): keyup 1073742110 // this key is the "fast fprward" key " (is it SDLK_AUDIONEXT ??);
+I/SDL/APP (13176): Controller button down 1 (SDL_GameControllerButton)
+I/SDL/APP (13176): unrecognized event; type 1539
+I/SDL/APP (13176): Controller button up 1 (SDL_GameControllerButton)
+I/SDL/APP (13176): unrecognized event; type 1540
+
+
 # tests
 test history overwrote final color in index that it is released from the index (pretty sure it is...)
 test with vanilla (renamed) settings files

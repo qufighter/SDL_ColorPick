@@ -3,6 +3,7 @@
 
 #include "main.h"
 
+//#define SHD_TEXTURE_SIZE 1024
 #define SHD_TEXTURE_SIZE 2048
 
 

@@ -60,6 +60,10 @@ void main()
 
     vec4 bgcolor = texture2D(texture2, backgroundTexCoord);
 
+//    gl_FragColor = vec4(0.5,0.5,0.0,1.0);
+////    gl_FragColor = bgcolor;
+//    return;
+
     if( pixelPosition.x > 0.0 && pixelPosition.x < 1.0 && pixelPosition.y > 0.0 && pixelPosition.y < 1.0){
 
         if(pcolor.r + pcolor.g + pcolor.b < 1.5){

@@ -705,6 +705,8 @@ void OpenGLContext::setupScene(void) {
     textureId_fonts = textures->LoadTexture("textures/ascii.png");
 
 
+
+
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
@@ -798,6 +800,10 @@ void OpenGLContext::reshapeWindow(int w, int h) {
     generalUx->updateStageDimension(windowWidth, windowHeight);
 
     renderShouldUpdate = true;
+
+//    glMatrixMode(GL_PROJECTION)    ;        // set matrix to projection mode
+//    glLoadIdentity()   ;                         // reset the matrix to its default state
+    //glFrustum(-1.0, 1.0, -1.0f, 1.0f, 3.0f, 7.0f);  // apply the projection matrix
 
     //SDL_GL_MakeCurrent(sdlWindow, gl);
 }
