@@ -105,7 +105,11 @@ if [[ $? -eq 0 ]]; then
     echo "=== existing files after copy... ===="
     ls $existingJavaFilesPath
 
-    echo "FINALLY - > please compare the androidMainifest.xml and merge any relevant changes"
+    yourManifestPath="app/src/main/AndroidManifest.xml"
+    newManifestPath=$newLibPath"/android-project/app/src/main/AndroidManifest.xml"
+    echo "\n\nFINALLY => please compare the androidMainifest.xml and merge any relevant changes\n\n < YOURS "$yourManifestPath" \n > THEIRS "$newManifestPath"\n\n"
+
+    diff $yourManifestPath $newManifestPath
 
 fi
 
