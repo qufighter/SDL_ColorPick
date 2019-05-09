@@ -728,11 +728,14 @@ void ShowFrame(void*)
 
     openglContext->renderScene();
 
-#ifdef DEVELOPER_TEST_MODE
+#ifdef DEVELOPER_TEST_MODE // NOTE comment this ifdef out if you want to see your rendering pause
     SDL_Log("RENDER SCENE COMPLETED... swapping buffers....");
 #endif
 
     SDL_GL_SwapWindow(window); // move into render scene?
+
+    //SDL_Delay(33); // we need some delay EITEHR WAY (old android) since we will render again RIGHT AWAY otherwise... and the buffer isn't really swapped, so we just cleard our acutal frame AAAAAGGGGGHGHH
+    //SDL_Delay(600); // note here for CRUMMY_ANDROID testing if applicable
 }
 
 // it is used, on android, but maybe can be interchanged with "render_one_more_frame"
@@ -871,6 +874,8 @@ int main(int argc, char *argv[]) {
 
     //SDL_SetHint(SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH, "1"); // setting this for fear of a duplicate event, we really want one type or the ohter???  // NEVERMIND: we only listen for ONE type of event (#ifndef COLORPICK_PLATFORM_DESKTOP then fingers), so we need both driggered.
 
+    //SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
+
 #ifndef __EMSCRIPTEN__
 
     SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, "0");
@@ -879,6 +884,8 @@ int main(int argc, char *argv[]) {
     SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
     SDL_SetHint(SDL_HINT_MAC_BACKGROUND_APP, "0");  // as far as I can tell.... this only makes the window not re-enter the background once focused - and also becomes incapable of entering the forground (no menu bar)
 #endif
+    //SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
+
 
 
     //    SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "1");
@@ -936,13 +943,16 @@ int main(int argc, char *argv[]) {
 
 //    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
 //    SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
-
+//    SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 1);
 
     // TODO recall window position?  useful possibly for desktop platforms....
 
-
 //    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3); // to try 3.0 headers, and manifest no.. see OpenGL ES  _  Android Developers.html ... if that fails try sdl 2.0.8 ?
 //    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
 // UX read settings begin....
 
@@ -951,14 +961,40 @@ int main(int argc, char *argv[]) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 #else
-
+    // for the else, we are using _ES profile for sure (pretty much) not sure if it eneds to be set though....
+//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 
-    //SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl"); // this plus manifest change = opengles 1.0 ??  not worth it imo (after testing on amz device bench)
 #endif
-//    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+//    SDL_Log("setting depth size....");
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24); // NOTE: some CRUMMY_ANDROID may not support 24 here?
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+//    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,0);
+//    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+
+//    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+//    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
+//    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0); // nifty if we can have alpha these days in the screen buffer....
+//    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+//    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 5);
+//    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 0);
+//    SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
+
+// this is nifty on fire TV since we won't have a reshape/resize...we just start fullscreen... meh though
+//#if defined(__ANDROID__)
+////    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
+//    SDL_DisplayMode sdpm;
+//    SDL_GetDisplayMode(0, 0, &sdpm);
+//    win_w=sdpm.w;
+//    win_h=sdpm.h;
+//#endif
 
     int win_pos_x=0;
     int win_pos_y=0;
@@ -979,6 +1015,7 @@ int main(int argc, char *argv[]) {
     window =
         SDL_CreateWindow(NULL, win_pos_x, win_pos_y, win_w, win_h,
                          SDL_WINDOW_OPENGL
+                         | SDL_WINDOW_SHOWN
 #if !TARGET_OS_SIMULATOR
                          | SDL_WINDOW_ALLOW_HIGHDPI
 #endif
@@ -1016,10 +1053,54 @@ int main(int argc, char *argv[]) {
         printf("Could not create context\n");
         return 1;
     }else{
+
+
+        //SDL_GL_SetSwapInterval(0); // keep vsync off....??? (again may need to set this earlier??)
+
+
+// there has to be a better way to do this... but its what we got...
+
+#define logGottenGlAtrib(name, literalAttrib) SDL_GL_GetAttribute(literalAttrib, &resultInt); \
+SDL_Log("contexts %s %i", name, resultInt);
+
+        int resultInt = 0;
+
+        logGottenGlAtrib("SDL_GL_DEPTH_SIZE", SDL_GL_DEPTH_SIZE);
+        if( resultInt < 1 ){
+            openglContext->meshes->mesh3d_enabled = false; // no depth buffer = no meshes...
+            SDL_Log("DISABLED MESH 3D no depth");
+        }
+        logGottenGlAtrib("SDL_GL_STENCIL_SIZE", SDL_GL_STENCIL_SIZE);
+        if( resultInt < 1 ){
+            openglContext->meshes->mesh3d_enabled = false; // no stencil buffer = no meshes...
+            SDL_Log("DISABLED MESH 3D no stencil");
+        }
+        logGottenGlAtrib("SDL_GL_DOUBLEBUFFER", SDL_GL_DOUBLEBUFFER);
+        logGottenGlAtrib("SDL_GL_RETAINED_BACKING", SDL_GL_RETAINED_BACKING);
+
+        logGottenGlAtrib("SDL_GL_BUFFER_SIZE", SDL_GL_BUFFER_SIZE);
+//
+        logGottenGlAtrib("SDL_GL_RED_SIZE", SDL_GL_RED_SIZE);
+        logGottenGlAtrib("SDL_GL_GREEN_SIZE", SDL_GL_GREEN_SIZE);
+        logGottenGlAtrib("SDL_GL_BLUE_SIZE", SDL_GL_BLUE_SIZE);
+        logGottenGlAtrib("SDL_GL_ALPHA_SIZE", SDL_GL_ALPHA_SIZE);
+
+        logGottenGlAtrib("SDL_GL_CONTEXT_MAJOR_VERSION", SDL_GL_CONTEXT_MAJOR_VERSION);
+        logGottenGlAtrib("SDL_GL_CONTEXT_MINOR_VERSION", SDL_GL_CONTEXT_MINOR_VERSION);
+
+        //SDL_Log("Open GL says we are %s", glGetString(GL_VERSION));
+
         //ReshapeWindow();
         openglContext->setupScene();
         ReshapeWindow();
     }
+
+
+
+
+
+
+
 
 
     SDL_EnableScreenSaver(); // this may set some of the above hints automagically
@@ -1034,9 +1115,7 @@ int main(int argc, char *argv[]) {
     emscripten_set_main_loop(ShowFrame, 0, 1);
 #else
     //    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
-    SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
-
-    //SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 256);
+    //SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);  // <<< this probably does NOTHING here after context is created....
 
     //SDL_iPhoneSetEventPump(SDL_TRUE);
     SDL_iPhoneSetAnimationCallback(window, 1, ShowFrame, NULL);
@@ -1072,6 +1151,7 @@ int main(int argc, char *argv[]) {
         }
         //render(renderer);
 
+//        SDL_Log("Main loop - ShowFrame");
         ShowFrame(NULL);
 
 

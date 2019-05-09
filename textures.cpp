@@ -129,6 +129,8 @@ SDL_Surface* Textures::ConvertSurface(SDL_Surface *origSurface, SDL_Color* backg
 
     if( origSurface == NULL ) return origSurface;
 
+
+
     SDL_Log("orig imgs pixel format name: %s", SDL_GetPixelFormatName(origSurface->format->format));
 
 //    SDL_Log("orig MASKS for image as follows %i %i %i %i",
@@ -284,6 +286,12 @@ SDL_Surface* Textures::ConvertSurface(SDL_Surface *origSurface, SDL_Color* backg
 SDL_bool ModeForSurface(SDL_Surface *surface, GLint* internalFormat, GLenum* format){
     *format = GL_BGRA;
 
+//#ifdef COLORPICK_DEBUG_MODE
+//    GLint preferred_format;
+//    glGetInternalformativ(GL_TEXTURE_2D, GL_RGBA8, GL_TEXTURE_IMAGE_FORMAT, 1, &preferred_format); // GL_TEXTURE_IMAGE_FORMAT not defiend on android...
+//    SDL_Log("for what its worth, gl says preferred format is %i", preferred_format);
+//#endif
+
     bool isProbablyAndroid = surface->format->Rmask == 0x000000ff;
 
 #if __ANDROID__
@@ -325,6 +333,8 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
     GLenum surfaceFmt;
 
     debugGLerror("LoadTextureSizedFromSdlSurface start - pre existing error");
+
+
 
 
     //SDL_Surface *surface;

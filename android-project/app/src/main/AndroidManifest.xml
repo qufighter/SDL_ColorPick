@@ -10,10 +10,11 @@
     <!-- The package above is used - but should not be changed - it identifies the activity to run -->
     <!-- The version above is unused - edit buld.grade instead/too ... ./gradlew check -->
 
-    <!-- OpenGL ES 2.0, which clearly works -->
+    <!-- OpenGL ES 2.0, which clearly works-->
     <uses-feature android:glEsVersion="0x00020000" />
     <!-- Tell the system this app requires OpenGL ES 3.1.
     <uses-feature android:glEsVersion="0x00030001" android:required="true" /> -->
+    <!--<uses-feature android:glEsVersion="0x00030002" android:required="true" /> -->
 
     <!-- Touchscreen support -->
     <uses-feature

@@ -239,6 +239,8 @@ public:
     static const int load_delay_ms = 30;
     bool hasLoadedToProcess;
 
+    bool mesh3d_enabled=true;
+
 private:
 	//GLuint LoadTextureRAW( const char * filename, int wrap );
 	

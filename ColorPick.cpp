@@ -36,6 +36,10 @@ OpenGLContext::OpenGLContext(void) {
 
     pixelInteraction.friction=6.9;
     pixelInteraction.useInstantaneousVelocity=true;
+
+    // lets get our singleton references loaded now... (ux not yet ??)
+    meshes = Meshes::Singleton();
+    textures = Textures::Singleton();
 }
 
 SDL_Window* OpenGLContext::getSdlWindow(){
@@ -461,9 +465,7 @@ void OpenGLContext::setupScene(void) {
     minigameCounterMatrix = glm::rotate(minigameCounterMatrix, -45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
     minigameCounterMatrix = glm::translate(minigameCounterMatrix, glm::vec3(0.0f, 2.3f, 9.0f));
 
-    meshes = Meshes::Singleton();
 
-    textures = Textures::Singleton();
  //glEnable (GL_DEPTH_TEST);
     // we may need to dynamify our shader paths too in case its in the bundle [[NSBundle mainBundle] pathForResource:@"Shader" ofType:@"vsh"];
 
@@ -716,9 +718,20 @@ void OpenGLContext::setupScene(void) {
 
     glEnable(GL_BLEND);  //this enables alpha blending
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendEquation(GL_FUNC_ADD);
+//    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
     glDisable(GL_BLEND);
 
     //projectionMatrix = glm::perspective(60.0f, (float)windowWidth / (float)windowHeight, 0.1f, (float)VIEW_MAX_CLIP_DISTANCE);  // Create our perspective projection matrix
+
+
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE); // GL_TRUE enables writes to depth buffer....
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    glStencilMask(0x00); // disables writes to stencil buffer
+    glDisable(GL_STENCIL_TEST);
+    glClear(GL_STENCIL_BUFFER_BIT);
 
 
 //    modelMatrix = glm::mat4(1.0f);
@@ -805,7 +818,7 @@ void OpenGLContext::reshapeWindow(int w, int h) {
 //    glLoadIdentity()   ;                         // reset the matrix to its default state
     //glFrustum(-1.0, 1.0, -1.0f, 1.0f, 3.0f, 7.0f);  // apply the projection matrix
 
-    //SDL_GL_MakeCurrent(sdlWindow, gl);
+    //SDL_GL_MakeCurrent(sdlWindow, gl); // < this does nothing AFACT - safe but pointless....
 }
 
 void  OpenGLContext::updateFishScaleSliderRunner(){
@@ -1194,9 +1207,9 @@ void OpenGLContext::renderScene(void) {
         renderZoomedPickerBg();
 
         glEnable(GL_BLEND);  //this enables alpha blending
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        // some animations will go before or after the UI!!!!  depends on which animation....
+//        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//
+//        // some animations will go before or after the UI!!!!  depends on which animation....
 
         if( animationDropper3dId == ANIMATION_ZOOM_INTO_DROPPER || animationDropper3dId == ANIMATION_ZOOM_INTO_BULB ){
 
@@ -1326,6 +1339,9 @@ void OpenGLContext::eyedropperZoomDropperBulbMatrix(float progress){
 }
 
 void OpenGLContext::render3dDropperAnimation(void) {
+    if( !meshes->mesh3d_enabled ){
+        return;
+    }
     if( animationDropper3dId == DROPPER_ANIMATION_ENUM::NO_ANIMATION ){return;}
     // presumably this/each animation knows when it's done... based on some duration of the specified animation..... for now we will say 4 seconds
 
@@ -1385,6 +1401,7 @@ void OpenGLContext::setLight(){
 }
 
 void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg is going to be unneded I think...
+
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE); // GL_TRUE enables writes to depth buffer....
     glClear(GL_DEPTH_BUFFER_BIT); // THIS SHOULD MOVE OUT OF HERE FOR SURE JUST ABOUT>>>>> (we can't clear the depth buffer though when GL_DEPTH_TEST is not enabled - perhaps we should always have it on though and set the prop where we don't write to the buffer?
@@ -1614,10 +1631,10 @@ void OpenGLContext::createSquare(void) {
     float* normals = new float[18]; // Colors for our vertices
 
     srand ( (unsigned int)(time(NULL)) );
-    float c1=0;//(float)(rand() % 10);
-    float c2=0;//(float)(rand() % 10);
-    float c3=0;
-    float c4=0;//(float)(rand() % 10);
+    float c1=0.00001f;//(float)(rand() % 10);
+    float c2=0.00001f;//(float)(rand() % 10);
+    float c3=0.00001f;
+    float c4=0.00001f;//(float)(rand() % 10);
 
     GLuint squareTriangleIndicies[4];
     squareTriangleIndicies[0]=0;

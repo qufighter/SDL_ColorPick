@@ -19,6 +19,7 @@ Default constructor
 Meshes::Meshes(void) {
 
     hasLoadedToProcess = false;
+    mesh3d_enabled=true;
     allMeshes.reserve(4); // maybe we will load 4 models someday!
 }
 /**
@@ -683,13 +684,15 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
     allMeshes.push_back(mesh);
 
 #ifndef NO_MESH_LOADING
-    SDL_Thread *thread;
-    thread = SDL_CreateThread(LoadObjectPLYThread, "MeshLoadPLY", (void *)mesh);
-    if (NULL == thread) {
-        SDL_Log("Mesh Loading: SDL_CreateThread failed (falling back to non threaded loading...): %s\n", SDL_GetError());
-        LoadObjectPLYThread((void *)mesh);
-        completeMeshLoading();
-        SDL_Log("non threaded loading done...");
+    if( mesh3d_enabled ){
+        SDL_Thread *thread;
+        thread = SDL_CreateThread(LoadObjectPLYThread, "MeshLoadPLY", (void *)mesh);
+        if (NULL == thread) {
+            SDL_Log("Mesh Loading: SDL_CreateThread failed (falling back to non threaded loading...): %s\n", SDL_GetError());
+            LoadObjectPLYThread((void *)mesh);
+            completeMeshLoading();
+            SDL_Log("non threaded loading done...");
+        }
     }
 #endif
 

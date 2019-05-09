@@ -706,6 +706,7 @@ Ux::uiObject* Ux::create(void){
 
 
     zoomSlider = new uiObject();
+    //zoomSlider->isDebugObject=true;
     zoomSlider->hasBackground = true;
     Ux::setColor(&zoomSlider->backgroundColor, 255, 255, 255, 255);
     Ux::setColor(&zoomSlider->foregroundColor, 0, 0, 0, 50); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
@@ -1958,6 +1959,8 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 
     glUniformMatrix4fv(uniformLocations->ui_modelMatrix, 1, GL_FALSE, &resolvedRenderObjMat[0][0]); // Send our model matrix to the shader
 
+//    glUniformMatrix4fv(uniformLocations->ui_modelMatrix, 1, GL_FALSE, &glm::mat4(1.0f)[0][0]);
+
  //    textMatrix = glm::translate(textMatrix, screenToWorldSpace(1000.0,500.0,450.1));  // just try screen coord like -512??
 
 
@@ -2090,13 +2093,22 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 
         if( renderObj->hasForeground ){
 
+//            if( renderObj->isDebugObject ){
+//                SDL_Log("well we got this far too... strange... %f %f %f %f %i",
+//                        renderObj->foregroundColor.r/255.0,
+//                        renderObj->foregroundColor.g/255.0,
+//                        renderObj->foregroundColor.b/255.0,
+//                        renderObj->foregroundColor.a/255.0,
+//                        uniformLocations->ui_foreground_color
+//                        );
+//            }
+
             glUniform4f(uniformLocations->ui_foreground_color,
                         renderObj->foregroundColor.r/255.0,
                         renderObj->foregroundColor.g/255.0,
                         renderObj->foregroundColor.b/255.0,
                         renderObj->foregroundColor.a/255.0
             );
-
 
         }else{
             glUniform4f(uniformLocations->ui_foreground_color, 0.0,0.0,0.0,0.0);
@@ -2109,6 +2121,7 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
         // see updateStageDimension and consider SDL_RenderSetClipRect
         glDrawArrays(GL_TRIANGLES, 0, 6); // hmmm
 
+
     }
 
 
@@ -2119,6 +2132,11 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
         for( int x=0,l=renderObj->childListIndex; x<l; x++ ){
             renderObjects(uniformLocations, renderObj->childList[x], resolvedRenderObjMat);
         }
+
+        // this is the CRUMMY_ANDROID test, but we stop rendering basically on the zoomSlider, which is good testing if we can only render one draw call...
+//        for( int x=0,l=SDL_min(2,renderObj->childListIndex); x<l; x++ ){
+//            renderObjects(uniformLocations, renderObj->childList[x], resolvedRenderObjMat);
+//        }
 
         // renderChildrenInReverse
 

@@ -335,6 +335,7 @@ struct uiObject
     SDL_Color backgroundColor;
     SDL_Color lastBackgroundColor;// onetime use state reset
     SDL_Color foregroundColor;
+
     /*
      background texture ??
      background shader
