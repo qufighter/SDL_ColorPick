@@ -8,6 +8,8 @@ LOCAL_MODULE := main
 SDL_PATH := ../SDL
 SDL_IMG_PATH := ../SDL_Image
 
+# maybe just use installNewSdlLibVersion.sh which WILL handle this for you....
+# ALSO: don't forget to update the .java files - these can change in subsequent releases and sometimes fail silently.... or loudly as the condition dictates
 # NOTE: the above symlinks - when you modify them - you should delete the app/build/intermediates/
 #     rm -fr app/build/intermediates
 # so the above is the last step... first... check your symlinks:
