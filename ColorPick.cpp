@@ -727,11 +727,13 @@ void OpenGLContext::setupScene(void) {
 
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE); // GL_TRUE enables writes to depth buffer....
-    glClear(GL_DEPTH_BUFFER_BIT);
+//    glClear(GL_DEPTH_BUFFER_BIT);
 
     glStencilMask(0x00); // disables writes to stencil buffer
     glDisable(GL_STENCIL_TEST);
-    glClear(GL_STENCIL_BUFFER_BIT);
+//    glClear(GL_STENCIL_BUFFER_BIT);
+
+    // clearing those buffers now somehow messes up rendering (either one) the rendering bug is in nested UI objects... (settings text) not sure how exactly....
 
 
 //    modelMatrix = glm::mat4(1.0f);

@@ -105,4 +105,8 @@ if [[ $? -eq 0 ]]; then
     echo "=== existing files after copy... ===="
     ls $existingJavaFilesPath
 
+    echo "FINALLY - > please compare the androidMainifest.xml and merge any relevant changes"
+
 fi
+
+
