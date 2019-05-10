@@ -27,6 +27,7 @@ SDL_IMG_PATH := ../SDL_Image
 # SDL.java
 # SDLActivity.java
 # etc...
+# maybe just use installNewSdlLibVersion.sh which WILL handle this for you....
 
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include $(LOCAL_PATH)/$(SDL_IMG_PATH)/

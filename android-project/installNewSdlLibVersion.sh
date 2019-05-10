@@ -1,10 +1,14 @@
 #!/bin/sh
 
+# WARNING: this deletes "app/src/main/java/org/libsdl/app/" so if you have any non standard
+#          files there please move them to your own directory before using this script.
+
 # USAGE:
 # we expect 2 args, first the LIB name, which should be the SYMLINK name... which should already exist
 # second the FULL PATH to the new lib version, which should exist
 
-# ALSO: don't forget to update the .java files - these can change in subsequent releases and sometimes fail silently.... or loudly as the condition dictates
+# this documents the old manual steps
+# ALSO: don't forget to update the .java files - these can change in subsequent releases and sometimes fail silently.... or loudly as the case may be
 # NOTE: the above symlinks - when you modify them - you should delete the app/build/intermediates/
 #     rm -fr app/build/intermediates
 # so the above is the last step... first... check your symlinks:
@@ -93,9 +97,7 @@ if [[ $? -eq 0 ]]; then
     echo "=== existing files ===="
     ls $existingJavaFilesPath
 
-    pwd
-
-    rm -fr `pwd`"/"$existingJavaFilesPath
+    rm -fr $existingJavaFilesPath
 
     echo "=== existing files after rm... ===="
     ls $existingJavaFilesPath
