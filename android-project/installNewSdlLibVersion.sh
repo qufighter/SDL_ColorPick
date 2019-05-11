@@ -108,9 +108,18 @@ if [[ $? -eq 0 ]]; then
     ls $existingJavaFilesPath
 
     yourManifestPath="app/src/main/AndroidManifest.xml"
-    newManifestPath=$newLibPath"/android-project/app/src/main/AndroidManifest.xml"
-    echo "\n\nFINALLY => please compare the androidMainifest.xml and merge any relevant changes\n\n < YOURS "$yourManifestPath" \n > THEIRS "$newManifestPath"\n\n"
+    newManifestPath=$newLibPath"/android-project/"$yourManifestPath
+    echo "\n\nFINALLY => please compare the "$yourManifestPath" and merge any relevant changes\n\n < YOURS "$yourManifestPath" \n > THEIRS "$newManifestPath"\n\n"
+    diff $yourManifestPath $newManifestPath
 
+    yourManifestPath="build.gradle"
+    newManifestPath=$newLibPath"/android-project/"$yourManifestPath
+    echo "\n\nFINALLY => please compare the "$yourManifestPath" and merge any relevant changes\n\n < YOURS "$yourManifestPath" \n > THEIRS "$newManifestPath"\n\n"
+    diff $yourManifestPath $newManifestPath
+
+    yourManifestPath="app/build.gradle"
+    newManifestPath=$newLibPath"/android-project/"$yourManifestPath
+    echo "\n\nFINALLY => please compare the "$yourManifestPath" and merge any relevant changes\n\n < YOURS "$yourManifestPath" \n > THEIRS "$newManifestPath"\n\n"
     diff $yourManifestPath $newManifestPath
 
 fi
