@@ -219,6 +219,11 @@ public:
 
 private:
 
+    unsigned int fbo;
+    unsigned int rbo_color;
+    unsigned int texColorBuffer;
+    unsigned int rbo_depth;
+
     int textureSize = SHD_TEXTURE_SIZE;
     int halfTextureSize = textureSize * 0.5;
     int position_x = 0;
@@ -269,6 +274,7 @@ private:
     Uint32 animationDropper3dStartTime;
     int animationDropper3dId;
     SDL_Color animationDropper3dColor;
+
 
 
 protected:

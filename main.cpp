@@ -434,6 +434,27 @@ int EventFilter(void* userdata, SDL_Event* event){
                     openglContext->renderShouldUpdate = true;
 
                     return 0;
+
+
+                case SDL_WINDOWEVENT_LEAVE:
+
+                    SDL_Log("\n SDL_WINDOWEVENT_LEAVE");
+
+                    return 0;
+
+                case SDL_WINDOWEVENT_FOCUS_LOST:
+
+                    SDL_Log("\n SDL_WINDOWEVENT_FOCUS_LOST");
+
+                    return 0;
+
+                case SDL_WINDOWEVENT_FOCUS_GAINED:
+
+                    SDL_Log("\n SDL_WINDOWEVENT_FOCUS_GAINED");
+                    openglContext->renderShouldUpdate = true;
+
+                    return 0;
+
             }
             return 0;
         }

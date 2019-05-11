@@ -8,6 +8,10 @@
 
 #include "ColorPick.h"
 
+// so far no luck on android with this... some missing defines!
+#define USE_FBO_FOR_RENDERING 1
+
+
 //OpenGLContext::pInstance = NULL;
 bool OpenGLContext::ms_bInstanceCreated = false;
 OpenGLContext* OpenGLContext::pInstance = NULL;
@@ -735,6 +739,14 @@ void OpenGLContext::setupScene(void) {
 
     // clearing those buffers now somehow messes up rendering (either one) the rendering bug is in nested UI objects... (settings text) not sure how exactly....
 
+    debugGLerror("setupScene nearly done");
+
+
+    glGenFramebuffers(1, &fbo);
+    //    glGenRenderbuffers(1, &rbo_color);
+    glGenTextures(1, &texColorBuffer);
+    glGenRenderbuffers(1, &rbo_depth);
+    // the rest is in reshapeWindow
 
 //    modelMatrix = glm::mat4(1.0f);
 //
@@ -744,7 +756,6 @@ void OpenGLContext::setupScene(void) {
 //    modelMatrix = glm::translate(modelMatrix, treepos + glm::vec3(0.0f, 0.0f, (float)i*bspace-bpos));
 //    modelMatrix = glm::scale(modelMatrix, treeScale * pineTreeBranchScales[i]);
 
-    debugGLerror("setupScene nearly done");
 
 
 #ifdef DEVELOPER_TEST_MODE
@@ -815,6 +826,83 @@ void OpenGLContext::reshapeWindow(int w, int h) {
     generalUx->updateStageDimension(windowWidth, windowHeight);
 
     renderShouldUpdate = true;
+
+
+    // TODO: are we leaking any GL memory on reshape?  i think not... but its possible we should delete and re-allocate teh texture... etc ?
+    // all or some of this needs to move into reshapeWindow
+#if USE_FBO_FOR_RENDERING
+
+
+
+    //    When we're done with all framebuffer operations, do not forget to delete the framebuffer object:
+    //    glDeleteFramebuffers(1, &fbo);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    debugGLerror("glBindFramebuffer just called....");
+
+
+    //    glBindRenderbuffer(GL_RENDERBUFFER, rbo_color);
+    //    debugGLerror("glBindRenderbuffer rbo_color done....");
+    //    glRenderbufferStorage(GL_RENDERBUFFER, GL_UNSIGNED_INT_24_8, 800, 600);
+    //    debugGLerror("glRenderbufferStorage rbo_color done....");
+    //    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo_color);
+    //    debugGLerror("rbo_color done....");
+
+
+
+
+    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, colorPickState->drawableWidth, colorPickState->drawableHiehgt, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    // attach it to currently bound framebuffer object
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+
+/*
+    error: use of undeclared identifier 'GL_DEPTH24_STENCIL8'
+    error: use of undeclared identifier 'GL_DEPTH_STENCIL_ATTACHMENT'
+*/
+
+    // these defines for android, special right?
+#ifndef GL_DEPTH24_STENCIL8
+#define GL_DEPTH24_STENCIL8               0x88F0
+#endif
+#ifndef GL_DEPTH_STENCIL_ATTACHMENT
+#define GL_DEPTH_STENCIL_ATTACHMENT       0x821A
+#endif
+
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo_depth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, colorPickState->drawableWidth, colorPickState->drawableHiehgt);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo_depth);
+
+
+    debugGLerror("rbo_depth done....");
+
+
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
+
+        SDL_Log("its not complete, so here it is %02x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
+    }else{
+
+        SDL_Log("its supposidly comlpete...");
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+    debugGLerror("glGenRenderbuffers just calle....");
+
+    SDL_Log("here is my fbo %i", fbo);
+    SDL_Log("here is my rbo_depthbuffer %i", rbo_depth);
+    SDL_Log("here is my rbo_colorbuffer %i", rbo_color);
+    SDL_Log("here is my texColorBuffer %i", texColorBuffer);
+
+#endif
+
+
 
 //    glMatrixMode(GL_PROJECTION)    ;        // set matrix to projection mode
 //    glLoadIdentity()   ;                         // reset the matrix to its default state
@@ -1188,10 +1276,15 @@ void OpenGLContext::renderUi(void) {
 }
 
 
+
 void OpenGLContext::renderScene(void) {
 
     debugGLerror("renderScene begin");
     //SDL_Log("renderScene begin");
+
+#if USE_FBO_FOR_RENDERING
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+#endif
 
     if( isMinigameMode() ){
 
@@ -1232,6 +1325,103 @@ void OpenGLContext::renderScene(void) {
 
 
     }
+
+#if USE_FBO_FOR_RENDERING
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    uniformLocations = shader_ui_shader_default->bind();
+
+    glUniform1i(uniformLocations->textureSampler, 0);
+    //glUniform1i(uniformLocations->textureSampler2, 1);
+    // glUniform1i(uniformLocations->textureSampler3, 1);
+
+    debugGLerror("renderScene FBO texture uniform set");
+
+    glActiveTexture( GL_TEXTURE0 + 0);
+    glBindTexture(GL_TEXTURE_2D,  texColorBuffer); // well its bound now, wh y not leave this in the main loop for no reason?
+
+    debugGLerror("renderScene FBO textureId_fonts bound");
+
+    glBindVertexArray(rect_vaoID[0]);
+
+    glUniformMatrix4fv(uniformLocations->ui_modelMatrix, 1, GL_FALSE, &glm::mat4(1.0f)[0][0]);
+
+    // TODO: this becomes a nice refactor in UI honestly... we could use a UI object to set all these and move it out of the UI render loop...
+
+    glUniform4f(uniformLocations->ui_position,
+                0.0,
+                0.0,
+                0.0,
+                0.0);
+
+
+    glUniform4f(uniformLocations->ui_scale,
+                1.0,
+                1.0,
+                1.0,
+                1.0);
+
+
+        //glUniform1f(uniformLocations->ui_corner_radius, 0.15);
+        // glUniform1f(uniformLocations->ui_corner_radius, 0.0);
+
+        glUniform4f(uniformLocations->ui_corner_radius,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0);
+
+
+
+            glUniform4f(uniformLocations->ui_crop2,
+                        0,
+                        0,
+                        /*disabled*/0,//1,
+                        /*disabled*/0);//1); // 0,0,1,1  is screen crop, but we can skip this logic in vsh
+
+
+
+        // also note maybe this should only apply for the first and last 2 rows of tiles (optmimization) see allocateChildTiles and uiShader.vsh
+        glUniform4f(uniformLocations->ui_crop,
+                    0,
+                    0,
+                    /*disabled*/0,//1,
+                    /*disabled*/0);//1); // 0,0,1,1  is screen crop, but we can skip this logic in vsh
+
+
+        //
+        //        glUniform4f(uniformLocations->ui_scale,
+        //                    1.0,
+        //                    1.0,
+        //                    1.0,
+        //                    1.0);
+
+
+        glUniform4f(uniformLocations->texture_crop,
+                    0.0,
+                    0.0,
+                    1.0,
+                    -1.0);
+
+
+
+            glUniform4f(uniformLocations->ui_color, 1.0,1.0,1.0,0.0);
+
+
+
+            glUniform4f(uniformLocations->ui_foreground_color,1.0,1.0,1.0,0.5);
+
+
+
+
+
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+#endif
+
 
 }
 

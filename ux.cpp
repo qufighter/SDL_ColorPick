@@ -1918,9 +1918,11 @@ void Ux::updatePickHistoryPreview(){
 
 
 
-
-
-
+//
+//void Ux::setUniformsForRenderObject(uniformLocationStruct *uniformLocations, uiObject *renderObj){
+//
+//}
+//
 
 
 int Ux::renderObject(uniformLocationStruct *uniformLocations){
