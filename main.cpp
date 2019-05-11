@@ -755,7 +755,9 @@ void ShowFrame(void*)
 
     SDL_GL_SwapWindow(window); // move into render scene?
 
-    //SDL_Delay(33); // we need some delay EITEHR WAY (old android) since we will render again RIGHT AWAY otherwise... and the buffer isn't really swapped, so we just cleard our acutal frame AAAAAGGGGGHGHH
+    SDL_Delay(33); // we need some delay EITEHR WAY (old android) since we will render again RIGHT AWAY otherwise... and the buffer isn't really swapped, so we just cleard our acutal frame AAAAAGGGGGHGHH
+    // arguably if we measure the time for render, we should subtract that... since 33 will otheriwse be too much time.... CRUMMY_ANDROID
+
     //SDL_Delay(600); // note here for CRUMMY_ANDROID testing if applicable
 }
 

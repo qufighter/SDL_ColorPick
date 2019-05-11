@@ -9,7 +9,7 @@
 #include "ColorPick.h"
 
 // so far no luck on android with this... some missing defines!
-#define USE_FBO_FOR_RENDERING 1
+#define USE_FBO_FOR_RENDERING 0
 
 
 //OpenGLContext::pInstance = NULL;
@@ -850,8 +850,6 @@ void OpenGLContext::reshapeWindow(int w, int h) {
     //    debugGLerror("rbo_color done....");
 
 
-
-
     glBindTexture(GL_TEXTURE_2D, texColorBuffer);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, colorPickState->drawableWidth, colorPickState->drawableHiehgt, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
@@ -873,9 +871,9 @@ void OpenGLContext::reshapeWindow(int w, int h) {
 #define GL_DEPTH_STENCIL_ATTACHMENT       0x821A
 #endif
 
+    // NOTE: the following is simply unsupported on some hardware - we either need to use textues for everything, or find a way to detect and avoid the crash...
     glBindRenderbuffer(GL_RENDERBUFFER, rbo_depth);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, colorPickState->drawableWidth, colorPickState->drawableHiehgt);
-
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo_depth);
 
 
@@ -1263,7 +1261,7 @@ void OpenGLContext::renderUi(void) {
 
 
     glActiveTexture( GL_TEXTURE0 + 0);
-    glBindTexture(GL_TEXTURE_2D,  textureId_fonts); // well its bound now, wh y not leave this in the main loop for no reason?
+    glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
 
     debugGLerror("renderScene ui textureId_fonts bound");
 
@@ -1340,85 +1338,20 @@ void OpenGLContext::renderScene(void) {
     debugGLerror("renderScene FBO texture uniform set");
 
     glActiveTexture( GL_TEXTURE0 + 0);
-    glBindTexture(GL_TEXTURE_2D,  texColorBuffer); // well its bound now, wh y not leave this in the main loop for no reason?
+    glBindTexture(GL_TEXTURE_2D,  texColorBuffer);
 
     debugGLerror("renderScene FBO textureId_fonts bound");
 
     glBindVertexArray(rect_vaoID[0]);
 
-    glUniformMatrix4fv(uniformLocations->ui_modelMatrix, 1, GL_FALSE, &glm::mat4(1.0f)[0][0]);
+    // the next 3 lines could be one probably.... or two...
+    generalUx->renderObjects(uniformLocations, generalUx->screenRenderQuadObj, glm::mat4(1.0f));
 
-    // TODO: this becomes a nice refactor in UI honestly... we could use a UI object to set all these and move it out of the UI render loop...
-
-    glUniform4f(uniformLocations->ui_position,
-                0.0,
-                0.0,
-                0.0,
-                0.0);
+//    glUniformMatrix4fv(uniformLocations->ui_modelMatrix, 1, GL_FALSE, &glm::mat4(1.0f)[0][0]);
+//    generalUx->screenRenderQuadObj->setUniformsForRender(uniformLocations);
+//    glDrawArrays(GL_TRIANGLES, 0, 6);
 
 
-    glUniform4f(uniformLocations->ui_scale,
-                1.0,
-                1.0,
-                1.0,
-                1.0);
-
-
-        //glUniform1f(uniformLocations->ui_corner_radius, 0.15);
-        // glUniform1f(uniformLocations->ui_corner_radius, 0.0);
-
-        glUniform4f(uniformLocations->ui_corner_radius,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0);
-
-
-
-            glUniform4f(uniformLocations->ui_crop2,
-                        0,
-                        0,
-                        /*disabled*/0,//1,
-                        /*disabled*/0);//1); // 0,0,1,1  is screen crop, but we can skip this logic in vsh
-
-
-
-        // also note maybe this should only apply for the first and last 2 rows of tiles (optmimization) see allocateChildTiles and uiShader.vsh
-        glUniform4f(uniformLocations->ui_crop,
-                    0,
-                    0,
-                    /*disabled*/0,//1,
-                    /*disabled*/0);//1); // 0,0,1,1  is screen crop, but we can skip this logic in vsh
-
-
-        //
-        //        glUniform4f(uniformLocations->ui_scale,
-        //                    1.0,
-        //                    1.0,
-        //                    1.0,
-        //                    1.0);
-
-
-        glUniform4f(uniformLocations->texture_crop,
-                    0.0,
-                    0.0,
-                    1.0,
-                    -1.0);
-
-
-
-            glUniform4f(uniformLocations->ui_color, 1.0,1.0,1.0,0.0);
-
-
-
-            glUniform4f(uniformLocations->ui_foreground_color,1.0,1.0,1.0,0.5);
-
-
-
-
-
-
-    glDrawArrays(GL_TRIANGLES, 0, 6);
 
 #endif
 

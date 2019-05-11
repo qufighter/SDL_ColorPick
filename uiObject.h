@@ -263,7 +263,7 @@ struct uiObject
         doesRenderChildObjects=true;
         isInBounds=true;
         testChildCollisionIgnoreBounds = false;
-        textureCropRect = Float_Rect();
+        textureCropRect = Float_Rect(0.0,0.0,1.0,-1.0);//Float_Rect();
         roundedCornersRect = Float_Rect(0.0,0.0,0.0,0.0);
         interactionProxy=nullptr;
         myCurrentAnimation=nullptr;
@@ -910,6 +910,170 @@ struct uiObject
     // what coulbe simplerly
 
 
+    void setUniformsForRender(uniformLocationStruct *uniformLocations){
+
+        uiObject *renderObj = this; // just to change less code below...
+
+        // todo suppport setting this uniform too...
+        //glUniformMatrix4fv(uniformLocations->ui_modelMatrix, 1, GL_FALSE, &resolvedRenderObjMat[0][0]); // Send our model matrix to the shader
+
+        // not sure how to support it here, we'd either accept a param glm::mat4 inheritMat and return the resolvedRenderObjMat (which won't work btw for inheritence bc this fn isn't called on every obj)...
+        // or otherwise we still have to keep most of the logic outside of this function... which presents an awkward case for optimizing this ( we multiply it again in this function, or the param is an override )
+        // FOR NOW: when calling this, you just have to set the uniformLocations->ui_modelMatrix manually still... 
+
+        glUniform4f(uniformLocations->ui_position,
+                    renderObj->renderRect.x,
+                    -renderObj->renderRect.y,
+                    0.0,
+                    0.0);
+
+        //        glUniform4f(uniformLocations->ui_position,
+        //                     0.2,
+        //                    0.2,
+        //                    0.0,
+        //                    0.0);
+
+        //        glUniform3f(uniformLocations->ui_scale,
+        //                    renderObj.boundryRect,
+        //                    renderObj.boundryRect.y,
+        //                    0.0);
+
+        glUniform4f(uniformLocations->ui_scale,
+                    renderObj->renderRect.w,
+                    renderObj->renderRect.h,
+                    1.0,
+                    1.0);
+
+
+
+
+
+        //glUniform1f(uniformLocations->ui_corner_radius, 0.15);
+        // glUniform1f(uniformLocations->ui_corner_radius, 0.0);
+
+        glUniform4f(uniformLocations->ui_corner_radius,
+                    renderObj->roundedCornersRect.x,
+                    renderObj->roundedCornersRect.y,
+                    renderObj->roundedCornersRect.w,
+                    renderObj->roundedCornersRect.h);
+
+
+        if( renderObj->hasCropParent ){
+            //            if( renderObj->isDebugObject ){
+            //                SDL_Log("DEBUG OBJECT IS BEING UPDATED NOW!");
+            //
+            //// crop may need to be parent of parent..... maybe just ask teh scroll controller about it?
+            //    // TODO: also seems some recursive need where all(or some) children may also share the same crop parent????
+            ////                SDL_Log("child   render rect %f %f %f %f",
+            ////                        renderObj->renderRect.x,
+            ////                        renderObj->renderRect.y,
+            ////                        renderObj->renderRect.w,
+            ////                        renderObj->renderRect.h);
+            ////
+            ////                SDL_Log("parent2 render rect %f %f %f %f",
+            ////                        renderObj->cropParentObject->renderRect.x,
+            ////                        renderObj->cropParentObject->renderRect.y,
+            ////                        renderObj->cropParentObject->renderRect.w,
+            ////                        renderObj->cropParentObject->renderRect.h);
+            //            }
+
+
+
+
+            if( renderObj->cropParentObject->hasCropParent ){
+
+
+                glUniform4f(uniformLocations->ui_crop2,
+                            renderObj->cropParentObject->cropParentObject->renderRect.x,
+                            -renderObj->cropParentObject->cropParentObject->renderRect.y,
+                            renderObj->cropParentObject->cropParentObject->renderRect.w,
+                            renderObj->cropParentObject->cropParentObject->renderRect.h);
+
+            }else{
+                glUniform4f(uniformLocations->ui_crop2,
+                            0,
+                            0,
+                            /*disabled*/0,//1,
+                            /*disabled*/0);//1); // 0,0,1,1  is screen crop, but we can skip this logic in vsh
+            }
+
+            if( renderObj->useCropParentOrig ){
+                glUniform4f(uniformLocations->ui_crop,
+                            renderObj->cropParentObject->origRenderRect.x,
+                            -renderObj->cropParentObject->origRenderRect.y,
+                            renderObj->cropParentObject->origRenderRect.w,
+                            renderObj->cropParentObject->origRenderRect.h);
+            }else{
+
+                glUniform4f(uniformLocations->ui_crop,
+                            renderObj->cropParentObject->renderRect.x,
+                            -renderObj->cropParentObject->renderRect.y,
+                            renderObj->cropParentObject->renderRect.w,
+                            renderObj->cropParentObject->renderRect.h);
+
+            }
+        }else{
+            // also note maybe this should only apply for the first and last 2 rows of tiles (optmimization) see allocateChildTiles and uiShader.vsh
+            glUniform4f(uniformLocations->ui_crop,
+                        0,
+                        0,
+                        /*disabled*/0,//1,
+                        /*disabled*/0);//1); // 0,0,1,1  is screen crop, but we can skip this logic in vsh
+        }
+
+        //
+        //        glUniform4f(uniformLocations->ui_scale,
+        //                    1.0,
+        //                    1.0,
+        //                    1.0,
+        //                    1.0);
+
+
+        glUniform4f(uniformLocations->texture_crop,
+                    renderObj->textureCropRect.x,
+                    renderObj->textureCropRect.y,
+                    renderObj->textureCropRect.w,
+                    renderObj->textureCropRect.h);
+
+
+        if( renderObj->hasBackground ){
+            glUniform4f(uniformLocations->ui_color,
+                        renderObj->backgroundColor.r/255.0, // maths can be avoided (or moved to shader?)
+                        renderObj->backgroundColor.g/255.0,
+                        renderObj->backgroundColor.b/255.0,
+                        renderObj->backgroundColor.a/255.0
+                        );
+        }else{
+            glUniform4f(uniformLocations->ui_color, 1.0,1.0,1.0,0.0);
+        }
+
+        if( renderObj->hasForeground ){
+
+            //            if( renderObj->isDebugObject ){
+            //                SDL_Log("well we got this far too... strange... %f %f %f %f %i",
+            //                        renderObj->foregroundColor.r/255.0,
+            //                        renderObj->foregroundColor.g/255.0,
+            //                        renderObj->foregroundColor.b/255.0,
+            //                        renderObj->foregroundColor.a/255.0,
+            //                        uniformLocations->ui_foreground_color
+            //                        );
+            //            }
+
+            glUniform4f(uniformLocations->ui_foreground_color,
+                        renderObj->foregroundColor.r/255.0,
+                        renderObj->foregroundColor.g/255.0,
+                        renderObj->foregroundColor.b/255.0,
+                        renderObj->foregroundColor.a/255.0
+                        );
+
+        }else{
+            glUniform4f(uniformLocations->ui_foreground_color, 0.0,0.0,0.0,0.0);
+        }
+
+
+
+
+    }
 
 
     // updateRenderPosition v v vv v v v vvvv vvv vvvv vvv

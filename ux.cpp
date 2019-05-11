@@ -584,6 +584,7 @@ Ux::uiObject* Ux::create(void){
 
     uxAnimations = new UxAnim();
 
+
     rootUiObject = new uiObject();
     rootUiObject->isRoot = true;
 
@@ -596,6 +597,13 @@ Ux::uiObject* Ux::create(void){
     rootUiObject->hasForeground = false; // render texture
 
  //     make this color the selected color ! ! ! ! !! ^ ^ ^
+
+
+    screenRenderQuadObj = new uiObject(); // an orphan, it is a root of sorts...
+    screenRenderQuadObj->setForegroundColor(255,255,255,128);
+    Ux::setRect(&screenRenderQuadObj->textureCropRect,
+                0, 0,
+                1, -1.0);
 
 
     mainUiContainer = new uiObject();
@@ -613,7 +621,7 @@ Ux::uiObject* Ux::create(void){
     rootUiObject->addChild(minigamesUiContainer);
 
 
-    minigameCounterText = new uiObject();
+    minigameCounterText = new uiObject(); // a true orphan, own root
     minigameCounterText->containText=true; // we'd rather not contain text, but we'd have to render all the OOB child objects too...
 
     returnToLastImgBtn = new uiObject();
@@ -1942,10 +1950,6 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
         resolvedRenderObjMat *= inheritMat; // we limit the matrix math except where needed this way....
     }
 
- //    glm::mat4 uiMatrix = glm::mat4(1.0f);
-
-
-
 //    if( renderObj->isDebugObject ){
 //        SDL_Log("DEBUG OBJECT IS BEING RENDERED NOW!");
 ////        renderObj->boundryRect.y+=0.01; // this proves the boundary tests is working for this object, when out of view they do not render...
@@ -1953,168 +1957,14 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 //
 //    }
 
- //    uiMatrix = glm::scale(uiMatrix, glm::vec3(0.9,0.9,1.0));
- //    uiMatrix = glm::rotate(uiMatrix,  2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-//
-
- //    renderObj->matrix = glm::scale(renderObj->matrix, glm::vec3(0.998,0.998,1.0));
-
-    glUniformMatrix4fv(uniformLocations->ui_modelMatrix, 1, GL_FALSE, &resolvedRenderObjMat[0][0]); // Send our model matrix to the shader
-
-//    glUniformMatrix4fv(uniformLocations->ui_modelMatrix, 1, GL_FALSE, &glm::mat4(1.0f)[0][0]);
-
- //    textMatrix = glm::translate(textMatrix, screenToWorldSpace(1000.0,500.0,450.1));  // just try screen coord like -512??
-
-
     if( renderObj->doesInFactRender && (renderObj->hasBackground || renderObj->hasForeground) ){
-        glUniform4f(uniformLocations->ui_position,
-                    renderObj->renderRect.x,
-                    -renderObj->renderRect.y,
-                    0.0,
-                    0.0);
-
- //        glUniform4f(uniformLocations->ui_position,
- //                     0.2,
- //                    0.2,
- //                    0.0,
- //                    0.0);
-
- //        glUniform3f(uniformLocations->ui_scale,
- //                    renderObj.boundryRect,
- //                    renderObj.boundryRect.y,
- //                    0.0);
-
-        glUniform4f(uniformLocations->ui_scale,
-                    renderObj->renderRect.w,
-                    renderObj->renderRect.h,
-                    1.0,
-                    1.0);
 
 
+        glUniformMatrix4fv(uniformLocations->ui_modelMatrix, 1, GL_FALSE, &resolvedRenderObjMat[0][0]); // Send our model matrix to the shader
 
+        //    glUniformMatrix4fv(uniformLocations->ui_modelMatrix, 1, GL_FALSE, &glm::mat4(1.0f)[0][0]);
 
-
-        //glUniform1f(uniformLocations->ui_corner_radius, 0.15);
-       // glUniform1f(uniformLocations->ui_corner_radius, 0.0);
-
-        glUniform4f(uniformLocations->ui_corner_radius,
-                    renderObj->roundedCornersRect.x,
-                    renderObj->roundedCornersRect.y,
-                    renderObj->roundedCornersRect.w,
-                    renderObj->roundedCornersRect.h);
-
-
-        if( renderObj->hasCropParent ){
-//            if( renderObj->isDebugObject ){
-//                SDL_Log("DEBUG OBJECT IS BEING UPDATED NOW!");
-//
-//// crop may need to be parent of parent..... maybe just ask teh scroll controller about it?
-//    // TODO: also seems some recursive need where all(or some) children may also share the same crop parent????
-////                SDL_Log("child   render rect %f %f %f %f",
-////                        renderObj->renderRect.x,
-////                        renderObj->renderRect.y,
-////                        renderObj->renderRect.w,
-////                        renderObj->renderRect.h);
-////
-////                SDL_Log("parent2 render rect %f %f %f %f",
-////                        renderObj->cropParentObject->renderRect.x,
-////                        renderObj->cropParentObject->renderRect.y,
-////                        renderObj->cropParentObject->renderRect.w,
-////                        renderObj->cropParentObject->renderRect.h);
-//            }
-
-
-
-
-            if( renderObj->cropParentObject->hasCropParent ){
-
-
-                glUniform4f(uniformLocations->ui_crop2,
-                            renderObj->cropParentObject->cropParentObject->renderRect.x,
-                            -renderObj->cropParentObject->cropParentObject->renderRect.y,
-                            renderObj->cropParentObject->cropParentObject->renderRect.w,
-                            renderObj->cropParentObject->cropParentObject->renderRect.h);
-
-            }else{
-                glUniform4f(uniformLocations->ui_crop2,
-                            0,
-                            0,
-                            /*disabled*/0,//1,
-                            /*disabled*/0);//1); // 0,0,1,1  is screen crop, but we can skip this logic in vsh
-            }
-
-            if( renderObj->useCropParentOrig ){
-                glUniform4f(uniformLocations->ui_crop,
-                            renderObj->cropParentObject->origRenderRect.x,
-                            -renderObj->cropParentObject->origRenderRect.y,
-                            renderObj->cropParentObject->origRenderRect.w,
-                            renderObj->cropParentObject->origRenderRect.h);
-            }else{
-
-            glUniform4f(uniformLocations->ui_crop,
-                        renderObj->cropParentObject->renderRect.x,
-                        -renderObj->cropParentObject->renderRect.y,
-                        renderObj->cropParentObject->renderRect.w,
-                        renderObj->cropParentObject->renderRect.h);
-
-            }
-        }else{
-            // also note maybe this should only apply for the first and last 2 rows of tiles (optmimization) see allocateChildTiles and uiShader.vsh
-            glUniform4f(uniformLocations->ui_crop,
-                        0,
-                        0,
-                        /*disabled*/0,//1,
-                        /*disabled*/0);//1); // 0,0,1,1  is screen crop, but we can skip this logic in vsh
-        }
-
- //
- //        glUniform4f(uniformLocations->ui_scale,
- //                    1.0,
- //                    1.0,
- //                    1.0,
- //                    1.0);
-
-
-        glUniform4f(uniformLocations->texture_crop,
-                    renderObj->textureCropRect.x,
-                    renderObj->textureCropRect.y,
-                    renderObj->textureCropRect.w,
-                    renderObj->textureCropRect.h);
-
-
-        if( renderObj->hasBackground ){
-            glUniform4f(uniformLocations->ui_color,
-                        renderObj->backgroundColor.r/255.0, // maths can be avoided (or moved to shader?)
-                        renderObj->backgroundColor.g/255.0,
-                        renderObj->backgroundColor.b/255.0,
-                        renderObj->backgroundColor.a/255.0
-            );
-        }else{
-            glUniform4f(uniformLocations->ui_color, 1.0,1.0,1.0,0.0);
-        }
-
-        if( renderObj->hasForeground ){
-
-//            if( renderObj->isDebugObject ){
-//                SDL_Log("well we got this far too... strange... %f %f %f %f %i",
-//                        renderObj->foregroundColor.r/255.0,
-//                        renderObj->foregroundColor.g/255.0,
-//                        renderObj->foregroundColor.b/255.0,
-//                        renderObj->foregroundColor.a/255.0,
-//                        uniformLocations->ui_foreground_color
-//                        );
-//            }
-
-            glUniform4f(uniformLocations->ui_foreground_color,
-                        renderObj->foregroundColor.r/255.0,
-                        renderObj->foregroundColor.g/255.0,
-                        renderObj->foregroundColor.b/255.0,
-                        renderObj->foregroundColor.a/255.0
-            );
-
-        }else{
-            glUniform4f(uniformLocations->ui_foreground_color, 0.0,0.0,0.0,0.0);
-        }
+        renderObj->setUniformsForRender(uniformLocations);
 
 //        if( !renderObj->hasBackground && !renderObj->hasForeground ){
 //            SDL_Log("This object is being rendered but it has no foreground or background!!!");

@@ -407,6 +407,9 @@ static Ux* Singleton();
     uiInteraction currentInteractions[MAX_SUPPORTED_FINGERS_MICE]; // we support up to N fingers/mice.....
     //int nextFingerIndex;
 
+
+    uiObject *screenRenderQuadObj;
+
     uiObject *rootUiObject; // there is a root ui object
 
     uiObject *mainUiContainer;
