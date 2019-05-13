@@ -20,19 +20,20 @@ keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 19
+    buildToolsVersion "26.0.1"
     defaultConfig {
         if (buildAsApplication) {
             applicationId "com.vidsbee.colorpicksdl"
 //            applicationId "com.vidsbee.colorpickbasicsdl"
         }
-        minSdkVersion 16
-        targetSdkVersion 26
+        minSdkVersion 14
+        targetSdkVersion 19
         versionCode 107
         versionName "1.2"
         externalNativeBuild {
             ndkBuild {
-                arguments "APP_PLATFORM=android-16"
+                arguments "APP_PLATFORM=android-14"
             }
         }
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -84,7 +85,7 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:support-v4:27.1.0'
+    //compile 'com.android.support:support-v4:27.1.0'
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
