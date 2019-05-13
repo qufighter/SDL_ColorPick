@@ -17,8 +17,8 @@ import android.provider.MediaStore;
 import android.Manifest;
 
 // see     compile 'com.android.support:support-v4:+' in build.gradle....
-//import android.support.v4.content.ContextCompat;
-//import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.app.ActivityCompat;
 import android.content.pm.PackageManager;
 
 import android.util.Log;
@@ -40,48 +40,48 @@ public class SDLColorPickActivity extends SDLActivity {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
     }
 
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode,
-//                                           String permissions[], int[] grantResults) {
-//        switch (requestCode) {
-//            case MY_PERMISSIONS_REQUEST_READ_EXT_STORAGE: {
-//                // If request is cancelled, the result arrays are empty.
-//                if (grantResults.length > 0
-//                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    // permission was granted, yay! Do the
-//                    //  task you need to do.
-//                    beginImageSelector();
-//                } else {
-//                    // permission denied, boo! Disable the
-//                    // functionality that depends on this permission.
-//                }
-//                return;
-//            }
-//
-//                // other 'case' lines to check for other
-//                // permissions this app might request.
-//        }
-//    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_EXT_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the
+                    //  task you need to do.
+                    beginImageSelector();
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+                // other 'case' lines to check for other
+                // permissions this app might request.
+        }
+    }
 
 
     public void beginImageSelector(){
 
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-//            != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(this,
-//                                              new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-//                                              MY_PERMISSIONS_REQUEST_READ_EXT_STORAGE);
-//            return;
-//        }
-//
-//        lastResult = "WAITING";
-//
-//        Intent i = new Intent(
-//                              Intent.ACTION_PICK,
-//                              android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//
-//        startActivityForResult(i, RESULT_LOAD_IMAGE);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                                              new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                              MY_PERMISSIONS_REQUEST_READ_EXT_STORAGE);
+            return;
+        }
 
+        lastResult = "WAITING";
+
+        Intent i = new Intent(
+                              Intent.ACTION_PICK,
+                              android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+        startActivityForResult(i, RESULT_LOAD_IMAGE);
+        
 
     }
 
