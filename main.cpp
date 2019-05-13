@@ -903,7 +903,7 @@ int main(int argc, char *argv[]) {
 
     SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, "0");
     SDL_SetHint(SDL_HINT_IDLE_TIMER_DISABLED, "0");
-//    SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1"); // its trapped by default still as of SDL2-2.0.9 (even though docs say otherwise...)
+    SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1"); // its trapped by default still as of SDL2-2.0.9 (even though docs say otherwise...)
     SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
     SDL_SetHint(SDL_HINT_MAC_BACKGROUND_APP, "0");  // as far as I can tell.... this only makes the window not re-enter the background once focused - and also becomes incapable of entering the forground (no menu bar)
 #endif
