@@ -107,20 +107,22 @@ if [[ $? -eq 0 ]]; then
     echo "=== existing files after copy... ===="
     ls $existingJavaFilesPath
 
-    yourManifestPath="app/src/main/AndroidManifest.xml"
-    newManifestPath=$newLibPath"/android-project/"$yourManifestPath
-    echo "\n\nFINALLY => please compare the "$yourManifestPath" and merge any relevant changes\n\n < YOURS "$yourManifestPath" \n > THEIRS "$newManifestPath"\n\n"
-    diff $yourManifestPath $newManifestPath
+    yourProjectFilePath="app/src/main/AndroidManifest.xml"
+    theirProjectFilePath=$newLibPath"/android-project/"$yourProjectFilePath
+    echo "\n\nFINALLY => please compare the "$yourProjectFilePath" and merge any relevant changes\n\n < YOURS "$yourProjectFilePath" \n > THEIRS "$theirProjectFilePath"\n\n"
+    diff $yourProjectFilePath $theirProjectFilePath
 
-    yourManifestPath="build.gradle"
-    newManifestPath=$newLibPath"/android-project/"$yourManifestPath
-    echo "\n\nFINALLY => please compare the "$yourManifestPath" and merge any relevant changes\n\n < YOURS "$yourManifestPath" \n > THEIRS "$newManifestPath"\n\n"
-    diff $yourManifestPath $newManifestPath
+    yourProjectFilePath="build.gradle"
+    theirProjectFilePath=$newLibPath"/android-project/"$yourProjectFilePath
+    echo "\n\nFINALLY => please compare the "$yourProjectFilePath" and merge any relevant changes\n\n < YOURS "$yourProjectFilePath" \n > THEIRS "$theirProjectFilePath"\n\n"
+    diff $yourProjectFilePath $theirProjectFilePath
 
-    yourManifestPath="app/build.gradle"
-    newManifestPath=$newLibPath"/android-project/"$yourManifestPath
-    echo "\n\nFINALLY => please compare the "$yourManifestPath" and merge any relevant changes\n\n < YOURS "$yourManifestPath" \n > THEIRS "$newManifestPath"\n\n"
-    diff $yourManifestPath $newManifestPath
+    yourProjectFilePath="app/build.gradle"
+    theirProjectFilePath=$newLibPath"/android-project/"$yourProjectFilePath
+    echo "\n\nFINALLY => please compare the "$yourProjectFilePath" and merge any relevant changes\n\n < YOURS "$yourProjectFilePath" \n > THEIRS "$theirProjectFilePath"\n\n"
+    diff $yourProjectFilePath $theirProjectFilePath
+
+    echo "\n\nNOTE: please keep in mind your NDK bundle version has a big effect on how compliation will go and what devices are supported... when you upgrade this I suggest making a backup of the old one just in case!  Its easy to upgrade using Android Studio but it won't make backups for you.  IME support for older devices may be dropped in newer versions but you also get the latest patches."
 
 fi
 
