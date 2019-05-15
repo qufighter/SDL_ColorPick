@@ -318,6 +318,16 @@ void mouseUpEvent(SDL_Event* event){
     //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 }
 
+void BackButtonEvent(){
+    if( openglContext->generalUx->hasCurrentModal() ){
+        openglContext->generalUx->endCurrentModal();
+    }else{
+#ifdef __ANDROID__
+        SDL_AndroidBackButton();
+#endif
+    }
+}
+
 // TODO: this might need to be in the animation loop for ios!!!!!!!
 int MainThreadUserEventHandler(SDL_Event* p_event){
 
@@ -490,6 +500,15 @@ event is maybe going to have
                 case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
                     colorPickState->mmovex=1;
                     break;
+                case SDL_CONTROLLER_BUTTON_A:
+
+                    SDL_Log("BUTTON A");
+
+                    break;
+                case SDL_CONTROLLER_BUTTON_B:
+                    SDL_Log("BUTTON B");
+                    BackButtonEvent();
+                    break;
             }
 
 
@@ -587,9 +606,8 @@ event is maybe going to have
             //openglContext->keyDown(event->key.keysym.sym);
             if (event->key.keysym.sym == SDLK_AC_BACK || event->key.keysym.sym == SDLK_BACKSPACE || event->key.keysym.sym == SDLK_ESCAPE){
                 //SDL_Log("back/esc pressed");
-                openglContext->generalUx->endCurrentModal();
-            }
-            if(event->key.keysym.sym == SDLK_AC_HOME){
+                BackButtonEvent();
+            }else if(event->key.keysym.sym == SDLK_AC_HOME){
                 // nope only works on windows..... maybe android, but how to screenshot android?
                 //SDL_Log("home pressed - maybe ios screenshot? time for gimicky marketing ploy");
             }
@@ -621,6 +639,9 @@ event is maybe going to have
             /* You will get this when your app is paused and iOS wants more memory.
              Release as much memory as possible.
              */
+
+            // WE CAN"T DO MUCH BUT WE CAN SAVE OUR STATE I SUPPOSE?? (OR WILL THIS CRASH US???)
+
             return 0;
         }
         case SDL_APP_TERMINATING:{
@@ -903,6 +924,7 @@ int main(int argc, char *argv[]) {
 
     SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, "0");
     SDL_SetHint(SDL_HINT_IDLE_TIMER_DISABLED, "0");
+    SDL_SetHint(SDL_HINT_VIDEO_DOUBLE_BUFFER, "1"); // tell it we only want double (not tripple) buffer...
     SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1"); // its trapped by default still as of SDL2-2.0.9 (even though docs say otherwise...)
     SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
     SDL_SetHint(SDL_HINT_MAC_BACKGROUND_APP, "0");  // as far as I can tell.... this only makes the window not re-enter the background once focused - and also becomes incapable of entering the forground (no menu bar)
@@ -1003,21 +1025,24 @@ int main(int argc, char *argv[]) {
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0); // nifty if we can have alpha these days in the screen buffer....
+//    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0); // nifty if we can have alpha these days in the screen buffer....
 //    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 //    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 5);
 //    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 0);
 //    SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
-SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
+//SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
 
 // this is nifty on fire TV since we won't have a reshape/resize...we just start fullscreen... meh though
-//#if defined(__ANDROID__)
-////    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
+    // oddly this seems to help fire tv a lot.... hmm... muliti display android or windowed mode: seems like this will break it though
+#if defined(__ANDROID__)
+//    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
 //    SDL_DisplayMode sdpm;
 //    SDL_GetDisplayMode(0, 0, &sdpm);
 //    win_w=sdpm.w;
 //    win_h=sdpm.h;
-//#endif
+#endif
+
+//SDL_GL_SetSwapInterval(0);
 
     int win_pos_x=0;
     int win_pos_y=0;
@@ -1077,9 +1102,10 @@ SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
         return 1;
     }else{
 
+//SDL_RENDERER_PRESENTVSYNC
+ //       SDL_GL_SetSwapInterval(0); // keep vsync off....??? (again may need to set this earlier??)
 
-        //SDL_GL_SetSwapInterval(0); // keep vsync off....??? (again may need to set this earlier??)
-
+        //SDL_EGL_SetSwapInterval(0);
 
 // there has to be a better way to do this... but its what we got...
 

@@ -723,7 +723,7 @@ void OpenGLContext::setupScene(void) {
     glEnable(GL_BLEND);  //this enables alpha blending
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendEquation(GL_FUNC_ADD);
-//    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
     glDisable(GL_BLEND);
 
     //projectionMatrix = glm::perspective(60.0f, (float)windowWidth / (float)windowHeight, 0.1f, (float)VIEW_MAX_CLIP_DISTANCE);  // Create our perspective projection matrix
@@ -741,10 +741,20 @@ void OpenGLContext::setupScene(void) {
 
     debugGLerror("setupScene nearly done");
 
+//#ifndef GL_SHADER_STORAGE_BUFFER
+//#define GL_SHADER_STORAGE_BUFFER          0x90D2
+//#endif
+//    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+//    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+//
+//    debugGLerror("unmap ops done");
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glGenFramebuffers(1, &fbo);
     //    glGenRenderbuffers(1, &rbo_color);
     glGenTextures(1, &texColorBuffer);
+    glGenTextures(1, &texDepthBuffer);
     glGenRenderbuffers(1, &rbo_depth);
     // the rest is in reshapeWindow
 
@@ -870,12 +880,24 @@ void OpenGLContext::reshapeWindow(int w, int h) {
 #ifndef GL_DEPTH_STENCIL_ATTACHMENT
 #define GL_DEPTH_STENCIL_ATTACHMENT       0x821A
 #endif
+#ifndef GL_DEPTH_STENCIL
+#define GL_DEPTH_STENCIL                  0x84F9
+#endif
 
-    // NOTE: the following is simply unsupported on some hardware - we either need to use textues for everything, or find a way to detect and avoid the crash...
-    glBindRenderbuffer(GL_RENDERBUFFER, rbo_depth);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, colorPickState->drawableWidth, colorPickState->drawableHiehgt);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo_depth);
 
+//    // NOTE: the following is simply unsupported on some hardware - we either need to use textues for everything, or find a way to detect and avoid the crash...
+//    glBindRenderbuffer(GL_RENDERBUFFER, rbo_depth);
+//    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, colorPickState->drawableWidth, colorPickState->drawableHiehgt);
+//    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo_depth);
+
+
+    glBindTexture(GL_TEXTURE_2D, texDepthBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, colorPickState->drawableWidth, colorPickState->drawableHiehgt, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    // attach it to currently bound framebuffer object
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH_STENCIL, texDepthBuffer, 0);
 
     debugGLerror("rbo_depth done....");
 
@@ -1266,9 +1288,24 @@ void OpenGLContext::renderUi(void) {
     debugGLerror("renderScene ui textureId_fonts bound");
 
 
+//    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[0]);
+
 
     glBindVertexArray(rect_vaoID[0]);
+
+
     generalUx->renderObject(uniformLocations); // renders all obj
+
+//    generalUx->renderObjects(uniformLocations, generalUx->addHistoryBtn, glm::mat4(1.0f));
+//    generalUx->renderObjects(uniformLocations, generalUx->addHistoryBtn, glm::mat4(1.0f));
+//    generalUx->renderObjects(uniformLocations, generalUx->addHistoryBtn, glm::mat4(1.0f));
+//    generalUx->renderObjects(uniformLocations, generalUx->zoomSlider, glm::mat4(1.0f));
+//    generalUx->renderObjects(uniformLocations, generalUx->addHistoryBtn, glm::mat4(1.0f));
+//    generalUx->renderObjects(uniformLocations, generalUx->zoomSlider, glm::mat4(1.0f));
+//    generalUx->renderObjects(uniformLocations, generalUx->zoomSlider, glm::mat4(1.0f));
+//    generalUx->renderObjects(uniformLocations, generalUx->zoomSlider, glm::mat4(1.0f));
+//    generalUx->renderObjects(uniformLocations, generalUx->zoomSlider, glm::mat4(1.0f));
+
     debugGLerror("generalUx->renderObject ending");
 
 }
@@ -1282,6 +1319,8 @@ void OpenGLContext::renderScene(void) {
 
 #if USE_FBO_FOR_RENDERING
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+#else
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 #endif
 
     if( isMinigameMode() ){
@@ -1299,10 +1338,16 @@ void OpenGLContext::renderScene(void) {
     }else{
         renderZoomedPickerBg();
 
+//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
         glEnable(GL_BLEND);  //this enables alpha blending
 //        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 //
 //        // some animations will go before or after the UI!!!!  depends on which animation....
+
+//        glClear(GL_COLOR_BUFFER_BIT);
+//        renderUi();
+
 
         if( animationDropper3dId == ANIMATION_ZOOM_INTO_DROPPER || animationDropper3dId == ANIMATION_ZOOM_INTO_BULB ){
 

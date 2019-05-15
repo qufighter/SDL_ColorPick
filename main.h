@@ -73,11 +73,12 @@
 //#include "SDL_opengles2_gl2.h"
 //#include "SDL_opengles2_gl2ext.h"
 
-// this is so dumb...
+// this is so dumb... need to wrap with ifndefs though...
 #define glGenVertexArrays glGenVertexArraysOES
 #define glDeleteVertexArrays glDeleteVertexArraysOES
 #define glBindVertexArray glBindVertexArrayOES
 #define glIsVertexArray glIsVertexArrayOES
+#define glUnmapBuffer glUnmapBufferOES
 
 #else
 #include "SDL_opengl.h"

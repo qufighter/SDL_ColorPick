@@ -1970,8 +1970,15 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 //            SDL_Log("This object is being rendered but it has no foreground or background!!!");
 //        }
 
+        //glFlush()
+        //glFlush();
+        //SDL_Delay(66);
+
         // see updateStageDimension and consider SDL_RenderSetClipRect
         glDrawArrays(GL_TRIANGLES, 0, 6); // hmmm
+
+        //glFlush();
+        //SDL_Delay(66);
 
 
     }
@@ -1980,10 +1987,11 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
     if( renderObj->hasChildren && renderObj->doesRenderChildObjects ){
         //for( int x=0, l=(int)renderObj->childUiObjects.size(); x<l; x++ ){
 
-//
+        //resolvedRenderObjMat = glm::scale(resolvedRenderObjMat, glm::vec3(0.0f, 0.0f, 0.01));
         for( int x=0,l=renderObj->childListIndex; x<l; x++ ){
             renderObjects(uniformLocations, renderObj->childList[x], resolvedRenderObjMat);
         }
+
 
         // this is the CRUMMY_ANDROID test, but we stop rendering basically on the zoomSlider, which is good testing if we can only render one draw call...
 //        for( int x=0,l=SDL_min(2,renderObj->childListIndex); x<l; x++ ){

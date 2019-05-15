@@ -223,6 +223,8 @@ private:
     unsigned int rbo_color;
     unsigned int texColorBuffer;
     unsigned int rbo_depth;
+    unsigned int texDepthBuffer;
+
 
     int textureSize = SHD_TEXTURE_SIZE;
     int halfTextureSize = textureSize * 0.5;
