@@ -928,7 +928,7 @@ void OpenGLContext::reshapeWindow(int w, int h) {
 //    glLoadIdentity()   ;                         // reset the matrix to its default state
     //glFrustum(-1.0, 1.0, -1.0f, 1.0f, 3.0f, 7.0f);  // apply the projection matrix
 
-    //SDL_GL_MakeCurrent(sdlWindow, gl); // < this does nothing AFACT - safe but pointless....
+    //SDL_GL_MakeCurrent(sdlWindow, gl); // < this does nothing AFACT - safe but pointless....  but may actually be expensive!!
 }
 
 void  OpenGLContext::updateFishScaleSliderRunner(){
@@ -1611,7 +1611,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
         //glStencilFunc(GL_ALWAYS, 1, 0xFF); // all fragments should update the stencil buffer
 
         glUniform4f(uniformLocations->color_additive, 1.0,0,0,0.0); // transparent draw so no visilble output (we write to stencil only right now) you might try red to visualize/debug the stencil buffer... 1.0,0,0,1.0
-        glUniform4f(uniformLocations->color_additive, 1.0,0,0,1.0);
+        //glUniform4f(uniformLocations->color_additive, 1.0,0,0,1.0);
         eyedropper_stem->render();
 
 

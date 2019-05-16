@@ -1109,33 +1109,60 @@ int main(int argc, char *argv[]) {
 
 // there has to be a better way to do this... but its what we got...
 
-#define logGottenGlAtrib(name, literalAttrib) SDL_GL_GetAttribute(literalAttrib, &resultInt); \
-SDL_Log("contexts %s %i", name, resultInt);
 
+#ifndef GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX
+#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
+#endif
+#ifndef TEXTURE_FREE_MEMORY_ATI
+#define TEXTURE_FREE_MEMORY_ATI 0x87FC
+#endif
+
+
+        // we will check the memories now... 3d might be too much...
         int resultInt = 0;
 
-        logGottenGlAtrib("SDL_GL_DEPTH_SIZE", SDL_GL_DEPTH_SIZE);
+
+        glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &resultInt);
+        SDL_Log("We got GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX as: %i", resultInt);
+        glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, &resultInt);
+        SDL_Log("We got TEXTURE_FREE_MEMORY_ATI as: %i", resultInt);
+
+
+//#define stringify(x) _stringify(x)
+//#define _stringify(x) #x
+//#define logGottenGlAtrib(literalAttrib) do{ \
+//int resultInt; \
+//SDL_GL_GetAttribute(literalAttrib, &resultInt); \
+//SDL_Log("contexts %s %i", stringify(literalAttrib), resultInt); \
+//} while(0)
+
+
+#define logGottenGlAtrib(literalAttrib) SDL_GL_GetAttribute(literalAttrib, &resultInt); \
+SDL_Log("contexts %s %i", #literalAttrib, resultInt);
+
+
+        logGottenGlAtrib(SDL_GL_DEPTH_SIZE);
         if( resultInt < 1 ){
             openglContext->meshes->mesh3d_enabled = false; // no depth buffer = no meshes...
             SDL_Log("DISABLED MESH 3D no depth");
         }
-        logGottenGlAtrib("SDL_GL_STENCIL_SIZE", SDL_GL_STENCIL_SIZE);
+        logGottenGlAtrib(SDL_GL_STENCIL_SIZE);
         if( resultInt < 1 ){
             openglContext->meshes->mesh3d_enabled = false; // no stencil buffer = no meshes...
             SDL_Log("DISABLED MESH 3D no stencil");
         }
-        logGottenGlAtrib("SDL_GL_DOUBLEBUFFER", SDL_GL_DOUBLEBUFFER);
-        logGottenGlAtrib("SDL_GL_RETAINED_BACKING", SDL_GL_RETAINED_BACKING);
+        logGottenGlAtrib(SDL_GL_DOUBLEBUFFER);
+        logGottenGlAtrib(SDL_GL_RETAINED_BACKING);
 
-        logGottenGlAtrib("SDL_GL_BUFFER_SIZE", SDL_GL_BUFFER_SIZE);
+        logGottenGlAtrib(SDL_GL_BUFFER_SIZE);
 //
-        logGottenGlAtrib("SDL_GL_RED_SIZE", SDL_GL_RED_SIZE);
-        logGottenGlAtrib("SDL_GL_GREEN_SIZE", SDL_GL_GREEN_SIZE);
-        logGottenGlAtrib("SDL_GL_BLUE_SIZE", SDL_GL_BLUE_SIZE);
-        logGottenGlAtrib("SDL_GL_ALPHA_SIZE", SDL_GL_ALPHA_SIZE);
+        logGottenGlAtrib(SDL_GL_RED_SIZE);
+        logGottenGlAtrib(SDL_GL_GREEN_SIZE);
+        logGottenGlAtrib(SDL_GL_BLUE_SIZE);
+        logGottenGlAtrib(SDL_GL_ALPHA_SIZE);
 
-        logGottenGlAtrib("SDL_GL_CONTEXT_MAJOR_VERSION", SDL_GL_CONTEXT_MAJOR_VERSION);
-        logGottenGlAtrib("SDL_GL_CONTEXT_MINOR_VERSION", SDL_GL_CONTEXT_MINOR_VERSION);
+        logGottenGlAtrib(SDL_GL_CONTEXT_MAJOR_VERSION);
+        logGottenGlAtrib(SDL_GL_CONTEXT_MINOR_VERSION);
 
         //SDL_Log("Open GL says we are %s", glGetString(GL_VERSION));
 

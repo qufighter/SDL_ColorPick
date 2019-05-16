@@ -98,12 +98,15 @@ void buildMesh(Mesh* mesh, int vertex_items, float* vertices, float* normals, fl
     glVertexAttribPointer((GLuint)SHADER_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
     glEnableVertexAttribArray(SHADER_POSITION); // Enable the first our Vertex Array Object
 
+    // the following works... we have not been using colors in our shader though (we code the color valeus elsewhere), so lets save some GPU memory...
     if( colors != nullptr ){
         glBindBuffer(GL_ARRAY_BUFFER, mesh->buffers[SHADER_COLOR]); // Bind our second Vertex Buffer Object
         glBufferData(GL_ARRAY_BUFFER, vertex_items * sizeof(GLfloat), colors, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
         glVertexAttribPointer((GLuint)SHADER_COLOR, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
         glEnableVertexAttribArray(SHADER_COLOR); // Enable the second vertex attribute array
     }
+
+
     //    glBindBuffer(GL_ARRAY_BUFFER, mesh->buffers[SHADER_TEXTURE]); // Bind our second Vertex Buffer Object
     //    glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), texCoord, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
     //    glVertexAttribPointer((GLuint)SHADER_TEXTURE, 2, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
