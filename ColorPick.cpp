@@ -9,6 +9,7 @@
 #include "ColorPick.h"
 
 // so far no luck on android with this... some missing defines!
+// note this is broken on IOS currently... even though "its supposidly comlpete..." - any time we bind buffer 0 it breaks rendering though...
 #define USE_FBO_FOR_RENDERING 0
 
 
@@ -749,14 +750,16 @@ void OpenGLContext::setupScene(void) {
 //
 //    debugGLerror("unmap ops done");
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//    glBindFramebuffer(GL_FRAMEBUFFER, 0);  // note binding buffer 0 (when its already bound) will break IOS....
 
+#ifdef USE_FBO_FOR_RENDERING
     glGenFramebuffers(1, &fbo);
     //    glGenRenderbuffers(1, &rbo_color);
     glGenTextures(1, &texColorBuffer);
     glGenTextures(1, &texDepthBuffer);
     glGenRenderbuffers(1, &rbo_depth);
     // the rest is in reshapeWindow
+#endif
 
 //    modelMatrix = glm::mat4(1.0f);
 //
@@ -1319,8 +1322,7 @@ void OpenGLContext::renderScene(void) {
 
 #if USE_FBO_FOR_RENDERING
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-#else
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // note binding buffer 0 (when its already bound) will break IOS....
 #endif
 
     if( isMinigameMode() ){
@@ -1371,7 +1373,7 @@ void OpenGLContext::renderScene(void) {
 
 #if USE_FBO_FOR_RENDERING
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);  // note binding buffer 0 (when its already bound) will break IOS....
     glClear(GL_COLOR_BUFFER_BIT);
 
     uniformLocations = shader_ui_shader_default->bind();
