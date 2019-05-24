@@ -185,7 +185,12 @@ void mouseMoveEvent(SDL_Event* event){
 
     if( fingerInteraction->fingerStateDown /* == 1 */ ){
 
-        uiInteraction* fingerInteraction = openglContext->generalUx->interactionForPointerEvent(event);
+        //uiInteraction* fingerInteraction = openglContext->generalUx->interactionForPointerEvent(event); // dupe!
+
+        SDL_Point tmp = getMouseXYforEvent(event);
+        tx = tmp.x; ty=tmp.y;
+        //SDL_GetMouseState(&tx, &ty);
+        //SDL_Log("MOUSE xy %d %d", tx,ty);
 
         //SDL_Log("mousStateDown SDL_FINGERMOTION SDL_MOUSEMOTION");
         if( /*!didInteract*/ !fingerInteraction->didCollideWithObject && fingerDeviceDownCounter == 1 && !isLockedForZoomUntilFingersZeros ){
@@ -193,10 +198,7 @@ void mouseMoveEvent(SDL_Event* event){
 #if __ANDROID__
             bool wasZero = openglContext->pixelInteraction.isZeroed();  // on android this event won't fire right away - in fact it takes quite a LOT of movement to reach SDL_FINGERMOTION here....
 #endif
-            SDL_Point tmp = getMouseXYforEvent(event);
-            tx = tmp.x; ty=tmp.y;
-//            SDL_GetMouseState(&tx, &ty);
-            //SDL_Log("MOUSE xy %d %d", tx,ty);
+
             openglContext->pixelInteraction.update(tx, ty);
 #if __ANDROID__
 
@@ -217,11 +219,12 @@ void mouseMoveEvent(SDL_Event* event){
         }else{
             //colorPickState->mmovex = event->motion.xrel;
             //colorPickState->mmovey = event->motion.yrel;
-            SDL_Point tmp = getMouseXYforEvent(event);
-            tx = tmp.x; ty=tmp.y;
+//            SDL_Point tmp = getMouseXYforEvent(event);
+//            tx = tmp.x; ty=tmp.y;
 //            SDL_GetMouseState(&tx, &ty);
             //SDL_Log("MOUSE xy %d %d", tx,ty);
-            fingerInteraction->update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h);
+            fingerInteraction->update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h); // < we COULD update this regardless.. moving it above the IF...
+
             //SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
             //SDL_Log("MOUSE xy delta %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
             // todo combine above into the following call?
@@ -240,20 +243,18 @@ void mouseUpEvent(SDL_Event* event){
 
     uiInteraction* fingerInteraction = openglContext->generalUx->interactionForPointerEvent(event);
 
+    SDL_Point tmp = getMouseXYforEvent(event);
+    tx = tmp.x; ty=tmp.y;
+    //        SDL_GetMouseState(&tx, &ty);
+    //SDL_Log("MOUSE xy %d %d", tx,ty);
+
     if( /*didInteract*/ fingerInteraction->didCollideWithObject ){
         // we may be able to add this, but we need to track velocity better
-        SDL_Point tmp = getMouseXYforEvent(event);
-        tx = tmp.x; ty=tmp.y;
-//        SDL_GetMouseState(&tx, &ty);
-        //SDL_Log("MOUSE xy %d %d", tx,ty);
         fingerInteraction->update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h);
         //SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
         //SDL_Log("MOUSE xy delta %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
     }else{
-        SDL_Point tmp = getMouseXYforEvent(event);
-        tx = tmp.x; ty=tmp.y;
-//        SDL_GetMouseState(&tx, &ty);
-        //SDL_Log("MOUSE xy %d %d", tx,ty);
+
         openglContext->pixelInteraction.done(tx, ty );
 
     }
@@ -818,7 +819,8 @@ void ReshapeWindow(bool fromMain){
     SDL_Log("SDL_GetWindowSize %d %d %f", win_w,win_h, colorPickState->viewport_ratio);
 
 
-    SDL_Log("SDL_GL_GetDrawableSize %d %d %f", colorPickState->drawableWidth,colorPickState->drawableHiehgt, (colorPickState->drawableWidth+1.0f)/colorPickState->drawableHiehgt);
+    // NOTE: this log is dangerous since division by zero
+    //SDL_Log("SDL_GL_GetDrawableSize %d %d %f", colorPickState->drawableWidth,colorPickState->drawableHiehgt, (colorPickState->drawableWidth+1.0f)/colorPickState->drawableHiehgt);
 
 
     if( win_w <= colorPickState->drawableWidth ) {

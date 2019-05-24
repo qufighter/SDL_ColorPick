@@ -52,7 +52,9 @@ ColorPickState::ColorPickState(void) {
 
 void ColorPickState::updateComputedSizes(void) {
 
-    viewport_ratio = (windowWidth+0.0f)/windowHeight;
+    if( windowHeight > 0 ){
+        viewport_ratio = (windowWidth+0.0f)/windowHeight;
+    }
 
     halfWindowWidth = (windowWidth+0.0f) * 0.5;
     halfWindowHeight = (windowHeight+0.0f) * 0.5;

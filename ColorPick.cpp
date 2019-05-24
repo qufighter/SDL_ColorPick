@@ -818,6 +818,13 @@ bool OpenGLContext::isMinigameMode(){
     return generalUx->isMinigameMode;
 }
 
+glm::vec3 OpenGLContext::worldToScreenSpace(glm::vec3 obj){
+    return glm::project(obj,matrixViews,matrixPersp,glm::vec4(0.0,0.0,(float)colorPickState->windowWidth,(float)colorPickState->windowHeight));
+}
+glm::vec3 OpenGLContext::screenToWorldSpace(GLfloat screenx, GLfloat screeny, GLfloat distance){
+    return glm::unProject(glm::vec3(screenx, screeny, distance),matrixViews,matrixPersp,glm::vec4(0.0,0.0,(float)colorPickState->windowWidth,(float)colorPickState->windowHeight));
+}
+
 /**
  reshapeWindow is called every time our window is resized, and it sets our windowWidth and windowHeight
  so that we can set our viewport size.

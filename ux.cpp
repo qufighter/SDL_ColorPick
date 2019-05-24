@@ -330,6 +330,8 @@ void Ux::writeOutState(void){
 
 void Ux::updateStageDimension(float w, float h){
 
+    if( h < 1 ){ h=1.0;}
+
     screenRatio = w / h;
 
     if( screenRatio > 1.0 ){

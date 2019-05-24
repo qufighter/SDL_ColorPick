@@ -98,6 +98,8 @@ public:
     void prepareForHuePickerMode(bool fromHueGradient);
     void createUI(void);
     void setupScene(void); // All scene information can be setup here
+    glm::vec3 worldToScreenSpace(glm::vec3 obj);
+    glm::vec3 screenToWorldSpace(GLfloat screenx, GLfloat screeny, GLfloat distance);
     void reshapeWindow(int w, int h); // Method to get our window width and height on resize
     //void updateFrame(Uint32 elapsedMs);
     void renderScene(void); // Render scene (display method from previous OpenGL tutorials)
