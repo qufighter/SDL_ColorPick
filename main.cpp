@@ -125,8 +125,6 @@ SDL_Point getMouseXYforEvent(SDL_Event* event){
 uiInteraction* beginInteraction(SDL_Event* event, bool isStart){
     SDL_Point tmp = getMouseXYforEvent(event);
     tx = tmp.x; ty=tmp.y; // TODO: lets remove tx ty too...
-    //SDL_GetMouseState(&tx, &ty);
-    //SDL_Log("MOUSE xy %d %d", tx,ty);
     openglContext->pixelInteraction.begin(tx, ty);
     //openglContext->generalUx->currentInteraction.begin( (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h ); // deprecated....
 
@@ -189,8 +187,6 @@ void mouseMoveEvent(SDL_Event* event){
 
         SDL_Point tmp = getMouseXYforEvent(event);
         tx = tmp.x; ty=tmp.y;
-        //SDL_GetMouseState(&tx, &ty);
-        //SDL_Log("MOUSE xy %d %d", tx,ty);
 
         //SDL_Log("mousStateDown SDL_FINGERMOTION SDL_MOUSEMOTION");
         if( /*!didInteract*/ !fingerInteraction->didCollideWithObject && fingerDeviceDownCounter == 1 && !isLockedForZoomUntilFingersZeros ){
@@ -221,9 +217,7 @@ void mouseMoveEvent(SDL_Event* event){
             //colorPickState->mmovey = event->motion.yrel;
 //            SDL_Point tmp = getMouseXYforEvent(event);
 //            tx = tmp.x; ty=tmp.y;
-//            SDL_GetMouseState(&tx, &ty);
-            //SDL_Log("MOUSE xy %d %d", tx,ty);
-            fingerInteraction->update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h); // < we COULD update this regardless.. moving it above the IF...
+            fingerInteraction->update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h); // < we COULD update this regardless.. moving it above the IF...  -> not recommended... causes issues where mousup out of the blue (without mouse down) can trigger things....
 
             //SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
             //SDL_Log("MOUSE xy delta %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
@@ -245,8 +239,6 @@ void mouseUpEvent(SDL_Event* event){
 
     SDL_Point tmp = getMouseXYforEvent(event);
     tx = tmp.x; ty=tmp.y;
-    //        SDL_GetMouseState(&tx, &ty);
-    //SDL_Log("MOUSE xy %d %d", tx,ty);
 
     if( /*didInteract*/ fingerInteraction->didCollideWithObject ){
         // we may be able to add this, but we need to track velocity better
@@ -819,7 +811,7 @@ void ReshapeWindow(bool fromMain){
     SDL_Log("SDL_GetWindowSize %d %d %f", win_w,win_h, colorPickState->viewport_ratio);
 
 
-    // NOTE: this log is dangerous since division by zero
+    // NOTE: this log is dangerous since division by zero, and also not dangerous thanks to optimization
     //SDL_Log("SDL_GL_GetDrawableSize %d %d %f", colorPickState->drawableWidth,colorPickState->drawableHiehgt, (colorPickState->drawableWidth+1.0f)/colorPickState->drawableHiehgt);
 
 

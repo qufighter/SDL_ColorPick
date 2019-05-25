@@ -690,6 +690,7 @@ Mesh* Meshes::LoadObjectPLY(const char* filename) {
     if( mesh3d_enabled ){
         SDL_Thread *thread;
         thread = SDL_CreateThread(LoadObjectPLYThread, "MeshLoadPLY", (void *)mesh);
+        SDL_DetachThread(thread);
         if (NULL == thread) {
             SDL_Log("Mesh Loading: SDL_CreateThread failed (falling back to non threaded loading...): %s\n", SDL_GetError());
             LoadObjectPLYThread((void *)mesh);
@@ -726,6 +727,7 @@ Mesh* Meshes::LoadObjectSTL(const char* filename) {
 
     SDL_Thread *thread;
     thread = SDL_CreateThread(LoadObjectSTLThread, "MeshLoadSTL", (void *)mesh);
+    SDL_DetachThread(thread);
     if (NULL == thread) {
         printf("Mesh Loading: SDL_CreateThread failed: %s\n", SDL_GetError());
     }
