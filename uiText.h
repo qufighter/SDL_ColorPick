@@ -147,6 +147,16 @@ struct uiText{
         return this;
     }
 
+    uiText* autoSize(float maxSize){
+        float cmpSize = 1.0/lastDisplayTxtLen;
+        if( cmpSize > maxSize ){
+            size(maxSize);
+        }else{
+            size(cmpSize);
+        }
+        return this;
+    }
+
     uiText* size(float size){
         text_position->setBoundaryRect( 0.5, 0.5, size, size);
         handlePositioning(uiObjectItself);
