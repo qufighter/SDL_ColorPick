@@ -396,13 +396,16 @@ struct uiAminChain
     uiAminChain(){//constructor
         animListIndex = 0;
         animListCurrent=0;
+        autoFree=true;
         invalidateChain=false;
         chainCompleted=false;
+        pushIncomplete=false; // if we have problems pushing this chain, this will help ensure the ref MIGHT be cleaned up.... but likely only if we called preserveReference
     }
 
     bool autoFree=true;
     bool invalidateChain=false;
     bool chainCompleted;
+    bool pushIncomplete=false;
     bool result_done;
     int animListCurrent;
     int animListIndex;
@@ -453,7 +456,7 @@ struct uiAminChain
     }
 
     void endAnimation(){ // thread safe, but you must call preserveReference if you want to call anything later
-        if( this->chainCompleted ){
+        if( this->chainCompleted || this->pushIncomplete ){ // either done or will never complete...
             SDL_free(this);
         }else{
             this->invalidateChain = true;
@@ -536,7 +539,7 @@ struct UxAnim
     // maybe this can just be a helper on the chain itself?  .free() ??
     void freeAnimationChain(uiAminChain* myAnimChain){
         if( myAnimChain->autoFree ){
-            // WE GET AN EXCEPTION HERE SOMETIMES>>>>>
+            // WE GET AN EXCEPTION HERE SOMETIMES>>>>> (probably fixed this...)
             // malloc: *** error for object 0x7fbb4330: pointer being freed was not allocated
             // sometimes this is caused by adding an animation chain while updating another animation perhaps?  (I think this is mostly caused by the debugger... a breakpoint at "ERROR::: Max Animation" will ultimiately cause exceptins here)
             SDL_free(myAnimChain); // GARBAGE COLLECTION ?! (we may mark a chain to not auto delete in the future, for reusing it?)
@@ -634,11 +637,13 @@ struct UxAnim
 
     void pushAnimChain(uiAminChain* myAnimChain){
         if( aniIsUpdating ){
-            // TODO: make this call thread safe... we can only push at the end of the update
+            // Done: we made this call thread safe... we can only push at the end of the update (newChains vs animChains)
             if( newChainIndex < animChainsMax - 1 ){
                 newChains[newChainIndex++] = myAnimChain;
             }else{
                 SDL_Log("ERROR::: Max Animation Chains -newChains- %d Exceeded !!!!!!!!", animChainsMax);
+                myAnimChain->pushIncomplete = true;
+                // if we reach this, the anim will NEVER be pushed onto animChains
                 //freeAnimationChain(myAnimChain);
                 // todo: in cases like these, we should always do something to advance the animations to completion
             }
@@ -656,9 +661,17 @@ struct UxAnim
             }
         }else{
             SDL_Log("ERROR::: Max Animation Chains %d Exceeded !!!!!!!!", animChainsMax);
+            myAnimChain->pushIncomplete = true;
             //freeAnimationChain(myAnimChain); // this one is troubling.... we won't know its not been pushed.... we don't know if the reference is preserved yet...
             // todo: in cases like these, we should always do something to advance the animations to completion
             // JUST COMPLETE THESE ANIMATIONS IMMEDIATELY???
+
+            // the note here, for next work (for each pushIncomplete) is now:
+            // after we return the chain, the ref MAY BE instantly preserved
+            // so we MIGHT be able to pass this ref into a timer callback void* arg
+            // however before we use teh void* arg if it WAS free'd will a nullptr check suffice?
+            // needless to say if pushIncomplete==true (which it will always be in these cases) and autoFree is false (preserveRef WAS called) then we can do nothing - it will clean up after itself
+            // HOWEVER if preserveRef is for some reason not called, we have to clean it up in the timer.... (autoFree is true then cleanup, the chain isn't pushed)
         }
 
         lastTimerTime = SDL_GetTicks();
