@@ -148,7 +148,10 @@ struct uiText{
     }
 
     uiText* autoSize(float maxSize){
-        float cmpSize = 1.0/lastDisplayTxtLen;
+        float cmpSize = maxSize;
+        if( lastDisplayTxtLen > 0 ){
+            cmpSize = 1.0/lastDisplayTxtLen;
+        }
         if( cmpSize > maxSize ){
             size(maxSize);
         }else{
