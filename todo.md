@@ -2,9 +2,10 @@
 DEVELOPER_TEST_MODE
 
 # Checklist
+     close other projects, avoid errors
    platform version number
-   settings displayed version number
-   re-enter EACH completed minigame
+   settings displayed version number (see uiSettingsScroller.h)
+   re-enter EACH completed minigame - they should reset
 
 #  todo
 

@@ -28,7 +28,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
      and finally, the string below:
      */
 
-    const char* appVersion = "Version-1.1"; // no spaces allowed or we won't be able to open URL (update: test it but do Open url in ogg now replaces spaces and newlines...)
+    const char* appVersion = "Version-1.3"; // no spaces allowed or we won't be able to open URL (update: test it but do Open url in ogg now replaces spaces and newlines...)
     const static int maxSettings = 45; // the indexing may break at 254....
 
     typedef enum  {
