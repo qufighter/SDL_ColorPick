@@ -8,6 +8,8 @@ varying float texWidth;
 varying float texWidthLessOne;
 varying float halfTexWidth;
 
+uniform vec2 zoomedPositionOffset;
+
 uniform float fishEyeScale;
 uniform float fishEyeScalePercent;
 
@@ -54,9 +56,13 @@ void main()
     // to support/avoid certain "gradient calculation inside conditional block" issues... we do all our texutre lookups in advance
     // some of these texutre lookups are not needed but this seems likely to be the most compatible way
 
+    vec2 posOffset = zoomedPositionOffset / texWidthLessOne;
+
+    pixelPosition += posOffset;
+
     vec4 bcolor=texture2D(texture1,  pixelPosition); //maths
 
-    vec4 pcolor=texture2D(texture1, ctr / texWidthLessOne );
+    vec4 pcolor=texture2D(texture1, (ctr / texWidthLessOne) + posOffset );
 
     vec4 bgcolor = texture2D(texture2, backgroundTexCoord);
 

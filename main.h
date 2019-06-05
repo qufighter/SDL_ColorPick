@@ -206,6 +206,7 @@ struct uniformLocationStruct
     fishScalePct,
     textureWidth,
     positionOffset,
+    zoomedPositionOffset,
     textureCoord,
     texture_crop,
     normalLightingMat,

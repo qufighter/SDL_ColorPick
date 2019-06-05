@@ -195,6 +195,8 @@ public:
     void clearVelocity();
 
     //typedef void (*imageSelectedCallback)(const char *); // < its this type
+
+    GLuint oggLoadTextureSized(SDL_Surface *surface, GLuint& contained_in_texture_id, GLuint& textureid, int size, int *x, int *y);
     void imageWasSelectedCb(SDL_Surface *myCoolSurface);
     bool restoreLastSurface();
     void loadNextTestImage();
@@ -232,6 +234,10 @@ private:
     int halfTextureSize = textureSize * 0.5;
     int position_x = 0;
     int position_y = 0;
+    int position_cropped_x = 0;
+    int position_cropped_y = 0;
+    float position_offset_x=0;
+    float position_offset_y=0;
     int position_x_was = 0;
     int position_y_was = 0;
 

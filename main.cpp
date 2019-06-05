@@ -721,8 +721,12 @@ event is maybe going to have
                 break; // we handled this as SDL_FINGERMOTION
             }
 #endif
+            if( event->type == SDL_JOYAXISMOTION ){
+                break; // presumably we handled this or will plan to handle it.... above.... for now this makes silence on android....
+            }
+
             // see instead (of the above) SDL_HINT_TOUCH_MOUSE_EVENTS (actually that broke android?)
-            SDL_Log("unrecognized event; type %i", event->type );
+            SDL_Log("unrecognized event; type %02x", event->type );
             break;
             
     }

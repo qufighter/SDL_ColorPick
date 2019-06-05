@@ -163,6 +163,15 @@ static Uint32 render_one_more_frame(Uint32 interval, void* parm){
     return 0; // end timer
 }
 
+GLuint OpenGLContext::oggLoadTextureSized(SDL_Surface *surface, GLuint& contained_in_texture_id, GLuint& textureid, int size, int *x, int *y) {
+    GLuint result = textures->LoadTextureSized(surface, contained_in_texture_id, textureid, size, x, y);
+    position_cropped_x = position_x;
+    position_cropped_y = position_y;
+    position_offset_x=0;
+    position_offset_y=0;
+    return result;
+}
+
 void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
 
     if( lastHue!=nullptr ) SDL_free(lastHue);
@@ -199,7 +208,7 @@ void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
     fullPickImgSurface = textures->ConvertSurface(myCoolSurface);
     loadedImageMaxSize = SDL_max(fullPickImgSurface->clip_rect.w, fullPickImgSurface->clip_rect.h);
 
-    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y);
+    oggLoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y);
 
     // tada: also shrink image to be within some other texture.....
     //  then we can maintain magic when zoomed out...
@@ -259,7 +268,7 @@ void OpenGLContext:: loadSpecificTestImage(const char* surfaceFilePath){
 
     loadedImageMaxSize = SDL_max(fullPickImgSurface->clip_rect.w, fullPickImgSurface->clip_rect.h);
 
-    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y);
+    oggLoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y);
 
     // tada: also shrink image to be within some other texture.....
     //  then we can maintain magic when zoomed out... (done?! textureId_default)
@@ -306,7 +315,7 @@ void OpenGLContext::pickerForHue(HSV_Color* color, SDL_Color* desired_color){
 
             // this is a little overkill we just need to move the position....
             //pickerForHue(generalUx->huePicker->colorForPercent(1.0-(color->h/360.0)));
-            textures->LoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y);
+            oggLoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y);
             updateColorPreview();
             renderShouldUpdate = true;
 
@@ -315,7 +324,7 @@ void OpenGLContext::pickerForHue(HSV_Color* color, SDL_Color* desired_color){
 //
 //            // this is a little overkill we just need to move the position....
 //            //pickerForHue(generalUx->huePicker->colorForPercent(1.0-(color->h/360.0)));
-//            textures->LoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y);
+//            oggLoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y);
 //            updateColorPreview();
 //            renderShouldUpdate = true;
 //
@@ -384,7 +393,7 @@ void OpenGLContext:: pickerForHue(SDL_Color* color){
     loadedImageMaxSize = SDL_max(fullPickImgSurface->clip_rect.w, fullPickImgSurface->clip_rect.h);
 
 
-    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y); // todo we could remove this backgroundColor arg now maybe?
+    oggLoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y); // todo we could remove this backgroundColor arg now maybe?
 
     updateColorPreview();
 
@@ -698,7 +707,7 @@ void OpenGLContext::setupScene(void) {
 
     textureId_pickImage = textures->GenerateTexture();
     textureId_default = textures->GenerateTexture();
-    textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y);
+    oggLoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y);
 
     //glClearColor(0.0f, 1.0f, 0.0f, 0.0f); // will be fixed next...
     updateColorPreview();
@@ -1169,10 +1178,24 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
         // pass a reference to the posiiton - then use that, rather than above
         // since textureId_default is not changing..... we should omit it here... (we keep moving it, but we can move it in shader...) // maths
         // can also just omit when zoomed. - excep when u can see it... so near edges it does not work // fishEyeScale < 3.0f ? textureId_default : textureNone
-        //textures->LoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
+        //oggLoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, lastHue);
 
 
-        textures->LoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y);
+        // quandry: do we move this logic into oggLoadTextureSized ? probably.... but it would have to be a mode we only "enable" from here(only if we call form here) - normally it is to be very deterministic (resetting these vars when called)
+        position_offset_x = position_cropped_x-position_x;
+        position_offset_y = position_cropped_y-position_y;
+
+        if( fabs(position_offset_x) > 128 || fabs(position_offset_y) > 128 ){
+            oggLoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y);
+        }else{
+            // just lazy move it... no new texture to stream to GPU, we just move what we have there already...
+            textures->UpdateSelectedColorForOffset(fullPickImgSurface, &position_x, &position_y);
+            position_offset_x = position_cropped_x-position_x;
+            position_offset_y = position_cropped_y-position_y;
+        }
+
+        //
+
 
         if( has_velocity && position_x_was == position_x && position_y_was == position_y ){
             // we have velocity but we are not moving (reached corner) save some battery...  we could let it try to go a few frames maybe.... for accumulator sake...
@@ -1189,6 +1212,9 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
     }else if( !has_velocity ){
         renderShouldUpdate=false;
         //generalUx->movementArrows->indicateVelocity(0, 0);
+
+        // if we didn't move, then do not do this :)
+        //oggLoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y);
 
         //has_velocity = false;
     }
@@ -1230,6 +1256,9 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
     glUniform1f(uniformLocations->textureWidth, (float)textureSize);
 
     glUniform2f(uniformLocations->positionOffset, (float)position_x / -loadedImageMaxSize, (float)position_y/ -loadedImageMaxSize);
+
+    glUniform2f(uniformLocations->zoomedPositionOffset, position_offset_x, position_offset_y);
+    
     //glUniform2f(uniformLocations->positionOffset, 0.1f, 0.1f);
 
     //    glUniform4f(uniformLocations->ui_foreground_color,

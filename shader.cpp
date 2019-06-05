@@ -294,6 +294,7 @@ void Shader::reload() {
     // = glGetUniformLocation(_program, "TexCoordIn");
  //????   uniformLocations->textureCoord = glGetAttribLocation(shader_id, "TexCoordIn");
     uniformLocations->positionOffset = glGetUniformLocation(shader_id, "positionOffset");
+    uniformLocations->zoomedPositionOffset = glGetUniformLocation(shader_id, "zoomedPositionOffset");
 
     uniformLocations->normalLightingMat = glGetAttribLocation(shader_id, "lightingMat");
 

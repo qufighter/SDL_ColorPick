@@ -327,6 +327,22 @@ SDL_bool ModeForSurface(SDL_Surface *surface, GLint* internalFormat, GLenum* for
     return SDL_TRUE;
 }
 
+void Textures::UpdateSelectedColorForOffset(SDL_Surface *surface, int *x, int *y){
+
+    float hswf = (surface->w * 0.5);
+    float hshf = (surface->h * 0.5);
+    int hsw = SDL_floorf(hswf);
+    int hsh = SDL_floorf(hshf);  // there is probably a faster way to do this just relying on int, in /2 to round down..
+
+    // boundaries for x,y position
+    if(*x >= hsw) *x= hsw - 1;
+    else if(*x < -hsw) *x= -SDL_ceilf(hswf);//-hsw;// - 1;
+    if(*y >= hsh) *y= hsh - 1;
+    else if(*y < -hsh) *y= -SDL_ceilf(hshf);//-hsh;// - 1;
+
+    colorFromSurface(surface, hsw - *x - 1, hsh - *y - 1, &selectedColor);
+}
+
 
 GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthHeight, int *x, int *y, GLuint& contained_in_texture_id, GLuint& textureid){
     GLint mode;
@@ -377,7 +393,7 @@ GLuint Textures::LoadTextureSizedFromSdlSurface(SDL_Surface *surface, int widthH
         float hswf = (surface->w * 0.5);
         float hshf = (surface->h * 0.5);
         int hsw = SDL_floorf(hswf);
-        int hsh = SDL_floorf(hshf);
+        int hsh = SDL_floorf(hshf);  // there is probably a faster way to do this just relying on int, in /2 to round down..
 //        int x = *xp;
 //        int y = *yp;
 

@@ -41,6 +41,9 @@ public:
     bool searchSurfaceForColor(SDL_Surface *newSurface, SDL_Color* seekClr, int x, int y, int* outx, int* outy);
     static bool colorFromSurface(SDL_Surface *newSurface, int x, int y, SDL_Color* outColor);
 
+    void UpdateSelectedColorForOffset(SDL_Surface *surface, int* x, int* y);
+
+
     void replaceTexture(GLuint textureid);
 
 	void screenshot(char* filename,int width, int height);
