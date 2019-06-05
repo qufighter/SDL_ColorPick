@@ -9,6 +9,9 @@ mkdir app/src/main/assets
 cp -R ../shaders app/src/main/assets
 cp -R ../textures app/src/main/assets
 
+# adds the test textures to the bundle...
+# cp -R ../test_textures app/src/main/assets/textures
+
 echo "Please run the correct buildIcons script for your build before continuing!!!!"
 # ./buildIcons.sh
 # TODO: need a way to copy the BASIC icons instead....

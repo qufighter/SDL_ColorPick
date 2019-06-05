@@ -531,32 +531,32 @@ void OpenGLContext::setupScene(void) {
     textureList->add("textures/intro-image.png");
     //textureList->add("textures/4.png");
 
-    // to use these, after build, copy the additional textures in....
+    // to use these, after build, copy the additional textures folder test_textures into texutres........
 #ifdef DEVELOPER_TEST_MODE
    // textureList->add("textures/simimage_NOEXIST.png");
     textureList->add("textures/ascii.png");
-    textureList->add("textures/anim.gif");  // TODO: broken on android...
-    textureList->add("textures/simimage.png");
+    textureList->add("textures/test_textures/anim.gif");  // TODO: broken on android...
+    textureList->add("textures/test_textures/simimage.png");
  //   textureList->add("textures/p04_shape1.bmp");
  //   textureList->add("textures/p10_shape1.bmp");
-    textureList->add("textures/p10_shape1_rotated.png");
+    textureList->add("textures/test_textures/p10_shape1_rotated.png");
 //    textureList->add("textures/p16_shape1.bmp");
 //    textureList->add("textures/p04_shape1.bmp");
 //    textureList->add("textures/p10_shape1.bmp");
 //    textureList->add("textures/p16_shape1.bmp");
-    textureList->add("textures/default.png"); // ok
+    textureList->add("textures/test_textures/default.png"); // ok
     //textureList->add("textures/snow.jpg");
     textureList->add("textures/cp_bg.png");
-    textureList->add("textures/SDL_logo.png"); // TODO: bad colors (in preview) (picks accurate colro?!)
+    textureList->add("textures/test_textures/SDL_logo.png"); // TODO: bad colors (in preview) (picks accurate colro?!)
     //textureList->add("textures/blank.png");
-    textureList->add("textures/crate.jpg");
-    textureList->add("textures/bark.jpg");
-    textureList->add("textures/bark2.png"); // TODO fix this! png index bad colors (in preview) (picks accurate colro?!)
-    textureList->add("textures/256.png"); // ok
-    textureList->add("textures/512.png");  //TODO fix this!  png index! bad colors (in preview) (picks accurate colro?!)
-    textureList->add("textures/unnamed.jpg");
-    textureList->add("textures/DSC04958.JPG");
-    textureList->add("textures/IMG_0172.jpg");
+    textureList->add("textures/test_textures/crate.jpg");
+    textureList->add("textures/test_textures/bark.jpg");
+    textureList->add("textures/test_textures/bark2.png"); // TODO fix this! png index bad colors (in preview) (picks accurate colro?!)
+    textureList->add("textures/test_textures/256.png"); // ok
+    textureList->add("textures/test_textures/512.png");  //TODO fix this!  png index! bad colors (in preview) (picks accurate colro?!)
+    textureList->add("textures/test_textures/unnamed.jpg");
+    textureList->add("textures/test_textures/DSC04958.JPG");
+    textureList->add("textures/test_textures/IMG_0172.jpg");
 #endif
 
     testTexturesBuiltin = new Ux::uiListLoopingIterator<Ux::uiList<const char*, Uint8>, const char*>(textureList);
