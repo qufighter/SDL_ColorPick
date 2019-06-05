@@ -125,8 +125,9 @@ void OpenGLContext::keyUp(SDL_Keycode k){
 void OpenGLContext::chooseFile(void) {
 #ifdef DEVELOPER_TEST_MODE
     loadNextTestImage();
-#endif
+#else
     beginImageSelector();
+#endif
 }
 
 void OpenGLContext::updateColorPreview(void){
@@ -530,6 +531,7 @@ void OpenGLContext::setupScene(void) {
     textureList->add("textures/intro-image.png");
     //textureList->add("textures/4.png");
 
+    // to use these, after build, copy the additional textures in....
 #ifdef DEVELOPER_TEST_MODE
    // textureList->add("textures/simimage_NOEXIST.png");
     textureList->add("textures/ascii.png");

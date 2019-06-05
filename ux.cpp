@@ -822,13 +822,13 @@ Ux::uiObject* Ux::create(void){
 
 
  //    test cololr history
-#ifdef DEVELOPER_TEST_MODE
-    for( int q=0; q<8192; q++ ){
-        currentlyPickedColor = new SDL_Color();
-        setColor(currentlyPickedColor, randomInt(0,44), randomInt(0,185), randomInt(0,44), 0);
-        addCurrentToPickHistory();
-    }
-#endif
+//#ifdef DEVELOPER_TEST_MODE
+//    for( int q=0; q<8192; q++ ){
+//        currentlyPickedColor = new SDL_Color();
+//        setColor(currentlyPickedColor, randomInt(0,44), randomInt(0,185), randomInt(0,44), 0);
+//        addCurrentToPickHistory();
+//    }
+//#endif
 
  //    writeOutState(); // testing
  //     for awful reasons during init some things should not be called....

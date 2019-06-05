@@ -9,6 +9,7 @@
 #ifndef ___PROJECTNAME____main_h
 #define ___PROJECTNAME____main_h
 
+//#define DEVELOPER_TEST_MODE 1
 
 #define GL_GLEXT_PROTOTYPES 1
 
