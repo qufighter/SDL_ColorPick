@@ -44,7 +44,7 @@ struct uiNavArrows{
         up->setInteractionBegin(interactionDirectionalArrowClickBegin);
         up->setClickInteractionCallback(interactionDirectionalArrowClicked);
         up->forceDelta = new uiInteraction();
-        up->forceDelta->begin(0, -1.0);
+        up->forceDelta->begin(0, 0, -1.0);
         up->squarifyKeepHz();
         //up->rotate(90.0f);
 
@@ -57,7 +57,7 @@ struct uiNavArrows{
         dn->setInteractionBegin(interactionDirectionalArrowClickBegin);
         dn->setClickInteractionCallback(interactionDirectionalArrowClicked);
         dn->forceDelta = new uiInteraction();
-        dn->forceDelta->begin(0, 1.0);
+        dn->forceDelta->begin(0, 0, 1.0);
         dn->squarifyKeepHz();
         //dn->rotate(90.0f);
 
@@ -71,7 +71,7 @@ struct uiNavArrows{
         lf->setInteractionBegin(interactionDirectionalArrowClickBegin);
         lf->setClickInteractionCallback(interactionDirectionalArrowClicked);
         lf->forceDelta = new uiInteraction();
-        lf->forceDelta->begin(1.0, 0.0);
+        lf->forceDelta->begin(0, 1.0, 0.0);
         lf->squarifyKeepHz();
 
 
@@ -84,7 +84,7 @@ struct uiNavArrows{
         rt->setInteractionBegin(interactionDirectionalArrowClickBegin);
         rt->setClickInteractionCallback(interactionDirectionalArrowClicked);
         rt->forceDelta = new uiInteraction();
-        rt->forceDelta->begin(-1.0, 0.0);
+        rt->forceDelta->begin(0, -1.0, 0.0);
         rt->squarifyKeepHz();
 
         uiObjectItself->addChild(up);

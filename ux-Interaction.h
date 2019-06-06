@@ -37,7 +37,7 @@ struct uiInteraction
 
         fingerId=0;
     }
-    void begin(float x, float y){
+    void begin(int ticks, float x, float y){
 
         px=x; // previous
         py=y;
@@ -61,21 +61,26 @@ struct uiInteraction
 //        interactionObject = nullptr;
 //        lastInteractionObject = nullptr;
 
-        lastUpdate=SDL_GetTicks();
+//        lastUpdate=SDL_GetTicks();
+//        if( ticks != lastUpdate ){
+//            SDL_Log("Begin Disparity; evticks: %i ticks: %i diff: %i", ticks, lastUpdate, lastUpdate - ticks);
+//        }
+        lastUpdate=ticks;
+
         //        mvx=0;
         //        mvy=0;
     }
     bool isZeroed(){
         return px == ix && py == iy;
     }
-    void done(float x, float y){ // optional bool performFinalUpdate ?
+    void done(int ticks, float x, float y){ // optional bool performFinalUpdate ?
         // last update...
         //this->update(x, y, 0, 0); // tell me why update on mouse up....  they dont wanna move anymore
         rx =0;
         ry =0; // reset these so we can keep calling update?  not always needed... plus sometimes rx and ry are needed!
-        this->update();
+        this->update(ticks);
     }
-    void update(float x, float y){ // todo pass delta and relative?
+    void update(int ticks, float x, float y){ // todo pass delta and relative?
         rx = x - px;
         ry = y - py;
 
@@ -88,10 +93,15 @@ struct uiInteraction
         dx = px - ix;
         dy = py - iy; // when this is greater than 0 we have moved down
 
-        this->update();
+        this->update(ticks);
     }
-    void update(){ // update without movement.... or after movement applied
-        int thisUpdate = SDL_GetTicks();
+    void update(int ticks){ // update without movement.... or after movement applied
+//        int thisUpdate = SDL_GetTicks();
+//        if( ticks != thisUpdate ){
+//            SDL_Log("Update Disparity; evticks: %i ticks: %i diff: %i", ticks, thisUpdate, thisUpdate - ticks);
+//        }
+        int thisUpdate = ticks;
+
         int elapsed = thisUpdate - lastUpdate;
         if( elapsed < 1 ) elapsed = 1;
 

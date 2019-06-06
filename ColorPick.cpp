@@ -1143,7 +1143,7 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
 
         accumulated_velocity_y += pixelInteraction.vy;
         accumulated_velocity_x += pixelInteraction.vx;
-        pixelInteraction.update();
+        pixelInteraction.update(SDL_GetTicks());
 
         // we now take any full integer amounts visible in the accumulated velocity....
         /// todo does this work good for negative numbers?? ANSWER : no  X: -1.267014 -2 Y: -0.894823 -1 -- it always rounds towards negative even for negativess

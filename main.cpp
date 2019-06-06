@@ -125,7 +125,7 @@ SDL_Point getMouseXYforEvent(SDL_Event* event){
 uiInteraction* beginInteraction(SDL_Event* event, bool isStart){
     SDL_Point tmp = getMouseXYforEvent(event);
     tx = tmp.x; ty=tmp.y; // TODO: lets remove tx ty too...
-    openglContext->pixelInteraction.begin(tx, ty);
+    openglContext->pixelInteraction.begin(event->common.timestamp, tx, ty);
     //openglContext->generalUx->currentInteraction.begin( (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h ); // deprecated....
 
     uiInteraction* fingerInteraction = openglContext->generalUx->interactionForPointerEvent(event);
@@ -135,7 +135,7 @@ uiInteraction* beginInteraction(SDL_Event* event, bool isStart){
         return fingerInteraction; //
     }
 
-    fingerInteraction->begin( (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h );
+    fingerInteraction->begin(event->common.timestamp, (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h );
     if( isStart ){
         fingerInteraction->fingerStateDown = true; // maybe use an integer for better tracking?  fingers only have one button though....
         openglContext->pixelInteraction.fingerStateDown = true;
@@ -191,33 +191,35 @@ void mouseMoveEvent(SDL_Event* event){
         //SDL_Log("mousStateDown SDL_FINGERMOTION SDL_MOUSEMOTION");
         if( /*!didInteract*/ !fingerInteraction->didCollideWithObject && fingerDeviceDownCounter == 1 && !isLockedForZoomUntilFingersZeros ){
             //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
-#if __ANDROID__
-            bool wasZero = openglContext->pixelInteraction.isZeroed();  // on android this event won't fire right away - in fact it takes quite a LOT of movement to reach SDL_FINGERMOTION here....
-#endif
 
-            openglContext->pixelInteraction.update(tx, ty);
-#if __ANDROID__
+// THE FOLLOWING ANDROID SPECIFIC IFDEF SOLVED AN ISSUE where we had too much initial velocity, of several pixesl, and we wanted to move just one pixel - we don't need this so much anymore since we have actually handled percise motion in another way, so even if the inital value is large, it will only count for a little based on current zoom level...
+//#if __ANDROID__
+//            bool wasZero = openglContext->pixelInteraction.isZeroed();  // on android this event won't fire right away - in fact it takes quite a LOT of movement to reach SDL_FINGERMOTION here....
+//#endif
 
-            if( wasZero ){
-                if( openglContext->pixelInteraction.rx > 1.0 ){
-                    openglContext->pixelInteraction.rx = 1.0;
-                }else if( openglContext->pixelInteraction.rx < -1.0 ){
-                    openglContext->pixelInteraction.rx = -1.0;
-                }
-                if( openglContext->pixelInteraction.ry > 1.0 ){
-                    openglContext->pixelInteraction.ry = 1.0;
-                }else if( openglContext->pixelInteraction.ry < -1.0 ){
-                    openglContext->pixelInteraction.ry = -1.0;
-                }
-            }
-#endif
+            openglContext->pixelInteraction.update(event->common.timestamp, tx, ty);
+//#if __ANDROID__
+//
+//            if( wasZero ){
+//                if( openglContext->pixelInteraction.rx > 1.0 ){
+//                    openglContext->pixelInteraction.rx = 1.0;
+//                }else if( openglContext->pixelInteraction.rx < -1.0 ){
+//                    openglContext->pixelInteraction.rx = -1.0;
+//                }
+//                if( openglContext->pixelInteraction.ry > 1.0 ){
+//                    openglContext->pixelInteraction.ry = 1.0;
+//                }else if( openglContext->pixelInteraction.ry < -1.0 ){
+//                    openglContext->pixelInteraction.ry = -1.0;
+//                }
+//            }
+//#endif
             openglContext->triggerMovement();
         }else{
             //colorPickState->mmovex = event->motion.xrel;
             //colorPickState->mmovey = event->motion.yrel;
 //            SDL_Point tmp = getMouseXYforEvent(event);
 //            tx = tmp.x; ty=tmp.y;
-            fingerInteraction->update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h); // < we COULD update this regardless.. moving it above the IF...  -> not recommended... causes issues where mousup out of the blue (without mouse down) can trigger things....
+            fingerInteraction->update(event->common.timestamp, (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h); // < we COULD update this regardless.. moving it above the IF...  -> not recommended... causes issues where mousup out of the blue (without mouse down) can trigger things....
 
             //SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
             //SDL_Log("MOUSE xy delta %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
@@ -242,12 +244,12 @@ void mouseUpEvent(SDL_Event* event){
 
     if( /*didInteract*/ fingerInteraction->didCollideWithObject ){
         // we may be able to add this, but we need to track velocity better
-        fingerInteraction->update((tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h);
+        fingerInteraction->update(event->common.timestamp, (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h);
         //SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
         //SDL_Log("MOUSE xy delta %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
     }else{
 
-        openglContext->pixelInteraction.done(tx, ty );
+        openglContext->pixelInteraction.done(event->common.timestamp, tx, ty );
 
     }
     if( fingerInteraction->fingerStateDown /*== 1*/ && openglContext->pixelInteraction.dx == 0 && openglContext->pixelInteraction.dy == 0 ){
