@@ -318,7 +318,7 @@ void BackButtonEvent(){
         openglContext->generalUx->endCurrentModal();
     }else{
 #ifdef __ANDROID__
-        SDL_AndroidBackButton();
+        //SDL_AndroidBackButton();
 #endif
     }
 }

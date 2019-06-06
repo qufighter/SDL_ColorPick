@@ -79,6 +79,7 @@ struct uiInteraction
         rx =0;
         ry =0; // reset these so we can keep calling update?  not always needed... plus sometimes rx and ry are needed!
         this->update(ticks);
+        //isInteracting=false; // whomever set this true should handle setting it false....
     }
     void update(int ticks, float x, float y){ // todo pass delta and relative?
         rx = x - px;
