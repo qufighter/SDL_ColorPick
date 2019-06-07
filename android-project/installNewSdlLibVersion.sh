@@ -122,6 +122,13 @@ if [[ $? -eq 0 ]]; then
     echo "\n\nFINALLY => please compare the "$yourProjectFilePath" and merge any relevant changes\n\n < YOURS "$yourProjectFilePath" \n > THEIRS "$theirProjectFilePath"\n\n"
     diff $yourProjectFilePath $theirProjectFilePath
 
+    yourProjectFilePath="app/jni/Application.mk"
+    theirProjectFilePath=$newLibPath"/android-project/"$yourProjectFilePath
+    echo "\n\nFINALLY => please compare the "$yourProjectFilePath" and merge any relevant changes\n\n < YOURS "$yourProjectFilePath" \n > THEIRS "$theirProjectFilePath"\n\n"
+    diff $yourProjectFilePath $theirProjectFilePath
+
+    echo "\n\nPlease examine all the DIFFs above and merge any necessary changes manually.  Some of these changes may be ctritical for certain functionalities.  The files diff'd above may not be exhaustive."
+
     echo "\n\nNOTE: please keep in mind your NDK bundle version has a big effect on how compliation will go and what devices are supported... when you upgrade this I suggest making a backup of the old one just in case!  Its easy to upgrade using Android Studio but it won't make backups for you.  IME support for older devices may be dropped in newer versions but you also get the latest patches."
 
 fi

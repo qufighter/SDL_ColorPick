@@ -1022,11 +1022,15 @@ int main(int argc, char *argv[]) {
 //    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
 //    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
 //    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-//    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0); // nifty if we can have alpha these days in the screen buffer....
-//    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+
+
+//    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+//    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+//    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+//    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8); // our UI texture NEEDS alpha... we won't get it without this on some devices (k3, moto 4 play) (commenting out all 4 of these works though)
+// as nice as forcing 32bit color might be on some android... it breaks others (even with alpha size set)... we can just rely on nicer devices doing better automatically instead!
+
+    //    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0); // nifty if we can have alpha these days in the screen buffer....
 //    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 5);
 //    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 0);
 //    SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
