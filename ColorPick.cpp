@@ -1833,6 +1833,14 @@ void OpenGLContext::TEST_CAN_VIEW_ANY_COLOR(void) {
 }
 #endif
 
+bool OpenGLContext::canMesh(){
+#ifdef __ANDROID__
+    return enoughMemoryForMeshes();
+#else
+    return true;
+#endif
+}
+
 // todo: return mesh* instead?
 void OpenGLContext::createSquare(void) {
     float *vertices = new float[18];	// Vertices for our square

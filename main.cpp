@@ -1140,6 +1140,9 @@ int main(int argc, char *argv[]) {
 //SDL_Log("contexts %s %i", stringify(literalAttrib), resultInt); \
 //} while(0)
 
+        if( !openglContext->canMesh() ){
+            openglContext->meshes->mesh3d_enabled = false;
+        }
 
 #define logGottenGlAtrib(literalAttrib) SDL_GL_GetAttribute(literalAttrib, &resultInt); \
 SDL_Log("contexts %s %i", #literalAttrib, resultInt);

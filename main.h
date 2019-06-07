@@ -30,7 +30,7 @@
 
 
 // ColorPick BASIC....
-// #define COLORPICK_BASIC_MODE 1
+//#define COLORPICK_BASIC_MODE 1
 // we ALSO neeed to swap out the following:
 // 1) icons < for android this means running the correct buildIcons*.sh script before you bundle your release
 // 2) com.vidsbee.colorpicksdl com.vidsbee.colorpickbasicsdl < for android this means check build.gradle (only there, not AndroidManifest), to result in

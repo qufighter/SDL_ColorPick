@@ -21,6 +21,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.app.ActivityCompat;
 import android.content.pm.PackageManager;
 
+import android.app.ActivityManager;
+
 import android.util.Log;
 
 
@@ -96,6 +98,7 @@ public class SDLColorPickActivity extends SDLActivity {
 
     }
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -135,8 +138,34 @@ public class SDLColorPickActivity extends SDLActivity {
     }
 
 
+    // Get a MemoryInfo object for the device's current memory status.
+    private ActivityManager.MemoryInfo getMemoryInfo() {
+        ActivityManager activityManager = (ActivityManager) this.getSystemService(ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        activityManager.getMemoryInfo(memoryInfo);
+        return memoryInfo;
+    }
 
+    public long getAvailableMemory(){
+        ActivityManager.MemoryInfo memoryInfo = getMemoryInfo();
+        return memoryInfo.availMem;
+    }
 
+    public long getTotalMemory(){
+        ActivityManager.MemoryInfo memoryInfo = getMemoryInfo();
+        return memoryInfo.totalMem;
+    }
+
+    public boolean getHasEnoughMeshMemory(){
+        ActivityManager.MemoryInfo memoryInfo = getMemoryInfo();
+
+        long mbTotal = ((memoryInfo.totalMem / 8) / 1024) / 1024;
+        long mbAvail = ((memoryInfo.availMem / 8) / 1024) / 1024;
+
+        Log.v("SDL ? ", "MEMORYTOTAL: " + mbTotal + " MBAVAILABLE: " + mbAvail);
+
+        return mbAvail > 110;
+    }
 
 //    @Override
 //    protected void onPause() {

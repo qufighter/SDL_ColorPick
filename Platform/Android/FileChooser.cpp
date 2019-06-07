@@ -107,6 +107,34 @@ static Uint32 my_test_if_image_selected(Uint32 interval, void* parm){
 }
 
 
+bool enoughMemoryForMeshes(){
+
+
+    JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+    jobject activity = (jobject)SDL_AndroidGetActivity();
+    jclass clazz(env->GetObjectClass(activity));
+
+    
+//    jmethodID method_id = env->GetMethodID(clazz, "getTotalMemory", "()J");
+//    jlong result = env->CallLongMethod(activity, method_id);
+//    SDL_Log("okay we got a long here, maybe, %i", result);
+
+
+    jmethodID method_id = env->GetMethodID(clazz, "getHasEnoughMeshMemory", "()Z");
+    jboolean result = env->CallBooleanMethod(activity, method_id);
+    //SDL_Log("okay we got a bool here, maybe, %i", result);
+
+
+
+
+    // clean up the local references.
+    env->DeleteLocalRef(activity);
+    env->DeleteLocalRef(clazz);
+
+    return (bool)result;
+}
+
+
 void getImagePathFromMainThread(){
 
     SDL_Log("Our process img call from main is firing a lot"); // useful to see that animations DO stop...

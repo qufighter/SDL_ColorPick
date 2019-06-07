@@ -221,6 +221,8 @@ public:
     void doOpenURL(char* url);
     void doRequestReview();
 
+    bool canMesh();
+
 private:
 
     unsigned int fbo;

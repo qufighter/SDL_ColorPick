@@ -20,5 +20,7 @@ void beginImageSelector();
 bool openURL(char* &url);
 void requestReview();
 
+bool enoughMemoryForMeshes();
+
 #endif
 #endif
