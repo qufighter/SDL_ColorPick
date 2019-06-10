@@ -4,7 +4,7 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.vidsbee.colorpicksdl"
-    android:versionCode="111"
+    android:versionCode="112"
     android:versionName="1.3"
     android:installLocation="auto">
     <!-- The package above is used - but should not be changed - it identifies the activity to run -->
