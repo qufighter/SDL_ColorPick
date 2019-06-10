@@ -146,15 +146,15 @@ public class SDLColorPickActivity extends SDLActivity {
         return memoryInfo;
     }
 
-    public long getAvailableMemory(){
-        ActivityManager.MemoryInfo memoryInfo = getMemoryInfo();
-        return memoryInfo.availMem;
-    }
-
-    public long getTotalMemory(){
-        ActivityManager.MemoryInfo memoryInfo = getMemoryInfo();
-        return memoryInfo.totalMem;
-    }
+//    public long getAvailableMemory(){
+//        ActivityManager.MemoryInfo memoryInfo = getMemoryInfo();
+//        return memoryInfo.availMem;
+//    }
+//
+//    public long getTotalMemory(){
+//        ActivityManager.MemoryInfo memoryInfo = getMemoryInfo();
+//        return memoryInfo.totalMem;
+//    }
 
     public boolean getHasEnoughMeshMemory(){
         ActivityManager.MemoryInfo memoryInfo = getMemoryInfo();
@@ -164,7 +164,7 @@ public class SDLColorPickActivity extends SDLActivity {
 
         Log.v("SDL ? ", "MEMORYTOTAL: " + mbTotal + " MBAVAILABLE: " + mbAvail);
 
-        return mbAvail > 110;
+        return mbAvail > 50;
     }
 
 //    @Override
