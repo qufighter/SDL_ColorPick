@@ -11,7 +11,6 @@
 
 
 
-
 /*
 this is really different from uiHistoryPalleteEditor in that it takes up the full rectange of the viewport, holderBg is the real visible object
  this allows us to intercept any clicks on the close X area since its contained in our object rather than outside of it....
@@ -29,7 +28,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
      */
 
     const char* appVersion = "Version-1.3"; // no spaces allowed or we won't be able to open URL (update: test it but do Open url in ogg now replaces spaces and newlines...)
-    const static int maxSettings = 45; // the indexing may break at 254....
+    const static int maxSettings = 50; // the indexing may break at 254....
 
     typedef enum  {
         HEADING,
@@ -132,7 +131,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 //        Ux::setColor(&uiObjectItself->backgroundColor, 0, 255, 0, 128);
         uiObjectItself->setInteractionCallback(&interactionToggleSettings); // if we dragged and released... it will animate the rest of the way because of this
         uiObjectItself->setInteraction(&Ux::interactionVert);
-        uiObjectItself->setBoundsEnterFunction(&Ux::interactionHistoryEnteredView);
+        //uiObjectItself->setBoundsEnterFunction(&Ux::interactionHistoryEnteredView);
         uiObjectItself->is_being_viewed_state = true;
 
         holderBg = new uiObject();
@@ -287,9 +286,12 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->pad(0.4,0.001)->print("Feedback!")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
         settingsList->add(SettingsListObj((new uiText(dummyContainer, subWidth))->marginLeft(0.05)->print(appVersion)->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, 1.0/28))->marginLeft(0.05)->print(getSdlVersionString())->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        settingsList->add(SettingsListObj((new uiText(dummyContainer, 1.0/28))->marginLeft(0.05)->print(getSdlImageVersionString())->uiObjectItself, SETTING_TYPES_ENUM::SUBHEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
         settingsList->add(SettingsListObj((new uiControlButton(d, "Bugs / Comments", &interactionGoToFeedbackUrl))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
         settingsList->add(SettingsListObj((new uiControlButton(d, "? Help", &interactionGoToHelpUrl))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+
 
         settingsList->add(SettingsListObj((new uiObject()), SETTING_TYPES_ENUM::SPACE, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
@@ -663,12 +665,32 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
     }
 
 
+    const char* getVersionString(const char* label, SDL_version compiled, SDL_version linked){
+        // this does NOT free the resource...... so call this jsut once please it allocs
+        int maxlen = 32;
+        char* clrStr = (char*)SDL_malloc( sizeof(char) * maxlen );
+        if( compiled.major == linked.major && compiled.minor == linked.minor && compiled.patch == linked.patch ){
+            SDL_snprintf(clrStr, maxlen,  "%s %d.%d.%d", label, linked.major, linked.minor, linked.patch);
+        }else{
+            SDL_snprintf(clrStr, maxlen,  "%s %d.%d.%d linked:%d.%d.%d", label, compiled.major, compiled.minor, compiled.patch, linked.major, linked.minor, linked.patch);
+        }
+        return clrStr;
+    }
 
+    const char* getSdlVersionString(){
+        SDL_version compiled;
+        SDL_version linked;
+        SDL_VERSION(&compiled);
+        SDL_GetVersion(&linked);
+        return getVersionString("SDL", compiled, linked);
+    }
 
-
-
-
-
+    const char* getSdlImageVersionString(){
+        SDL_version compiled;
+        SDL_IMAGE_VERSION(&compiled);
+        const SDL_version *linked=IMG_Linked_Version();
+        return getVersionString("SDL_Image", compiled, *linked);
+    }
 
 
 

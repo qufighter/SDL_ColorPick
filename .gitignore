@@ -10,4 +10,5 @@ android-project/.gradle/buildOutputClean*
 android-project/keystore.properties
 *.xcbkptlist
 *.xcuserstate
+*.xcexplist
 
