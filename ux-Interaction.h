@@ -61,6 +61,15 @@ struct uiInteraction
 //        interactionObject = nullptr;
 //        lastInteractionObject = nullptr;
 
+        // was unsure why aboev commented otu but probably conflicts with Ux::triggerInteraction handling of these..
+        // in any case this always fires first....
+        lastInteractionObject = interactionObject;
+        interactionObject = nullptr;
+        // HOWEVER note, objectCollides will still assign an object, so it will appear we last interacted with
+        // the object even though we only mouse UP on the object
+        // this is probably best handled in Ux::interactionComplete where
+        // we have logic that detects if the interaction object changed
+
 //        lastUpdate=SDL_GetTicks();
 //        if( ticks != lastUpdate ){
 //            SDL_Log("Begin Disparity; evticks: %i ticks: %i diff: %i", ticks, lastUpdate, lastUpdate - ticks);

@@ -1165,9 +1165,10 @@ bool Ux::triggerInteraction(uiInteraction* which, bool isStart){ // mouseup, mou
         }
 
 
-    }else{
-        which->lastInteractionObject = iinteractionObject;
     }
+//    else{
+//        which->lastInteractionObject = iinteractionObject;
+//    }
 
     which->didCollideWithObject = hasInteraction;
 
@@ -1303,11 +1304,12 @@ bool Ux::interactionComplete(uiInteraction *delta){
     triggerInteraction(delta, false); // interaction obj might change!!!!
 
     if( !delta->interactionObject || origInteractionObj != (uiObject*)delta->interactionObject ){
+
+        // to avoid teh mouseup on object becomming the lastInteractionObject (and appear to be a real click) we reset this
+        delta->interactionObject = origInteractionObj;
+
         if( !origInteractionObj || origInteractionObj->interactionCallbackTypeClick ){
             return false; // if interaction type is click and we moved objects; or if we never had an origional click object
-        }else{
-            /// otherwise reset it
-            delta->interactionObject = origInteractionObj;
         }
     }
 
@@ -1315,6 +1317,10 @@ bool Ux::interactionComplete(uiInteraction *delta){
  //     and in some cases we may need both....
 
  //     so in some cases, the interaction is complete even if the object changed!?!
+
+// hte above ramblings..... argue for somethign akin to setInteractionBegin
+// right now the setInteractionCallback could mean click OR end but not both
+    // if it was click and our object changed we won't reach this code either....
 
     uiObject* iinteractionObject = (uiObject*)delta->interactionObject;
 
