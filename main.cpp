@@ -261,10 +261,15 @@ void mouseUpEvent(SDL_Event* event){
         // which could be good or mediocure if we are currently doing a drag and drop
         // but in this case we don't want to overwrite our interaction if we already have one
 
-        // I do not think this following code is needed.... (but may change some things if removed.... this lets us have "mouseup" inetractions without correspondign "mouse down"...
-        if( /*!didInteract*/ !fingerInteraction->didCollideWithObject ){ // didInteract really means didInteractWithUi and when we are, we leave the collected_x and collected_y zero at this time....
-            /*didInteract = */ openglContext->generalUx->triggerInteraction(fingerInteraction);
-        }
+//        // I do not think this following code is needed.... (but may change some things if removed.... this lets us have "mouseup" inetractions without correspondign "mouse down"...
+//        if( /*!didInteract*/ !fingerInteraction->didCollideWithObject ){ // didInteract really means didInteractWithUi and when we are, we leave the collected_x and collected_y zero at this time....
+//            /*didInteract = */ openglContext->generalUx->triggerInteraction(fingerInteraction, false);
+//        }
+       // the above actually breaks things... somehow for multitouch pixelInteraction dx and dy are zero and we reach here??? sensibly since nothing moves during zoom??
+       // in any case calling interactionComplete below calls triggerInteraction so the redundancy creates and issue
+       // where didCollideWithObject becomes set, causing it to appear like a mouse down + mouse up on the same object when in reality its only mouse up
+       // TL;DR this all should really only apply (remainign uncommnted code) when not in minigame mode anyway,.....
+
 
         // didInteract = openglContext->generalUx->triggerInteraction() || didInteract; /// !!! collexted x + y is zero
         // we may really test for this outside of the condition above

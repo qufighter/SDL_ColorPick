@@ -1148,6 +1148,8 @@ uiInteraction* Ux::interactionForPointerEvent(SDL_Event* event){
 
 bool Ux::triggerInteraction(uiInteraction* which, bool isStart){ // mouseup, mouse didn't move
 
+ //SDL_Log("trigger interaction reached for %d", which->fingerId);
+
     bool hasInteraction = objectCollides(which);
 
     uiObject* iinteractionObject = (uiObject*)which->interactionObject;
