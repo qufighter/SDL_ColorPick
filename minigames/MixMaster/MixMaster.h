@@ -5,7 +5,7 @@
 
 struct MixMaster{
 
-    const char* gameName = "Mix Master";
+    const char* gameName = "Linear Mixer";
     const int maxSwatches = 6;
     const int timeLimit = 60000; // one minute....
     const int scoreBreakdownLn = 10;
