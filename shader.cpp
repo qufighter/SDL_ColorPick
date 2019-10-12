@@ -219,12 +219,18 @@ void Shader::reload() {
         cout << "Either vertex shader or fragment shader file not found." << endl; // Output the error
         return;
     }
-    
-    glShaderSource(shader_vp, 1, &vertexText, 0); // Set the source for the vertex shader to the loaded text
+
+//    GLint vsLen = (GLint)vsText.length();
+//    GLint fsLen = (GLint)fsText.length();
+
+    GLint vsLen = (GLint)SDL_strlen(vertexText);
+    GLint fsLen = (GLint)SDL_strlen(fragmentText);
+
+    glShaderSource(shader_vp, 1, &vertexText, &vsLen); // Set the source for the vertex shader to the loaded text
     glCompileShader(shader_vp); // Compile the vertex shader
     validateShader(shader_vp, vsFile); // Validate the vertex shader
     
-    glShaderSource(shader_fp, 1, &fragmentText, 0); // Set the source for the fragment shader to the loaded text
+    glShaderSource(shader_fp, 1, &fragmentText, &fsLen); // Set the source for the fragment shader to the loaded text
     glCompileShader(shader_fp); // Compile the fragment shader
     validateShader(shader_fp, fsFile); // Validate the fragment shader
     

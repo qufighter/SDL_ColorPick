@@ -21,8 +21,6 @@ const float hfuzz =(fuzz * 0.5);
 //    }
 //}
 
-//#define roundCornerMacro(OrigTexCoordOut, center, radius, fuzz) \
-
 #define ROUND_CORNER_MACRO float dis = distance(OrigTexCoordOut, center);if( dis >= radius ){gl_FragColor.a = gl_FragColor.a * (((radius + fuzz) - dis) / fuzz);}
 
 void main()
