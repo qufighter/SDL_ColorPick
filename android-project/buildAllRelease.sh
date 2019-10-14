@@ -7,13 +7,13 @@ echo "WARNING: UNPLUG DEVICE OR IT WILL TRY TO INSTALL THE APK BUILDS TO IT"
 exit_if_untracked_changes () {
 	git diff-index --quiet HEAD -- || (echo "untracked changes present" && exit 1)
 	if [[ $? -ge 1 ]]; then
-		echo "bundle error occured WARNING: DO NOT WORK WHILE THIS SCRIPT RUNS - YOU COULD LOOSE WORK OR BREAK BASIC BUILD"
+		echo "above bundle error occured; WARNING: DO NOT WORK WHILE THIS SCRIPT RUNS - YOU COULD LOOSE WORK OR BREAK BASIC BUILD"
 		exit 1
 	fi
 }
 exit_if_untracked_changes
 
-buildCode=`cat app/build.gradle | grep -E "versionCode \d" | grep -Eo "\d+"`
+buildCode=`cat app/build.gradle | grep -Eo "versionCode \d+" | grep -Eo "\d+"`
 echo "Now buildilng "$buildCode
 
 ls "app/builds-archive/app"$buildCode"full.aab"
@@ -30,13 +30,13 @@ fi
 
 ls "app/builds-archive/app"$buildCode"full.apk"
 if [[ $? -eq 0 ]]; then
-	echo "bundle exists, exiting"
+	echo "apk exists, exiting"
 	exit 1
 fi
 
 ls "app/builds-archive/app"$buildCode"basic.apk"
 if [[ $? -eq 0 ]]; then
-	echo "bundle exists, exiting"
+	echo "apk exists, exiting"
 	exit 1
 fi
 
@@ -46,7 +46,7 @@ cp -R ../shaders app/src/main/assets
 cp -R ../textures app/src/main/assets
 
 clean_intermediates () {
-	# this one is a bit nasty, we need to clear teh buidl folder complete
+	# this one is a bit nasty, we need to clear the build folder complete
 	rm -fr app/build/generated
 	rm -fr app/build/intermediates
 	rm -fr app/build/tmp

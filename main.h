@@ -37,7 +37,10 @@
 //     com.vidsbee.colorpickbasicsdl/com.vidsbee.colorpicksdl.SDLColorPickActivity )
 
 // SIMPLER BASIC MODE:
+// see android-project/buildAllRelease.sh OR/Also:
 // git cherry-pick -n color-pick-basic-mode-enable # (-n is --no-commit).
+// git revert -n color-pick-basic-mode-enable
+// git revert --abort # cleans up the state somehow, even though empty diff
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
