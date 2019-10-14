@@ -13,7 +13,7 @@ fi
 
 echo "arg $1"
 
-~/Library/Android/sdk/platform-tools/adb shell pm revoke com.vidsbee.colorpicksdl android.permission.READ_EXTERNAL_STORAGE
+revoke_app_permissions
 
 echo "watching logs"
 

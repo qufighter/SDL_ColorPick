@@ -6,13 +6,6 @@ echo "WARNING: UNPLUG DEVICE OR IT WILL TRY TO INSTALL THE APK BUILDS TO IT"
 
 source buildUtils.sh
 
-exit_if_untracked_changes () {
-	git diff-index --quiet HEAD -- || (echo "untracked changes present" && exit 1)
-	if [[ $? -ge 1 ]]; then
-		echo "above bundle error occured; WARNING: DO NOT WORK WHILE THIS SCRIPT RUNS - YOU COULD LOOSE WORK OR BREAK BASIC BUILD"
-		exit 1
-	fi
-}
 exit_if_untracked_changes
 
 buildCode=`cat app/build.gradle | grep -Eo "versionCode \d+" | grep -Eo "\d+"`
