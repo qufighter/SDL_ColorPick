@@ -36,6 +36,12 @@
 // 2) com.vidsbee.colorpicksdl com.vidsbee.colorpickbasicsdl < for android this means check build.gradle (only there, not AndroidManifest), to result in
 //     com.vidsbee.colorpickbasicsdl/com.vidsbee.colorpicksdl.SDLColorPickActivity )
 
+// SIMPLER BASIC MODE:
+// git stash list
+// git stash apply stash@{0}
+// maybe we TODO having a tagged commit, and use:
+// git cherry-pick -n tagname # (-n is --no-commit).
+
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #define COLORPICK_MISSING_MAIN_LOOP 1
