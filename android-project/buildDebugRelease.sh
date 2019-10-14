@@ -1,11 +1,8 @@
 #!/bin/sh
 
-rm -fr app/src/main/assets
-
-mkdir app/src/main/assets
-
-cp -R ../shaders app/src/main/assets
-cp -R ../textures app/src/main/assets
+source buildUtils.sh
+install_assets
+#clean_intermediates
 
 #./gradlew tasks
 #./gradlew installDebug

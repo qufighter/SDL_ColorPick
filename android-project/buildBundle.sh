@@ -1,16 +1,8 @@
 #!/bin/sh
 
-# this one is a bit nasty, we need to clear teh buidl folder complete;y or the bundle will have duplicate symbols?
-rm -fr app/build/generated
-rm -fr app/build/intermediates
-rm -fr app/build/tmp
-
-rm -fr app/src/main/assets
-
-mkdir app/src/main/assets
-
-cp -R ../shaders app/src/main/assets
-cp -R ../textures app/src/main/assets
+source buildUtils.sh
+install_assets
+#clean_intermediates
 
 #./gradlew tasks
 #./gradlew build
@@ -19,7 +11,7 @@ if [[ $? -ge 1 ]]; then
 	exit 1
 fi
 
-echo "finally, check in app/build/outputs/"
+echo "finally, check in app/build/outputs/ -- really don't use this script, use buildAllRelease.sh"
 
 # to build a bundle instead.. try ./gradlew bundleRelease
 

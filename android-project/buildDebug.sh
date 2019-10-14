@@ -1,16 +1,11 @@
 #!/bin/sh
 
-# todo: move following to a shared assets script we'll call here?
-
-rm -fr app/src/main/assets
-
-mkdir app/src/main/assets
-
-cp -R ../shaders app/src/main/assets
-cp -R ../textures app/src/main/assets
+source buildUtils.sh
+install_assets
+#clean_intermediates
 
 # adds the test textures to the bundle...
-# cp -R ../test_textures app/src/main/assets/textures
+# install_test_assets
 
 echo "Please run the correct buildIcons script for your build before continuing!!!!"
 # ./buildIcons.sh
