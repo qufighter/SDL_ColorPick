@@ -29,7 +29,7 @@
 //#define NO_MESH_LOADING 1
 
 
-// ColorPick BASIC....
+// ColorPick BASIC.... UNCOMMENT THE FOLLOWING:
 //#define COLORPICK_BASIC_MODE 1
 // we ALSO neeed to swap out the following:
 // 1) icons < for android this means running the correct buildIcons*.sh script before you bundle your release

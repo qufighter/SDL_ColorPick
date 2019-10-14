@@ -20,15 +20,15 @@ keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 28
     defaultConfig {
         if (buildAsApplication) {
             applicationId "com.vidsbee.colorpicksdl"
 //            applicationId "com.vidsbee.colorpickbasicsdl"
         }
         minSdkVersion 16
-        targetSdkVersion 26
-        versionCode 112
+        targetSdkVersion 28
+        versionCode 113
         versionName "1.3"
         externalNativeBuild {
             ndkBuild {
