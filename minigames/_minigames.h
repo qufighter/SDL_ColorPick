@@ -336,19 +336,34 @@ struct Minigames{
 
 
 
-
         }else{
             gameHeadingHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
 
-            controlBarTop->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
-
-            minigamesCloseX->setBoundaryRect(0.05, 0.0, 0.1, 0.1);
-            minigamesColorPickIcon->setBoundaryRect(1.0-0.1-0.05, 0.0, 0.1, 0.1);
-
-
+            float topPad = 0.0f;
+            if( uxInstance->screenRatio < 0.5 ){
+                topPad = 0.025;
+            }
+            controlBarTop->setBoundaryRect(0.0, topPad * 8, 1.0, 1.0);
+            minigamesCloseX->setBoundaryRect(0.05, topPad, 0.1, 0.1);
+            minigamesColorPickIcon->setBoundaryRect(1.0-0.1-0.05, topPad, 0.1, 0.1);
         }
         currentGame->resize();
         controls->updateRenderPosition();
+    }
+
+    void resizeFromGame(Ux::uiObject* gameRootUi){
+        // reducing some code shared in all games... a class of shared minigame functions can go somewhere... maybe this should be another include
+        Ux* uxInstance = Ux::Singleton();
+        if( uxInstance->widescreen ){
+            gameRootUi->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+        }else{
+            if( uxInstance->screenRatio < 0.5 ){
+                gameRootUi->setBoundaryRect(0.0, 0.1, 1.0, 0.8);
+            }else{
+                gameRootUi->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+            }
+        }
+        gameRootUi->updateRenderPosition();
     }
 
     void update(){

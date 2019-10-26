@@ -457,7 +457,7 @@ struct FlipMaster{
         }else{
             self->scoreBreakdownSpacer->setBoundaryRect(0.05, 0.1, 1.0, 1.0-0.2);
         }
-        self->gameRootUi->updateRenderPosition();
+        self->minigames->resizeFromGame(self->gameRootUi);
     }
 
     static void update(void* gameItself){

@@ -580,8 +580,7 @@ struct MixMaster{
         }else{
             self->scoreBreakdownHolder->setBoundaryRect(0.05, 0.1, 0.5, 1.0-0.2);
         }
-
-        self->gameRootUi->updateRenderPosition();
+        self->minigames->resizeFromGame(self->gameRootUi);
     }
 
     static void update(void* gameItself){
