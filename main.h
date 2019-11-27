@@ -238,8 +238,8 @@ struct uniformLocationStruct
 //#define SCREEN_HEIGHT 320
 
 // ipohone xs max test (/3)
-#define SCREEN_WIDTH 414
-#define SCREEN_HEIGHT 896
+//#define SCREEN_WIDTH 414
+//#define SCREEN_HEIGHT 896
 
 #else
 #define SCREEN_WIDTH 640

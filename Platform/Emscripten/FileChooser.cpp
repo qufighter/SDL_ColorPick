@@ -50,6 +50,15 @@ void load_img_canvas_now(){
     }
     openglContext->imageWasSelectedCb(fancyImg);
 }
+
+
+EMSCRIPTEN_KEEPALIVE
+void resize_img_canvas_now(int w, int h){
+    SDL_SetWindowSize(openglContext->sdlWindow, w, h);
+}
+//__Z21resize_img_canvas_nowii
+
+
 //
 //EMSCRIPTEN_KEEPALIVE int testversion() {
 //    return 55;

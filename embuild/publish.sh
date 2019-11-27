@@ -8,6 +8,7 @@ ls $DEST
 
 cp ./hello* `echo $DEST`
 cp ./_index.html $DEST"index.html"
+cp ./_fullscreen.html $DEST"fullscreen.html"
 
 open $DEST
 
