@@ -1968,7 +1968,8 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 //    }
 
     if( renderObj->doesInFactRender && (renderObj->hasBackground || renderObj->hasForeground) ){
-
+        // TODO count renders and see, is the following condition any better/different ?????
+//  if( renderObj->doesInFactRender && ((renderObj->hasBackground && renderObj->backgroundColor.a > 254) || (renderObj->hasForeground && renderObj->foregroundColor.a > 0 )) ){
 
         glUniformMatrix4fv(uniformLocations->ui_modelMatrix, 1, GL_FALSE, &resolvedRenderObjMat[0][0]); // Send our model matrix to the shader
 
@@ -1986,6 +1987,8 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
 
         // see updateStageDimension and consider SDL_RenderSetClipRect
         glDrawArrays(GL_TRIANGLES, 0, 6); // hmmm
+//        glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT, ogg->squareTriangleIndicies);
+//        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL); // if using GL_ELEMENT_ARRAY_BUFFER, nify macro makes NULL go away, see elsewhere.... actually we should use triangle strip anyway :shrug: not much benefit eitehr way :)
 
         //glFlush();
         //SDL_Delay(66);

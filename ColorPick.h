@@ -162,6 +162,9 @@ public:
             textureId_pick_button,
             tex2_id;
 
+//    GLuint squareTriangleStripIndicies[4];
+//    GLuint squareTriangleIndicies[6];
+
     Textures* textures;
 
     Meshes* meshes;

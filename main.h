@@ -65,32 +65,34 @@
 #define NO_SDL_GLEXT 1
 #include "SDL_opengl.h"  // oks
 
-//#include <GLES/gl.h>
-//#include <GLES/glext.h>
-//#include "EGL/egl.h"
-//#include "EGL/eglext.h"
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-//#include <GLES3/gl3.h>
-//#include <GLES3/gl3ext.h>
-//#include "SDL_opengl.h"
-//#include "SDL_opengles.h"
+#include "SDL_opengles2.h"
 
-//#include "SDL_opengles2.h"
-//#include "SDL_opengles2_gl2.h"
-//#include "SDL_opengles2_gl2ext.h"
+////#include <GLES/gl.h>
+////#include <GLES/glext.h>
+////#include "EGL/egl.h"
+////#include "EGL/eglext.h"
+//#include <GLES2/gl2.h>  // THE ABOVE SDL_opengles2.h does this for free :)
+//#include <GLES2/gl2ext.h>
+////#include <GLES3/gl3.h>
+////#include <GLES3/gl3ext.h>
+////#include "SDL_opengl.h"
+////#include "SDL_opengles.h"
+//
+////#include "SDL_opengles2.h"
+////#include "SDL_opengles2_gl2.h"
+////#include "SDL_opengles2_gl2ext.h"
 
-// this is so dumb... need to wrap with ifndefs though...
-#define glGenVertexArrays glGenVertexArraysOES
-#define glDeleteVertexArrays glDeleteVertexArraysOES
-#define glBindVertexArray glBindVertexArrayOES
-#define glIsVertexArray glIsVertexArrayOES
-#define glUnmapBuffer glUnmapBufferOES
+// this is so dumb... need to wrap with ifndefs though... (WARNING - these require extensions to OpenGL ES 2.0 (most are 3.0 features))
+#define glGenVertexArrays glGenVertexArraysOES // danger - use will break rendering on fire TV
+#define glBindVertexArray glBindVertexArrayOES // danger
+#define glDeleteVertexArrays glDeleteVertexArraysOES // danger
+//#define glIsVertexArray glIsVertexArrayOES
+//#define glUnmapBuffer glUnmapBufferOES
 
 #else
 #include "SDL_opengl.h"
 //#include <OpenGL/gl.h>
-#include <OpenGL/gl3.h>
+#include <OpenGL/gl3.h> // here is a nifty one, this isn't actually needed on mac osx seemingly :)
 #endif
 
 #include "SDL_image.h"
@@ -240,6 +242,9 @@ struct uniformLocationStruct
 // ipohone xs max test (/3)
 //#define SCREEN_WIDTH 414
 //#define SCREEN_HEIGHT 896
+
+//#define SCREEN_WIDTH 1920
+//#define SCREEN_HEIGHT 1080
 
 #else
 #define SCREEN_WIDTH 640

@@ -136,7 +136,7 @@ void OpenGLContext::updateColorPreview(void){
     glClearColor(textures->selectedColor.r / 255.0f,
                  textures->selectedColor.g / 255.0f,
                  textures->selectedColor.b / 255.0f,
-                 textures->selectedColor.a / 255.0f);
+                 1.0f);
 
     generalUx->updateColorValueDisplay(&textures->selectedColor);
 
@@ -802,13 +802,15 @@ void OpenGLContext::loadShaders(void){
 
     shader_ui_shader_default = new Shader("shaders/uiShader.vsh", "shaders/uiShader.fsh");
 
-    shader_3d_ui = new Shader("shaders/uiShader.vsh.3d.vsh", "shaders/uiShader.fsh");
+    if( meshes->mesh3d_enabled ){
+        shader_3d_ui = new Shader("shaders/uiShader.vsh.3d.vsh", "shaders/uiShader.fsh");
 
-    shader_3d = new Shader("shaders/3dShader.vsh", "shaders/3dShader.fsh");
+        shader_3d = new Shader("shaders/3dShader.vsh", "shaders/3dShader.fsh");
 
-    shader_3d_unlit = new Shader("shaders/3dShader.vsh", "shaders/3dShader.fsh.Unlit.fsh");
+        shader_3d_unlit = new Shader("shaders/3dShader.vsh", "shaders/3dShader.fsh.Unlit.fsh");
 
-    shader_3d_Glass = new Shader("shaders/3dShaderGlass.vsh", "shaders/3dShaderGlass.fsh");
+        shader_3d_Glass = new Shader("shaders/3dShaderGlass.vsh", "shaders/3dShaderGlass.fsh");
+    }
 
     glBindVertexArray( 0 );
 
@@ -949,7 +951,7 @@ void OpenGLContext::reshapeWindow(int w, int h) {
 //    glLoadIdentity()   ;                         // reset the matrix to its default state
     //glFrustum(-1.0, 1.0, -1.0f, 1.0f, 3.0f, 7.0f);  // apply the projection matrix
 
-    //SDL_GL_MakeCurrent(sdlWindow, gl); // < this does nothing AFACT - safe but pointless....  but may actually be expensive!!
+    SDL_GL_MakeCurrent(sdlWindow, gl); // < this does nothing AFACT - safe but pointless....  but may actually be expensive!!
 }
 
 void  OpenGLContext::updateFishScaleSliderRunner(){
@@ -1854,18 +1856,25 @@ void OpenGLContext::createSquare(void) {
     float c3=0.00001f;
     float c4=0.00001f;//(float)(rand() % 10);
 
-    GLuint squareTriangleIndicies[4];
-    squareTriangleIndicies[0]=0;
-    squareTriangleIndicies[1]=1;
-    squareTriangleIndicies[2]=3;
-    squareTriangleIndicies[3]=2;
+//    squareTriangleStripIndicies[0]=0;
+//    squareTriangleStripIndicies[1]=4;
+//    squareTriangleStripIndicies[2]=2;
+//    squareTriangleStripIndicies[3]=1;
+
+//    squareTriangleIndicies[0]=0;
+//    squareTriangleIndicies[1]=1;
+//    squareTriangleIndicies[2]=3;
+//    squareTriangleIndicies[3]=2;
+//    squareTriangleIndicies[2]=2;
+//    squareTriangleIndicies[3]=3;
+//    squareTriangleIndicies[4]=4;
+//    squareTriangleIndicies[5]=5;
 
 //    glGenBuffers(1, &rect_triangleStripIndexBuffer); // when using glDrawElements on a "core" context you can't store the indicies in ram
-//    debugGLerror("new square - glGenBuffers");
 //    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rect_triangleStripIndexBuffer);
-//    debugGLerror("new square - glBindBuffer");
-//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(squareTriangleIndicies), squareTriangleIndicies, GL_STATIC_DRAW);
-//    debugGLerror("new square - glBufferData");
+//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(squareTriangleStripIndicies), squareTriangleStripIndicies, GL_STATIC_DRAW);
+//    debugGLerror("indicies bound....");
+
 
     int n=-1;
     float sq_size = 0.725;

@@ -781,6 +781,8 @@ void ShowFrame(void*)
 
     SDL_GL_SwapWindow(window); // move into render scene?
 
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // possibly good idea here?
+
     SDL_Delay(33); // we need some delay EITEHR WAY (old android) since we will render again RIGHT AWAY otherwise... and the buffer isn't really swapped, so we just cleard our acutal frame AAAAAGGGGGHGHH
     // arguably if we measure the time for render, we should subtract that... since 33 will otheriwse be too much time.... CRUMMY_ANDROID
 
@@ -1130,7 +1132,7 @@ int main(int argc, char *argv[]) {
 
 
         // we will check the memories now... 3d might be too much...
-        int resultInt = 0;
+        GLint resultInt = 0;
 
 
         glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &resultInt);
@@ -1155,6 +1157,8 @@ int main(int argc, char *argv[]) {
 SDL_Log("contexts %s %i", #literalAttrib, resultInt);
 
 
+#define logGottenGlString(literalAttrib) SDL_Log("glcontexts %s %s", #literalAttrib, glGetString(literalAttrib));
+
         logGottenGlAtrib(SDL_GL_DEPTH_SIZE);
         if( resultInt < 1 ){
             openglContext->meshes->mesh3d_enabled = false; // no depth buffer = no meshes...
@@ -1175,8 +1179,29 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
         logGottenGlAtrib(SDL_GL_BLUE_SIZE);
         logGottenGlAtrib(SDL_GL_ALPHA_SIZE);
 
+        logGottenGlAtrib(SDL_GL_CONTEXT_EGL);
+        logGottenGlAtrib(SDL_GL_CONTEXT_FLAGS);
+        logGottenGlAtrib(SDL_GL_CONTEXT_PROFILE_MASK);
+        logGottenGlAtrib(SDL_GL_ACCELERATED_VISUAL);
+
         logGottenGlAtrib(SDL_GL_CONTEXT_MAJOR_VERSION);
         logGottenGlAtrib(SDL_GL_CONTEXT_MINOR_VERSION);
+
+        logGottenGlAtrib(SDL_GL_MULTISAMPLEBUFFERS);
+        logGottenGlAtrib(SDL_GL_MULTISAMPLESAMPLES);
+
+        logGottenGlString(GL_EXTENSIONS);
+        logGottenGlString(GL_VENDOR);
+        logGottenGlString(GL_RENDERER);
+        logGottenGlString(GL_VERSION);
+
+        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &resultInt);
+        SDL_Log("Max Texture Size %i", resultInt); // BIG TODO HERE - we can by dyanmic about this :)
+
+        int maxSupportedTextureSize = resultInt;
+        if( maxSupportedTextureSize > 0 ){
+            SDL_assert_always(maxSupportedTextureSize >= 2048);
+        }
 
         //SDL_Log("Open GL says we are %s", glGetString(GL_VERSION));
 
