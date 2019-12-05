@@ -162,12 +162,11 @@ public:
             textureId_pick_button,
             tex2_id;
 
-//    GLuint squareTriangleStripIndicies[4];
-//    GLuint squareTriangleIndicies[6];
 
     Textures* textures;
 
     Meshes* meshes;
+    Mesh* square_mesh;
     Mesh* eyedropper_bulb;
     Mesh* eyedropper_stem;
     Mesh* eyedropper_fill;
@@ -270,10 +269,12 @@ private:
     float widthHeightRatio;  // unused - see color pick state
     unsigned int cur_shader_id;
 
-    void createSquare(void); // Method for creating our squares Vertex Array Object
-    GLuint rect_triangleStripIndexBuffer;
-    unsigned int rect_vaoID[1];
-    unsigned int rect_vboID[4];
+    Mesh* createSquare(void); // Method for creating our squares Vertex Array Object
+    //GLuint rect_triangleStripIndexBuffer;
+    //unsigned int rect_vaoID[1];
+    //unsigned int rect_vboID[4];
+    //GLuint squareTriangleStripIndicies[4];
+    //GLuint squareTriangleIndicies[6];
 
     //GLint globalLightLocation, ambientLightLoc, projectionMatrixLocation, viewMatrixLocation, modelMatrixLocation, textureSampler, textureSampler2, textureSampler3, outalpha, textOffset;
 

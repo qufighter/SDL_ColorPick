@@ -79,12 +79,13 @@ void logLoadingMessage(const char* filename){
 
 void buildMesh(Mesh* mesh, int vertex_items, float* vertices, float* normals, float* colors, float* texCoords){
 
+#ifndef COLORPICK_OPENGL_ES2
     glGenVertexArrays(1, &mesh->vertex_array[0]); // Create our Vertex Array Object
     debugGLerror("mesh glGenVertexArrays");
 
     glBindVertexArray(mesh->vertex_array[0]); // Bind our Vertex Array Object so we can use it
     debugGLerror("mesh glBindVertexArray");
-
+#endif
     //    if( glIsVertexArray(mesh->vertex_array[0]) != GL_TRUE ){
     //        SDL_Log("Um this is not logical...");
     //    }
@@ -117,8 +118,10 @@ void buildMesh(Mesh* mesh, int vertex_items, float* vertices, float* normals, fl
     glVertexAttribPointer((GLuint)SHADER_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
     glEnableVertexAttribArray(SHADER_NORMAL); // Enable the second vertex attribute array
 
+#ifndef COLORPICK_OPENGL_ES2
     glBindVertexArray(0); // Disable our Vertex Buffer Object
-
+#endif
+    
     mesh->vertex_count = vertex_items / 3;  // 3 componenets (xyz) per vertex, so the count is....
     mesh->is_fully_loaded = true;
 }
@@ -241,6 +244,7 @@ static int LoadObjectPLYThread(void* data){
     float* colors = new float[vertex_items*2];
     float* normals = new float[vertex_items*2];
     float* texCoords = new float[uv_items*2];
+    //    float *vertices = (float*)SDL_malloc( sizeof(float) * 18 );// new float[18];    // Vertices for our square
 
     int vIdx =0;
     int nIdx =0;

@@ -489,7 +489,7 @@ void OpenGLContext::setupScene(void) {
     loadShaders();
     debugGLerror("shaders completely loaded");
 
-    createSquare();
+    square_mesh = createSquare();
     debugGLerror("createSquare completely done");
 
 //    eyedropper_bulb=meshes->LoadObjectSTL("textures/models/eyedropper_bulb.stl");
@@ -1298,8 +1298,7 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
 
     debugGLerror("renderScene glDisable(GL_BLEND");
 
-
-    glBindVertexArray(rect_vaoID[0]); // Bind our Vertex Array Object GL_INVALID_OPERATION (except android?)
+    square_mesh->bind(); // Bind our Vertex Array Object GL_INVALID_OPERATION (except android?)
     debugGLerror("renderScene glBindVertexArray(rect_vaoID");
 
 
@@ -1333,8 +1332,7 @@ void OpenGLContext::renderUi(void) {
 
 //    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[0]);
 
-
-    glBindVertexArray(rect_vaoID[0]);
+    square_mesh->bind();
 
 
     generalUx->renderObject(uniformLocations); // renders all obj
@@ -1759,7 +1757,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
 
 
         // UI needs square....
-        glBindVertexArray(rect_vaoID[0]);
+        square_mesh->bind();
 
         //glEnable(GL_CULL_FACE);
         //glDisable(GL_DEPTH_TEST);
@@ -1844,18 +1842,26 @@ bool OpenGLContext::canMesh(){
 }
 
 // todo: return mesh* instead?
-void OpenGLContext::createSquare(void) {
+Mesh* OpenGLContext::createSquare(void) {
+    Mesh* mesh = new Mesh("square");
+
+    // we could allocate the temp ones on the mesh* instead...
     float *vertices = new float[18];	// Vertices for our square
     float *colors = new float[18]; // Colors for our vertices
     float* texCoord = new float[12]; // Colors for our vertices
     float* normals = new float[18]; // Colors for our vertices
 
-    srand ( (unsigned int)(time(NULL)) );
+//    float *vertices = (float*)SDL_malloc( sizeof(float) * 18 );// new float[18];    // Vertices for our square
+//    float *colors = (float*)SDL_malloc( sizeof(float) * 18 );//new float[18]; // Colors for our vertices
+//    float* texCoord = (float*)SDL_malloc( sizeof(float) * 12 );//new float[12]; // Colors for our vertices
+//    float* normals = (float*)SDL_malloc( sizeof(float) * 18 );//new float[18]; // Colors for our vertices
+
     float c1=0.00001f;//(float)(rand() % 10);
     float c2=0.00001f;//(float)(rand() % 10);
     float c3=0.00001f;
     float c4=0.00001f;//(float)(rand() % 10);
 
+    //todo move to mesh...
 //    squareTriangleStripIndicies[0]=0;
 //    squareTriangleStripIndicies[1]=4;
 //    squareTriangleStripIndicies[2]=2;
@@ -1917,43 +1923,49 @@ void OpenGLContext::createSquare(void) {
     texCoord[tIdx++] = 1.0; texCoord[tIdx++] = 0.0;
     normals[++n] = 0.0;normals[++n] = 0.0;normals[++n] = -1.0;
 
+#ifndef COLORPICK_OPENGL_ES2
+    glGenVertexArrays(1, &mesh->vertex_array[0]); // Create our Vertex Array Object
+    glBindVertexArray(mesh->vertex_array[0]); // Bind our Vertex Array Object so we can use it
+#endif
 
-    glGenVertexArrays(1, &rect_vaoID[0]); // Create our Vertex Array Object
+    glGenBuffers(4, &mesh->buffers[0]); // Generate our two Vertex Buffer Object
 
-    glBindVertexArray(rect_vaoID[0]); // Bind our Vertex Array Object so we can use it
-
-    glGenBuffers(4, &rect_vboID[0]); // Generate our two Vertex Buffer Object
-
-
-    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[0]); // Bind our Vertex Buffer Object
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->buffers[SHADER_POSITION]); // Bind our Vertex Buffer Object
     glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(GLfloat), vertices, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
     glVertexAttribPointer((GLuint)SHADER_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
     glEnableVertexAttribArray(SHADER_POSITION); // Enable the first our Vertex Array Object
 
     //you can comment out this block, we dont use colors for rects
-//    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[1]); // Bind our second Vertex Buffer Object
+//    glBindBuffer(GL_ARRAY_BUFFER, mesh->buffers[SHADER_COLOR]); // Bind our second Vertex Buffer Object
 //    glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(GLfloat), colors, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
 //    glVertexAttribPointer((GLuint)SHADER_COLOR, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
 //    glEnableVertexAttribArray(SHADER_COLOR); // Enable the second vertex attribute array
 
-    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[2]); // Bind our second Vertex Buffer Object
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->buffers[SHADER_TEXTURE]); // Bind our second Vertex Buffer Object
     glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), texCoord, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
     glVertexAttribPointer((GLuint)SHADER_TEXTURE, 2, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
     glEnableVertexAttribArray(SHADER_TEXTURE); // Enable the second vertex attribute array
 
     //you can comment out this block we dn't use normals for rendering rects
-//    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[3]); // Bind our second Vertex Buffer Object
+//    glBindBuffer(GL_ARRAY_BUFFER,  mesh->buffers[SHADER_NORMAL]); // Bind our second Vertex Buffer Object
 //    glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(GLfloat), normals, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
 //    glVertexAttribPointer((GLuint)SHADER_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
 //    glEnableVertexAttribArray(SHADER_NORMAL); // Enable the second vertex attribute array
 
 
     //glBindBuffer(GL_ARRAY_BUFFER, 0);
+#ifndef COLORPICK_OPENGL_ES2
     glBindVertexArray(0); // Disable our Vertex Buffer Object
+#endif
     delete [] vertices; // Delete our vertices from memory
     delete [] colors; // Delete our vertices from memory 
     delete [] texCoord;
     delete [] normals;
+
+    mesh->vertex_count = 6;  // 3 componenets (xyz) per vertex, so the count is....
+    mesh->is_fully_loaded = true;
+
+    return mesh;
 }
 
 void OpenGLContext::doOpenURL(char* url){ // note: any spaces in the URL will cause this to not work (osx)... replace with + or encode to %20 ?

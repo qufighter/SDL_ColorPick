@@ -67,6 +67,8 @@
 
 #include "SDL_opengles2.h"
 
+#define COLORPICK_OPENGL_ES2
+
 ////#include <GLES/gl.h>
 ////#include <GLES/glext.h>
 ////#include "EGL/egl.h"

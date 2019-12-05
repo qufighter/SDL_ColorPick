@@ -1200,7 +1200,37 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
 
         int maxSupportedTextureSize = resultInt;
         if( maxSupportedTextureSize > 0 ){
-            SDL_assert_always(maxSupportedTextureSize >= 2048);
+            SDL_assert_always(maxSupportedTextureSize >= 8192);
+        }
+
+        /*
+         #define glGenVertexArrays glGenVertexArraysOES // danger - use will break rendering on fire TV
+         #define glBindVertexArray glBindVertexArrayOES // danger
+         #define glDeleteVertexArrays glDeleteVertexArraysOES // d
+         */
+        if (SDL_GL_ExtensionSupported("glBindVertexArrayOES")) {
+            SDL_Log("We apparently have glBindVertexArrayOES" );
+        }
+        if (SDL_GL_ExtensionSupported("glGenVertexArraysOES")) {
+            SDL_Log("We apparently have glGenVertexArraysOES" );
+        }
+        if (SDL_GL_ExtensionSupported("glBindVertexArray")) {
+            SDL_Log("We apparently have glBindVertexArray" );
+        }
+        if (SDL_GL_ExtensionSupported("glGenVertexArrays")) {
+            SDL_Log("We apparently have glGenVertexArrays" );
+        }
+        if (SDL_GL_ExtensionSupported("GL_EXT_glBindVertexArray")) {
+            SDL_Log("We apparently have GL_EXT_glBindVertexArray" );
+        }
+        if (SDL_GL_ExtensionSupported("GL_EXT_glGenVertexArrays")) {
+            SDL_Log("We apparently have GL_EXT_glGenVertexArrays" );
+        }
+        if (SDL_GL_ExtensionSupported("GL_EXT_glBindVertexArrayOES")) {
+            SDL_Log("We apparently have GL_EXT_glBindVertexArrayOES" );
+        }
+        if (SDL_GL_ExtensionSupported("GL_EXT_glGenVertexArraysOES")) {
+            SDL_Log("We apparently have GL_EXT_glGenVertexArraysOES" );
         }
 
         //SDL_Log("Open GL says we are %s", glGetString(GL_VERSION));

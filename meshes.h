@@ -154,6 +154,11 @@ typedef struct Mesh
         colors=nullptr;
         normals=nullptr;
         texCoords=nullptr;
+        buffers[SHADER_POSITION] = 0;
+        buffers[SHADER_COLOR] = 0;
+        buffers[SHADER_TEXTURE] = 0;
+        buffers[SHADER_NORMAL] = 0;
+
     }
 
     // we don't have the ref to shader, so this doesn't work.  some refactor maybe
@@ -178,9 +183,33 @@ typedef struct Mesh
                                         color_additive.a);
     }
 
+    void bind(){
+
+#ifdef COLORPICK_OPENGL_ES2
+
+        glBindBuffer(GL_ARRAY_BUFFER, this->buffers[SHADER_POSITION]); // Bind our Vertex Buffer Object
+        glVertexAttribPointer((GLuint)SHADER_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
+
+        glBindBuffer(GL_ARRAY_BUFFER, this->buffers[SHADER_COLOR]); // Bind our second Vertex Buffer Object
+        glVertexAttribPointer((GLuint)SHADER_COLOR, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
+
+        glBindBuffer(GL_ARRAY_BUFFER, this->buffers[SHADER_TEXTURE]); // Bind our second Vertex Buffer Object
+        glVertexAttribPointer((GLuint)SHADER_TEXTURE, 2, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
+
+        glBindBuffer(GL_ARRAY_BUFFER, this->buffers[SHADER_NORMAL]); // Bind our second Vertex Buffer Object
+        glVertexAttribPointer((GLuint)SHADER_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
+#else
+        glBindVertexArray(vertex_array[0]);
+
+#endif
+
+        // todo, alternate bindings ???
+    }
+
     void render(){
         if( is_fully_loaded ){
-            glBindVertexArray(vertex_array[0]);
+            bind();
+            //glBindVertexArray(vertex_array[0]);
             glDrawArrays(GL_TRIANGLES, 0, vertex_count);
         }else{
             // SDL_Log("Mesh not yet loaded... cannot render it!");
