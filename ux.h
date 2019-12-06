@@ -168,6 +168,7 @@ typedef struct HSV_Color
 } HSV_Color;
 
 #include "ux-Interaction.h"
+#include "ux-KeyInteraction.h"
 
 class Ux {
 public:

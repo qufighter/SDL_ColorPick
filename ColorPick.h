@@ -43,32 +43,33 @@
 
 #define VIEW_MAX_CLIP_DISTANCE 100
 
+//
+//typedef struct {
+//    float Position[3];
+//    float Color[4];
+//} Vertex;
+//
+//static const GLfloat squareVertices[] = {
+//    -1.0f, -1.0f,
+//    1.0f, -1.0f,
+//    -1.0f,  1.0f,
+//    1.0f,  1.0f,
+//};
+//
+//static const GLubyte squareColors[] = {
+//    255, 255,   0, 255,
+//    0,   255, 255, 255,
+//    0,     0,   0,   0,
+//    255,   0, 255, 255,
+//};
+//
+//static const GLubyte squareTexCoords[] = {
+//    0, 255,
+//    255, 255,
+//    0, 0,
+//    255, 0,
+//};
 
-typedef struct {
-    float Position[3];
-    float Color[4];
-} Vertex;
-
-static const GLfloat squareVertices[] = {
-    -1.0f, -1.0f,
-    1.0f, -1.0f,
-    -1.0f,  1.0f,
-    1.0f,  1.0f,
-};
-
-static const GLubyte squareColors[] = {
-    255, 255,   0, 255,
-    0,   255, 255, 255,
-    0,     0,   0,   0,
-    255,   0, 255, 255,
-};
-
-static const GLubyte squareTexCoords[] = {
-    0, 255,
-    255, 255,
-    0, 0,
-    255, 0,
-};
 
 
 
@@ -138,8 +139,8 @@ public:
     const float fill_requirement = 0.00001;
 
 
-//    void keyDown(int key);
-    void keyUp(SDL_Keycode key);
+    void keyDown(Uint32 timestamp, SDL_Keycode key);
+    void keyUp(Uint32 timestamp, SDL_Keycode key);
 //    int totalKeys = 1073742052;
 //    bool downkeys[1073742052]; // SDL tends to fire the keydown event more than once...
 //    bool kkeys[1073742052];	// use this to keep track of keys...hopefully keyboard doesn't have more than this! (it does!)
@@ -175,6 +176,7 @@ public:
     Minigames* minigames;
 
     uiInteraction pixelInteraction;
+    uiKeyInteractions keyInteractions;
 
     // probably should not be public but easier this way!
     int mmovex, mmovey; /// needs to be ux accessible singleton.......
@@ -194,6 +196,7 @@ public:
     float getPixelMovementFactor();
     void triggerMovement();
     void triggerVelocity(float x, float y);
+    void indicateHighSpeed();
     void clearVelocity();
 
     //typedef void (*imageSelectedCallback)(const char *); // < its this type

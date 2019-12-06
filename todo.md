@@ -351,9 +351,9 @@ I/SDL/APP (13176): unrecognized event; type 1540
  or this SDL_GetKeyFromScancode(SDL_Scancode scancode)
  
 I/SDL/APP (13176): keyup 1073741942 // this key is the "menu" key (not controller??? (theoretically its SDLK_MENU pls test it?)
-I/SDL/APP (13176): keyup 1073742109 // this key is the "rewind" key "  ( is it SDLK_AUDIOPREV ?? )
+I/SDL/APP (13176): keyup 1073742109 // this key is the "rewind" key "  ( SDLK_AUDIOREWIND )
 I/SDL/APP (13176): keyup 1073742085 // this key is the "play/pause" key "  (is it SDLK_AUDIOPLAY ??)
-I/SDL/APP (13176): keyup 1073742110 // this key is the "fast fprward" key " (is it SDLK_AUDIONEXT ??);
+I/SDL/APP (13176): keyup 1073742110 // this key is the "fast fprward" key " (SDLK_AUDIOFASTFORWARD);
 I/SDL/APP (13176): Controller button down 1 (SDL_GameControllerButton)
 I/SDL/APP (13176): unrecognized event; type 1539
 I/SDL/APP (13176): Controller button up 1 (SDL_GameControllerButton)

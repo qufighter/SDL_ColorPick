@@ -487,54 +487,67 @@ event is maybe going to have
         case SDL_CONTROLLERBUTTONDOWN:{
             SDL_Log("Controller button down %i (SDL_GameControllerButton)", event->cbutton.button);
 
-
             switch(event->cbutton.button){
                 case SDL_CONTROLLER_BUTTON_DPAD_UP:
-                    colorPickState->mmovey=1;
+                    openglContext->keyInteractions.up->keydown(event->cbutton.timestamp);
                     break;
                 case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
-                    colorPickState->mmovey=-1;
+                    openglContext->keyInteractions.down->keydown(event->cbutton.timestamp);
                     break;
                 case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-                    colorPickState->mmovex=-1;
+                    openglContext->keyInteractions.right->keydown(event->cbutton.timestamp);
                     break;
                 case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-                    colorPickState->mmovex=1;
+                    openglContext->keyInteractions.left->keydown(event->cbutton.timestamp);
                     break;
                 case SDL_CONTROLLER_BUTTON_A:
-
-                    SDL_Log("BUTTON A");
-
+                    //SDL_Log("BUTTON A");
+//                    openglContext->generalUx->addCurrentToPickHistory();
                     break;
                 case SDL_CONTROLLER_BUTTON_B:
-                    SDL_Log("BUTTON B");
-                    BackButtonEvent();
+                    //SDL_Log("BUTTON B");
+//                    BackButtonEvent();
                     break;
             }
 
-
-            //openglContext->has_velocity=false;
+            openglContext->clearVelocity();
             openglContext->renderShouldUpdate=true;
-
-            /*
-
-             case SDLK_UP:
-             colorPickState->mmovey=1;
-             break;
-             case SDLK_DOWN:
-             colorPickState->mmovey=-1;
-             break;
-             case SDLK_RIGHT:
-             colorPickState->mmovex=-1;
-             break;
-             case SDLK_LEFT:
-             colorPickState->mmovex=1;
-             */
 
             break;
         }
         case SDL_CONTROLLERBUTTONUP:
             SDL_Log("Controller button up %i (SDL_GameControllerButton)", event->cbutton.button);
+
+
+            switch(event->cbutton.button){
+                case SDL_CONTROLLER_BUTTON_DPAD_UP:
+                    openglContext->keyInteractions.up->keyup(event->cbutton.timestamp);
+                    break;
+                case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+                    openglContext->keyInteractions.down->keyup(event->cbutton.timestamp);
+                    break;
+                case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+                    openglContext->keyInteractions.right->keyup(event->cbutton.timestamp);
+                    break;
+                case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+                    openglContext->keyInteractions.left->keyup(event->cbutton.timestamp);
+                    break;
+                case SDL_CONTROLLER_BUTTON_A:
+                    //SDL_Log("BUTTON A");
+                    openglContext->generalUx->addCurrentToPickHistory();
+                    break;
+                case SDL_CONTROLLER_BUTTON_B:
+                    //SDL_Log("BUTTON B");
+                    BackButtonEvent();
+                    break;
+            }
+
+            openglContext->clearVelocity();
+            openglContext->renderShouldUpdate=true;
+
+
+
+
             break;
 
         case SDL_CONTROLLERAXISMOTION:
@@ -603,7 +616,12 @@ event is maybe going to have
             mouseUpEvent(event);
             return 0;
         case SDL_KEYDOWN:
-            //SDL_Log("1keydown %d", event->key.keysym.sym);
+
+            if( event->key.repeat ) return 0; // we will handle our own repeats tyvm /s
+
+           // event->key.keysym.scancode
+            // the scancode is easiest to look up in SDL_scancode.h
+            //SDL_Log("1keydown %d %d %s", event->key.keysym.sym, event->key.keysym.scancode,  SDL_GetKeyName(event->key.keysym.sym) );
             //openglContext->keyDown(event->key.keysym.sym);
             if (event->key.keysym.sym == SDLK_AC_BACK || event->key.keysym.sym == SDLK_BACKSPACE || event->key.keysym.sym == SDLK_ESCAPE){
                 //SDL_Log("back/esc pressed");
@@ -611,10 +629,17 @@ event is maybe going to have
             }else if(event->key.keysym.sym == SDLK_AC_HOME){
                 // nope only works on windows..... maybe android, but how to screenshot android?
                 //SDL_Log("home pressed - maybe ios screenshot? time for gimicky marketing ploy");
+            }else{
+
+                // TODO move other above and BackButtonEvent into openglContext->keyDown
+                openglContext->keyDown(event->key.timestamp, event->key.keysym.sym);
+
             }
             return 0;
         case SDL_KEYUP:
-            openglContext->keyUp(event->key.keysym.sym);
+            // the scancode is easiest to look up in SDL_scancode.h
+            //SDL_Log("1keyup %d %d %s", event->key.keysym.sym, event->key.keysym.scancode,  SDL_GetKeyName(event->key.keysym.sym) );
+            openglContext->keyUp(event->key.timestamp, event->key.keysym.sym);
 
 //            /* Keyboard events */
 //            SDL_KEYDOWN        = 0x300, /**< Key pressed */
@@ -657,7 +682,7 @@ event is maybe going to have
             /* Prepare your app to go into the background.  Stop loops, etc.
              This gets called when the user hits the home button, or gets a call.
              */
-            openglContext->renderShouldUpdate = false;
+            openglContext->renderShouldUpdate=false;
 
             colorPickState->appInForeground = false;
 
@@ -681,6 +706,7 @@ event is maybe going to have
             //mousStateDown = 0; // zero finger counter
             // maybe we should go through all our currentInteractions and zero those out???
             fingerDeviceDownCounter = 0;
+            openglContext->keyInteractions.downCounter = 0;
             isLockedForZoomUntilFingersZeros = false;
             colorPickState->appInForeground = true;
             openglContext->renderShouldUpdate = true;
@@ -1019,6 +1045,9 @@ int main(int argc, char *argv[]) {
 //    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 
+//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2); // we get 3.0 0n some phoens anyway
+//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
 #endif
 
 //    SDL_Log("setting depth size....");
@@ -1102,10 +1131,6 @@ int main(int argc, char *argv[]) {
 
     SDL_Log("main -----------------------");
 
-
-#ifdef USE_EVENT_WATCH_FOR_EVENTS
-    SDL_AddEventWatch(EventFilter, nullptr); // second param is provided to filter which runs in different thread... void* userdata
-#endif
 
 
 
@@ -1200,7 +1225,45 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
 
         int maxSupportedTextureSize = resultInt;
         if( maxSupportedTextureSize > 0 ){
-            SDL_assert_always(maxSupportedTextureSize >= 8192);
+            if(maxSupportedTextureSize < 2048){ // TODO move this messagebox code someplace else!
+
+                int selected;
+                SDL_MessageBoxData messagebox;
+                SDL_MessageBoxButtonData buttons[] = {
+//                    {   0,  SDL_ASSERTION_RETRY,            "Continue" },
+                    {   SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, SDL_ASSERTION_IGNORE,           "Ignore" },
+//                    {   SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,  SDL_ASSERTION_BREAK,            "Report" },
+                    {   0,  SDL_ASSERTION_ABORT,            "Quit" }
+                };
+
+                SDL_zero(messagebox);
+                messagebox.flags = SDL_MESSAGEBOX_WARNING;
+                messagebox.window = window;
+                messagebox.title = "Error - 2048x Textures Required";
+                messagebox.message = "ColorPick Requires support for 2048 pixel textures.";// "test message1";
+                messagebox.numbuttons = SDL_arraysize(buttons);
+                messagebox.buttons = buttons;
+                if (SDL_ShowMessageBox(&messagebox, &selected) == 0) {
+                    //SDL_Log("--- itz %d", selected);
+
+                    if( selected == SDL_ASSERTION_ABORT ){
+                        // quit...
+                        SDL_Quit();
+                        exit(1);
+                        return 0;
+//                    }else if(selected == SDL_ASSERTION_BREAK ){
+//                        // report
+//                        const char* urlBase = "http://www.vidsbee.com/Contact/?browserinfo=App:NativeColorPick";
+//                        SDL_snprintf(shader_error_report, REPORT_SIZE, "%s:%s\n%s", urlBase, file, buffer);
+//                        ogg->doOpenURL(shader_error_report); // TODO: we really need to defer this....
+                    }else if(selected == SDL_ASSERTION_IGNORE ){
+//                        ogg->no_more_shader_message_boxes=true;
+                    }else{
+                        // shrug SDL_ASSERTION_RETRY
+                    }
+                }
+
+            }
         }
 
         /*
@@ -1233,7 +1296,24 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
             SDL_Log("We apparently have GL_EXT_glGenVertexArraysOES" );
         }
 
-        //SDL_Log("Open GL says we are %s", glGetString(GL_VERSION));
+
+        //        typedef void (APIENTRY * glDebugMessageCallbackKHR_Func)(GLDEBUGPROCKHR callback, const void *userParam);
+        //        glDebugMessageCallbackKHR_Func glDebugMessageCallbackKHR_ptr = 0;
+        //
+        //        glDebugMessageCallbackKHR_ptr = (glDebugMessageCallbackKHR_Func) SDL_GL_GetProcAddress("glDebugMessageCallbackKHR");
+        //        if (glDebugMessageCallbackKHR_ptr){
+        //            SDL_Log("found dat b");
+        //            glDebugMessageCallbackKHR_ptr(on_gl_error, NULL);
+        //        }
+        //
+        //        // Use that extension
+
+
+#ifdef USE_EVENT_WATCH_FOR_EVENTS
+        SDL_AddEventWatch(EventFilter, nullptr); // second param is provided to filter which runs in different thread... void* userdata
+#endif
+
+
 
         //ReshapeWindow();
         openglContext->setupScene();
@@ -1259,8 +1339,6 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
 
     emscripten_set_main_loop(ShowFrame, 0, 1);
 #else
-    //    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
-    //SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);  // <<< this probably does NOTHING here after context is created....
 
     //SDL_iPhoneSetEventPump(SDL_TRUE);
     SDL_iPhoneSetAnimationCallback(window, 1, ShowFrame, NULL);

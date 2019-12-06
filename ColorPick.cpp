@@ -69,19 +69,26 @@ void OpenGLContext::destroyContext() {
      SDL_GL_DeleteContext(gl);
 }
 
-//void OpenGLContext::keyDown(int k){
+void OpenGLContext::keyDown(Uint32 timestamp, SDL_Keycode k){
+
+    keyInteractions.keyDown(timestamp, k);
+
 //    if( k > 0 && k < totalKeys && !downkeys[k] ){
 //        kkeys[k] = 1;
 //        downkeys[k] = 1;
-//    }
-//}
-void OpenGLContext::keyUp(SDL_Keycode k){
+    //    }
+
+    has_velocity=false;
+    renderShouldUpdate=true;
+}
+void OpenGLContext::keyUp(Uint32 timestamp, SDL_Keycode k){
 //    if( k > 0 && k < totalKeys ){
 //        kkeys[k] = 0;
 //        downkeys[k] = 0;
 //    }
 
-    SDL_Log("keyup %d", k);
+    keyInteractions.keyUp(timestamp, k);
+
 
     if( isMinigameMode() ){
 
@@ -91,18 +98,6 @@ void OpenGLContext::keyUp(SDL_Keycode k){
     }else{
 
         switch(k){
-            case SDLK_UP:
-                colorPickState->mmovey=1;
-                break;
-            case SDLK_DOWN:
-                colorPickState->mmovey=-1;
-                break;
-            case SDLK_RIGHT:
-                colorPickState->mmovex=-1;
-                break;
-            case SDLK_LEFT:
-                colorPickState->mmovex=1;
-                break;
             case SDLK_RETURN:
             case SDLK_KP_ENTER:
                 if( setup_complete ){ // this check is specifically to guard the enter key durign shader compilation error messaage box...
@@ -795,7 +790,9 @@ void OpenGLContext::setupScene(void) {
 
 void OpenGLContext::loadShaders(void){
     GLuint _glVaoID;// shaders wont validate on osx unless we bind a VAO: Validation Failed: No vertex array object bound.
+#ifndef COLORPICK_OPENGL_ES2
     glGenVertexArrays(1, &_glVaoID );	glBindVertexArray( _glVaoID );
+#endif
 
     // shader names need work...
     shader_lit_detail = new Shader("shaders/Shader.vsh", "shaders/ShaderGLES.fsh");
@@ -811,10 +808,10 @@ void OpenGLContext::loadShaders(void){
 
         shader_3d_Glass = new Shader("shaders/3dShaderGlass.vsh", "shaders/3dShaderGlass.fsh");
     }
-
+#ifndef COLORPICK_OPENGL_ES2
     glBindVertexArray( 0 );
-
     glDeleteVertexArrays(1, &_glVaoID );    _glVaoID = 0;
+#endif
 }
 
 void OpenGLContext::reloadShaders(void){
@@ -1113,10 +1110,15 @@ void OpenGLContext::triggerVelocity(float x, float y){
     accumulated_velocity_x=0;
     has_velocity = true;
 
+    indicateHighSpeed();
+}
+
+void OpenGLContext::indicateHighSpeed(){
     if( generalUx->runner->uiObjectItself->doesInFactRender ){
         generalUx->uxAnimations->scale_bounce(generalUx->runner->runner, 0.002);
     }
 }
+
 void OpenGLContext::clearVelocity(){
     has_velocity = false;
     accumulated_movement_x = 0; // also called when beginning a new move
@@ -1139,13 +1141,50 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
 
     debugGLerror("renderZoomedPickerBg begin");
 
+
+    Uint32 ticks = SDL_GetTicks();
+
+    if( keyInteractions.hasPressedKeys() ){
+        int moveSpeed = 1;
+
+        if( keyInteractions.zoomIn->isPressed(ticks) ){
+            setFishScale(1.0, 0.10f);
+        }else if( keyInteractions.zoomOut->isPressed(ticks) ){
+            setFishScale(-1.0, 0.10f);
+        }
+
+        if( fishEyeScale < FISHEYE_SLOW_ZOOM_MAX ){
+            float intensity = 1.0 - ((openglContext->fishEyeScale-FISHEYE_SLOW_ZOOM_THRESHOLD) / (FISHEYE_SLOW_ZOOM_MAX-FISHEYE_SLOW_ZOOM_THRESHOLD));
+            SDL_Log("fishhy %f intensity %f", fishEyeScale, intensity);
+            moveSpeed += 64 * intensity;
+        }
+
+        if( keyInteractions.up->isPressed(ticks) ){
+            colorPickState->mmovey=moveSpeed;
+            indicateHighSpeed();
+        }
+        if( keyInteractions.down->isPressed(ticks) ){
+            colorPickState->mmovey=-moveSpeed;
+            indicateHighSpeed();
+        }
+        if( keyInteractions.right->isPressed(ticks) ){
+            colorPickState->mmovex=-moveSpeed;
+            indicateHighSpeed();
+        }
+        if( keyInteractions.left->isPressed(ticks) ){
+            colorPickState->mmovex=moveSpeed;
+            indicateHighSpeed();
+        }
+
+    }
+
     if( has_velocity ){
 
         float pxFactor = getPixelMovementFactor();
 
         accumulated_velocity_y += pixelInteraction.vy;
         accumulated_velocity_x += pixelInteraction.vx;
-        pixelInteraction.update(SDL_GetTicks());
+        pixelInteraction.update(ticks);
 
         // we now take any full integer amounts visible in the accumulated velocity....
         /// todo does this work good for negative numbers?? ANSWER : no  X: -1.267014 -2 Y: -0.894823 -1 -- it always rounds towards negative even for negativess
@@ -1214,7 +1253,10 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
         updateColorPreview();
 
     }else if( !has_velocity ){
-        renderShouldUpdate=false;
+
+        if( !keyInteractions.hasPressedKeys() ){
+            renderShouldUpdate=false;
+        }
         //generalUx->movementArrows->indicateVelocity(0, 0);
 
         // if we didn't move, then do not do this :)

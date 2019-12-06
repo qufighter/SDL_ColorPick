@@ -11,8 +11,9 @@
 #ifndef _____PROJECTNAME_____ColorPickState__
 #define _____PROJECTNAME_____ColorPickState__
 
-
 class ColorPickState {
+
+
 
 public:
     static ColorPickState* Singleton();

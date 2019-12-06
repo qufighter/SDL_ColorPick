@@ -131,6 +131,8 @@ bool enoughMemoryForMeshes(){
     env->DeleteLocalRef(activity);
     env->DeleteLocalRef(clazz);
 
+    //return true;
+
     return (bool)result;
 }
 
