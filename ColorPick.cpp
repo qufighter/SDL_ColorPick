@@ -73,22 +73,20 @@ void OpenGLContext::keyDown(Uint32 timestamp, SDL_Keycode k){
 
     keyInteractions.keyDown(timestamp, k);
 
-//    if( k > 0 && k < totalKeys && !downkeys[k] ){
-//        kkeys[k] = 1;
-//        downkeys[k] = 1;
-    //    }
+    if (k == SDLK_AC_BACK || k == SDLK_BACKSPACE || k == SDLK_ESCAPE){
+        //SDL_Log("back/esc pressed");
+        BackButtonEvent();
+    }else if(k == SDLK_AC_HOME){
+        // nope only works on windows..... maybe android, but how to screenshot android?
+        //SDL_Log("home pressed - maybe ios screenshot? time for gimicky marketing ploy");
+    }
 
     has_velocity=false;
     renderShouldUpdate=true;
 }
 void OpenGLContext::keyUp(Uint32 timestamp, SDL_Keycode k){
-//    if( k > 0 && k < totalKeys ){
-//        kkeys[k] = 0;
-//        downkeys[k] = 0;
-//    }
 
     keyInteractions.keyUp(timestamp, k);
-
 
     if( isMinigameMode() ){
 
@@ -100,9 +98,7 @@ void OpenGLContext::keyUp(Uint32 timestamp, SDL_Keycode k){
         switch(k){
             case SDLK_RETURN:
             case SDLK_KP_ENTER:
-                if( setup_complete ){ // this check is specifically to guard the enter key durign shader compilation error messaage box...
-                    generalUx->addCurrentToPickHistory();
-                }
+                EnterKeyEvent();
                 break;
 #ifdef COLORPICK_DEBUG_MODE
             case SDLK_p:
@@ -115,6 +111,28 @@ void OpenGLContext::keyUp(Uint32 timestamp, SDL_Keycode k){
         renderShouldUpdate=true;
     }
 
+}
+
+void OpenGLContext::EnterKeyEvent(){
+    if( isMinigameMode() ){
+
+    }else{
+        if( setup_complete ){ // this check is specifically to guard the enter key durign shader compilation error messaage box...
+            generalUx->addCurrentToPickHistory();
+        }
+
+    }
+}
+
+void OpenGLContext::BackButtonEvent(){
+    if( generalUx->hasCurrentModal() ){
+        generalUx->endCurrentModal();
+    }else{
+#ifdef __ANDROID__
+        //SDL_AndroidBackButton();
+        SDL_MinimizeWindow(window);
+#endif
+    }
 }
 
 void OpenGLContext::chooseFile(void) {

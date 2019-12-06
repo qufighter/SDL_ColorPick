@@ -123,6 +123,8 @@ public:
     void begin3dDropperAnimation(int aDropperAnimation); // one of DROPPER_ANIMATION_ENUM
     void begin3dDropperAnimation(int aDropperAnimation, SDL_Color* aColor);
 
+    void EnterKeyEvent(void);
+    void BackButtonEvent(void);
     void chooseFile(void);
 
     SDL_Window* getSdlWindow(void);

@@ -318,17 +318,6 @@ void mouseUpEvent(SDL_Event* event){
     //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 }
 
-void BackButtonEvent(){
-    if( openglContext->generalUx->hasCurrentModal() ){
-        openglContext->generalUx->endCurrentModal();
-    }else{
-#ifdef __ANDROID__
-        //SDL_AndroidBackButton();
-        SDL_MinimizeWindow(window);
-#endif
-    }
-}
-
 // TODO: this might need to be in the animation loop for ios!!!!!!!
 int MainThreadUserEventHandler(SDL_Event* p_event){
 
@@ -484,25 +473,29 @@ event is maybe going to have
             SDL_Log("Controller was rm %i (need to close it?)", event->cdevice.which);
             break;
 
+#define makeControllerButtonKeySwitchPartial(providedKeyState) \
+        case SDL_CONTROLLER_BUTTON_DPAD_UP: \
+            openglContext->keyInteractions.up->providedKeyState(event->cbutton.timestamp); \
+            break; \
+        case SDL_CONTROLLER_BUTTON_DPAD_DOWN: \
+            openglContext->keyInteractions.down->providedKeyState(event->cbutton.timestamp); \
+            break; \
+        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: \
+            openglContext->keyInteractions.right->providedKeyState(event->cbutton.timestamp); \
+            break; \
+        case SDL_CONTROLLER_BUTTON_DPAD_LEFT: \
+            openglContext->keyInteractions.left->providedKeyState(event->cbutton.timestamp); \
+            break; \
+
+
         case SDL_CONTROLLERBUTTONDOWN:{
             SDL_Log("Controller button down %i (SDL_GameControllerButton)", event->cbutton.button);
 
             switch(event->cbutton.button){
-                case SDL_CONTROLLER_BUTTON_DPAD_UP:
-                    openglContext->keyInteractions.up->keydown(event->cbutton.timestamp);
-                    break;
-                case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
-                    openglContext->keyInteractions.down->keydown(event->cbutton.timestamp);
-                    break;
-                case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-                    openglContext->keyInteractions.right->keydown(event->cbutton.timestamp);
-                    break;
-                case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-                    openglContext->keyInteractions.left->keydown(event->cbutton.timestamp);
-                    break;
+                makeControllerButtonKeySwitchPartial(keydown)
                 case SDL_CONTROLLER_BUTTON_A:
                     //SDL_Log("BUTTON A");
-//                    openglContext->generalUx->addCurrentToPickHistory();
+                    // openglContext->EnterKeyEvent(); // TODO: we can confirm no other key was pressed? (to allow cancel of enter key???) (use keyInteractions.left and remober timestamp of laswt key pressed, this key has special field to know to check if no other key was pressed: ez)
                     break;
                 case SDL_CONTROLLER_BUTTON_B:
                     //SDL_Log("BUTTON B");
@@ -518,27 +511,15 @@ event is maybe going to have
         case SDL_CONTROLLERBUTTONUP:
             SDL_Log("Controller button up %i (SDL_GameControllerButton)", event->cbutton.button);
 
-
             switch(event->cbutton.button){
-                case SDL_CONTROLLER_BUTTON_DPAD_UP:
-                    openglContext->keyInteractions.up->keyup(event->cbutton.timestamp);
-                    break;
-                case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
-                    openglContext->keyInteractions.down->keyup(event->cbutton.timestamp);
-                    break;
-                case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-                    openglContext->keyInteractions.right->keyup(event->cbutton.timestamp);
-                    break;
-                case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-                    openglContext->keyInteractions.left->keyup(event->cbutton.timestamp);
-                    break;
+                makeControllerButtonKeySwitchPartial(keyup)
                 case SDL_CONTROLLER_BUTTON_A:
                     //SDL_Log("BUTTON A");
-                    openglContext->generalUx->addCurrentToPickHistory();
+                    openglContext->EnterKeyEvent(); // TODO: we can confirm no other key was pressed? (to allow cancel of enter key???)
                     break;
                 case SDL_CONTROLLER_BUTTON_B:
                     //SDL_Log("BUTTON B");
-                    BackButtonEvent();
+                    openglContext->BackButtonEvent();
                     break;
             }
 
@@ -619,25 +600,13 @@ event is maybe going to have
 
             if( event->key.repeat ) return 0; // we will handle our own repeats tyvm /s
 
-           // event->key.keysym.scancode
-            // the scancode is easiest to look up in SDL_scancode.h
+            // the scancode is easiest to look up in SDL_scancode.h then follow to SDL_keycode.h
             //SDL_Log("1keydown %d %d %s", event->key.keysym.sym, event->key.keysym.scancode,  SDL_GetKeyName(event->key.keysym.sym) );
-            //openglContext->keyDown(event->key.keysym.sym);
-            if (event->key.keysym.sym == SDLK_AC_BACK || event->key.keysym.sym == SDLK_BACKSPACE || event->key.keysym.sym == SDLK_ESCAPE){
-                //SDL_Log("back/esc pressed");
-                BackButtonEvent();
-            }else if(event->key.keysym.sym == SDLK_AC_HOME){
-                // nope only works on windows..... maybe android, but how to screenshot android?
-                //SDL_Log("home pressed - maybe ios screenshot? time for gimicky marketing ploy");
-            }else{
+            openglContext->keyDown(event->key.timestamp, event->key.keysym.sym);
 
-                // TODO move other above and BackButtonEvent into openglContext->keyDown
-                openglContext->keyDown(event->key.timestamp, event->key.keysym.sym);
-
-            }
             return 0;
         case SDL_KEYUP:
-            // the scancode is easiest to look up in SDL_scancode.h
+            // the scancode is easiest to look up in SDL_scancode.h then follow to SDL_keycode.h
             //SDL_Log("1keyup %d %d %s", event->key.keysym.sym, event->key.keysym.scancode,  SDL_GetKeyName(event->key.keysym.sym) );
             openglContext->keyUp(event->key.timestamp, event->key.keysym.sym);
 
