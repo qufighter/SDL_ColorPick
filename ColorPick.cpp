@@ -75,7 +75,7 @@ void OpenGLContext::keyDown(Uint32 timestamp, SDL_Keycode k){
 
     if (k == SDLK_AC_BACK || k == SDLK_BACKSPACE || k == SDLK_ESCAPE){
         //SDL_Log("back/esc pressed");
-        BackButtonEvent();
+        BackButtonEvent(); // have observed trouble doing this in "keyup" (was really controller button up!)
     }else if(k == SDLK_AC_HOME){
         // nope only works on windows..... maybe android, but how to screenshot android?
         //SDL_Log("home pressed - maybe ios screenshot? time for gimicky marketing ploy");
@@ -1178,21 +1178,21 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
             moveSpeed += 64 * intensity;
         }
 
+#define dirKeyPressedApplicationMacro(directionOfEffect, signOfEffect, keyIdentifier) \
+        colorPickState->directionOfEffect=signOfEffect(keyInteractions.keyIdentifier->was_new ? 1 : moveSpeed); \
+        indicateHighSpeed();
+
         if( keyInteractions.up->isPressed(ticks) ){
-            colorPickState->mmovey=moveSpeed;
-            indicateHighSpeed();
+            dirKeyPressedApplicationMacro(mmovey, +, up)
         }
         if( keyInteractions.down->isPressed(ticks) ){
-            colorPickState->mmovey=-moveSpeed;
-            indicateHighSpeed();
+            dirKeyPressedApplicationMacro(mmovey, -, down)
         }
         if( keyInteractions.right->isPressed(ticks) ){
-            colorPickState->mmovex=-moveSpeed;
-            indicateHighSpeed();
+            dirKeyPressedApplicationMacro(mmovex, -, right)
         }
         if( keyInteractions.left->isPressed(ticks) ){
-            colorPickState->mmovex=moveSpeed;
-            indicateHighSpeed();
+            dirKeyPressedApplicationMacro(mmovex, +, left)
         }
 
     }

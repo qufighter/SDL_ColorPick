@@ -497,8 +497,12 @@ event is maybe going to have
                 makeControllerButtonKeySwitchPartial(keydown)
             }
 
-            // this allows the keypress to possibly cancel another keypress that has not yet been released, HOWEVER each controller instance should really have ITS OWN key interaction object...... instead of sharing with kbd
+            // this allows the keypress to possibly cancel another keypress that has not yet been released, [[HOWEVER each controller instance should [[really]] have ITS OWN key interaction object]]...... instead of sharing with kbd? (well, fireTV controller generates both KBD and Controlelr events... so THAT ONE should share....) todo find some unifying device id between these?
             openglContext->keyInteractions.someKeyDown(event->cbutton.timestamp);
+
+            if( event->cbutton.button == SDL_CONTROLLER_BUTTON_B ){
+                openglContext->BackButtonEvent(); // this one may have issues if placed in CONTROLLERBUTTONUP ?!?!?!?! not sure I thought it worked
+            }
 
             openglContext->clearVelocity();
             openglContext->renderShouldUpdate=true;
@@ -516,8 +520,6 @@ event is maybe going to have
                 if( openglContext->keyInteractions.enter->wasNotCanceledByLaterKeypress() ){
                     openglContext->EnterKeyEvent();
                 }
-            }else if( event->cbutton.button == SDL_CONTROLLER_BUTTON_B ){
-                openglContext->BackButtonEvent();
             }
 
             openglContext->clearVelocity();
@@ -624,7 +626,7 @@ event is maybe going to have
             return 0;
 
         case SDL_TEXTINPUT:
-
+                // handled here for debugging silence on desktop...
             return 0;
 
         case SDL_APP_LOWMEMORY:{
@@ -634,6 +636,8 @@ event is maybe going to have
              */
 
             // WE CAN"T DO MUCH BUT WE CAN SAVE OUR STATE I SUPPOSE?? (OR WILL THIS CRASH US???)
+
+            // maybe destroy animations, all UI objects, and save state?
 
             return 0;
         }

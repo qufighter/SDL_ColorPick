@@ -13,6 +13,7 @@
 #define INITIAL_KEYDOWN_DELAY 400
 
 // TODO: each keyboard, or controller, should use it's own uiKeyInteractions PROBABLY... unless its severly cooperative gameplay type!!!
+//       (well, fireTV controller generates both KBD and Controller events... so THAT ONE should share.... NBD if it doesn't just some keys won't be able to cancel others!)
 
 struct uiKeyInteractions // used to track interactions that repeat, may also be triggered by controller keys because why not!
 {
@@ -27,6 +28,7 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
         void defaults(){
             timestamp = 0;
             is_new = false;
+            was_new = false;
         }
 
         void keydown(Uint32 time){
@@ -49,6 +51,7 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
         bool isPressed(Uint32 time){
             if(!timestamp) return false;
             int dist = time - timestamp;
+            was_new = is_new;
             if( dist > 0 ){
                 timestamp = time;
                 return true;
@@ -72,6 +75,7 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
         Uint32 timestamp;
         Uint32 keydown_timestamp;
         bool is_new;
+        bool was_new;
         uiKeyInteractions* parent;
     };
 
@@ -83,7 +87,6 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
     uiKeyInteraction* down;
     uiKeyInteraction* left;
     uiKeyInteraction* right;
-
     uiKeyInteraction* enter;
     uiKeyInteraction* zoomIn;
     uiKeyInteraction* zoomOut;
