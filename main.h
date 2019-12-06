@@ -268,7 +268,7 @@ struct uniformLocationStruct
 
 
 // static seems a bit redundant, no?
-static SDL_Window *window;
+static SDL_Window *sdl_Window;
 static int win_w = SCREEN_WIDTH;
 static int win_h = SCREEN_HEIGHT;
 

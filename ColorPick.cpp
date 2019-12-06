@@ -75,7 +75,7 @@ void OpenGLContext::keyDown(Uint32 timestamp, SDL_Keycode k){
 
     if (k == SDLK_AC_BACK || k == SDLK_BACKSPACE || k == SDLK_ESCAPE){
         //SDL_Log("back/esc pressed");
-        BackButtonEvent(); // have observed trouble doing this in "keyup" (was really controller button up!)
+        BackButtonEvent();  // CONSIDER MOVING TO KEYUP??? TEST IT (android) (applies to minigame and non minigame modes!)
     }else if(k == SDLK_AC_HOME){
         // nope only works on windows..... maybe android, but how to screenshot android?
         //SDL_Log("home pressed - maybe ios screenshot? time for gimicky marketing ploy");
@@ -131,7 +131,7 @@ void OpenGLContext::BackButtonEvent(){
     }else{
 #ifdef __ANDROID__
         //SDL_AndroidBackButton();
-        SDL_MinimizeWindow(window);
+        SDL_MinimizeWindow(sdlWindow);
 #endif
     }
 }

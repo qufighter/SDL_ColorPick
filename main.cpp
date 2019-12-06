@@ -500,9 +500,7 @@ event is maybe going to have
             // this allows the keypress to possibly cancel another keypress that has not yet been released, [[HOWEVER each controller instance should [[really]] have ITS OWN key interaction object]]...... instead of sharing with kbd? (well, fireTV controller generates both KBD and Controlelr events... so THAT ONE should share....) todo find some unifying device id between these?
             openglContext->keyInteractions.someKeyDown(event->cbutton.timestamp);
 
-            if( event->cbutton.button == SDL_CONTROLLER_BUTTON_B ){
-                openglContext->BackButtonEvent(); // this one may have issues if placed in CONTROLLERBUTTONUP ?!?!?!?! not sure I thought it worked
-            }
+
 
             openglContext->clearVelocity();
             openglContext->renderShouldUpdate=true;
@@ -520,6 +518,8 @@ event is maybe going to have
                 if( openglContext->keyInteractions.enter->wasNotCanceledByLaterKeypress() ){
                     openglContext->EnterKeyEvent();
                 }
+            }else if( event->cbutton.button == SDL_CONTROLLER_BUTTON_B ){
+                openglContext->BackButtonEvent(); // this can probably work in controller up too.. and maybe we can even cancel that! TODO
             }
 
             openglContext->clearVelocity();
@@ -621,7 +621,7 @@ event is maybe going to have
 //SDL_StopTextInput
 //SDL_SetTextInputRect //used as a hint for IME and on-screen keyboard placement
 //SDL_HasScreenKeyboardSupport
-//SDL_IsScreenKeyboardShown(SDL_Window *window);
+//SDL_IsScreenKeyboardShown(SDL_Window *sdl_Window);
 
             return 0;
 
@@ -776,7 +776,7 @@ void ShowFrame(void*)
     SDL_Log("RENDER SCENE COMPLETED... swapping buffers....");
 #endif
 
-    SDL_GL_SwapWindow(window); // move into render scene?
+    SDL_GL_SwapWindow(sdl_Window); // move into render scene?
 
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // possibly good idea here?
 
@@ -809,9 +809,9 @@ void ReshapeWindow(){
 void ReshapeWindow(bool fromMain){
     // just in case we didn't get hi-dpi from SDL_WINDOW_ALLOW_HIGHDPI we can see what size we actually got here
 
-    SDL_GetWindowSize(window, &colorPickState->windowWidth, &colorPickState->windowHeight);
+    SDL_GetWindowSize(sdl_Window, &colorPickState->windowWidth, &colorPickState->windowHeight);
 
-    SDL_GL_GetDrawableSize(window, &colorPickState->drawableWidth, &colorPickState->drawableHiehgt);
+    SDL_GL_GetDrawableSize(sdl_Window, &colorPickState->drawableWidth, &colorPickState->drawableHiehgt);
 
     win_w=colorPickState->windowWidth;
     win_h=colorPickState->windowHeight;
@@ -838,7 +838,7 @@ void ReshapeWindow(bool fromMain){
     colorPickState->ui_mmv_scale=ui_mmv_scale;
 
     // none of this experimental stuff really works:
-    int displayIndex = SDL_GetWindowDisplayIndex(window);
+    int displayIndex = SDL_GetWindowDisplayIndex(sdl_Window);
     float ddpi=1.0f;
     float hdpi=1.0f;
     float vdpi=1.0f;
@@ -1073,7 +1073,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     /* create window and renderer */
-    window =
+    sdl_Window =
         SDL_CreateWindow(NULL, win_pos_x, win_pos_y, win_w, win_h,
                          SDL_WINDOW_OPENGL
                          | SDL_WINDOW_SHOWN
@@ -1086,7 +1086,7 @@ int main(int argc, char *argv[]) {
                          //| SDL_WINDOW_FULLSCREEN
                          //| SDL_WINDOW_BORDERLESS
         );
-    if (!window) {
+    if (!sdl_Window) {
         printf("Could not initialize Window\n");
         return 1;
     }
@@ -1094,7 +1094,7 @@ int main(int argc, char *argv[]) {
     colorPickState->viewport_ratio = (win_w+1.0f)/win_h;
 
 
-//    renderer = SDL_CreateRenderer(window, -1, 0);
+//    renderer = SDL_CreateRenderer(sdl_Window, -1, 0);
 //    if (!renderer) {
 //        printf("Could not create renderer\n");
 //        return 1;
@@ -1105,7 +1105,7 @@ int main(int argc, char *argv[]) {
 
 
 
-    result = openglContext->createContext(window);
+    result = openglContext->createContext(sdl_Window);
     if( !result ){
         printf("Could not create context\n");
         return 1;
@@ -1209,7 +1209,7 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
 
                 SDL_zero(messagebox);
                 messagebox.flags = SDL_MESSAGEBOX_WARNING;
-                messagebox.window = window;
+                messagebox.window = sdl_Window;
                 messagebox.title = "Error - 2048x Textures Required";
                 messagebox.message = "ColorPick Requires support for 2048 pixel textures.";// "test message1";
                 messagebox.numbuttons = SDL_arraysize(buttons);
@@ -1312,7 +1312,7 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
 #else
 
     //SDL_iPhoneSetEventPump(SDL_TRUE);
-    SDL_iPhoneSetAnimationCallback(window, 1, ShowFrame, NULL);
+    SDL_iPhoneSetAnimationCallback(sdl_Window, 1, ShowFrame, NULL);
 #endif
 
 #else // not COLORPICK_MISSING_MAIN_LOOP
@@ -1355,7 +1355,7 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
 
     /* shutdown SDL */
     openglContext->destroyContext();
-    SDL_DestroyWindow(window);
+    SDL_DestroyWindow(sdl_Window);
     SDL_Quit();
 #endif
 
