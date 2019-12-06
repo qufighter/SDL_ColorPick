@@ -129,13 +129,14 @@ EM_JS(void, em_get_file, (), {
 
     i.addEventListener('change', function(ev){
 
-        console.log('3gotten', i, i.value);
-
-        console.log('3gotten', i.data);
+//        console.log('3gotten', i, i.value);
+//
+//        console.log('3gotten', i.data);
 
         var fauxPath = "customfiles/"+i.files[0].name;
 
         var img = new Image;
+        // todo: error handling??? maybe it already is...
         img.onload = function() {
 
             var cvs = document.createElement('canvas');

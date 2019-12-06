@@ -393,6 +393,8 @@ void OpenGLContext:: pickerForHue(SDL_Color* color){
 
     // show the button to return now....
     generalUx->returnToLastImgBtn->showAndAllowInteraction();
+    generalUx->updateModal(generalUx->returnToLastImgBtn, &Ux::interactionReturnToPreviousSurface);
+
     generalUx->huePicker->showHueSlider();
 
 

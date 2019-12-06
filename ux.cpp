@@ -1376,6 +1376,7 @@ void Ux::interactionReturnToPreviousSurface(uiObject *interactionObj, uiInteract
     OpenGLContext* ogg=OpenGLContext::Singleton();
     ogg->restoreLastSurface();
     myUxRef->returnToLastImgBtn->hideAndNoInteraction(); // this should have aleady occured, best be safe though, above does return false wehn we need to do this...
+    myUxRef->endModal(myUxRef->returnToLastImgBtn);
 }
 
 void Ux::interactionBeginReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta){
