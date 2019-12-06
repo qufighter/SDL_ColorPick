@@ -12,13 +12,7 @@
 
 #define INITIAL_KEYDOWN_DELAY 400
 
-struct uiKeyInteractions;//{
-//    void incrementDownCount();
-//    void decrementDownCount();
-//}; // forward decl
-
-
-
+// TODO: each keyboard, or controller, should use it's own uiKeyInteractions PROBABLY... unless its severly cooperative gameplay type!!!
 
 struct uiKeyInteractions // used to track interactions that repeat, may also be triggered by controller keys because why not!
 {
@@ -41,12 +35,14 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
                 is_new = true;
                 parent->downCounter++;
             }
+            keydown_timestamp = time;
+            // parent->lastKeyDownTime = time; this would be a different mode, where we only count "known keys" downtime....
         }
 
         void keyup(Uint32 time){
             if( timestamp != 0 ){
                 defaults();
-                parent->downCounter--;
+                if( parent->downCounter > 0 ) parent->downCounter--; // Uint32 would loop to large nubmers, better safe than sorry...
             }
         }
 
@@ -65,19 +61,30 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
             }
         }
 
+        bool wasCanceledByLaterKeypress(){
+            return parent->lastKeyDownTime > keydown_timestamp;
+        }
+
+        bool wasNotCanceledByLaterKeypress(){
+            return parent->lastKeyDownTime <= keydown_timestamp;
+        }
+
         Uint32 timestamp;
+        Uint32 keydown_timestamp;
         bool is_new;
         uiKeyInteractions* parent;
     };
 
 
     Uint32 downCounter;
+    Uint32 lastKeyDownTime;
 
     uiKeyInteraction* up;
     uiKeyInteraction* down;
     uiKeyInteraction* left;
     uiKeyInteraction* right;
 
+    uiKeyInteraction* enter;
     uiKeyInteraction* zoomIn;
     uiKeyInteraction* zoomOut;
 
@@ -87,6 +94,7 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
         down =    new uiKeyInteraction(this);
         left =    new uiKeyInteraction(this);
         right =   new uiKeyInteraction(this);
+        enter =   new uiKeyInteraction(this);
         zoomOut = new uiKeyInteraction(this);
         zoomIn =  new uiKeyInteraction(this);
     };
@@ -105,6 +113,10 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
         case SDLK_LEFT: \
             left->keystateFnName(timestamp); \
             break; \
+        case SDLK_RETURN: \
+        case SDLK_KP_ENTER: \
+            enter->keystateFnName(timestamp); \
+            break; \
         case SDLK_AUDIOREWIND: \
         case SDLK_KP_MINUS: \
             zoomOut->keystateFnName(timestamp); \
@@ -115,7 +127,12 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
             break; \
     }
 
+    void someKeyDown(Uint32 timestamp){ //cheaper since it avoids switch below, useful for controllers where we are already switching the key codes....
+        lastKeyDownTime = timestamp;
+    }
+
     void keyDown(Uint32 timestamp, SDL_Keycode k){
+        someKeyDown(timestamp);
         makeKeysatetSwitch(keydown)
     }
 

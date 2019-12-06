@@ -98,7 +98,9 @@ void OpenGLContext::keyUp(Uint32 timestamp, SDL_Keycode k){
         switch(k){
             case SDLK_RETURN:
             case SDLK_KP_ENTER:
-                EnterKeyEvent();
+                if(keyInteractions.enter->wasNotCanceledByLaterKeypress()){
+                    EnterKeyEvent();
+                }
                 break;
 #ifdef COLORPICK_DEBUG_MODE
             case SDLK_p:
@@ -120,7 +122,6 @@ void OpenGLContext::EnterKeyEvent(){
         if( setup_complete ){ // this check is specifically to guard the enter key durign shader compilation error messaage box...
             generalUx->addCurrentToPickHistory();
         }
-
     }
 }
 

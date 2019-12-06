@@ -486,22 +486,19 @@ event is maybe going to have
         case SDL_CONTROLLER_BUTTON_DPAD_LEFT: \
             openglContext->keyInteractions.left->providedKeyState(event->cbutton.timestamp); \
             break; \
-
+        case SDL_CONTROLLER_BUTTON_A: \
+            openglContext->keyInteractions.enter->providedKeyState(event->cbutton.timestamp); \
+            break; \
 
         case SDL_CONTROLLERBUTTONDOWN:{
             SDL_Log("Controller button down %i (SDL_GameControllerButton)", event->cbutton.button);
 
             switch(event->cbutton.button){
                 makeControllerButtonKeySwitchPartial(keydown)
-                case SDL_CONTROLLER_BUTTON_A:
-                    //SDL_Log("BUTTON A");
-                    // openglContext->EnterKeyEvent(); // TODO: we can confirm no other key was pressed? (to allow cancel of enter key???) (use keyInteractions.left and remober timestamp of laswt key pressed, this key has special field to know to check if no other key was pressed: ez)
-                    break;
-                case SDL_CONTROLLER_BUTTON_B:
-                    //SDL_Log("BUTTON B");
-//                    BackButtonEvent();
-                    break;
             }
+
+            // this allows the keypress to possibly cancel another keypress that has not yet been released, HOWEVER each controller instance should really have ITS OWN key interaction object...... instead of sharing with kbd
+            openglContext->keyInteractions.someKeyDown(event->cbutton.timestamp);
 
             openglContext->clearVelocity();
             openglContext->renderShouldUpdate=true;
@@ -513,21 +510,18 @@ event is maybe going to have
 
             switch(event->cbutton.button){
                 makeControllerButtonKeySwitchPartial(keyup)
-                case SDL_CONTROLLER_BUTTON_A:
-                    //SDL_Log("BUTTON A");
-                    openglContext->EnterKeyEvent(); // TODO: we can confirm no other key was pressed? (to allow cancel of enter key???)
-                    break;
-                case SDL_CONTROLLER_BUTTON_B:
-                    //SDL_Log("BUTTON B");
-                    openglContext->BackButtonEvent();
-                    break;
+            }
+
+            if( event->cbutton.button == SDL_CONTROLLER_BUTTON_A ){
+                if( openglContext->keyInteractions.enter->wasNotCanceledByLaterKeypress() ){
+                    openglContext->EnterKeyEvent();
+                }
+            }else if( event->cbutton.button == SDL_CONTROLLER_BUTTON_B ){
+                openglContext->BackButtonEvent();
             }
 
             openglContext->clearVelocity();
             openglContext->renderShouldUpdate=true;
-
-
-
 
             break;
 
@@ -626,6 +620,10 @@ event is maybe going to have
 //SDL_SetTextInputRect //used as a hint for IME and on-screen keyboard placement
 //SDL_HasScreenKeyboardSupport
 //SDL_IsScreenKeyboardShown(SDL_Window *window);
+
+            return 0;
+
+        case SDL_TEXTINPUT:
 
             return 0;
 
