@@ -116,7 +116,19 @@ typedef struct ColorList // cannot really use this since we do not persist ths t
     }
     SDL_Color color;
     bool is_delete_state;
+
+    bool operator==(const Ux::ColorList i) {
+        //SDL_Log("spla2 %i %i", &i, this );
+        return &i == this;
+    }
+
+//    bool operator==(const Ux::ColorList &i) {
+//        SDL_Log("spla3 %i %i", i, this );
+//        return &i == this;
+//    }
+
 } ColorList;
+
 
 static bool setColorNotifyOfChange(SDL_Color * color, SDL_Color * bcolor){
     return setColorNotifyOfChange(color, bcolor->r, bcolor->g, bcolor->b, bcolor->a);
@@ -1571,6 +1583,37 @@ struct uiObject
                 }
             }
         }
+    }
+
+    bool hasControllerInteraction(){
+
+        if( hasInteractionCb && interactionCallback != Ux::interactionNoOp ){
+            return true;
+        }
+
+        if( hasInteraction ){
+            return true;
+        }
+
+        return false;
+
+    }
+
+    void seekControllerCursorObjects(){
+
+        /// NOTE: some object should maybe still updated even if they are out of bounds, since some of the children COULD be in bounds....
+        if( hasChildren && isInBounds ){
+            for( int x=0,l=childListIndex; x<l; x++ ){
+                childList[x]->seekControllerCursorObjects();
+            }
+        }
+
+        // adding deep interactions first before "shallow" ones... we could omit shallow ones where deep ones found?
+        if( isInBounds && doesInFactRender && hasControllerInteraction() ){
+            Ux* myUxRef = Ux::Singleton();
+            myUxRef->controllerCursorObjects->add(this);
+        }
+
     }
 
 };

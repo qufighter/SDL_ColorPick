@@ -155,7 +155,18 @@ struct uiList
             return locateIndex(indexOffsetGen(&item));
         }else{
             // search whole array?
-            SDL_Log("Sorry locate in un-indexed list not currently supported");
+            //SDL_Log("Sorry locate in un-indexed list not currently supported");
+
+            // TODO this needs testing with NON reference types for genType still... since those are indexed?
+            // see bool operator==(const Ux::ColorList i)
+            for( int x=0; x<=_largestIndex; x++ ){
+                SDL_Log("spla %i %i", item, listItself[x]  );
+                if( item == listItself[x] ){
+
+
+                    return x;
+                }
+            }
         }
         return -1; // missing
     }
@@ -269,6 +280,24 @@ struct uiList
     }
     int previousIndex(){
         return _previousIndex;
+    }
+    int validateIndex(int listIndex){
+        if( listIndex > _largestIndex ){
+            return _largestIndex;
+        }
+        if( listIndex < 0 ){
+            return 0;
+        }
+        return listIndex;
+    }
+    int validateIndexLooping(int listIndex){
+        if( listIndex > _largestIndex ){
+            return 0;
+        }
+        if( listIndex < 0 ){
+            return _largestIndex;
+        }
+        return listIndex;
     }
 
     void addAll(genType* newItems, int totalBytes){

@@ -176,10 +176,10 @@ public:
 static Ux* Singleton();
 
 
-#include "uiList.h" // referrs to Ux:: which referrs to uiObject...
+#include "ux-uiList.h" // referrs to Ux:: which referrs to uiObject...
 #include "ux-HueGradientData.h"
+#include "ux-uiObject.h" // referrs to Ux:: which referrs to uiObject...
 
-#include "uiObject.h" // referrs to Ux:: which referrs to uiObject...
 #include "uiGradientLinear.h"
 #include "uiSwatchesGradient.h"
 
@@ -256,6 +256,15 @@ static Ux* Singleton();
         return result;
     }
 
+    static int compareUiObjectsYpos(Ux::uiObject **a, Ux::uiObject **b){
+        float yDiff = ((*b)->collisionRect.y - (*a)->collisionRect.y) * colorPickState->halfWindowHeight;
+        return (int)yDiff;
+    }
+    static int compareUiObjectsXpos(Ux::uiObject **a, Ux::uiObject **b){
+        float xDiff = ((*b)->collisionRect.x - (*a)->collisionRect.x) * colorPickState->halfWindowWidth;
+        return (int)xDiff;
+    }
+
     static int compareColorListItems(ColorList *a, ColorList *b){
         return compareColor(&a->color, &b->color);
     }
@@ -280,7 +289,14 @@ static Ux* Singleton();
     void readInState(char* filepath, void* dest, int destMaxSize, int* readSize);
 
     void updateRenderPositions(void);
-    void updateRenderPosition(uiObject *renderObj);
+    void updateRenderPositions(uiObject *renderObj);
+    void seekAllControllerCursorObjects();
+
+    void enableControllerCursor();
+    void disableControllerCursor();
+    void navigateControllerCursor(int x, int y);
+
+
 
     void updateModal(uiObject *newModal, anInteractionFn modalDismissal);
     void endModal(uiObject *oldModal); // this is to be called AFTER modal is hidden
@@ -470,6 +486,15 @@ static Ux* Singleton();
 
     SDL_Color* currentlyPickedColor;
     HSV_Color* lastHue;  // bad var name?  this is an SDL_Color in ColorPick.h...
+
+
+
+    uiObject *controllerCursor;// Modal
+    static const int controllerCursorObjectsMax = 15;
+    uiList<uiObject*, Uint8>* controllerCursorObjects; // WARN - do not enable index if using Uint8 - max Uint8 is far less than pickHistoryMax
+    bool controllerCursorModeEnabled;
+    int controllerCursorIndex;
+
 
     char* historyPath;
     char* palletePath;

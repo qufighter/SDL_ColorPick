@@ -81,6 +81,8 @@ void Ux::GetPrefPath(char* preferencesPath, const char* filename, char** resultD
  */
 Ux::Ux(void) {
 
+    controllerCursorModeEnabled = false;
+
     isMinigameMode = false;
 
     print_here = (char*)SDL_malloc( sizeof(char) * max_print_here );
@@ -518,7 +520,7 @@ void Ux::resizeUiElements(void){
 
     }
 
-    rootUiObject->updateRenderPosition();
+    updateRenderPositions();
 
     //  we have an optimization where OOB elements aren't updated by the above, so lets manually update the important ones now....
     // untrue... boot in widescreen though to see teh issue with these:
@@ -713,8 +715,6 @@ Ux::uiObject* Ux::create(void){
     zoomSliderHolder->addChild(zoomSliderBg);
 
 
-
-
     zoomSlider = new uiObject();
     //zoomSlider->isDebugObject=true;
     zoomSlider->hasBackground = true;
@@ -814,7 +814,20 @@ Ux::uiObject* Ux::create(void){
  //    uiText::BOTTOM;
 
 
+
+
+    controllerCursor = new uiObject();
+    controllerCursor->hasBackground = true;
+    Ux::setColor(&controllerCursor->backgroundColor, 255, 0, 0, 128);
+    controllerCursor->setRoundedCorners(0.486);
+    rootUiObject->addChild(controllerCursor);
+
+    controllerCursorObjects = new uiList<uiObject*, Uint8>(controllerCursorObjectsMax); // controller cursor limit
+
+
     updateRenderPositions();
+
+    disableControllerCursor();
 
     readInState(); // reads saved state into lists, requires historyPalleteEditor
 
@@ -893,17 +906,73 @@ Ux::uiObject* Ux::create(void){
 
 void Ux::updateRenderPositions(void){
     rootUiObject->updateRenderPosition();
+    seekAllControllerCursorObjects();
 }
 
-void Ux::updateRenderPosition(uiObject *renderObj){
+void Ux::updateRenderPositions(uiObject *renderObj){
     renderObj->updateRenderPosition();
 }
 
 
 
+void Ux::seekAllControllerCursorObjects(){
+    controllerCursorObjects->clear();
+    rootUiObject->seekControllerCursorObjects();
+
+    // next: sort these objects ;)
+
+    controllerCursorObjects->sort(Ux::compareUiObjectsYpos);
+}
+
+void Ux::enableControllerCursor(){
+
+    if( controllerCursorObjects->total() > 0 ){
+        controllerCursorModeEnabled = true;
+        controllerCursorIndex = 0;
+
+        uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
+
+        Ux::setRect(&controllerCursor->renderRect, &curObj->renderRect);
+
+        controllerCursor->show();
+    }
+}
+void Ux::disableControllerCursor(){
+    controllerCursorModeEnabled = false;
+    controllerCursor->hide();
+}
+void Ux::navigateControllerCursor(int x, int y){
+
+    SDL_Log("total objs %i  x%i y%i", controllerCursorObjects->total(), x, y);
+
+    bool isY = y != 0;
+    if( !isY ) y = x;
+
+    SDL_Log("initial index: %i", controllerCursorIndex);
+
+    uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
+
+    controllerCursorObjects->sort(isY ? Ux::compareUiObjectsYpos : Ux::compareUiObjectsXpos);
+
+    controllerCursorIndex = controllerCursorObjects->locate(curObj);
+
+    SDL_Log("POStSORT index: %i", controllerCursorIndex);
+
+
+    // todo: try out validateIndexLooping :)
+    controllerCursorIndex = controllerCursorObjects->validateIndexLooping(controllerCursorIndex + y);
+//    controllerCursorIndex = controllerCursorIndex + -y;
+
+    SDL_Log("    NEW index: %i", controllerCursorIndex);
+
+    curObj = *controllerCursorObjects->get(controllerCursorIndex);
+
+    Ux::setRect(&controllerCursor->renderRect, &curObj->renderRect);
 
 
 
+
+}
 
 
 // so should the print functions move into uiObject?
@@ -1041,7 +1110,7 @@ void Ux::printStringToUiObject(uiObject* printObj, const char* text, bool resize
         // not needed during first init where we build once at end...
         // also not needed during normal course of printing a second time the same text length....
         // updateRenderPositions();
-        updateRenderPosition(printObj);
+        updateRenderPositions(printObj);
 
     }
 }
@@ -1057,7 +1126,7 @@ void Ux::printCharToUiObject(uiObject* letter, int character, bool resizeText){
         // not needed during first init where we build once at end...
         // also not needed during normal course of printing a second time the same text length....
         // updateRenderPositions();
-        updateRenderPosition(letter->parentObject);
+        updateRenderPositions(letter->parentObject);
     }
 }
 
@@ -1541,7 +1610,7 @@ void Ux::interactionHorizontal(uiObject *interactionObj, uiInteraction *delta){
         interactionObj->is_being_viewed_state = false; // toggle still to be called..... on touch release (interactionCallback)
     }
 
-    self->updateRenderPosition(interactionObj);
+    self->updateRenderPositions(interactionObj);
 }
 
 // this overrides the interface fn?
@@ -1568,7 +1637,7 @@ void Ux::interactionVert(uiObject *interactionObj, uiInteraction *delta){
         interactionObj->is_being_viewed_state = false; // toggle still to be called..... on touch release (interactionCallback)
     }
 
-    self->updateRenderPosition(interactionObj);
+    self->updateRenderPositions(interactionObj);
 }
 
 //static   // must have move boundary rect....
@@ -1593,7 +1662,7 @@ void Ux::interactionSliderVT(uiObject *interactionObj, uiInteraction *delta){
     }
 
     Ux* myUxRef = Ux::Singleton();
-    myUxRef->updateRenderPosition(interactionObj);
+    myUxRef->updateRenderPositions(interactionObj);
 }
 
 void Ux::clickZoomSliderBg(uiObject *interactionObj, uiInteraction *delta){
@@ -1644,7 +1713,7 @@ void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
 
     Ux* myUxRef = Ux::Singleton();
  //    myUxRef->updateRenderPositions();
-    myUxRef->updateRenderPosition(interactionObj);
+    myUxRef->updateRenderPositions(interactionObj);
 
 
 //    SDL_Log(" (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((( FIX ME");

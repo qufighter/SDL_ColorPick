@@ -226,7 +226,7 @@ void mouseMoveEvent(SDL_Event* event){
             // todo combine above into the following call?
             openglContext->generalUx->interactionUpdate(fingerInteraction); // todo whyarg, BETTERARG
             // todo the above would appear to return a "should update??"
-            openglContext->renderShouldUpdate = true; /// TODO interactionUpdate calls generalUx->updateRenderPositions() should cause the UI to update... for now we just redraw everything
+            openglContext->renderShouldUpdate = true;
         }
     }
 }

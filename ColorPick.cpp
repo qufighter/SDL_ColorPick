@@ -76,6 +76,15 @@ void OpenGLContext::keyDown(Uint32 timestamp, SDL_Keycode k){
     if (k == SDLK_AC_BACK || k == SDLK_BACKSPACE || k == SDLK_ESCAPE){
         //SDL_Log("back/esc pressed");
         BackButtonEvent();  // CONSIDER MOVING TO KEYUP??? TEST IT (android) (applies to minigame and non minigame modes!)
+    }else if( k == SDLK_TAB || k == SDLK_MENU ){
+
+        // menu could be like tab, or it could toggle menu mode, hmm... for now tab or menu just toggle the menu mode!
+        // while arrow keys will navigate the mode....
+
+        generalUx->enableControllerCursor();
+
+
+
     }else if(k == SDLK_AC_HOME){
         // nope only works on windows..... maybe android, but how to screenshot android?
         //SDL_Log("home pressed - maybe ios screenshot? time for gimicky marketing ploy");
@@ -126,7 +135,9 @@ void OpenGLContext::EnterKeyEvent(){
 }
 
 void OpenGLContext::BackButtonEvent(){
-    if( generalUx->hasCurrentModal() ){
+    if( generalUx->controllerCursorModeEnabled ){
+        generalUx->disableControllerCursor();
+    }else if( generalUx->hasCurrentModal() ){
         generalUx->endCurrentModal();
     }else{
 #ifdef __ANDROID__
@@ -1165,6 +1176,7 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
 
     Uint32 ticks = SDL_GetTicks();
 
+    // TODO: all this should PROBABLY move into render scene in some way !!!!!!!!!!! controllerCursorModeEnabled a little different...
     if( keyInteractions.hasPressedKeys() ){
         int moveSpeed = 1;
 
@@ -1184,19 +1196,33 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
         colorPickState->directionOfEffect=signOfEffect(keyInteractions.keyIdentifier->was_new ? 1 : moveSpeed); \
         indicateHighSpeed();
 
-        if( keyInteractions.up->isPressed(ticks) ){
-            dirKeyPressedApplicationMacro(mmovey, +, up)
+        if( !generalUx->controllerCursorModeEnabled ){
+            if( keyInteractions.up->isPressed(ticks) ){
+                dirKeyPressedApplicationMacro(mmovey, +, up)
+            }
+            if( keyInteractions.down->isPressed(ticks) ){
+                dirKeyPressedApplicationMacro(mmovey, -, down)
+            }
+            if( keyInteractions.right->isPressed(ticks) ){
+                dirKeyPressedApplicationMacro(mmovex, -, right)
+            }
+            if( keyInteractions.left->isPressed(ticks) ){
+                dirKeyPressedApplicationMacro(mmovex, +, left)
+            }
+        }else{
+            if( keyInteractions.up->isPressed(ticks) ){
+                generalUx->navigateControllerCursor(0,1);
+            }
+            if( keyInteractions.down->isPressed(ticks) ){
+                generalUx->navigateControllerCursor(0,-1);
+            }
+            if( keyInteractions.right->isPressed(ticks) ){
+                generalUx->navigateControllerCursor(-1,0);
+            }
+            if( keyInteractions.left->isPressed(ticks) ){
+                generalUx->navigateControllerCursor(1,0);
+            }
         }
-        if( keyInteractions.down->isPressed(ticks) ){
-            dirKeyPressedApplicationMacro(mmovey, -, down)
-        }
-        if( keyInteractions.right->isPressed(ticks) ){
-            dirKeyPressedApplicationMacro(mmovex, -, right)
-        }
-        if( keyInteractions.left->isPressed(ticks) ){
-            dirKeyPressedApplicationMacro(mmovex, +, left)
-        }
-
     }
 
     if( has_velocity ){
