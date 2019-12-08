@@ -159,11 +159,11 @@ struct uiList
 
             // TODO this needs testing with NON reference types for genType still... since those are indexed?
             // see bool operator==(const Ux::ColorList i)
+            // SO we tested this but NOT with the above type!! however with SDL_Color we COULD NOT compare references in the opperator we had to write....
+            // still some to test here with more actual types..... and to know when ref compare works good vs not....
             for( int x=0; x<=_largestIndex; x++ ){
-                SDL_Log("spla %i %i", item, listItself[x]  );
+                // SDL_Log("spla %i %i", item, listItself[x]  );
                 if( item == listItself[x] ){
-
-
                     return x;
                 }
             }

@@ -256,12 +256,18 @@ static Ux* Singleton();
         return result;
     }
 
-    static int compareUiObjectsYpos(Ux::uiObject **a, Ux::uiObject **b){
+    static int compareUiObjectsYpos(Ux::uiObject **a, Ux::uiObject **b){ // TODO maybe call helper on uiObject ?
         float yDiff = ((*b)->collisionRect.y - (*a)->collisionRect.y) * colorPickState->halfWindowHeight;
+        if( yDiff == 0 ){
+            return (*b)->myChildListIndex - (*a)->myChildListIndex;
+        }
         return (int)yDiff;
     }
-    static int compareUiObjectsXpos(Ux::uiObject **a, Ux::uiObject **b){
+    static int compareUiObjectsXpos(Ux::uiObject **a, Ux::uiObject **b){ // TODO maybe call helper on uiObject ?
         float xDiff = ((*b)->collisionRect.x - (*a)->collisionRect.x) * colorPickState->halfWindowWidth;
+        if( xDiff == 0 ){
+            return (*b)->myChildListIndex - (*a)->myChildListIndex;
+        }
         return (int)xDiff;
     }
 
@@ -292,6 +298,7 @@ static Ux* Singleton();
     void updateRenderPositions(uiObject *renderObj);
     void seekAllControllerCursorObjects();
 
+    void toggleControllerCursor();
     void enableControllerCursor();
     void disableControllerCursor();
     void navigateControllerCursor(int x, int y);

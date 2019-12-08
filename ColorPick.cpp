@@ -80,10 +80,7 @@ void OpenGLContext::keyDown(Uint32 timestamp, SDL_Keycode k){
 
         // menu could be like tab, or it could toggle menu mode, hmm... for now tab or menu just toggle the menu mode!
         // while arrow keys will navigate the mode....
-
-        generalUx->enableControllerCursor();
-
-
+        generalUx->toggleControllerCursor();
 
     }else if(k == SDLK_AC_HOME){
         // nope only works on windows..... maybe android, but how to screenshot android?

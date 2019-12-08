@@ -56,11 +56,6 @@ void Ux::endCurrentModal(){
         // NOTE: just using  currentInteraction here could have SIDE EFFECTS (key presses could reset those???)
         currentModal->modalDismissal(currentModal, &currentInteractions[0]); // NOTE this BAD hack... lucky most modal dismissals dont' care much about the interaction details......
         // endModal(currentModal); // the modal dismissal SHOULD call end modal automatically!  if not you probably did it wrong
-    }else{
-#if __ANDROID__
-        //SDL_AndroidBackButton(); // hmm we didn't SDL_HINT_ANDROID_TRAP_BACK_BUTTON...
-        // uhoh - after we call the above, we can't focus our app again... seems like the same issues as the "split screen"
-#endif
     }
 }
 
@@ -82,6 +77,7 @@ void Ux::GetPrefPath(char* preferencesPath, const char* filename, char** resultD
 Ux::Ux(void) {
 
     controllerCursorModeEnabled = false;
+    controllerCursorIndex = 0;
 
     isMinigameMode = false;
 
@@ -923,12 +919,17 @@ void Ux::seekAllControllerCursorObjects(){
 
     controllerCursorObjects->sort(Ux::compareUiObjectsYpos);
 }
-
+void Ux::toggleControllerCursor(){
+    if(controllerCursorModeEnabled){
+        disableControllerCursor();
+    }else{
+        enableControllerCursor();
+    }
+}
 void Ux::enableControllerCursor(){
-
     if( controllerCursorObjects->total() > 0 ){
         controllerCursorModeEnabled = true;
-        controllerCursorIndex = 0;
+        //controllerCursorIndex = 0;
 
         uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
 
@@ -1752,12 +1753,15 @@ bool Ux::bubbleInteractionIfNonClickOrHiddenPalletePreview(uiObject *interaction
 bool Ux::bubbleInteractionIfNonClick(uiObject *interactionObj, uiInteraction *delta){ // return true always, unless the interaction should be dropped and not bubble for some reason....
  //     THIS should return true if the interaciton is still valid, which in all cases should really be YES - unles interaction object is for some reason nullptr reference
 
+    delta->interactionNonTap(); // avoid double tap/isSecondInteraction
+
     Ux* self = Ux::Singleton();
  //     see also interactionUpdate
 
     if( delta->dy != 0 || delta->dx != 0 ){
         return self->bubbleCurrentInteraction(interactionObj, delta); // *SEEMS * much simploer to call bulbble on the UI object itself, perhaps returning the reference to the new interactionObject instead of bool....
     }
+
 
     return true;
 }

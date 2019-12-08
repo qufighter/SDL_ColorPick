@@ -38,11 +38,13 @@ struct uiViewColor{
 
 
         hexBg = new uiObject();
+        rgbBg = new uiObject();
         rgbRedBg = new uiObject();
         rgbGreenBg = new uiObject();
         rgbBlueBg = new uiObject();
 
         uiObjectItself->addChild(hexBg);
+        uiObjectItself->addChild(rgbBg); // this isn't really containing the r g b elements just now... its for clicks though!
         uiObjectItself->addChild(rgbRedBg);
         uiObjectItself->addChild(rgbGreenBg);
         uiObjectItself->addChild(rgbBlueBg);
@@ -61,11 +63,11 @@ struct uiViewColor{
         hexBg->hasBackground = true;
         Ux::setColor(&hexBg->backgroundColor,0, 0, 0, 0);
 
-        uiObjectItself->setInteractionCallback(&pickHexValueClicked);
+        hexBg->setInteractionCallback(&pickHexValueClicked);
         if( topShadow ){
-            uiObjectItself->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
+            hexBg->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
         }else{
-            uiObjectItself->setInteraction(&pickHexValueDragged);
+            hexBg->setInteraction(&pickHexValueDragged);
         }
 
         // perhaps properties on container are inherited by text
@@ -76,6 +78,10 @@ struct uiViewColor{
         SDL_snprintf(resultText6char, 7,  "000000");
         uxInstance->printStringToUiObject(hexValueText, resultText6char, DO_NOT_RESIZE_NOW);
         hexValueText->squarifyChildren();
+
+
+        rgbBg->setInteractionCallback(&pickRgbValueClicked);
+        rgbBg->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
 
         // very odd not initializing these...
 
@@ -93,8 +99,6 @@ struct uiViewColor{
         SDL_snprintf(resultText6char, 7,  "  R");
         uxInstance->printStringToUiObject(rgbRedText, resultText6char, DO_NOT_RESIZE_NOW);
         rgbRedText->squarifyChildren();
-        rgbRedBg->setInteractionCallback(&pickRgbValueClicked);
-        rgbRedBg->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
 
 
         rgbGreenText = new uiObject();
@@ -110,8 +114,6 @@ struct uiViewColor{
         SDL_snprintf(resultText6char, 7,  "  G");
         uxInstance->printStringToUiObject(rgbGreenText, resultText6char, DO_NOT_RESIZE_NOW);
         rgbGreenText->squarifyChildren();
-        rgbGreenBg->setInteractionCallback(&pickRgbValueClicked);
-        rgbGreenBg->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
 
 
         rgbBlueText = new uiObject();
@@ -127,8 +129,6 @@ struct uiViewColor{
         SDL_snprintf(resultText6char, 7,  "  B");
         uxInstance->printStringToUiObject(rgbBlueText, resultText6char, DO_NOT_RESIZE_NOW);
         rgbBlueText->squarifyChildren();
-        rgbBlueBg->setInteractionCallback(&pickRgbValueClicked);
-        rgbBlueBg->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
 
 
         if( topShadow ){
@@ -169,6 +169,7 @@ struct uiViewColor{
     uiObject *rgbBlueText;
 
     uiObject *hexBg;
+    uiObject *rgbBg;
     uiObject *rgbRedBg;
     uiObject *rgbGreenBg;
     uiObject *rgbBlueBg;
@@ -340,6 +341,7 @@ struct uiViewColor{
         if( self->hueBtn == nullptr ){ // we are tryiing to cancel the modal....
             uxInstance->hideHistoryPalleteIfShowing(); // panning background...
         }
+        delta->interactionNonTap(); // avoid double tap/isSecondInteraction
     }
 
     static void pickFromHueTouched(uiObject *interactionObj, uiInteraction *delta){
@@ -374,6 +376,7 @@ struct uiViewColor{
             hexValueText->setBoundaryRect( 0.0, 0.0, hex_size, 0.16666666666667);
             hexValueText->setChildNodeDirection(TEXT_DIR_ENUM::TTB, false);
 
+            rgbBg->setBoundaryRect( hex_size,0.0, rgb_bg_size, 1.0); // not actually container...
             rgbRedBg->setBoundaryRect( hex_size,0.0, rgb_bg_size, 0.333333333333333);
             rgbRedText->setBoundaryRect( hex_size,0.0, rgb_size, 0.333333333333333);
             rgbGreenBg->setBoundaryRect( hex_size, 0.33333333333333, rgb_bg_size, 0.333333333333333);
@@ -398,6 +401,7 @@ struct uiViewColor{
             hexValueText->setBoundaryRect( 0.0, 0.0, 0.16666666666667, hex_size);
             hexValueText->setChildNodeDirection(TEXT_DIR_ENUM::LTR, false);
 
+            rgbBg->setBoundaryRect( 0.0, hex_size, 1.0, rgb_size); // not actually container...
             rgbRedBg->setBoundaryRect( 0.0, hex_size, 0.33333333333333, rgb_size);
             rgbRedText->setBoundaryRect( 0.0, hex_size, 0.11111111111111, rgb_size);
             rgbGreenBg->setBoundaryRect( 0.33333333333333, hex_size, 0.33333333333333, rgb_size);

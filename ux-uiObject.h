@@ -287,6 +287,7 @@ struct uiObject
         myScrollController=nullptr; // not genric enough... remove it
         myUiController = nullptr;
         myIntegerIndex = -1;
+        myChildListIndex = -1;
         forceDelta=nullptr;
 
         matrix = glm::mat4(1.0f);
@@ -337,7 +338,8 @@ struct uiObject
     uiScrollController *myScrollController; // child objects will inherit this I think! - we should just use myUiController though.... TODO remove this
     // GENERICS -- all UI object may have and or use these, but the purpose depends on exact context in which this is used....
     void * myUiController; // ditto!
-    int myIntegerIndex;
+    int myIntegerIndex; // this is for arbatrary use by consumer of the uiObject, eg if this tile needs an index to some other array where it wont' align with myChildListIndex
+    int myChildListIndex; // this is for the index in the parent list, not always populated
 
     uiInteraction *forceDelta;
 
@@ -1605,6 +1607,7 @@ struct uiObject
         if( hasChildren && isInBounds ){
             for( int x=0,l=childListIndex; x<l; x++ ){
                 childList[x]->seekControllerCursorObjects();
+                childList[x]->myChildListIndex = x;
             }
         }
 

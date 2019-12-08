@@ -25,17 +25,20 @@ struct uiInteraction
 //        friction = 4.2;
         friction = 2.2;
 
-        isSecondInteraction=false;
         fingerStateDown = false; // its set to true externally..... if requierd...
         didCollideWithObject=false;
         isInteracting=false;
 
         interactionObject = nullptr;
-        lastInteractionObject = nullptr;
+        interactionNonTap();
 
         useInstantaneousVelocity=false;
 
         fingerId=0;
+    }
+    void interactionNonTap(){
+        lastInteractionObject = nullptr;
+        isSecondInteraction=false;
     }
     void begin(int ticks, float x, float y){
 

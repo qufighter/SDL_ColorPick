@@ -35,6 +35,12 @@ static int indexForColor(SDL_Color* c){
 }
 #define COLOR_INDEX_MAX 16777217 //  256^3 +1
 
+
+bool operator==(const SDL_Color i, const SDL_Color f) {
+    return i.r==f.r && i.g==f.g && i.b==f.b && i.a==f.a;
+}
+
+
 int
 main(int argc, char *argv[])
 {
@@ -151,6 +157,12 @@ main(int argc, char *argv[])
         return 1;
     }
 
+    if(myColorList->locate(blue) != -1){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected locate(blue): %i\n",
+                     myColorList->locate(blue) );
+        return 1;
+    }
+
     myColorList->add(blue);
     myColorList->add(red);
     myColorList->add(green);
@@ -162,7 +174,26 @@ main(int argc, char *argv[])
     }
 
 
+    if(myColorList->locate(blue) != 0){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected locate(blue): %i\n",
+                     myColorList->locate(blue) );
+        return 1;
+    }
+
+    if(myColorList->locate(red) != 1){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected locate(red): %i\n",
+                     myColorList->locate(red) );
+        return 1;
+    }
+
+    if(myColorList->locate(green) != 2){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected locate(green): %i\n",
+                     myColorList->locate(green) );
+        return 1;
+    }
+
     uiList<SDL_Color, Uint8>* myListClone = myColorList->clone();
+    //TODO we should test clone the indexed one too??
 
     if(myListClone->total() != 3){
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected total(): %i\n",
