@@ -127,6 +127,8 @@ public:
     void BackButtonEvent(void);
     void chooseFile(void);
 
+    bool NoModalBlocksPicker();
+
     SDL_Window* getSdlWindow(void);
 
     SDL_Surface *fullPickImgSurface;

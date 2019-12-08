@@ -108,14 +108,59 @@ typedef struct Float_Rect
     }
 
     Float_Rect(float ix,float iy,float iw,float ih){
-        x=ix;y=iy;w=iw;h=ih;
+        setRect(ix,iy,iw,ih);
     }
     Float_Rect(Float_Rect * toClone){
+        setRect(toClone);
+    }
+    void setRect(float ix,float iy,float iw,float ih){
+        x=ix;y=iy;w=iw;h=ih;
+    }
+    void setRect(Float_Rect * toClone){
         x=toClone->x;y=toClone->y;w=toClone->w;h=toClone->h;
+    }
+    bool containsPoint(float tx, float ty){
+        if( tx > x && ty > y ){
+            if( tx < x + w && ty < y + h ){
+                return true;
+            }
+        }
+        return false;
+    }
+    bool containsPointBRxy(float brx, float bry, float tx, float ty){
+        if( tx > x && ty > y ){
+            if( tx < brx && ty < bry ){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool partiallyObfuscates(Float_Rect * t){
+        // AND contains at least one corner...? if t is larger than and FULLY contains our object, then
+
+        float tW = (t->w*0.1);
+        float tH = (t->h*0.1);
+
+        float tlx=t->x+tW; //ttlx
+        float tly=t->y+tH; //ttly
+
+        float brx=(t->x+t->w)-tW; //tbrx
+        float bry=(t->y+t->h)-tH; //tbry
+
+        float x1 = x + w;
+        float y1 = y + h;
+
+        return containsPointBRxy(x1,y1,tlx,tly) || containsPointBRxy(x1,y1,brx,bry) || containsPointBRxy(x1,y1,tlx,bry) || containsPointBRxy(x1,y1,brx,tly) || containsPointBRxy(x1,y1,t->x+(t->w*0.5),t->y+(t->h*0.5));
+    }
+    void invalidate(){
+        x=0.0;y=0.0;w=-1;h=-1;
     }
     float x, y;
     float w, h;
 } Float_Rect;
+
+
 
 typedef struct HSV_Color
 {
@@ -256,17 +301,29 @@ static Ux* Singleton();
         return result;
     }
 
+    static int compareUiObjectsChildListIndex(Ux::uiObject **a, Ux::uiObject **b){
+        int cliDiff = (*b)->myChildListIndex - (*a)->myChildListIndex;
+        if( cliDiff == 0 ){
+            if( (*a)->hasParentObject && (*b)->hasParentObject ){
+                return compareUiObjectsChildListIndex(&(*a)->parentObject, &(*b)->parentObject);
+            }else{
+                SDL_Log("WARNING: unresolved UI object sort - may lead to wacky results");
+            }
+        }
+        return cliDiff;
+    }
+
     static int compareUiObjectsYpos(Ux::uiObject **a, Ux::uiObject **b){ // TODO maybe call helper on uiObject ?
         float yDiff = ((*b)->collisionRect.y - (*a)->collisionRect.y) * colorPickState->halfWindowHeight;
         if( yDiff == 0 ){
-            return (*b)->myChildListIndex - (*a)->myChildListIndex;
+            return compareUiObjectsChildListIndex(a, b);
         }
         return (int)yDiff;
     }
     static int compareUiObjectsXpos(Ux::uiObject **a, Ux::uiObject **b){ // TODO maybe call helper on uiObject ?
         float xDiff = ((*b)->collisionRect.x - (*a)->collisionRect.x) * colorPickState->halfWindowWidth;
         if( xDiff == 0 ){
-            return (*b)->myChildListIndex - (*a)->myChildListIndex;
+            return compareUiObjectsChildListIndex(a, b);
         }
         return (int)xDiff;
     }
@@ -302,7 +359,8 @@ static Ux* Singleton();
     void enableControllerCursor();
     void disableControllerCursor();
     void navigateControllerCursor(int x, int y);
-
+    void updateControllerCursorPosition();
+    void selectCurrentControllerCursor();
 
 
     void updateModal(uiObject *newModal, anInteractionFn modalDismissal);
@@ -431,7 +489,6 @@ static Ux* Singleton();
     uiInteraction currentInteractions[MAX_SUPPORTED_FINGERS_MICE]; // we support up to N fingers/mice.....
     //int nextFingerIndex;
 
-
     uiObject *screenRenderQuadObj;
 
     uiObject *rootUiObject; // there is a root ui object
@@ -497,7 +554,7 @@ static Ux* Singleton();
 
 
     uiObject *controllerCursor;// Modal
-    static const int controllerCursorObjectsMax = 15;
+    static const int controllerCursorObjectsMax = 60;
     uiList<uiObject*, Uint8>* controllerCursorObjects; // WARN - do not enable index if using Uint8 - max Uint8 is far less than pickHistoryMax
     bool controllerCursorModeEnabled;
     int controllerCursorIndex;

@@ -15,13 +15,9 @@
 #define SCROLLY_MISSING_WIDTH 0.01
 
 // FUNCTIONS DEFINED HERE ARE SATAIC UX:: member functions
-static bool pointInRect(Float_Rect* rect, float x, float y){
-    if( x > rect->x && y > rect->y ){
-        if( x < rect->x + rect->w && y < rect->y + rect->h ){
-            return true;
-        }
-    }
-    return false;
+static bool pointInRect(Float_Rect* rect, float x, float y){ // maybe this should just be a function on the Float_Rect ?
+    return rect->containsPoint(x,y);
+
 }
 
 static float distance(float x1, float y1, float x2, float y2){
@@ -41,22 +37,15 @@ static bool screenCollisionRadial(float x1, float y1, Float_Rect * collisionRect
 }
 
 // ux member...
-static Float_Rect unitRect;
+//static Float_Rect unitRect;
 
 static void setRect(Float_Rect * rect, float x, float y, float w, float h){
-    rect->x = x;
-    rect->y = y;
-    rect->w = w;
-    rect->h = h;
+    rect->setRect(x,y,w,h);
 }
 
 static void setRect(Float_Rect * rect, Float_Rect * rect2){
-    rect->x = rect2->x;
-    rect->y = rect2->y;
-    rect->w = rect2->w;
-    rect->h = rect2->h;
+    rect->setRect(rect2);
 }
-
 
 static void containRectWithin(Float_Rect * rect, Float_Rect * co /*container*/){
     // modifies rect
@@ -244,6 +233,32 @@ typedef void (*aStateChangeFn)(uiObject *interactionObj);
 
 struct uiObject
 {
+
+    bool isDebugObject;
+    bool isRoot;
+    bool hasChildren = false;
+
+    bool canCollide; // with cursor
+    bool doesNotCollide;
+    bool doesInFactRender; // child objects still will be rendered, some objects are just containers and need not render anything
+    bool doesRenderChildObjects;
+
+
+    bool hasParentObject;
+    uiObject *parentObject;
+
+    int childListIndex = 0;
+    const static int childListMax = 128;
+    uiObject* childList[childListMax]; // ui object may have a max of 128 child objects each
+
+    Float_Rect boundryRect; // please call setBoundaryRect if you are going to animate the object
+    Float_Rect origBoundryRect;
+    Float_Rect renderRect; /* private */
+    Float_Rect collisionRect; /* private */
+    Float_Rect origRenderRect; /* private */ // really only u used for non standard crop parent object
+
+    bool initialized;
+
     uiObject(){
         isDebugObject=false;// used to print messge for certain object
         initialized=true;
@@ -292,7 +307,7 @@ struct uiObject
 
         matrix = glm::mat4(1.0f);
         matrixInheritedByDescendants = false;
-        isCentered=false;
+//        isCentered=false;
 
         is_circular = false;
         noStacking();
@@ -310,15 +325,7 @@ struct uiObject
         //textSpacing=0.0;
         textDirection=TEXT_DIR_ENUM::NO_TEXT; // this is really child node direction... we can print the child nodes in some pre-defined ways
     }
-    bool isDebugObject;
-    bool isRoot;
-    bool initialized;
-    bool hasChildren = false;
 
-    bool canCollide; // with cursor
-    bool doesNotCollide;
-    bool doesInFactRender; // child objects still will be rendered, some objects are just containers and need not render anything
-    bool doesRenderChildObjects;
     bool isInBounds; // equivilent to needs render
     int isTextParentOfTextLength;
     bool containText; // this is merely a font rendering setting.... not containsText, which is textDirection==TEXT_DIR_ENUM::NO_TEXT
@@ -343,8 +350,6 @@ struct uiObject
 
     uiInteraction *forceDelta;
 
-    Float_Rect boundryRect; // please call setBoundaryRect if you are going to animate the object
-    Float_Rect origBoundryRect;
     Float_Rect roundedCornersRect;
     SDL_Color backgroundColor;
     SDL_Color lastBackgroundColor;// onetime use state reset
@@ -358,9 +363,6 @@ struct uiObject
 
 //    Float_Rect croppedBoundryRect; /* private */
 //    Float_Rect croppedOrigBoundryRect; /* private */
-    Float_Rect renderRect; /* private */
-    Float_Rect collisionRect; /* private */
-    Float_Rect origRenderRect; /* private */ // really only u used for non standard crop parent object
 //    Float_Rect computedCropRenderRect; /* private */
 
     bool is_circular;
@@ -494,6 +496,14 @@ struct uiObject
     void show(){
         doesInFactRender = true;
         doesRenderChildObjects = true;
+    }
+
+    bool isShown(){
+        return (doesInFactRender && doesRenderChildObjects);
+    }
+
+    bool isHidden(){
+        return !isShown();
     }
 
     void squarifyChildren(){
@@ -687,7 +697,7 @@ struct uiObject
 //    }
     // also not quite valid helper functions &^ ^ ^ ^ ^
 
-    bool isCentered; // argubaly offsets our (render+collision) rect... somehow
+//    bool isCentered; // argubaly offsets our (render+collision) rect... somehow
     // but may leave "boundary" rect intact... maybe boundary rect shold just be position point
     // maybe render+collision rect is always offset by a position
     // allowing boundary{-15,-15,30,30} to center on a given position
@@ -695,7 +705,7 @@ struct uiObject
     // alternative is all position are offesets from boundary.x,y - position then defaults to 0 but when centered
     // position is applied to/from x,y coordinate... this simplifies collision+rendering, and extra computation only needed
     // when interacting/repositioning the object
-    SDL_Point offset = {0,0}; // int only?
+//    SDL_Point offset = {0,0}; // int only?
     // position is top left corner of boundary, or offset from that some amount
     //^
     bool squarify_enabled; // private
@@ -849,6 +859,28 @@ struct uiObject
         return nullptr;
     }
 
+    bool isParentOf(uiObject* testObj){
+//        if( testObj == this ) return false; // skip loop?
+        while(testObj->hasParentObject ){
+            testObj = testObj->parentObject;
+            if( testObj == this ){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    int depth(){
+        int d = 0;
+        uiObject* testObj = this;
+        while(testObj->hasParentObject ){
+            d++;
+            testObj = testObj->parentObject;
+        }
+        return d;
+
+    }
+
     // chainables: unlike bove
     uiObject* rotate(float deg){
         this->matrix = glm::rotate(this->matrix,  deg, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -870,8 +902,6 @@ struct uiObject
     bool stack_bottom;
     bool stack_left;
 
-    bool hasParentObject;
-    uiObject *parentObject;
 
     uiObject* findWheelOrPinchInteractionObject(){
         if( interactionWheelCallback != nullptr ) return this;
@@ -894,9 +924,6 @@ struct uiObject
     bool calculateCropParentOrig;
     uiObject *cropParentObject;
 
-    int childListIndex = 0;
-    const static int childListMax = 128;
-    uiObject* childList[childListMax]; // ui object may have a max of 128 child objects each
 
     uiObject* modalParent; // not all objecrts use this but all objects that become modals should specify their modal parent, even if its only rootUiObject
     anInteractionFn modalDismissal;
@@ -1587,6 +1614,74 @@ struct uiObject
         }
     }
 
+
+    bool seekObscuringObject(int* scannedObjects, int scannedObjectsStop, uiObject* stopObject){
+        //SDL_Log("SEEKING STOP OBJECT %i at detph %i prog: %i", scannedObjectsStop, stopObject->depth(), *scannedObjects);
+        if( hasChildren && isInBounds && doesRenderChildObjects ){  // SYMMETRY SO IMPORTANT HERE FOR TRACKING scannedObjects
+            for( int x=childListIndex-1; x>-1; x-- ){               // SYMMETRY SO IMPORTANT HERE FOR TRACKING scannedObjects
+                if( *scannedObjects >= scannedObjectsStop ){
+//                    SDL_Log("break loop %i > %i", *scannedObjects , scannedObjectsStop);
+                    break;
+                }
+                bool result = childList[x]->seekObscuringObject(scannedObjects, scannedObjectsStop, stopObject);
+                if( result ){
+                     return result;
+                }
+            }
+        }
+
+        if( *scannedObjects >= scannedObjectsStop ){
+            //SDL_Log("avert test %i > %i", *scannedObjects , scannedObjectsStop);
+            return false; // nullptr?
+        }
+//        if( this->isParentOf(stopObject) ){// SLOW but good ASSERT for testing
+//            SDL_Log("TESTING OWN PARENT OBJECT?  %i > %i", *scannedObjects , scannedObjectsStop);
+//            //return false;
+//        }
+
+        if( isInBounds && doesInFactRender ){   // SYMMETRY SO IMPORTANT HERE FOR TRACKING scannedObjects
+            *scannedObjects += 1;               // WE TRACK our current scan object NOW...
+
+            if( *scannedObjects >= scannedObjectsStop ){
+                //SDL_Log("avert test %i > %i", *scannedObjects , scannedObjectsStop);
+                return false; // nullptr?
+            }
+            if( canCollide && collisionRect.partiallyObfuscates(&stopObject->collisionRect) ){
+                SDL_Log("scanobj %i C-> %f %f %f %f partiallyObfuscates scanobj %i C-> %f %f %f %f", *scannedObjects, collisionRect.x, collisionRect.y, collisionRect.w, collisionRect.h, scannedObjectsStop, stopObject->collisionRect.x, stopObject->collisionRect.y, stopObject->collisionRect.w, stopObject->collisionRect.h );
+                return true; // this ?
+            }
+        }
+        return false;
+    }
+
+    void seekControllerCursorObjects(int* scannedObjects){
+
+        /// NOTE: some object should maybe still updated even if they are out of bounds, since some of the children COULD be in bounds....
+        //         SA: if( renderObj->testChildCollisionIgnoreBounds || renderObj->collidesWithPoint(x, y) ){
+        if( hasChildren && isInBounds && doesRenderChildObjects ){  // SYMMETRY SO IMPORTANT HERE FOR TRACKING scannedObjects
+            for( int x=childListIndex-1; x>-1; x-- ){               // SYMMETRY SO IMPORTANT HERE FOR TRACKING scannedObjects
+                childList[x]->seekControllerCursorObjects(scannedObjects);
+                childList[x]->myChildListIndex = x;
+            }
+        }
+
+        // adding deep interactions first before "shallow" ones (bc this is recursion in loop)... we could omit shallow ones where deep ones found? (THIS IS AUTOMAGICALLY DONE BY seekObscuringObject)
+        if( isInBounds && doesInFactRender ){   // SYMMETRY SO IMPORTANT HERE FOR TRACKING scannedObjects
+            *scannedObjects += 1;               // WE TRACK our current scan object NOW...
+
+            if( hasControllerInteraction() ){
+                Ux* myUxRef = Ux::Singleton();
+
+                int innerScannedObj = 0;
+
+                if( !myUxRef->rootUiObject->seekObscuringObject(&innerScannedObj, *scannedObjects, this) ){
+                    myUxRef->controllerCursorObjects->add(this);
+                    SDL_Log("New Cursor Obj at depth %i scannedObj %i C-> %f %f %f %f", this->depth(), *scannedObjects, collisionRect.x, collisionRect.y, collisionRect.w, collisionRect.h);
+                }
+            }
+        }
+    }
+
     bool hasControllerInteraction(){
 
         if( hasInteractionCb && interactionCallback != Ux::interactionNoOp ){
@@ -1598,24 +1693,6 @@ struct uiObject
         }
 
         return false;
-
-    }
-
-    void seekControllerCursorObjects(){
-
-        /// NOTE: some object should maybe still updated even if they are out of bounds, since some of the children COULD be in bounds....
-        if( hasChildren && isInBounds ){
-            for( int x=0,l=childListIndex; x<l; x++ ){
-                childList[x]->seekControllerCursorObjects();
-                childList[x]->myChildListIndex = x;
-            }
-        }
-
-        // adding deep interactions first before "shallow" ones... we could omit shallow ones where deep ones found?
-        if( isInBounds && doesInFactRender && hasControllerInteraction() ){
-            Ux* myUxRef = Ux::Singleton();
-            myUxRef->controllerCursorObjects->add(this);
-        }
 
     }
 

@@ -122,11 +122,15 @@ void OpenGLContext::keyUp(Uint32 timestamp, SDL_Keycode k){
 }
 
 void OpenGLContext::EnterKeyEvent(){
-    if( isMinigameMode() ){
-
+    if( generalUx->controllerCursorModeEnabled ){
+        generalUx->selectCurrentControllerCursor();
     }else{
-        if( setup_complete ){ // this check is specifically to guard the enter key durign shader compilation error messaage box...
-            generalUx->addCurrentToPickHistory();
+        if( isMinigameMode() ){
+
+        }else{
+            if( setup_complete && NoModalBlocksPicker() ){ // this check is specifically to guard the enter key durign shader compilation error messaage box...
+                generalUx->addCurrentToPickHistory();
+            }
         }
     }
 }
@@ -142,6 +146,10 @@ void OpenGLContext::BackButtonEvent(){
         SDL_MinimizeWindow(sdlWindow);
 #endif
     }
+}
+
+bool OpenGLContext::NoModalBlocksPicker(){
+    return (!generalUx->hasCurrentModal() || generalUx->currentModal == generalUx->returnToLastImgBtn);
 }
 
 void OpenGLContext::chooseFile(void) {
@@ -1194,17 +1202,19 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
         indicateHighSpeed();
 
         if( !generalUx->controllerCursorModeEnabled ){
-            if( keyInteractions.up->isPressed(ticks) ){
-                dirKeyPressedApplicationMacro(mmovey, +, up)
-            }
-            if( keyInteractions.down->isPressed(ticks) ){
-                dirKeyPressedApplicationMacro(mmovey, -, down)
-            }
-            if( keyInteractions.right->isPressed(ticks) ){
-                dirKeyPressedApplicationMacro(mmovex, -, right)
-            }
-            if( keyInteractions.left->isPressed(ticks) ){
-                dirKeyPressedApplicationMacro(mmovex, +, left)
+            if(NoModalBlocksPicker()){
+                if( keyInteractions.up->isPressed(ticks) ){
+                    dirKeyPressedApplicationMacro(mmovey, +, up)
+                }
+                if( keyInteractions.down->isPressed(ticks) ){
+                    dirKeyPressedApplicationMacro(mmovey, -, down)
+                }
+                if( keyInteractions.right->isPressed(ticks) ){
+                    dirKeyPressedApplicationMacro(mmovex, -, right)
+                }
+                if( keyInteractions.left->isPressed(ticks) ){
+                    dirKeyPressedApplicationMacro(mmovex, +, left)
+                }
             }
         }else{
             if( keyInteractions.up->isPressed(ticks) ){

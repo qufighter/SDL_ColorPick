@@ -902,7 +902,7 @@ Ux::uiObject* Ux::create(void){
 
 void Ux::updateRenderPositions(void){
     rootUiObject->updateRenderPosition();
-    seekAllControllerCursorObjects();
+    //seekAllControllerCursorObjects();
 }
 
 void Ux::updateRenderPositions(uiObject *renderObj){
@@ -913,7 +913,9 @@ void Ux::updateRenderPositions(uiObject *renderObj){
 
 void Ux::seekAllControllerCursorObjects(){
     controllerCursorObjects->clear();
-    rootUiObject->seekControllerCursorObjects();
+
+    int scannedObjects = 0;
+    rootUiObject->seekControllerCursorObjects(&scannedObjects);
 
     // next: sort these objects ;)
 
@@ -927,11 +929,28 @@ void Ux::toggleControllerCursor(){
     }
 }
 void Ux::enableControllerCursor(){
+    // NOTE: MAYBE  controllerCursorIndex IS PER MODAL STATE i.e each object that is a modal (even root) knows its last controllerCursorIndex
+    uiObject* curObj = nullptr;
     if( controllerCursorObjects->total() > 0 ){
+        curObj = *controllerCursorObjects->get(controllerCursorIndex);
+    }
+    seekAllControllerCursorObjects();
+    if( controllerCursorObjects->total() > 0 ){
+
+        if( curObj != nullptr ){
+            int found = controllerCursorObjects->locate(curObj);
+            if( found >= 0 ){
+                controllerCursorIndex = found;
+            }
+        }
+
+        // mayhaps we should just reset the index to zero? (when entering modal and not in this mode?)   thts what this does someitimes
+        controllerCursorIndex = controllerCursorObjects->validateIndexLooping(controllerCursorIndex);
+
         controllerCursorModeEnabled = true;
         //controllerCursorIndex = 0;
 
-        uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
+        curObj = *controllerCursorObjects->get(controllerCursorIndex);
 
         Ux::setRect(&controllerCursor->renderRect, &curObj->renderRect);
 
@@ -943,37 +962,56 @@ void Ux::disableControllerCursor(){
     controllerCursor->hide();
 }
 void Ux::navigateControllerCursor(int x, int y){
-
-    SDL_Log("total objs %i  x%i y%i", controllerCursorObjects->total(), x, y);
-
     bool isY = y != 0;
-    if( !isY ) y = x;
-
-    SDL_Log("initial index: %i", controllerCursorIndex);
-
     uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
 
     controllerCursorObjects->sort(isY ? Ux::compareUiObjectsYpos : Ux::compareUiObjectsXpos);
 
     controllerCursorIndex = controllerCursorObjects->locate(curObj);
 
-    SDL_Log("POStSORT index: %i", controllerCursorIndex);
+    controllerCursorIndex = controllerCursorObjects->validateIndexLooping(controllerCursorIndex + (y+x)); // y or x will be zero
 
-
-    // todo: try out validateIndexLooping :)
-    controllerCursorIndex = controllerCursorObjects->validateIndexLooping(controllerCursorIndex + y);
-//    controllerCursorIndex = controllerCursorIndex + -y;
-
-    SDL_Log("    NEW index: %i", controllerCursorIndex);
-
-    curObj = *controllerCursorObjects->get(controllerCursorIndex);
-
-    Ux::setRect(&controllerCursor->renderRect, &curObj->renderRect);
-
-
-
-
+    updateControllerCursorPosition(); // POINTLESS TO CALL THIS HERE...
 }
+void Ux::updateControllerCursorPosition(){
+
+    //TODO: we could just ALWAS set this rect before rendering.... if in this mdoe anyway... but we need to know when to rescan....
+    if(controllerCursorModeEnabled){
+        uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
+        Ux::setRect(&controllerCursor->renderRect, &curObj->renderRect);
+    }
+}
+
+void Ux::selectCurrentControllerCursor(){
+    // this is to either "activate and enter" soem fine control choices for the selection (movement mode)
+    // OR simply to click it... depends on the object and interactions contained!
+
+    // First lets get teh simple click working!
+    uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
+
+    if( curObj->hasInteractionCb ){
+        // MAYBe call trigger interaction instead???
+
+        // currentInteractions needs a click
+
+
+        currentInteractions[0].begin(SDL_GetTicks(), curObj->collisionRect.x + (curObj->collisionRect.w * 0.5), curObj->collisionRect.y + (curObj->collisionRect.h * 0.5));
+
+        // NOT sure why we really call this, but it does set up some things....
+        // we MIGHT AS WELL trust currentInteractions[0] to be a finger though (and not a controller...)
+        triggerInteraction(&currentInteractions[0]);
+        if( currentInteractions[0].interactionObject != curObj ){
+            SDL_Log("SEEMS LIKE AN ERROR< we didn't collide with our object!");
+        }
+
+        currentInteractions[0].isSecondInteraction = true; // AWKWARD TO DOUBLE TAP...
+
+        curObj->interactionCallback(curObj, &currentInteractions[0]); // NOTE this BAD hack... lucky most modal dismissals dont' care much about the interaction details......
+        disableControllerCursor();
+    }
+}
+
+
 
 
 // so should the print functions move into uiObject?
@@ -1288,8 +1326,6 @@ bool Ux::objectCollides(uiObject* renderObj, uiInteraction* which){
                 which->interactionObject = renderObj;
 
             }
-
-
         }
 
 
@@ -1506,9 +1542,9 @@ void Ux::hueClickedPickerHsv(SDL_Color* c){
     OpenGLContext* ogg=OpenGLContext::Singleton();
     Ux* myUxRef = Ux::Singleton();
     myUxRef->lastHue->fromColor(c);
-    ogg->pickerForHue(myUxRef->lastHue, c);
     //myUxRef->historyPalleteEditor->interactionToggleHistory(myUxRef->interactionObject, &myUxRef->currentInteraction);
     myUxRef->historyPalleteEditor->interactionToggleHistory(nullptr, nullptr);
+    ogg->pickerForHue(myUxRef->lastHue, c);
 }
 
 // unused...
@@ -2018,6 +2054,7 @@ void Ux::updatePickHistoryPreview(){
 
 
 int Ux::renderObject(uniformLocationStruct *uniformLocations){
+    updateControllerCursorPosition();
     return renderObjects(uniformLocations, rootUiObject, glm::mat4(1.0f));
 }
 
