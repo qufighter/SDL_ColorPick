@@ -77,10 +77,17 @@ struct uiToolMenu{
     static void clickShieldFunction(uiObject *interactionObj, uiInteraction *delta){
         uiToolMenu* self = ((uiToolMenu*)interactionObj->myUiController);
         self->hide();
+        Ux* uxInstance = Ux::Singleton();
+        uxInstance->endModal(self->uiObjectItself);
     }
 
 
     static void touchMenuChoice(uiObject *interactionObj, uiInteraction *delta){
+        // don't be decieved, this just isn't called at all... its a default placeholder only....
+
+        uiToolMenu* self = ((uiToolMenu*)interactionObj->myUiController);
+        self->hide();
+
         Ux* uxInstance = Ux::Singleton();
         uxInstance->uxAnimations->scale_bounce(interactionObj, 0.006);
     }
@@ -214,6 +221,8 @@ struct uiToolMenu{
 
         uiObjectItself->showAndAllowInteraction();
 
+        uxInstance->updateModal(uiObjectItself, &clickShieldFunction);
+
         menu_position->updateRenderPosition();
 
         //displayExplanation("-Yes it work-");
@@ -271,6 +280,8 @@ struct uiToolMenu{
 
     void hide(){
         uiObjectItself->hideAndNoInteraction();
+        Ux* uxInstance = Ux::Singleton();
+        uxInstance->endModal(uiObjectItself);
     }
 
     void resize(){
