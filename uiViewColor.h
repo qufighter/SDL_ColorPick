@@ -68,6 +68,7 @@ struct uiViewColor{
             hexBg->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonClick);
         }else{
             hexBg->setInteraction(&pickHexValueDragged);
+            hexBg->interactionNonController = true; // controllers should NOT trigger this interaction...
         }
 
         // perhaps properties on container are inherited by text

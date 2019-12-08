@@ -60,3 +60,10 @@ void ColorPickState::updateComputedSizes(void) {
     halfWindowHeight = (windowHeight+0.0f) * 0.5;
 
 }
+
+float ColorPickState::convertToScreenXCoord(float input) {
+    return (input*ui_mmv_scale)/windowWidth;
+}
+float ColorPickState::convertToScreenYCoord(float input) {
+    return (input*ui_mmv_scale)/windowHeight;
+}

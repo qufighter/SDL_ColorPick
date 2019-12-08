@@ -84,6 +84,7 @@ struct uiControlBooleanToggle{
 
         controlTog->setInteraction(&Ux::interactionHZ);//zoomSlider->canCollide = true;
         controlTog->setInteractionCallback(&interactionToggleControl);
+        controlTog->interactionNonController=true; // for controllers only the setInteractionCallback is needed (eg press a to toggle)
         controlTog->setShouldCeaseInteractionChek(Ux::bubbleInteractionIfNonHorozontalMovement);
         controlTog->setMovementBoundaryRect( 0.0, 0, 1.0, 0.0);
 

@@ -94,30 +94,22 @@ void OpenGLContext::keyUp(Uint32 timestamp, SDL_Keycode k){
 
     keyInteractions.keyUp(timestamp, k);
 
-    if( isMinigameMode() ){
-
-        //minigames->keyDown(k);
-        
-        //renderShouldUpdate=true;
-    }else{
-
-        switch(k){
-            case SDLK_RETURN:
-            case SDLK_KP_ENTER:
-                if(keyInteractions.enter->wasNotCanceledByLaterKeypress()){
-                    EnterKeyEvent();
-                }
-                break;
+    switch(k){
+        case SDLK_RETURN:
+        case SDLK_KP_ENTER:
+            if(keyInteractions.enter->wasNotCanceledByLaterKeypress()){
+                EnterKeyEvent();
+            }
+            break;
 #ifdef COLORPICK_DEBUG_MODE
-            case SDLK_p:
-                textures->screenshot("test-snap.png", windowWidth, windowHeight);
-                break;
+        case SDLK_p:
+            textures->screenshot("test-snap.png", windowWidth, windowHeight);
+            break;
 #endif
-        }
-
-        has_velocity=false;
-        renderShouldUpdate=true;
     }
+
+    has_velocity=false;
+    renderShouldUpdate=true;
 
 }
 
@@ -1178,59 +1170,7 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
 
     debugGLerror("renderZoomedPickerBg begin");
 
-
     Uint32 ticks = SDL_GetTicks();
-
-    // TODO: all this should PROBABLY move into render scene in some way !!!!!!!!!!! controllerCursorModeEnabled a little different...
-    if( keyInteractions.hasPressedKeys() ){
-        int moveSpeed = 1;
-
-        if( keyInteractions.zoomIn->isPressed(ticks) ){
-            setFishScale(1.0, 0.10f);
-        }else if( keyInteractions.zoomOut->isPressed(ticks) ){
-            setFishScale(-1.0, 0.10f);
-        }
-
-        if( fishEyeScale < FISHEYE_SLOW_ZOOM_MAX ){
-            float intensity = 1.0 - ((openglContext->fishEyeScale-FISHEYE_SLOW_ZOOM_THRESHOLD) / (FISHEYE_SLOW_ZOOM_MAX-FISHEYE_SLOW_ZOOM_THRESHOLD));
-            SDL_Log("fishhy %f intensity %f", fishEyeScale, intensity);
-            moveSpeed += 64 * intensity;
-        }
-
-#define dirKeyPressedApplicationMacro(directionOfEffect, signOfEffect, keyIdentifier) \
-        colorPickState->directionOfEffect=signOfEffect(keyInteractions.keyIdentifier->was_new ? 1 : moveSpeed); \
-        indicateHighSpeed();
-
-        if( !generalUx->controllerCursorModeEnabled ){
-            if(NoModalBlocksPicker()){
-                if( keyInteractions.up->isPressed(ticks) ){
-                    dirKeyPressedApplicationMacro(mmovey, +, up)
-                }
-                if( keyInteractions.down->isPressed(ticks) ){
-                    dirKeyPressedApplicationMacro(mmovey, -, down)
-                }
-                if( keyInteractions.right->isPressed(ticks) ){
-                    dirKeyPressedApplicationMacro(mmovex, -, right)
-                }
-                if( keyInteractions.left->isPressed(ticks) ){
-                    dirKeyPressedApplicationMacro(mmovex, +, left)
-                }
-            }
-        }else{
-            if( keyInteractions.up->isPressed(ticks) ){
-                generalUx->navigateControllerCursor(0,1);
-            }
-            if( keyInteractions.down->isPressed(ticks) ){
-                generalUx->navigateControllerCursor(0,-1);
-            }
-            if( keyInteractions.right->isPressed(ticks) ){
-                generalUx->navigateControllerCursor(-1,0);
-            }
-            if( keyInteractions.left->isPressed(ticks) ){
-                generalUx->navigateControllerCursor(1,0);
-            }
-        }
-    }
 
     if( has_velocity ){
 
@@ -1329,7 +1269,7 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
     //    glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT);//  | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     //    glDisable(GL_DEPTH_TEST);
-    debugGLerror("renderScene glClear");
+    debugGLerror("renderZoomedPickerBg glClear");
 
     uniformLocations = shader_lit_detail->bind(); // Bind our shader
     cur_shader_id = shader_lit_detail->id();
@@ -1377,7 +1317,7 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
     glUniform1i(uniformLocations->textureSampler2, 1);
     //glUniform1i(uniformLocations->textureSampler3, 3);
 
-    debugGLerror("renderScene glUniform done");
+    debugGLerror("renderZoomedPickerBg glUniform done");
 
 
     glActiveTexture( GL_TEXTURE0 + 0);
@@ -1387,20 +1327,20 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
     glBindTexture(GL_TEXTURE_2D,  textureId_default);
 
 
-    debugGLerror("renderScene textuers bound");
+    debugGLerror("renderZoomedPickerBg textuers bound");
 
 
     glDisable(GL_BLEND);
 
-    debugGLerror("renderScene glDisable(GL_BLEND");
+    debugGLerror("renderZoomedPickerBg glDisable(GL_BLEND");
 
     square_mesh->bind(); // Bind our Vertex Array Object GL_INVALID_OPERATION (except android?)
-    debugGLerror("renderScene glBindVertexArray(rect_vaoID");
+    debugGLerror("renderZoomedPickerBg glBindVertexArray(rect_vaoID");
 
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    debugGLerror("renderScene our renderinng done");
+    debugGLerror("renderZoomedPickerBg our renderinng done");
 
 }
 
@@ -1410,20 +1350,20 @@ void OpenGLContext::renderUi(void) {
     uniformLocations = shader_ui_shader_default->bind(); // Bind our shader
 
 
-    debugGLerror("renderScene ui shader bound");
+    debugGLerror("renderUi ui shader bound");
 
 
     glUniform1i(uniformLocations->textureSampler, 0);
     //glUniform1i(uniformLocations->textureSampler2, 1);
     // glUniform1i(uniformLocations->textureSampler3, 1);
 
-    debugGLerror("renderScene ui texture uniform set");
+    debugGLerror("renderUi ui texture uniform set");
 
 
     glActiveTexture( GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
 
-    debugGLerror("renderScene ui textureId_fonts bound");
+    debugGLerror("renderUi ui textureId_fonts bound");
 
 
 //    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[0]);
@@ -1454,6 +1394,27 @@ void OpenGLContext::renderScene(void) {
     debugGLerror("renderScene begin");
     //SDL_Log("renderScene begin");
 
+
+
+    Uint32 ticks = SDL_GetTicks();
+
+    if( keyInteractions.hasPressedKeys() ){
+        if( generalUx->controllerCursorModeEnabled ){
+            if( keyInteractions.up->isPressed(ticks) ){
+                generalUx->navigateControllerCursor(0,1);
+            }
+            if( keyInteractions.down->isPressed(ticks) ){
+                generalUx->navigateControllerCursor(0,-1);
+            }
+            if( keyInteractions.right->isPressed(ticks) ){
+                generalUx->navigateControllerCursor(-1,0);
+            }
+            if( keyInteractions.left->isPressed(ticks) ){
+                generalUx->navigateControllerCursor(1,0);
+            }
+        }
+    }
+
 #if USE_FBO_FOR_RENDERING
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     // note binding buffer 0 (when its already bound) will break IOS....
@@ -1472,6 +1433,45 @@ void OpenGLContext::renderScene(void) {
         renderUi();
 
     }else{
+
+        // TODO: all this should PROBABLY move into render scene in some way !!!!!!!!!!! controllerCursorModeEnabled a little different...
+        if( keyInteractions.hasPressedKeys() ){
+            if( NoModalBlocksPicker() ){
+                int moveSpeed = 1;
+
+                if( keyInteractions.zoomIn->isPressed(ticks) ){
+                    setFishScale(1.0, 0.10f);
+                }else if( keyInteractions.zoomOut->isPressed(ticks) ){
+                    setFishScale(-1.0, 0.10f);
+                }
+
+                if( fishEyeScale < FISHEYE_SLOW_ZOOM_MAX ){
+                    float intensity = 1.0 - ((openglContext->fishEyeScale-FISHEYE_SLOW_ZOOM_THRESHOLD) / (FISHEYE_SLOW_ZOOM_MAX-FISHEYE_SLOW_ZOOM_THRESHOLD));
+                    SDL_Log("fishhy %f intensity %f", fishEyeScale, intensity);
+                    moveSpeed += 64 * intensity;
+                }
+
+#define dirKeyPressedApplicationMacro(directionOfEffect, signOfEffect, keyIdentifier) \
+colorPickState->directionOfEffect=signOfEffect(keyInteractions.keyIdentifier->was_new ? 1 : moveSpeed); \
+indicateHighSpeed();
+
+                if( !generalUx->controllerCursorModeEnabled ){
+                    if( keyInteractions.up->isPressed(ticks) ){
+                        dirKeyPressedApplicationMacro(mmovey, +, up)
+                    }
+                    if( keyInteractions.down->isPressed(ticks) ){
+                        dirKeyPressedApplicationMacro(mmovey, -, down)
+                    }
+                    if( keyInteractions.right->isPressed(ticks) ){
+                        dirKeyPressedApplicationMacro(mmovex, -, right)
+                    }
+                    if( keyInteractions.left->isPressed(ticks) ){
+                        dirKeyPressedApplicationMacro(mmovex, +, left)
+                    }
+                }
+            }
+        }
+
         renderZoomedPickerBg();
 
 //        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);

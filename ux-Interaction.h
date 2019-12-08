@@ -40,7 +40,7 @@ struct uiInteraction
         lastInteractionObject = nullptr;
         isSecondInteraction=false;
     }
-    void begin(int ticks, float x, float y){
+    void begin(Uint32 ticks, float x, float y){
 
         px=x; // previous
         py=y;
@@ -78,14 +78,26 @@ struct uiInteraction
 //            SDL_Log("Begin Disparity; evticks: %i ticks: %i diff: %i", ticks, lastUpdate, lastUpdate - ticks);
 //        }
         lastUpdate=ticks;
+        startTime=ticks;
 
         //        mvx=0;
         //        mvy=0;
     }
+    float ageMultiplier(Uint32 ticks){
+        // instaed, if the last update is MORE recent, we multiply MORE
+        float diff = (ticks - lastUpdate) / 1000.0f;
+        if( diff > 1.0 ) diff = 1.0;
+        diff = (1.0 - diff) * 5.0; // idea is updates per second??
+        //SDL_Log("this is the update %f", diff);
+        //float diff = (ticks - startTime) / 1000.0f;
+        if( diff < 0.1 ) diff = 0.1;
+        //if( diff > 5.0f ) diff = 5.0f;
+        return diff;
+    }
     bool isZeroed(){
         return px == ix && py == iy;
     }
-    void done(int ticks, float x, float y){ // optional bool performFinalUpdate ?
+    void done(Uint32 ticks, float x, float y){ // optional bool performFinalUpdate ?
         // last update...
         //this->update(x, y, 0, 0); // tell me why update on mouse up....  they dont wanna move anymore
         rx =0;
@@ -93,7 +105,7 @@ struct uiInteraction
         this->update(ticks);
         //isInteracting=false; // whomever set this true should handle setting it false....
     }
-    void update(int ticks, float x, float y){ // todo pass delta and relative?
+    void update(Uint32 ticks, float x, float y){ // todo pass delta and relative?
         rx = x - px;
         ry = y - py;
 
@@ -108,7 +120,7 @@ struct uiInteraction
 
         this->update(ticks);
     }
-    void update(int ticks){ // update without movement.... or after movement applied
+    void update(Uint32 ticks){ // update without movement.... or after movement applied
 //        int thisUpdate = SDL_GetTicks();
 //        if( ticks != thisUpdate ){
 //            SDL_Log("Update Disparity; evticks: %i ticks: %i diff: %i", ticks, thisUpdate, thisUpdate - ticks);
@@ -213,7 +225,9 @@ struct uiInteraction
     void* interactionObject;
     void* lastInteractionObject; // if the finger/mouse changed objects....
 
-    int lastUpdate;
+    Uint32 lastUpdate;
+    Uint32 startTime;
+
     bool isSecondInteraction;
     //    int mvx;// unused ?
     //    int mvy;

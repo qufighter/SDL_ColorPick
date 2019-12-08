@@ -130,6 +130,8 @@ uiInteraction* beginInteraction(SDL_Event* event, bool isStart){
 
     uiInteraction* fingerInteraction = openglContext->generalUx->interactionForPointerEvent(event);
 
+    openglContext->generalUx->disableControllerCursor();
+
     // NOTE: if our interaction already has fingerInteraction->fingerStateDown its a second mosue button - and we should cancel - handle it...
     if( fingerInteraction->fingerStateDown ){
         return fingerInteraction; //

@@ -77,6 +77,7 @@ void Ux::GetPrefPath(char* preferencesPath, const char* filename, char** resultD
 Ux::Ux(void) {
 
     controllerCursorModeEnabled = false;
+    controllerCursorLockedToObject=false;
     controllerCursorIndex = 0;
 
     isMinigameMode = false;
@@ -757,6 +758,8 @@ Ux::uiObject* Ux::create(void){
  //    printCharToUiObject(historyPreview, '_', DO_NOT_RESIZE_NOW);
  //    historyPreview->canCollide = true; // set by setInteractionCallback
     historyPreviewHolder->setInteraction(&Ux::interactionVert);
+    historyPreviewHolder->interactionNonController=true;
+
  //    historyPreviewHolder->interactionProxy = historyPalleteEditor->historyPalleteHolder; // when we drag the preview effect the fullsize sliding into view...
  //    printCharToUiObject(historyPreview, 'H', DO_NOT_RESIZE_NOW);
  //    bottomBar->addChild(historyPreview);
@@ -785,6 +788,7 @@ Ux::uiObject* Ux::create(void){
     optionsGearBtn->setInteractionCallback(&Ux::interactionVisitSettings);
     optionsGearBtn->setInteraction(&Ux::interactionVert); // todo: not responsive
     optionsGearBtn->interactionProxy = settingsScroller->uiObjectItself;
+    optionsGearBtn->interactionNonController=true;
 
 
     defaultYesNoChoiceHolder = new uiObject();
@@ -917,9 +921,11 @@ void Ux::seekAllControllerCursorObjects(){
     int scannedObjects = 0;
     rootUiObject->seekControllerCursorObjects(&scannedObjects);
 
-    // next: sort these objects ;)
+    // next: sort these objects ;) (its done later :)
+    //controllerCursorObjects->sort(Ux::compareUiObjectsYpos);
 
-    controllerCursorObjects->sort(Ux::compareUiObjectsYpos);
+    SDL_Log("Cursor Objects Found: %i", controllerCursorObjects->total());
+
 }
 void Ux::toggleControllerCursor(){
     if(controllerCursorModeEnabled){
@@ -948,6 +954,7 @@ void Ux::enableControllerCursor(){
         controllerCursorIndex = controllerCursorObjects->validateIndexLooping(controllerCursorIndex);
 
         controllerCursorModeEnabled = true;
+        controllerCursorLockedToObject = false;
         //controllerCursorIndex = 0;
 
         curObj = *controllerCursorObjects->get(controllerCursorIndex);
@@ -959,9 +966,25 @@ void Ux::enableControllerCursor(){
 }
 void Ux::disableControllerCursor(){
     controllerCursorModeEnabled = false;
+    if( controllerCursorLockedToObject ){
+        selectCurrentControllerCursor(); // exists this mode and releases the object....
+    }
     controllerCursor->hide();
 }
 void Ux::navigateControllerCursor(int x, int y){
+
+    if( controllerCursorLockedToObject ){ // TODO also test our currentInteractions[0] not done????
+        Uint32 ticks = SDL_GetTicks();
+        float ageMulti = currentInteractions[0].ageMultiplier(ticks);
+
+        //we are just fiddling with a given object now.... fun stuffs...
+        currentInteractions[0].update(ticks,
+                                      currentInteractions[0].px - (colorPickState->convertToScreenXCoord(x) * ageMulti),
+                                      currentInteractions[0].py - (colorPickState->convertToScreenYCoord(y) * ageMulti)
+                                      );
+        moveLockedControllerCursor();
+        return;
+    }
     bool isY = y != 0;
     uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
 
@@ -982,6 +1005,20 @@ void Ux::updateControllerCursorPosition(){
     }
 }
 
+void Ux::moveLockedControllerCursor(){
+
+    uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
+
+
+    if(curObj->hasInteraction){
+
+        interactionUpdate(&currentInteractions[0]);
+
+        // OR just call interactionUpdate ???
+
+    }
+}
+
 void Ux::selectCurrentControllerCursor(){
     // this is to either "activate and enter" soem fine control choices for the selection (movement mode)
     // OR simply to click it... depends on the object and interactions contained!
@@ -989,7 +1026,9 @@ void Ux::selectCurrentControllerCursor(){
     // First lets get teh simple click working!
     uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
 
-    if( curObj->hasInteractionCb ){
+
+
+    if( !controllerCursorLockedToObject ){
         // MAYBe call trigger interaction instead???
 
         // currentInteractions needs a click
@@ -1005,10 +1044,49 @@ void Ux::selectCurrentControllerCursor(){
         }
 
         currentInteractions[0].isSecondInteraction = true; // AWKWARD TO DOUBLE TAP...
+    }else{
 
-        curObj->interactionCallback(curObj, &currentInteractions[0]); // NOTE this BAD hack... lucky most modal dismissals dont' care much about the interaction details......
-        disableControllerCursor();
     }
+
+    // NEED: to determine - should some of these be ignored in keyboard mode (YES FOR THE LOVE OF GOD)
+    if( curObj->hasInteraction && !curObj->interactionNonController ){
+
+        controllerCursorLockedToObject = !controllerCursorLockedToObject;
+
+        if( !controllerCursorLockedToObject ){
+
+            // should we still call interaction update?? probably..... or ohterwise slow it down velocity wize....
+            currentInteractions[0].update(SDL_GetTicks());
+
+            if( curObj->hasInteractionCb ){
+                // OR jsut call interactionComplete ????? then we don't need no IF statement eh?
+                curObj->interactionCallback(curObj, &currentInteractions[0]); // NOTE this BAD hack... lucky most modal dismissals dont' care much about the interaction details......
+
+                enableControllerCursor(); // rescan... should defer this ? hasAnimCb ? (not all will)
+
+            }
+
+        }
+
+
+
+        // changes apperance ???
+
+        // OR just call interactionUpdate ??? (now done elsewhere)
+
+    }else if( curObj->hasInteractionCb ){
+
+        // OR jsut call interactionComplete ????? then we don't need no IF statement eh?
+        curObj->interactionCallback(curObj, &currentInteractions[0]); // NOTE this BAD hack... lucky most modal dismissals dont' care much about the interaction details......
+
+        enableControllerCursor(); // rescan... should defer this ? hasAnimCb ? (not all will)
+
+    }
+    // 2x above, in hasInteractionCb
+    //disableControllerCursor(); // seems it depends MUCH on what we just did, and IF/WHEN the action is complete...
+    // some knowings :  1) if our action changes a modal, we should just refresh when that modal is fully shown...
+    //                  2) if our action were to disableControllerCursor.... we would not enable it again I htink....
+    //}
 }
 
 

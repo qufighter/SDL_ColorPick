@@ -266,6 +266,7 @@ struct uiObject
         hasForeground=false;
         canCollide=false; // with cursor
         doesNotCollide=false;
+        interactionNonController=false;
         hasInteraction=false;
         hasInteractionCb=false;
         interactionCallbackTypeClick=false;
@@ -377,6 +378,7 @@ struct uiObject
 
     // when collision occurs we must define what to do
     bool hasInteraction;
+    bool interactionNonController;
     anInteractionFn interactionFn;
     //void (*interactionFn)(uiObject *interactionObj, uiInteraction *delta);
     bool hasInteractionCb;
@@ -1623,6 +1625,11 @@ struct uiObject
 //                    SDL_Log("break loop %i > %i", *scannedObjects , scannedObjectsStop);
                     break;
                 }
+
+                // TODO these children can simply NOT obscure one another (think minigames dragging modes)
+                // what MUST occur is we pass in the scannedObjectsStop from BEFORE the loop starts???? would be zero
+                // mayhaps our obfuscation test must be: 1) more full(lly obfuscates) or 2) configurable
+
                 bool result = childList[x]->seekObscuringObject(scannedObjects, scannedObjectsStop, stopObject);
                 if( result ){
                      return result;

@@ -36,6 +36,10 @@ public:
 
     void updateComputedSizes(void);
 
+    float convertToScreenXCoord(float input);
+    float convertToScreenYCoord(float input);
+
+
 private:
 
 protected:

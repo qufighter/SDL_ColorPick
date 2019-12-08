@@ -361,6 +361,7 @@ static Ux* Singleton();
     void navigateControllerCursor(int x, int y);
     void updateControllerCursorPosition();
     void selectCurrentControllerCursor();
+    void moveLockedControllerCursor();
 
 
     void updateModal(uiObject *newModal, anInteractionFn modalDismissal);
@@ -558,6 +559,7 @@ static Ux* Singleton();
     uiList<uiObject*, Uint8>* controllerCursorObjects; // WARN - do not enable index if using Uint8 - max Uint8 is far less than pickHistoryMax
     bool controllerCursorModeEnabled;
     int controllerCursorIndex;
+    bool controllerCursorLockedToObject;
 
 
     char* historyPath;

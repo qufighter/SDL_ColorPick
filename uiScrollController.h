@@ -84,7 +84,7 @@ struct uiScrollController{
         scrollVtDrag->setAnimationPercCallback(setScrollToPercent);
 
         scrollVtDrag->setShouldCeaseInteractionChek(&this->testIfObjectCanInteractBasic);
-        scrollVtDrag->setInteractionCallback(&this->interactionDragReleased);
+        //scrollVtDrag->setInteractionCallback(&this->interactionDragReleased);
         scrollVtDrag->hasBackground = true;
         Ux::setColor(&scrollVtDrag->backgroundColor, 175, 175, 175, 200);
 
