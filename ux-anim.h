@@ -463,6 +463,11 @@ struct uiAminChain
         }
     }
 
+    // don't use this method... just push an empty animation where you want a notification :) see controllerCursor))->setAnimationReachedCallback for inspiration
+//    uiAnimation* lastAnimation(){
+//        return this->animList[this->animListIndex-1];
+//    }
+
     uiAminChain* preserveReference(){ // this ref will be preserved until endAmination is called or the next update runs.
         autoFree = false;
         return this;

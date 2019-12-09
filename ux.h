@@ -362,6 +362,8 @@ static Ux* Singleton();
     void updateControllerCursorPosition();
     void selectCurrentControllerCursor();
     void moveLockedControllerCursor();
+    void newCursorAnimation();
+    static void CursorAnimationCompleted(uiAnimation* uiAnim);
 
 
     void updateModal(uiObject *newModal, anInteractionFn modalDismissal);

@@ -1001,6 +1001,8 @@ void Ux::updateControllerCursorPosition(){
     //TODO: we could just ALWAS set this rect before rendering.... if in this mdoe anyway... but we need to know when to rescan....
     if(controllerCursorModeEnabled){
         uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
+        Ux::setRect(&controllerCursor->boundryRect,  &curObj->collisionRect);
+        Ux::setRect(&controllerCursor->origBoundryRect,  &curObj->collisionRect); // set these so anim work smooth like :)
         Ux::setRect(&controllerCursor->renderRect, &curObj->renderRect);
     }
 }
@@ -1062,10 +1064,15 @@ void Ux::selectCurrentControllerCursor(){
                 // OR jsut call interactionComplete ????? then we don't need no IF statement eh?
                 curObj->interactionCallback(curObj, &currentInteractions[0]); // NOTE this BAD hack... lucky most modal dismissals dont' care much about the interaction details......
 
-                enableControllerCursor(); // rescan... should defer this ? hasAnimCb ? (not all will)
-
             }
 
+            enableControllerCursor(); // rescan... should defer this ? hasAnimCb ? (not all will)
+
+            //controllerCursor->cancelCurrentAnimation(); // doesn't end gracefully...
+
+            
+        }else{
+            newCursorAnimation();
         }
 
 
@@ -1089,7 +1096,31 @@ void Ux::selectCurrentControllerCursor(){
     //}
 }
 
+void Ux::newCursorAnimation(){
 
+    if( controllerCursorLockedToObject ){
+
+        uiAminChain* myAnimChain = uxAnimations->scale_bounce(controllerCursor);
+
+        //myAnimChain->lastAnimation()->setAnimationCallback(Ux::CursorAnimationCompleted);
+
+        myAnimChain->addAnim((new Ux::uiAnimation(controllerCursor))->setAnimationReachedCallback(Ux::CursorAnimationCompleted) );
+
+
+        controllerCursor->setAnimation(myAnimChain);
+    }
+
+}
+
+//static
+void Ux::CursorAnimationCompleted(uiAnimation* uiAnim){
+
+    Ux* myUxRef = Ux::Singleton();
+    myUxRef->newCursorAnimation();
+    //uiAnim->myUiObject
+    //uiScrollController* self = uiAnim->myUiObject->myScrollController;
+    //self->animConstrainToScrollableRegion(); // careful - ani is updating (though our current animation just completed)
+}
 
 
 // so should the print functions move into uiObject?
