@@ -116,6 +116,7 @@ struct uiYesNoChoice{
         uiObjectItself->addChild(no);
 
         addSomeMore->setClickInteractionCallback(defaultAddMoreFn);
+        addSomeMore->doesNotCollide = true; // to avoid some random CURSOR based selection...
 
         uiObjectItself->setInteractionCallback(Ux::interactionNoOp);
 
@@ -240,6 +241,7 @@ struct uiYesNoChoice{
     }
 
     void displayAdditionalMessage(const char* message){
+        addSomeMore->doesNotCollide = true; // to avoid some random CURSOR based selection...
         additionalActionFn = nullptr;
         additionalActionSelectedFn=nullptr;
         Ux* uxInstance = Ux::Singleton();
@@ -275,6 +277,7 @@ struct uiYesNoChoice{
 
 
     void displayAdditionalAction(anInteractionFn p_additionalSelectedFn, anInteractionFn p_additionalYesClickedFn, int numberToShow){
+        addSomeMore->doesNotCollide = false;
         additionalActionFn = p_additionalYesClickedFn;
         additionalActionSelectedFn = p_additionalSelectedFn;
         additional_number_to_show = numberToShow;
@@ -407,6 +410,8 @@ struct uiYesNoChoice{
         self->showStringNearOkButton(self->convertIntegerToString(self->last_num_delete));
 
         self->yesClickedFn = self->additionalActionFn;
+
+
 
         if( self->additionalActionSelectedFn != nullptr ){
             // todo some of the processing above... can maybe move into this custom handler... one must be careful about certain actions in the hander which might reset things (such as additionalActionFn which was consumed above)

@@ -820,6 +820,7 @@ Ux::uiObject* Ux::create(void){
     controllerCursor->hasBackground = true;
     Ux::setColor(&controllerCursor->backgroundColor, 255, 0, 0, 128);
     controllerCursor->setRoundedCorners(0.486);
+    printCharToUiObject(controllerCursor, CHAR_CIRCLE_PLAIN, DO_NOT_RESIZE_NOW);
     rootUiObject->addChild(controllerCursor);
 
     controllerCursorObjects = new uiList<uiObject*, Uint8>(controllerCursorObjectsMax); // controller cursor limit
@@ -1089,6 +1090,7 @@ void Ux::selectCurrentControllerCursor(){
         triggerInteraction(&currentInteractions[0]);
         if( currentInteractions[0].interactionObject != curObj ){
             SDL_Log("SEEMS LIKE AN ERROR< we didn't collide with our object!");
+            // THIS PROBALBY MEANS we have an interaction proxy :)! ??
         }
 
         currentInteractions[0].isSecondInteraction = true; // AWKWARD TO DOUBLE TAP...
@@ -1106,11 +1108,13 @@ void Ux::selectCurrentControllerCursor(){
             // should we still call interaction update?? probably..... or ohterwise slow it down velocity wize....
             currentInteractions[0].update(SDL_GetTicks());
 
-            if( curObj->hasInteractionCb ){
-                // OR jsut call interactionComplete ????? then we don't need no IF statement eh?
-                curObj->interactionCallback(curObj, &currentInteractions[0]); // NOTE this BAD hack... lucky most modal dismissals dont' care much about the interaction details......
+//            if( curObj->hasInteractionCb ){
+//                // OR jsut call interactionComplete ????? then we don't need no IF statement eh?
+//                curObj->interactionCallback(curObj, &currentInteractions[0]); // NOTE this BAD hack... lucky most modal dismissals dont' care much about the interaction details......
+//
+//            }
 
-            }
+            bool result = interactionComplete(&currentInteractions[0]); // better for delegating the interactionProxy ?
 
             enableControllerCursor(); // rescan... should defer this ? hasAnimCb ? (not all will)
 
@@ -1127,10 +1131,11 @@ void Ux::selectCurrentControllerCursor(){
 
         // OR just call interactionUpdate ??? (now done elsewhere)
 
-    }else if( curObj->hasInteractionCb ){
+    }else{ // if( curObj->hasInteractionCb ){
 
         // OR jsut call interactionComplete ????? then we don't need no IF statement eh?
-        curObj->interactionCallback(curObj, &currentInteractions[0]); // NOTE this BAD hack... lucky most modal dismissals dont' care much about the interaction details......
+        //curObj->interactionCallback(curObj, &currentInteractions[0]); // NOTE this BAD hack... lucky most modal dismissals dont' care much about the interaction details......
+        bool result = interactionComplete(&currentInteractions[0]); // better for delegating the interactionProxy ?
 
         enableControllerCursor(); // rescan... should defer this ? hasAnimCb ? (not all will)
 

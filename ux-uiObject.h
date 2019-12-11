@@ -1654,7 +1654,7 @@ struct uiObject
                 return false; // nullptr?
             }
             if( canCollide && collisionRect.partiallyObfuscates(&stopObject->collisionRect) ){
-                SDL_Log("scanobj %i C-> %f %f %f %f partiallyObfuscates scanobj %i C-> %f %f %f %f", *scannedObjects, collisionRect.x, collisionRect.y, collisionRect.w, collisionRect.h, scannedObjectsStop, stopObject->collisionRect.x, stopObject->collisionRect.y, stopObject->collisionRect.w, stopObject->collisionRect.h );
+                //SDL_Log("scanobj %i C-> %f %f %f %f partiallyObfuscates scanobj %i C-> %f %f %f %f", *scannedObjects, collisionRect.x, collisionRect.y, collisionRect.w, collisionRect.h, scannedObjectsStop, stopObject->collisionRect.x, stopObject->collisionRect.y, stopObject->collisionRect.w, stopObject->collisionRect.h );
                 return true; // this ?
             }
         }
@@ -1683,13 +1683,18 @@ struct uiObject
 
                 if( !myUxRef->rootUiObject->seekObscuringObject(&innerScannedObj, *scannedObjects, this) ){
                     myUxRef->controllerCursorObjects->add(this);
-                    SDL_Log("New Cursor Obj at depth %i scannedObj %i C-> %f %f %f %f", this->depth(), *scannedObjects, collisionRect.x, collisionRect.y, collisionRect.w, collisionRect.h);
+                    //SDL_Log("New Cursor Obj at depth %i scannedObj %i C-> %f %f %f %f", this->depth(), *scannedObjects, collisionRect.x, collisionRect.y, collisionRect.w, collisionRect.h);
                 }
             }
         }
     }
 
     bool hasControllerInteraction(){
+
+        // what about doesNotCollide ??
+
+        //if( !canCollide ) return false; // TODO now redundant check is above ?
+        if( doesNotCollide ) return false;
 
         if( hasInteractionCb && interactionCallback != Ux::interactionNoOp ){
             return true;
