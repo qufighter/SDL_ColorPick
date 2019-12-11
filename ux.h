@@ -119,6 +119,12 @@ typedef struct Float_Rect
     void setRect(Float_Rect * toClone){
         x=toClone->x;y=toClone->y;w=toClone->w;h=toClone->h;
     }
+    float centerX(){
+        return x + (w * 0.5);
+    }
+    float centerY(){
+        return y + (h * 0.5);
+    }
     bool containsPoint(float tx, float ty){
         if( tx > x && ty > y ){
             if( tx < x + w && ty < y + h ){
@@ -151,8 +157,26 @@ typedef struct Float_Rect
         float x1 = x + w;
         float y1 = y + h;
 
-        return containsPointBRxy(x1,y1,tlx,tly) || containsPointBRxy(x1,y1,brx,bry) || containsPointBRxy(x1,y1,tlx,bry) || containsPointBRxy(x1,y1,brx,tly) || containsPointBRxy(x1,y1,t->x+(t->w*0.5),t->y+(t->h*0.5));
+        return containsPointBRxy(x1,y1,tlx,tly) || containsPointBRxy(x1,y1,brx,bry) || containsPointBRxy(x1,y1,tlx,bry) || containsPointBRxy(x1,y1,brx,tly) || containsPointBRxy(x1,y1,t->centerX(),t->centerY());
     }
+
+    bool completelyObfuscates(Float_Rect * t){
+
+        float tW = (t->w*0.1);
+        float tH = (t->h*0.1);
+
+        float tlx=t->x+tW; //ttlx
+        float tly=t->y+tH; //ttly
+
+        float brx=(t->x+t->w)-tW; //tbrx
+        float bry=(t->y+t->h)-tH; //tbry
+
+        float x1 = x + w;
+        float y1 = y + h;
+
+        return containsPointBRxy(x1,y1,tlx,tly) && containsPointBRxy(x1,y1,brx,bry) && containsPointBRxy(x1,y1,tlx,bry) && containsPointBRxy(x1,y1,brx,tly);
+    }
+
     void invalidate(){
         x=0.0;y=0.0;w=-1;h=-1;
     }
@@ -314,14 +338,14 @@ static Ux* Singleton();
     }
 
     static int compareUiObjectsYpos(Ux::uiObject **a, Ux::uiObject **b){ // TODO maybe call helper on uiObject ?
-        float yDiff = ((*b)->collisionRect.y - (*a)->collisionRect.y) * colorPickState->halfWindowHeight;
+        float yDiff = ((*b)->collisionRect.centerY() - (*a)->collisionRect.centerY()) * colorPickState->halfWindowHeight;
         if( yDiff == 0 ){
             return compareUiObjectsChildListIndex(a, b);
         }
         return (int)yDiff;
     }
     static int compareUiObjectsXpos(Ux::uiObject **a, Ux::uiObject **b){ // TODO maybe call helper on uiObject ?
-        float xDiff = ((*b)->collisionRect.x - (*a)->collisionRect.x) * colorPickState->halfWindowWidth;
+        float xDiff = ((*b)->collisionRect.centerX() - (*a)->collisionRect.centerX()) * colorPickState->halfWindowWidth;
         if( xDiff == 0 ){
             return compareUiObjectsChildListIndex(a, b);
         }

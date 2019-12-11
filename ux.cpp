@@ -992,18 +992,64 @@ void Ux::navigateControllerCursor(int x, int y){
 
     controllerCursorIndex = controllerCursorObjects->locate(curObj);
 
-    controllerCursorIndex = controllerCursorObjects->validateIndexLooping(controllerCursorIndex + (y+x)); // y or x will be zero
+    int startControllerCursorIndex = controllerCursorIndex;
+    uiObject* newObj = curObj;
 
-    updateControllerCursorPosition(); // POINTLESS TO CALL THIS HERE...
+    // y or x will be zero hence + (y+x)  In any case at it's core this function need only call this, and even defining newObj is pointless - except to get the BEST POSSIBLE match
+#define whatToDoToGetNextTestObj \
+    controllerCursorIndex = controllerCursorObjects->validateIndexLooping(controllerCursorIndex + (y+x)); \
+    newObj = *controllerCursorObjects->get(controllerCursorIndex);
+
+    // finding an object that actually advances in desired direction....
+    while( (isY && curObj->collisionRect.centerY() == newObj->collisionRect.centerY()) || (!isY && curObj->collisionRect.centerX() == newObj->collisionRect.centerX()) ){
+        whatToDoToGetNextTestObj
+        if( newObj == curObj ){ // hmm didn't use startControllerCursorIndex ??
+            whatToDoToGetNextTestObj
+            break; // we could alternatively just check there is more than one obejct at differnt x or y coordinate... point being we should move to another object and we should not wrap back around... and stop
+        }
+    }
+
+    // find the best matching object out of the objects perpendicular to the desired direction that is within 0.2f of the closest directional match
+    if( controllerCursorObjects->total() > 2 ){
+        float stopPoint = isY ? newObj->collisionRect.centerY() : newObj->collisionRect.centerX(); // TODOCENTERPOINT
+        startControllerCursorIndex = controllerCursorIndex;
+        float bestDist = 999999.0f;
+        int bestIndex = controllerCursorIndex;
+        float nextDistance;
+#define computeNextDistance\
+        nextDistance = SDL_fabs( isY ? stopPoint - newObj->collisionRect.centerY() : stopPoint - newObj->collisionRect.centerX() );
+
+        computeNextDistance
+        while( nextDistance <= 0.2f ){ // NOTE this is how far we would go to stay on the same plane we are moving in vs jumping laterally to a different object....
+
+            float dist = SDL_fabs( isY ? curObj->collisionRect.centerX() - newObj->collisionRect.centerX() : curObj->collisionRect.centerY() - newObj->collisionRect.centerY() );
+            if( dist < bestDist ){
+                bestDist = dist;
+                bestIndex = controllerCursorIndex;
+            }
+
+            if( newObj == curObj ){ // we looped, so this mode is fruitless ?
+                //bestIndex = startControllerCursorIndex;
+                // SDL_Log("TOO FAR"); // except we probably advanced columsn /rows here
+                break;
+            }
+
+            whatToDoToGetNextTestObj
+            computeNextDistance
+        }
+        controllerCursorIndex = bestIndex;
+    }
+    //updateControllerCursorPosition(); // POINTLESS TO CALL THIS HERE...
 }
 void Ux::updateControllerCursorPosition(){
 
-    //TODO: we could just ALWAS set this rect before rendering.... if in this mdoe anyway... but we need to know when to rescan....
+    //TODO: we could just ALWAS set this rect before rendering.... if in this mdoe anyway... but we may still need to know when to rescan....
     if(controllerCursorModeEnabled){
         uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
         Ux::setRect(&controllerCursor->boundryRect,  &curObj->collisionRect);
         Ux::setRect(&controllerCursor->origBoundryRect,  &curObj->collisionRect); // set these so anim work smooth like :)
         Ux::setRect(&controllerCursor->renderRect, &curObj->renderRect);
+        // we we haev child objects... might as well just set the first two and call update no?
     }
 }
 
