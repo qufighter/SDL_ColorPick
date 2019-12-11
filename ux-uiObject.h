@@ -1693,7 +1693,7 @@ struct uiObject
 
         // what about doesNotCollide ??
 
-        //if( !canCollide ) return false; // TODO now redundant check is above ?
+        //if( !canCollide ) return false; // TODO now redundant check is above ?  // does break some things?
         if( doesNotCollide ) return false;
 
         if( hasInteractionCb && interactionCallback != Ux::interactionNoOp ){

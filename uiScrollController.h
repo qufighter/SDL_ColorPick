@@ -16,6 +16,11 @@ struct uiScrollController{
 
         childObjectsToRender=0; // MUST init here too...
 
+        getTile=nullptr;
+        getTotal=nullptr;
+        tileClicked=nullptr;
+        tileDragged=nullptr;
+        recievedFocus=nullptr;
 
         uiObjectItself = new uiObject();
         scrollChildContainer = new uiObject();
@@ -151,11 +156,11 @@ struct uiScrollController{
     int childObjectsToRender; // in case we allocated extra...
     float minimumScrollY;
 
-    updateTileFunction getTile=nullptr;
-    getTotalFunction getTotal=nullptr;
-    anInteractionFn tileClicked=nullptr;
-    anInteractionFn tileDragged=nullptr;
-    anInteractionFn recievedFocus=nullptr;
+    updateTileFunction getTile;
+    getTotalFunction getTotal;
+    anInteractionFn tileClicked;
+    anInteractionFn tileDragged;
+    anInteractionFn recievedFocus;
 
     void weGotFocus(uiObject *interactionObj, uiInteraction *delta){
         if( recievedFocus != nullptr ){

@@ -1010,33 +1010,42 @@ void Ux::navigateControllerCursor(int x, int y){
         }
     }
 
-    // find the best matching object out of the objects perpendicular to the desired direction that is within 0.2f of the closest directional match
+    // find the best matching object out of the objects perpendicular to the desired direction that is within '0.2f' of the closest directional match
     if( controllerCursorObjects->total() > 2 ){
-        float stopPoint = isY ? newObj->collisionRect.centerY() : newObj->collisionRect.centerX(); // TODOCENTERPOINT
+        float startPoint = isY ? curObj->collisionRect.centerY() : curObj->collisionRect.centerX();
+        float startDimension = isY ? curObj->collisionRect.h : curObj->collisionRect.w;
+        float stopPoint = isY ? newObj->collisionRect.centerY() : newObj->collisionRect.centerX();
+        float objectDistance = SDL_fabs(startPoint - stopPoint);
+        if( objectDistance < startDimension ){
+            objectDistance = startDimension + 0.01; // make sure we search at LEAST our start dimension...
+        }
+        //SDL_Log("Object distance as compared with 0.2 : %f ", objectDistance);
+
         startControllerCursorIndex = controllerCursorIndex;
         float bestDist = 999999.0f;
         int bestIndex = controllerCursorIndex;
         float nextDistance;
 #define computeNextDistance\
-        nextDistance = SDL_fabs( isY ? stopPoint - newObj->collisionRect.centerY() : stopPoint - newObj->collisionRect.centerX() );
+        nextDistance = SDL_fabs( isY ? startPoint - newObj->collisionRect.centerY() : startPoint - newObj->collisionRect.centerX() );
 
         computeNextDistance
-        while( nextDistance <= 0.2f ){ // NOTE this is how far we would go to stay on the same plane we are moving in vs jumping laterally to a different object....
+        while( nextDistance <= objectDistance /*0.2f*/ ){ // NOTE this is how far we would go to stay on the same plane we are moving in vs jumping laterally to a different object....
 
-            float dist = SDL_fabs( isY ? curObj->collisionRect.centerX() - newObj->collisionRect.centerX() : curObj->collisionRect.centerY() - newObj->collisionRect.centerY() );
-            if( dist < bestDist ){
-                bestDist = dist;
-                bestIndex = controllerCursorIndex;
-            }
-
-            if( newObj == curObj ){ // we looped, so this mode is fruitless ?
+            if( newObj != curObj ){ // we looped, so this mode is fruitless ?
+                float dist = SDL_fabs( isY ? curObj->collisionRect.centerX() - newObj->collisionRect.centerX() : curObj->collisionRect.centerY() - newObj->collisionRect.centerY() );
+                if( dist < bestDist ){
+                    bestDist = dist;
+                    bestIndex = controllerCursorIndex;
+                }
+            }else{
                 //bestIndex = startControllerCursorIndex;
-                // SDL_Log("TOO FAR"); // except we probably advanced columsn /rows here
+                //SDL_Log("TOO FAR"); // except we probably advanced columsn /rows here
                 break;
             }
 
             whatToDoToGetNextTestObj
             computeNextDistance
+
         }
         controllerCursorIndex = bestIndex;
     }

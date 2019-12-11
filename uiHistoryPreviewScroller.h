@@ -22,6 +22,9 @@ struct uiHistoryPreviewScroller{
 
         previewScroller = new uiScrollController();
 
+        previewScroller->uiObjectItself->doesNotCollide = true; // this scroller won't scroll no more :) (this is unfortunately overriden in the uiScrollController)
+        previewScroller->uiObjectItself->canCollide = false;
+
         previewScroller->initTilingEngine(10, 1, &updateUiObjectFromHistory, &getHistoryTotalCount, nullptr,  nullptr);
         previewScrollerItself = previewScroller->uiObjectItself;
 
@@ -90,7 +93,7 @@ struct uiHistoryPreviewScroller{
         SDL_Color* clr = &listItem->color;
 
         historyTile->show();
-        historyTile->hasInteraction = true; // re enable animations which are default for this scroll controller....
+        //historyTile->hasInteraction = true; // re enable animations which are default for this scroll controller....
 
         //bool wasBlank = historyTile->myIntegerIndex < 0;
         historyTile->hasBackground = true;
