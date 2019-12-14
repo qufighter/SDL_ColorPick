@@ -928,14 +928,8 @@ void Ux::seekAllControllerCursorObjects(){
     SDL_Log("Cursor Objects Found: %i", controllerCursorObjects->total());
 
 }
-void Ux::toggleControllerCursor(){
-    if(controllerCursorModeEnabled){
-        disableControllerCursor();
-    }else{
-        enableControllerCursor();
-    }
-}
-void Ux::enableControllerCursor(){
+void Ux::refreshControllerCursorObjects(){
+
     // NOTE: MAYBE  controllerCursorIndex IS PER MODAL STATE i.e each object that is a modal (even root) knows its last controllerCursorIndex
     uiObject* curObj = nullptr;
     if( controllerCursorObjects->total() > 0 ){
@@ -953,15 +947,20 @@ void Ux::enableControllerCursor(){
 
         // mayhaps we should just reset the index to zero? (when entering modal and not in this mode?)   thts what this does someitimes
         controllerCursorIndex = controllerCursorObjects->validateIndexLooping(controllerCursorIndex);
-
+    }
+}
+void Ux::toggleControllerCursor(){
+    if(controllerCursorModeEnabled){
+        disableControllerCursor();
+    }else{
+        enableControllerCursor();
+    }
+}
+void Ux::enableControllerCursor(){
+    refreshControllerCursorObjects();
+    if( controllerCursorObjects->total() > 0 ){
         controllerCursorModeEnabled = true;
         controllerCursorLockedToObject = false;
-        //controllerCursorIndex = 0;
-
-        curObj = *controllerCursorObjects->get(controllerCursorIndex);
-
-        Ux::setRect(&controllerCursor->renderRect, &curObj->renderRect);
-
         controllerCursor->show();
     }
 }
@@ -1051,10 +1050,16 @@ void Ux::navigateControllerCursor(int x, int y){
     }
     //updateControllerCursorPosition(); // POINTLESS TO CALL THIS HERE...
 }
-void Ux::updateControllerCursorPosition(){
+void Ux::updateControllerCursorPosition(bool animationsJustCompleted){
 
     //TODO: we could just ALWAS set this rect before rendering.... if in this mdoe anyway... but we may still need to know when to rescan....
     if(controllerCursorModeEnabled){
+
+        if( animationsJustCompleted ){
+            // we need to seek cursor objects again....
+            refreshControllerCursorObjects();
+        }
+
         uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
         Ux::setRect(&controllerCursor->boundryRect,  &curObj->collisionRect);
         Ux::setRect(&controllerCursor->origBoundryRect,  &curObj->collisionRect); // set these so anim work smooth like :)
@@ -2223,7 +2228,8 @@ void Ux::updatePickHistoryPreview(){
 
 
 int Ux::renderObject(uniformLocationStruct *uniformLocations){
-    updateControllerCursorPosition();
+    bool animationsJustCompleted = uxAnimations->animationsJustCompleted(); // this should only be true for 1 render pass, could be stored in more global render state, or passed in from above...
+    updateControllerCursorPosition(animationsJustCompleted);
     return renderObjects(uniformLocations, rootUiObject, glm::mat4(1.0f));
 }
 

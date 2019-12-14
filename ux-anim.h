@@ -511,6 +511,8 @@ struct UxAnim
         newChainIndex = 0;
         lastTimerTime = SDL_GetTicks();
         shouldUpdate = false;
+        wasUpdating = false;
+
         aniIsUpdating = false; // prevent multiple simultaneous updates from different timer threads? !
         //    currentTime = SDL_GetTicks();
         //    openglContext->updateFrame(currentTime - lastTimerTime);
@@ -524,6 +526,7 @@ struct UxAnim
     bool result_done;
     bool result2_done;
     bool shouldUpdate;
+    bool wasUpdating;
 
     bool aniIsUpdating = false;
 
@@ -580,6 +583,7 @@ struct UxAnim
         // I gues we cannot delete anything so hastily in teh multi threaded universe, we MUST leave it to the thread, removing threading is a TODO though
 
         shouldUpdate = true; // main loop render will check this - not ideal... but works - can likely be modified later!!!!!! TODO
+        wasUpdating = true;
         aniIsUpdating = false;
 
         
@@ -595,6 +599,14 @@ struct UxAnim
         }
 
         return true;
+    }
+
+    bool animationsJustCompleted(){
+        if( wasUpdating && animChainIndex == 0 && !aniIsUpdating ){
+            wasUpdating = false;
+            return true;
+        }
+        return false;
     }
 
     bool updateAnimationsMain(bool autoContinue){

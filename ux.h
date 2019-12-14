@@ -377,12 +377,13 @@ static Ux* Singleton();
     void updateRenderPositions(void);
     void updateRenderPositions(uiObject *renderObj);
     void seekAllControllerCursorObjects();
+    void refreshControllerCursorObjects();
 
     void toggleControllerCursor();
     void enableControllerCursor();
     void disableControllerCursor();
     void navigateControllerCursor(int x, int y);
-    void updateControllerCursorPosition();
+    void updateControllerCursorPosition(bool animationsJustCompleted);
     void selectCurrentControllerCursor();
     void moveLockedControllerCursor();
     void newCursorAnimation();
