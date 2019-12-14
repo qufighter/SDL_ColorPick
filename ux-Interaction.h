@@ -60,7 +60,7 @@ struct uiInteraction
         fingerStateDown = false; // its set to true externally..... if requierd...
         didCollideWithObject=false;
         isInteracting=false;
-
+        canceled = false;
 //        interactionObject = nullptr;
 //        lastInteractionObject = nullptr;
 
@@ -222,6 +222,7 @@ struct uiInteraction
     bool fingerStateDown; // todo: for mousStateDown - seems pertty obvious.... but this should go back to false when the interaction is expired....
     bool didCollideWithObject;// did collide??
     bool isInteracting;
+    bool canceled;
     void* interactionObject;
     void* lastInteractionObject; // if the finger/mouse changed objects....
 

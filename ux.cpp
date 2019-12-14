@@ -931,6 +931,7 @@ void Ux::seekAllControllerCursorObjects(){
 void Ux::refreshControllerCursorObjects(){
 
     // NOTE: MAYBE  controllerCursorIndex IS PER MODAL STATE i.e each object that is a modal (even root) knows its last controllerCursorIndex
+    // SEE : currentModal->lastCursorSelection ?? or should we just store an integer instead?
     uiObject* curObj = nullptr;
     if( controllerCursorObjects->total() > 0 ){
         curObj = *controllerCursorObjects->get(controllerCursorIndex);
@@ -965,10 +966,12 @@ void Ux::enableControllerCursor(){
     }
 }
 void Ux::disableControllerCursor(){
-    controllerCursorModeEnabled = false;
     if( controllerCursorLockedToObject ){
+        currentInteractions[0].canceled = true; // helps click handlers (and other interactionCallbaks) know this was NOT a click
         selectCurrentControllerCursor(); // exists this mode and releases the object....
     }
+    controllerCursorModeEnabled = false;
+
     controllerCursor->hide();
 }
 void Ux::navigateControllerCursor(int x, int y){
@@ -1089,7 +1092,12 @@ void Ux::selectCurrentControllerCursor(){
     // First lets get teh simple click working!
     uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
 
-
+    // prior to interactionComplete we can store the current modal before
+    // then we will see later animationsJustCompleted - at this time if the modal changed....
+    // otherwise if the modal hasn't changed we do not rescan
+    // BUT at whatever moment the modal DOES chagne we could hide our cursor UNTIL animationsJustCompleted
+    // so we could listen for a modalDidChange and temporarily hide our cursor while staying in cursor mode???
+    // if it is hidden we should also block certain things... selectCurrentControllerCursor should have the bool arg canceled, we allow cancel still?
 
     if( !controllerCursorLockedToObject ){
         // MAYBe call trigger interaction instead???
@@ -1130,7 +1138,7 @@ void Ux::selectCurrentControllerCursor(){
 
             bool result = interactionComplete(&currentInteractions[0]); // better for delegating the interactionProxy ?
 
-            enableControllerCursor(); // rescan... should defer this ? hasAnimCb ? (not all will)
+            //enableControllerCursor(); // rescan... should defer this ? hasAnimCb ? (not all will)
 
             //controllerCursor->cancelCurrentAnimation(); // doesn't end gracefully...
 
@@ -1151,7 +1159,7 @@ void Ux::selectCurrentControllerCursor(){
         //curObj->interactionCallback(curObj, &currentInteractions[0]); // NOTE this BAD hack... lucky most modal dismissals dont' care much about the interaction details......
         bool result = interactionComplete(&currentInteractions[0]); // better for delegating the interactionProxy ?
 
-        enableControllerCursor(); // rescan... should defer this ? hasAnimCb ? (not all will)
+        //enableControllerCursor(); // rescan... should defer this ? hasAnimCb ? (not all will)
 
     }
     // 2x above, in hasInteractionCb

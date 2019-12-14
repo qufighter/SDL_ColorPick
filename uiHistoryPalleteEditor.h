@@ -535,7 +535,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
         //myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate == myUxRef->defaultYesNoChoiceHolder
 
-        if( delta->dx == 0.0f && myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state == false ){
+        if( !delta->canceled && delta->dx == 0.0f && myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state == false ){
             myUxRef->uxAnimations->scale_bounce(interactionObj->childList[0], 0.001);
             myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &removeHistoryColor, &clickDeleteHistoryColor); // when no clicked we reach else
 
@@ -904,7 +904,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         interactionObjectOrProxy->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObjectOrProxy) ); // returns uiAminChain*
 
 
-        if( fabs(delta->dy) > 0.003 ){
+        if( fabs(delta->dy) > 0.003 || delta->canceled ){
             return;
         }
 
@@ -1259,7 +1259,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
         //myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate == myUxRef->defaultYesNoChoiceHolder
 
-        if( delta->dx == 0.0f && myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state == false ){
+        if( !delta->canceled && delta->dx == 0.0f && myUxRef->defaultYesNoChoiceDialogue->uiObjToAnimate->is_being_viewed_state == false ){
             myUxRef->uxAnimations->scale_bounce(interactionObj->childList[0], 0.001);
             myUxRef->defaultYesNoChoiceDialogue->display(interactionObj, &removePalleteColor, &clickDeletePalleteColor); // when no clicked we reach else
 
@@ -1448,6 +1448,8 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         }
 
         interactionObjectOrProxy->setAnimation( myUxRef->uxAnimations->resetPosition(interactionObjectOrProxy) ); // returns uiAminChain*
+
+        if( delta->canceled ) return;
 
         myUxRef->uxAnimations->scale_bounce(interactionObj, -0.002);
 

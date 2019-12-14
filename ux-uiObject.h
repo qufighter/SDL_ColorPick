@@ -247,6 +247,9 @@ struct uiObject
     bool hasParentObject;
     uiObject *parentObject;
 
+    uiObject *lastCursorSelection; // if our uiObject is a modal... each modal has a last cursor selection!
+
+
     int childListIndex = 0;
     const static int childListMax = 128;
     uiObject* childList[childListMax]; // ui object may have a max of 128 child objects each
@@ -295,6 +298,7 @@ struct uiObject
         roundedCornersRect = Float_Rect(0.0,0.0,0.0,0.0);
         interactionProxy=nullptr;
         myCurrentAnimation=nullptr;
+        lastCursorSelection=nullptr;
 
         boundaryEntreredCallback=nullptr;
         shouldCeaseInteractionChecker=nullptr;
