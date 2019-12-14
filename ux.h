@@ -586,6 +586,7 @@ static Ux* Singleton();
     bool controllerCursorModeEnabled;
     int controllerCursorIndex;
     bool controllerCursorLockedToObject;
+    bool controllerCursorTemporarilyDisabledForModalChange;
 
 
     char* historyPath;

@@ -40,6 +40,10 @@ void Ux::updateModal(uiObject *newModal, anInteractionFn pModalDismissal){
     newModal->modalParent = currentModal;
     newModal->modalDismissal = pModalDismissal;
     currentModal = newModal;
+    if( controllerCursorModeEnabled ){
+        controllerCursorTemporarilyDisabledForModalChange = true;
+        disableControllerCursor();
+    }
 }
 void Ux::endModal(uiObject *oldModal){
     if( currentModal == oldModal ){
@@ -78,6 +82,7 @@ Ux::Ux(void) {
 
     controllerCursorModeEnabled = false;
     controllerCursorLockedToObject=false;
+    controllerCursorTemporarilyDisabledForModalChange=false;
     controllerCursorIndex = 0;
 
     isMinigameMode = false;
@@ -959,6 +964,7 @@ void Ux::toggleControllerCursor(){
 }
 void Ux::enableControllerCursor(){
     refreshControllerCursorObjects();
+    controllerCursorTemporarilyDisabledForModalChange=false;
     if( controllerCursorObjects->total() > 0 ){
         controllerCursorModeEnabled = true;
         controllerCursorLockedToObject = false;
@@ -1055,13 +1061,16 @@ void Ux::navigateControllerCursor(int x, int y){
 }
 void Ux::updateControllerCursorPosition(bool animationsJustCompleted){
 
+    if( animationsJustCompleted ){
+        //refreshControllerCursorObjects();
+
+        if( controllerCursorTemporarilyDisabledForModalChange ){
+            enableControllerCursor();
+        }
+    }
+
     //TODO: we could just ALWAS set this rect before rendering.... if in this mdoe anyway... but we may still need to know when to rescan....
     if(controllerCursorModeEnabled){
-
-        if( animationsJustCompleted ){
-            // we need to seek cursor objects again....
-            refreshControllerCursorObjects();
-        }
 
         uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
         Ux::setRect(&controllerCursor->boundryRect,  &curObj->collisionRect);
@@ -1091,13 +1100,6 @@ void Ux::selectCurrentControllerCursor(){
 
     // First lets get teh simple click working!
     uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
-
-    // prior to interactionComplete we can store the current modal before
-    // then we will see later animationsJustCompleted - at this time if the modal changed....
-    // otherwise if the modal hasn't changed we do not rescan
-    // BUT at whatever moment the modal DOES chagne we could hide our cursor UNTIL animationsJustCompleted
-    // so we could listen for a modalDidChange and temporarily hide our cursor while staying in cursor mode???
-    // if it is hidden we should also block certain things... selectCurrentControllerCursor should have the bool arg canceled, we allow cancel still?
 
     if( !controllerCursorLockedToObject ){
         // MAYBe call trigger interaction instead???
