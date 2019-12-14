@@ -143,6 +143,7 @@ typedef struct Float_Rect
     }
 
     bool partiallyObfuscates(Float_Rect * t){
+        // RENAME.... fuzzy conatins at least one corner of T or the center point of T
         // AND contains at least one corner...? if t is larger than and FULLY contains our object, then
 
         float tW = (t->w*0.1);
@@ -161,6 +162,7 @@ typedef struct Float_Rect
     }
 
     bool completelyObfuscates(Float_Rect * t){
+        // fuzzy contains all corners of T
 
         float tW = (t->w*0.1);
         float tH = (t->h*0.1);
@@ -177,9 +179,6 @@ typedef struct Float_Rect
         return containsPointBRxy(x1,y1,tlx,tly) && containsPointBRxy(x1,y1,brx,bry) && containsPointBRxy(x1,y1,tlx,bry) && containsPointBRxy(x1,y1,brx,tly);
     }
 
-    void invalidate(){
-        x=0.0;y=0.0;w=-1;h=-1;
-    }
     float x, y;
     float w, h;
 } Float_Rect;

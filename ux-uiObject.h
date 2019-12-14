@@ -1618,6 +1618,7 @@ struct uiObject
 
 
     bool seekObscuringObject(int* scannedObjects, int scannedObjectsStop, uiObject* stopObject){
+
         //SDL_Log("SEEKING STOP OBJECT %i at detph %i prog: %i", scannedObjectsStop, stopObject->depth(), *scannedObjects);
         if( hasChildren && isInBounds && doesRenderChildObjects ){  // SYMMETRY SO IMPORTANT HERE FOR TRACKING scannedObjects
             for( int x=childListIndex-1; x>-1; x-- ){               // SYMMETRY SO IMPORTANT HERE FOR TRACKING scannedObjects
@@ -1653,6 +1654,7 @@ struct uiObject
                 //SDL_Log("avert test %i > %i", *scannedObjects , scannedObjectsStop);
                 return false; // nullptr?
             }
+
             if( canCollide && collisionRect.partiallyObfuscates(&stopObject->collisionRect) ){
                 //SDL_Log("scanobj %i C-> %f %f %f %f partiallyObfuscates scanobj %i C-> %f %f %f %f", *scannedObjects, collisionRect.x, collisionRect.y, collisionRect.w, collisionRect.h, scannedObjectsStop, stopObject->collisionRect.x, stopObject->collisionRect.y, stopObject->collisionRect.w, stopObject->collisionRect.h );
                 return true; // this ?
@@ -1681,12 +1683,55 @@ struct uiObject
 
                 int innerScannedObj = 0;
 
-                if( !myUxRef->rootUiObject->seekObscuringObject(&innerScannedObj, *scannedObjects, this) ){
+                if( this->isNotCropped() && !myUxRef->rootUiObject->seekObscuringObject(&innerScannedObj, *scannedObjects, this) ){
                     myUxRef->controllerCursorObjects->add(this);
                     //SDL_Log("New Cursor Obj at depth %i scannedObj %i C-> %f %f %f %f", this->depth(), *scannedObjects, collisionRect.x, collisionRect.y, collisionRect.w, collisionRect.h);
                 }
             }
         }
+    }
+
+    bool isNotCropped(){
+
+
+        // I SUPPOSE there are ohter ARBATRARY obscuring conditions we could check to see if those qualify...
+
+        if( hasCropParent ){
+            //useCropParentOrig
+            //cropParentObject
+
+//            if( !cropParentObject->collisionRect.partiallyObfuscates(&collisionRect) ){
+//                return false;
+//            }
+
+            if( cropParentObject->hasCropParent ){
+
+
+//                if( !cropParentObject->cropParentObject->collisionRect.partiallyObfuscates(&collisionRect) ){
+//                    return false;
+//                }
+
+            }
+
+        }
+
+//        renderObj->hasCropParent
+//        if( renderObj->useCropParentOrig ){
+//            glUniform4f(uniformLocations->ui_crop,
+//                        renderObj->cropParentObject->origRenderRect.x,
+//                        -renderObj->cropParentObject->origRenderRect.y,
+//                        renderObj->cropParentObject->origRenderRect.w,
+//                        renderObj->cropParentObject->origRenderRect.h);
+//        }else{
+//
+//            glUniform4f(uniformLocations->ui_crop,
+//                        renderObj->cropParentObject->renderRect.x,
+//                        -renderObj->cropParentObject->renderRect.y,
+//                        renderObj->cropParentObject->renderRect.w,
+//                        renderObj->cropParentObject->renderRect.h);
+
+
+        return true;
     }
 
     bool hasControllerInteraction(){
