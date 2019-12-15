@@ -119,6 +119,33 @@ typedef struct Float_Rect
     void setRect(Float_Rect * toClone){
         x=toClone->x;y=toClone->y;w=toClone->w;h=toClone->h;
     }
+    void setRectConstrainedToUnit(Float_Rect * toClone){
+        x=toClone->x;y=toClone->y;w=toClone->w;h=toClone->h;
+        if( x + w > 1.0 ){
+            w -= 1.0 - (x + w);
+        }
+        if( y + h > 1.0 ){
+            h -= 1.0 - (y + h);
+        }
+        if( x < 0 ){
+            w += x;
+            x = 0;
+        }
+        if( y < 0 ){
+            h += y;
+            y = 0;
+        }
+        // TMMP: DEBUG: forces reveal of the hidden objects with 0w 0h
+//        if( w <= 0.1 ){
+//            w = 0.1;
+//        }
+//        if( h <= 0.1 ){
+//            h = 0.1;
+//        }
+    }
+    float hasNoDimensions(){
+        return w <= 0.00000001 || h <= 0.00000001;
+    }
     float centerX(){
         return x + (w * 0.5);
     }
@@ -142,6 +169,7 @@ typedef struct Float_Rect
         return false;
     }
 
+
     bool partiallyObfuscatedBy(Float_Rect * t){
 
         float tW = (t->w*0.1);
@@ -159,7 +187,7 @@ typedef struct Float_Rect
         return containsPointBRxy(x1,y1,tlx,tly) || containsPointBRxy(x1,y1,brx,bry) || containsPointBRxy(x1,y1,tlx,bry) || containsPointBRxy(x1,y1,brx,tly) ||  t->containsPoint(centerX(),centerY());
     }
 
-    bool completelyObfuscates(Float_Rect * t){
+    bool contains(Float_Rect * t){
         // fuzzy contains all corners of T
 
         float tW = (t->w*0.1);
@@ -376,6 +404,7 @@ static Ux* Singleton();
     void updateRenderPositions(uiObject *renderObj);
     void seekAllControllerCursorObjects();
     void storeControllerCursorToModal();
+    bool seekObjectInCursorObjects(uiObject* curObj);
     void refreshControllerCursorObjects();
 
     void toggleControllerCursor();

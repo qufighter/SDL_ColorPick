@@ -943,6 +943,15 @@ void Ux::storeControllerCursorToModal(){
     }
 }
 
+bool Ux::seekObjectInCursorObjects(uiObject* curObj){
+    int found = controllerCursorObjects->locate(curObj);
+    if( found >= 0 ){
+        controllerCursorIndex = found;
+        return true;
+    }
+    return false;
+}
+
 void Ux::refreshControllerCursorObjects(){
     uiObject* curObj = nullptr;
     uiObject* curModal = currentModal != nullptr ? currentModal : rootUiObject;
@@ -957,9 +966,10 @@ void Ux::refreshControllerCursorObjects(){
     if( controllerCursorObjects->total() > 0 ){
 
         if( curObj != nullptr ){
-            int found = controllerCursorObjects->locate(curObj);
-            if( found >= 0 ){
-                controllerCursorIndex = found;
+            if( !seekObjectInCursorObjects(curObj) ){
+                if( !seekObjectInCursorObjects(curObj->interactionProxy) ){
+                    // still didn't find it!
+                }
             }
         }
 
@@ -1074,26 +1084,7 @@ void Ux::navigateControllerCursor(int x, int y){
 
     storeControllerCursorToModal();
 }
-void Ux::updateControllerCursorPosition(bool animationsJustCompleted){
 
-    if( animationsJustCompleted ){
-        if( controllerCursorTemporarilyDisabledForModalChange ){
-            enableControllerCursor();
-        }else if( controllerCursorModeEnabled ){
-            refreshControllerCursorObjects(); //  <- should be pretty safe to call whenever objects are added....
-        }
-    }
-
-    //TODO: we could just ALWAS set this rect before rendering.... if in this mdoe anyway... but we may still need to know when to rescan....
-    if(controllerCursorModeEnabled){
-
-        uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
-        Ux::setRect(&controllerCursor->boundryRect,  &curObj->collisionRect);
-        Ux::setRect(&controllerCursor->origBoundryRect,  &curObj->collisionRect); // set these so anim work smooth like :)
-        Ux::setRect(&controllerCursor->renderRect, &curObj->renderRect);
-        // we we haev child objects... might as well just set the first two and call update no?
-    }
-}
 
 void Ux::moveLockedControllerCursor(){
 
@@ -1210,6 +1201,28 @@ void Ux::CursorAnimationCompleted(uiAnimation* uiAnim){
     //uiAnim->myUiObject
     //uiScrollController* self = uiAnim->myUiObject->myScrollController;
     //self->animConstrainToScrollableRegion(); // careful - ani is updating (though our current animation just completed)
+}
+
+void Ux::updateControllerCursorPosition(bool animationsJustCompleted){
+
+    if( animationsJustCompleted ){
+        if( controllerCursorTemporarilyDisabledForModalChange ){
+            enableControllerCursor();
+        }else if( controllerCursorModeEnabled ){
+            refreshControllerCursorObjects(); //  <- should be pretty safe to call whenever objects are added....
+        }
+    }
+
+    //TODO: we could just ALWAS set this rect before rendering.... if in this mdoe anyway... but we may still need to know when to rescan....
+    if(controllerCursorModeEnabled){
+
+        uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
+        controllerCursor->boundryRect.setRectConstrainedToUnit(&curObj->collisionRect);
+        controllerCursor->origBoundryRect.setRect(&controllerCursor->boundryRect);
+        //Ux::setRect(&controllerCursor->renderRect, &curObj->renderRect);
+        controllerCursor->updateRenderPosition();
+        // we we haev child objects... might as well just set the first two and call update no?
+    }
 }
 
 void Ux::DebugPrintAllCursorPositions(uniformLocationStruct *uniformLocations){
@@ -2271,7 +2284,7 @@ int Ux::renderObject(uniformLocationStruct *uniformLocations){
     updateControllerCursorPosition(animationsJustCompleted);
     /*return */renderObjects(uniformLocations, rootUiObject, glm::mat4(1.0f));
 
-    //DebugPrintAllCursorPositions(uniformLocations);
+//    DebugPrintAllCursorPositions(uniformLocations);
     return 0;
 }
 

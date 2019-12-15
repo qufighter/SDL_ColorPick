@@ -329,6 +329,8 @@ struct uiObject
 
         myModalControllerCursor = nullptr;
         storeControllerCursor = true;
+
+        lastIsNotCropped=true; // suitable default for obj that never recieve this check...
     }
 
     bool isInBounds; // equivilent to needs render
@@ -933,6 +935,7 @@ struct uiObject
     uiObject *cropParentObject;
 
 
+
     uiObject* modalParent; // not all objecrts use this but all objects that become modals should specify their modal parent, even if its only rootUiObject
     anInteractionFn modalDismissal;
 
@@ -1179,6 +1182,7 @@ struct uiObject
 
     void updateRenderPosition(Float_Rect parentRenderRect, Float_Rect parentCollisionRect){
 
+        lastIsNotCropped=true;
 
         //    renderRect.x = parentRenderRect.x + boundryRect.x;
         //    renderRect.y = parentRenderRect.y + boundryRect.y;
@@ -1661,7 +1665,8 @@ struct uiObject
                 return false; // nullptr?
             }
 
-            if( canCollide && (collisionRect.partiallyObfuscatedBy(&stopObject->collisionRect)) /*stopObject->collisionRect.partiallyObfuscates(&collisionRect) */ ){
+            // TODO: optimization: set the isNotCropped() state on the FIRST pass instead of checking again here
+            if( canCollide && lastIsNotCropped && (collisionRect.partiallyObfuscatedBy(&stopObject->collisionRect)) /*stopObject->collisionRect.partiallyObfuscates(&collisionRect) */ ){
                 //SDL_Log("scanobj %i %02x C-> %f %f %f %f partiallyObfuscates  scanobj %i %02x C-> %f %f %f %f", *scannedObjects, this, collisionRect.x, collisionRect.y, collisionRect.w, collisionRect.h, scannedObjectsStop, stopObject, stopObject->collisionRect.x, stopObject->collisionRect.y, stopObject->collisionRect.w, stopObject->collisionRect.h );
                 return true; // this ?
             }
@@ -1689,7 +1694,7 @@ struct uiObject
 
                 int innerScannedObj = 0;
 
-                if( this->isNotCropped() && !myUxRef->rootUiObject->seekObscuringObject(&innerScannedObj, *scannedObjects, this) ){
+                if( isNotCropped() && !myUxRef->rootUiObject->seekObscuringObject(&innerScannedObj, *scannedObjects, this) ){
                     myUxRef->controllerCursorObjects->add(this);
                     //SDL_Log("New Cursor Obj at depth %i scannedObj %i C-> %f %f %f %f", this->depth(), *scannedObjects, collisionRect.x, collisionRect.y, collisionRect.w, collisionRect.h);
                 }
@@ -1697,47 +1702,26 @@ struct uiObject
         }
     }
 
+
+    bool lastIsNotCropped;
     bool isNotCropped(){
-
-
         // I SUPPOSE there are ohter ARBATRARY obscuring conditions we could check to see if those qualify...
-
+        // we should cache these results though!
         if( hasCropParent ){
-            //useCropParentOrig
-            //cropParentObject
-
-//            if( !cropParentObject->collisionRect.partiallyObfuscates(&collisionRect) ){
-//                return false;
-//            }
-
-            if( cropParentObject->hasCropParent ){
-
-
-//                if( !cropParentObject->cropParentObject->collisionRect.partiallyObfuscates(&collisionRect) ){
-//                    return false;
-//                }
-
+            if( !cropParentObject->collisionRect.contains(&collisionRect) ){
+                lastIsNotCropped = false;
+                return lastIsNotCropped;
             }
 
+            if( cropParentObject->hasCropParent ){
+                if( !cropParentObject->cropParentObject->collisionRect.contains(&collisionRect) ){
+                    lastIsNotCropped = false;
+                    return lastIsNotCropped;
+                }
+            }
         }
-
-//        renderObj->hasCropParent
-//        if( renderObj->useCropParentOrig ){
-//            glUniform4f(uniformLocations->ui_crop,
-//                        renderObj->cropParentObject->origRenderRect.x,
-//                        -renderObj->cropParentObject->origRenderRect.y,
-//                        renderObj->cropParentObject->origRenderRect.w,
-//                        renderObj->cropParentObject->origRenderRect.h);
-//        }else{
-//
-//            glUniform4f(uniformLocations->ui_crop,
-//                        renderObj->cropParentObject->renderRect.x,
-//                        -renderObj->cropParentObject->renderRect.y,
-//                        renderObj->cropParentObject->renderRect.w,
-//                        renderObj->cropParentObject->renderRect.h);
-
-
-        return true;
+        lastIsNotCropped = true;
+        return lastIsNotCropped;
     }
 
     bool hasControllerInteraction(){
@@ -1746,6 +1730,8 @@ struct uiObject
 
         //if( !canCollide ) return false; // TODO now redundant check is above ?  // does break some things?
         if( doesNotCollide ) return false;
+
+        if( collisionRect.hasNoDimensions() ) return false;
 
         if( hasInteractionCb && interactionCallback != Ux::interactionNoOp ){
             return true;
