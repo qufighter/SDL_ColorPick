@@ -142,9 +142,7 @@ typedef struct Float_Rect
         return false;
     }
 
-    bool partiallyObfuscates(Float_Rect * t){
-        // RENAME.... fuzzy conatins at least one corner of T or the center point of T
-        // AND contains at least one corner...? if t is larger than and FULLY contains our object, then
+    bool partiallyObfuscatedBy(Float_Rect * t){
 
         float tW = (t->w*0.1);
         float tH = (t->h*0.1);
@@ -158,7 +156,7 @@ typedef struct Float_Rect
         float x1 = x + w;
         float y1 = y + h;
 
-        return containsPointBRxy(x1,y1,tlx,tly) || containsPointBRxy(x1,y1,brx,bry) || containsPointBRxy(x1,y1,tlx,bry) || containsPointBRxy(x1,y1,brx,tly) || containsPointBRxy(x1,y1,t->centerX(),t->centerY());
+        return containsPointBRxy(x1,y1,tlx,tly) || containsPointBRxy(x1,y1,brx,bry) || containsPointBRxy(x1,y1,tlx,bry) || containsPointBRxy(x1,y1,brx,tly) ||  t->containsPoint(centerX(),centerY());
     }
 
     bool completelyObfuscates(Float_Rect * t){
@@ -389,7 +387,7 @@ static Ux* Singleton();
     void moveLockedControllerCursor();
     void newCursorAnimation();
     static void CursorAnimationCompleted(uiAnimation* uiAnim);
-
+    void DebugPrintAllCursorPositions(uniformLocationStruct *uniformLocations);
 
     void updateModal(uiObject *newModal, anInteractionFn modalDismissal);
     void endModal(uiObject *oldModal); // this is to be called AFTER modal is hidden

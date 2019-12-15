@@ -1077,9 +1077,10 @@ void Ux::navigateControllerCursor(int x, int y){
 void Ux::updateControllerCursorPosition(bool animationsJustCompleted){
 
     if( animationsJustCompleted ){
-        //refreshControllerCursorObjects(); <- should be pretty safe to call if objects are added....
         if( controllerCursorTemporarilyDisabledForModalChange ){
             enableControllerCursor();
+        }else if( controllerCursorModeEnabled ){
+            refreshControllerCursorObjects(); //  <- should be pretty safe to call whenever objects are added....
         }
     }
 
@@ -1203,7 +1204,7 @@ void Ux::newCursorAnimation(){
 
 //static
 void Ux::CursorAnimationCompleted(uiAnimation* uiAnim){
-
+    // loops
     Ux* myUxRef = Ux::Singleton();
     myUxRef->newCursorAnimation();
     //uiAnim->myUiObject
@@ -1211,6 +1212,20 @@ void Ux::CursorAnimationCompleted(uiAnimation* uiAnim){
     //self->animConstrainToScrollableRegion(); // careful - ani is updating (though our current animation just completed)
 }
 
+void Ux::DebugPrintAllCursorPositions(uniformLocationStruct *uniformLocations){
+    // the following debug code renders ALL the cursor positions
+    if( controllerCursorModeEnabled && controllerCursorObjects->total() > 0 ){
+        int previousControllerCursorIndex = controllerCursorIndex;
+        for( int i=0; i<controllerCursorObjects->total(); i++ ){
+            controllerCursorIndex = i;
+            updateControllerCursorPosition(false);
+            printCharToUiObject(controllerCursor, (char)(48+(i%10)), DO_NOT_RESIZE_NOW);
+            renderObjects(uniformLocations, controllerCursor, glm::mat4(1.0f));
+        }
+        controllerCursorIndex = previousControllerCursorIndex;
+        printCharToUiObject(controllerCursor, CHAR_CIRCLE_PLAIN, DO_NOT_RESIZE_NOW);
+    }
+}
 
 // so should the print functions move into uiObject?
 // maybe just be static Ux:: member functions defined the same way as others
@@ -1310,7 +1325,7 @@ void Ux::printStringToUiObject(uiObject* printObj, const char* text, bool resize
         letter->hasForeground = true; // printObj->hasForeground;
         letter->hasBackground = printObj->hasBackground;
         Ux::setColor(&letter->backgroundColor, &printObj->backgroundColor);
-        letter->lastBackgroundColor = letter->backgroundColor; // initializations
+        //letter->lastBackgroundColor = letter->backgroundColor; // initializations
         Ux::setColor(&letter->foregroundColor, &printObj->foregroundColor);
         letter->doesInFactRender = true;
 
@@ -2254,7 +2269,10 @@ void Ux::updatePickHistoryPreview(){
 int Ux::renderObject(uniformLocationStruct *uniformLocations){
     bool animationsJustCompleted = uxAnimations->animationsJustCompleted(); // this should only be true for 1 render pass, could be stored in more global render state, or passed in from above...
     updateControllerCursorPosition(animationsJustCompleted);
-    return renderObjects(uniformLocations, rootUiObject, glm::mat4(1.0f));
+    /*return */renderObjects(uniformLocations, rootUiObject, glm::mat4(1.0f));
+
+    //DebugPrintAllCursorPositions(uniformLocations);
+    return 0;
 }
 
 int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderObj, glm::mat4 inheritMat){

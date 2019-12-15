@@ -359,7 +359,7 @@ struct uiObject
 
     Float_Rect roundedCornersRect;
     SDL_Color backgroundColor;
-    SDL_Color lastBackgroundColor;// onetime use state reset
+    //SDL_Color lastBackgroundColor;// onetime use state reset
     SDL_Color foregroundColor;
 
     /*
@@ -1661,8 +1661,8 @@ struct uiObject
                 return false; // nullptr?
             }
 
-            if( canCollide && collisionRect.partiallyObfuscates(&stopObject->collisionRect) ){
-                //SDL_Log("scanobj %i C-> %f %f %f %f partiallyObfuscates scanobj %i C-> %f %f %f %f", *scannedObjects, collisionRect.x, collisionRect.y, collisionRect.w, collisionRect.h, scannedObjectsStop, stopObject->collisionRect.x, stopObject->collisionRect.y, stopObject->collisionRect.w, stopObject->collisionRect.h );
+            if( canCollide && (collisionRect.partiallyObfuscatedBy(&stopObject->collisionRect)) /*stopObject->collisionRect.partiallyObfuscates(&collisionRect) */ ){
+                //SDL_Log("scanobj %i %02x C-> %f %f %f %f partiallyObfuscates  scanobj %i %02x C-> %f %f %f %f", *scannedObjects, this, collisionRect.x, collisionRect.y, collisionRect.w, collisionRect.h, scannedObjectsStop, stopObject, stopObject->collisionRect.x, stopObject->collisionRect.y, stopObject->collisionRect.w, stopObject->collisionRect.h );
                 return true; // this ?
             }
         }
