@@ -602,7 +602,6 @@ Ux::uiObject* Ux::create(void){
     Ux::setColor(&rootUiObject->foregroundColor, 0, 0, 0, 0); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
     rootUiObject->hasForeground = false; // render texture
 
-    currentModal = rootUiObject;
 
  //     make this color the selected color ! ! ! ! !! ^ ^ ^
 
@@ -822,7 +821,7 @@ Ux::uiObject* Ux::create(void){
 
 
 
-
+    // FINALLY !!!!!!!!!!!!!!
     controllerCursor = new uiObject();
     controllerCursor->hasBackground = true;
     Ux::setColor(&controllerCursor->backgroundColor, 255, 0, 0, 128);
@@ -831,11 +830,11 @@ Ux::uiObject* Ux::create(void){
     rootUiObject->addChild(controllerCursor);
 
     controllerCursorObjects = new uiList<uiObject*, Uint8>(controllerCursorObjectsMax); // controller cursor limit
+    disableControllerCursor(); // just hides it
 
 
     updateRenderPositions();
 
-    disableControllerCursor();
 
     readInState(); // reads saved state into lists, requires historyPalleteEditor
 
@@ -906,6 +905,7 @@ Ux::uiObject* Ux::create(void){
 
     //SDL_Log("ui create done");
 
+    currentModal = rootUiObject;// used for cusror tracking.... we could remove some nullptr checks elsewhere with this here...
     return rootUiObject;
 }
 
