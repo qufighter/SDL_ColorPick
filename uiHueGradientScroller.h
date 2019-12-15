@@ -88,7 +88,8 @@ struct uiHueGradientScroller{
     static void interactionLClicked(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
         uiHueGradientScroller* self = ((uiHueGradientScroller*)interactionObj->myUiController);
-        self->hueGradientHolder->boundryRect.x-=1.0 / uxInstance->hueGradientData->totalColors;
+        uiKeyInteractions* keyInteractions = uxInstance->getKeyInteractions();
+        self->hueGradientHolder->boundryRect.x-=keyInteractions->downDuration(delta->lastUpdate, 10.0, 10.0) / uxInstance->hueGradientData->totalColors;
         self->handleWrapping();
         self->hueGradientHolder->updateRenderPosition();
         if( self->changeCallback!=nullptr ){
@@ -99,7 +100,8 @@ struct uiHueGradientScroller{
     static void interactionRClicked(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
         uiHueGradientScroller* self = ((uiHueGradientScroller*)interactionObj->myUiController);
-        self->hueGradientHolder->boundryRect.x+=1.0 / uxInstance->hueGradientData->totalColors;
+        uiKeyInteractions* keyInteractions = uxInstance->getKeyInteractions();
+        self->hueGradientHolder->boundryRect.x+=keyInteractions->downDuration(delta->lastUpdate, 10.0, 10.0) / uxInstance->hueGradientData->totalColors;
         self->handleWrapping();
         self->hueGradientHolder->updateRenderPosition();
         if( self->changeCallback!=nullptr ){

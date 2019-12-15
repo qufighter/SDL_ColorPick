@@ -115,7 +115,8 @@ void OpenGLContext::keyUp(Uint32 timestamp, SDL_Keycode k){
 
 void OpenGLContext::EnterKeyEvent(){
     if( generalUx->controllerCursorModeEnabled ){
-        generalUx->selectCurrentControllerCursor();
+        //generalUx->selectCurrentControllerCursor();
+        // handled in main render loop
     }else{
         if( isMinigameMode() ){
 
@@ -1411,6 +1412,11 @@ void OpenGLContext::renderScene(void) {
             }
             if( keyInteractions.left->isPressed(ticks) ){
                 generalUx->navigateControllerCursor(1,0);
+            }
+
+
+            if( keyInteractions.enter->isPressed(ticks) ){
+                generalUx->selectCurrentControllerCursor();
             }
         }
     }

@@ -423,6 +423,8 @@ static Ux* Singleton();
     void endCurrentModal();
     bool hasCurrentModal();
 
+    uiKeyInteractions* getKeyInteractions();
+
     int renderObject(uniformLocationStruct* uniformLocations);
     int renderObjects(uniformLocationStruct* uniformLocations, uiObject* renderObj, glm::mat4 inheritMat);
 

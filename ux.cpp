@@ -67,7 +67,10 @@ bool Ux::hasCurrentModal(){
     return currentModal != rootUiObject && currentModal != nullptr;
 }
 
-
+uiKeyInteractions* Ux::getKeyInteractions(){
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    return &ogg->keyInteractions;
+}// TODO: eventually a helper on uxInstance should handle this... computing for either mouse, finger, or key durations and returining the appropriate multipler
 
 void Ux::GetPrefPath(char* preferencesPath, const char* filename, char** resultDest){
     size_t len = SDL_strlen(preferencesPath) + SDL_strlen(filename) + 4;

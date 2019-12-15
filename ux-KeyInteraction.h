@@ -77,9 +77,9 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
         bool is_new;
         bool was_new;
         uiKeyInteractions* parent;
-    };
+    }; //end struct uiKeyInteraction
 
-
+    // uiKeyInteractions continuedß
     Uint32 downCounter;
     Uint32 lastKeyDownTime;
 
@@ -141,6 +141,25 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
 
     void keyUp(Uint32 timestamp, SDL_Keycode k){
         makeKeysatetSwitch(keyup)
+    }
+
+    float downDuration(Uint32 timestamp, float ceiling_seconds, float multiplier){
+        // returns 1.0 or if keys pressed,
+        // returns a number from 1.0 - ceiling_seconds
+        // you define now many seconds it takes to achieve max speed of seconds * multiplier
+        if( hasPressedKeys() ){
+
+            float elapsed = (timestamp - lastKeyDownTime) * 0.001f;
+            if( elapsed > ceiling_seconds ){
+                elapsed = ceiling_seconds;
+            }
+            // now we COULD scale this so its from 0.0 - 1.0 but the low side is useless, and multipler scales it anyway
+            return elapsed * multiplier;
+            if( elapsed < 1.0 ){
+                elapsed = 1.0;
+            }
+        }
+        return 1.0;
     }
 
     bool hasPressedKeys(){
