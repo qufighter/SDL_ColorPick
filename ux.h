@@ -377,6 +377,7 @@ static Ux* Singleton();
     void updateRenderPositions(void);
     void updateRenderPositions(uiObject *renderObj);
     void seekAllControllerCursorObjects();
+    void storeControllerCursorToModal();
     void refreshControllerCursorObjects();
 
     void toggleControllerCursor();

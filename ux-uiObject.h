@@ -247,8 +247,6 @@ struct uiObject
     bool hasParentObject;
     uiObject *parentObject;
 
-    uiObject *lastCursorSelection; // if our uiObject is a modal... each modal has a last cursor selection!
-
 
     int childListIndex = 0;
     const static int childListMax = 128;
@@ -298,7 +296,6 @@ struct uiObject
         roundedCornersRect = Float_Rect(0.0,0.0,0.0,0.0);
         interactionProxy=nullptr;
         myCurrentAnimation=nullptr;
-        lastCursorSelection=nullptr;
 
         boundaryEntreredCallback=nullptr;
         shouldCeaseInteractionChecker=nullptr;
@@ -329,6 +326,9 @@ struct uiObject
 
         //textSpacing=0.0;
         textDirection=TEXT_DIR_ENUM::NO_TEXT; // this is really child node direction... we can print the child nodes in some pre-defined ways
+
+        myModalControllerCursor = nullptr;
+        storeControllerCursor = true;
     }
 
     bool isInBounds; // equivilent to needs render
@@ -352,6 +352,8 @@ struct uiObject
     void * myUiController; // ditto!
     int myIntegerIndex; // this is for arbatrary use by consumer of the uiObject, eg if this tile needs an index to some other array where it wont' align with myChildListIndex
     int myChildListIndex; // this is for the index in the parent list, not always populated
+    uiObject* myModalControllerCursor; // since the sort changes when moving, we can't store index
+    bool storeControllerCursor;
 
     uiInteraction *forceDelta;
 

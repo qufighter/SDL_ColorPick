@@ -602,6 +602,8 @@ Ux::uiObject* Ux::create(void){
     Ux::setColor(&rootUiObject->foregroundColor, 0, 0, 0, 0); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
     rootUiObject->hasForeground = false; // render texture
 
+    currentModal = rootUiObject;
+
  //     make this color the selected color ! ! ! ! !! ^ ^ ^
 
 
@@ -640,7 +642,7 @@ Ux::uiObject* Ux::create(void){
     returnToLastImgBtn->setClickInteractionCallback(&Ux::interactionReturnToPreviousSurface);
     mainUiContainer->addChild(returnToLastImgBtn);
     returnToLastImgBtn->hideAndNoInteraction(); // initially hidden....
-
+    returnToLastImgBtn->storeControllerCursor = false; // this modal is indistinguishable from root ???
 
     bottomBar = new uiObject();
     bottomBar->hasBackground = true;
@@ -933,14 +935,24 @@ void Ux::seekAllControllerCursorObjects(){
     SDL_Log("Cursor Objects Found: %i", controllerCursorObjects->total());
 
 }
-void Ux::refreshControllerCursorObjects(){
 
-    // NOTE: MAYBE  controllerCursorIndex IS PER MODAL STATE i.e each object that is a modal (even root) knows its last controllerCursorIndex
-    // SEE : currentModal->lastCursorSelection ?? or should we just store an integer instead?
+void Ux::storeControllerCursorToModal(){
+    uiObject* curModal = currentModal != nullptr ? currentModal : rootUiObject;
+    if( curModal->storeControllerCursor ){
+        curModal->myModalControllerCursor = *controllerCursorObjects->get(controllerCursorIndex);
+    }
+}
+
+void Ux::refreshControllerCursorObjects(){
     uiObject* curObj = nullptr;
-    if( controllerCursorObjects->total() > 0 ){
+    uiObject* curModal = currentModal != nullptr ? currentModal : rootUiObject;
+
+    if( curModal->myModalControllerCursor != nullptr ){
+        curObj = curModal->myModalControllerCursor;
+    }else if( controllerCursorObjects->total() > 0 ){
         curObj = *controllerCursorObjects->get(controllerCursorIndex);
     }
+
     seekAllControllerCursorObjects();
     if( controllerCursorObjects->total() > 0 ){
 
@@ -953,6 +965,8 @@ void Ux::refreshControllerCursorObjects(){
 
         // mayhaps we should just reset the index to zero? (when entering modal and not in this mode?)   thts what this does someitimes
         controllerCursorIndex = controllerCursorObjects->validateIndexLooping(controllerCursorIndex);
+
+        storeControllerCursorToModal();
     }
 }
 void Ux::toggleControllerCursor(){
@@ -1057,13 +1071,13 @@ void Ux::navigateControllerCursor(int x, int y){
         }
         controllerCursorIndex = bestIndex;
     }
-    //updateControllerCursorPosition(); // POINTLESS TO CALL THIS HERE...
+
+    storeControllerCursorToModal();
 }
 void Ux::updateControllerCursorPosition(bool animationsJustCompleted){
 
     if( animationsJustCompleted ){
-        //refreshControllerCursorObjects();
-
+        //refreshControllerCursorObjects(); <- should be pretty safe to call if objects are added....
         if( controllerCursorTemporarilyDisabledForModalChange ){
             enableControllerCursor();
         }
