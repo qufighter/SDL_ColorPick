@@ -1461,7 +1461,7 @@ void OpenGLContext::renderScene(void) {
 colorPickState->directionOfEffect=signOfEffect(keyInteractions.keyIdentifier->was_new ? 1 : moveSpeed); \
 indicateHighSpeed();
 
-                if( !generalUx->controllerCursorModeEnabled ){
+                if( !generalUx->controllerCursorModeEnabled && !generalUx->controllerCursorTemporarilyDisabledForModalChange ){
                     if( keyInteractions.up->isPressed(ticks) ){
                         dirKeyPressedApplicationMacro(mmovey, +, up)
                     }

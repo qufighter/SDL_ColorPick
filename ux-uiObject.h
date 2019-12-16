@@ -1657,7 +1657,7 @@ struct uiObject
 //            //return false;
 //        }
 
-        if( isInBounds && doesInFactRender ){   // SYMMETRY SO IMPORTANT HERE FOR TRACKING scannedObjects
+        if( isInBounds && (doesInFactRender || doesRenderChildObjects) ){   // SYMMETRY SO IMPORTANT HERE FOR TRACKING scannedObjects
             *scannedObjects += 1;               // WE TRACK our current scan object NOW...
 
             if( *scannedObjects >= scannedObjectsStop ){
@@ -1686,7 +1686,7 @@ struct uiObject
         }
 
         // adding deep interactions first before "shallow" ones (bc this is recursion in loop)... we could omit shallow ones where deep ones found? (THIS IS AUTOMAGICALLY DONE BY seekObscuringObject)
-        if( isInBounds && doesInFactRender ){   // SYMMETRY SO IMPORTANT HERE FOR TRACKING scannedObjects
+        if( isInBounds && (doesInFactRender || doesRenderChildObjects) ){   // SYMMETRY SO IMPORTANT HERE FOR TRACKING scannedObjects
             *scannedObjects += 1;               // WE TRACK our current scan object NOW...
 
             if( hasControllerInteraction() ){

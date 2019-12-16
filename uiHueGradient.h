@@ -33,6 +33,10 @@ struct uiHueGradient{
         //huePositionMarker->setBoundaryRect(0.0, 0.0, 0.1, 1.0);// whatever we size here does  not matter
         huePositionMarker->doesInFactRender = false;
         huePositionMarker->doesRenderChildObjects = false;
+
+        huePositionMarker->setAnimationPercCallback(&uiHueGradient::setHueByPercentageBoundaryAnimCb);
+
+
         hideHueSlider();
         uiObjectItself->addChild(huePositionMarker);
 
@@ -51,6 +55,7 @@ struct uiHueGradient{
 
         uiObjectItself->setInteraction(interactionHueBgClicked);
         uiObjectItself->setInteractionCallback(interactionHueBgClicked);
+        uiObjectItself->interactionNonController=true; // its just a click for controllers
 
         //uiObjectItself->setInteractionCallback(Ux::interactionNoOp);
         parentObj->addChild(uiObjectItself);
@@ -91,13 +96,26 @@ struct uiHueGradient{
 
         // instead of updating it right now as the above would do.... since it is intense
 
+        self->applyPickedPercent(percent);
+    }
+
+    static void setHueByPercentageBoundaryAnimCb(Ux::uiObject *interactionObj, float percent){
+        Ux* uxInstance = Ux::Singleton();
+        uiHueGradient* self = uxInstance->huePicker;
+        self->lastPickPercent = percent;
+        self->applyPickedPercent(percent);
+    }
+
+    void applyPickedPercent(float percentage){
+
 #ifndef __IPHONEOS__
-        if( self->lockPickerEvent ) return;
-        self->lockPickerEvent = true; // hmm seems like we still need to use a timer if we really want to debounce it...
-        SDL_AddTimer(250, my_callbackfunc, self);
+        if( lockPickerEvent ) return;
+        lockPickerEvent = true; // hmm seems like we still need to use a timer if we really want to debounce it...
+        SDL_AddTimer(250, my_callbackfunc, this);
 #else
         pickerForPercentV(&percent);
 #endif
+
     }
 
     static Uint32 my_callbackfunc(Uint32 interval, void* parm){
@@ -120,6 +138,8 @@ struct uiHueGradient{
         return 0; // end timer
         //return interval;
     }
+
+
 
 
     static void pickerForPercentV(float* percent){ // don't use the arg... its out of date!
@@ -174,25 +194,33 @@ struct uiHueGradient{
         uiObject* markerTop = huePositionMarker->childList[0];
         uiObject* markerBtm = huePositionMarker->childList[1];
 
-        float markerHeight=0.55;
         float markerOutset=0.25;
+        float markerHeight=0.55 + markerOutset;
         float hueMarkerWidth = 0.08;
+        float halfHueMarkerWidth = hueMarkerWidth * 0.5;
 
         hueGradient->resize(true);
 
         if( uxInstance->widescreen ){ // widescreen
-            markerHeight=0.45;
-            huePositionMarker->setBoundaryRect(-markerOutset, 0.0, 1.0+markerOutset+markerOutset, hueMarkerWidth);
-            markerTop->setBoundaryRect(0.0, 0.0, markerHeight, 1.0);
-            markerBtm->setBoundaryRect(1.0-markerHeight, 0.0, markerHeight, 1.0);
+            markerHeight=0.45 + markerOutset;
+            huePositionMarker->setBoundaryRect(0.0, 0.0, 1.0, hueMarkerWidth);
+            huePositionMarker->setMovementBoundaryRect( 0.0, -halfHueMarkerWidth, 0.0, 1.0 + hueMarkerWidth);
+            huePositionMarker->setInteraction(&Ux::interactionSliderVT);
+
+            markerTop->setBoundaryRect(-markerOutset, 0.0, markerHeight, 1.0);
+            markerBtm->setBoundaryRect(1.0-markerHeight+markerOutset, 0.0, markerHeight, 1.0);
 
             uxInstance->printCharToUiObject(markerTop, CHAR_ARR_RIGHT, DO_NOT_RESIZE_NOW);
             uxInstance->printCharToUiObject(markerBtm, CHAR_ARR_LEFT, DO_NOT_RESIZE_NOW);
 
         }else{
-            huePositionMarker->setBoundaryRect(0.0, -markerOutset, hueMarkerWidth, 1.0+markerOutset+markerOutset);
-            markerTop->setBoundaryRect(0.0, 0.0, 1.0, markerHeight);
-            markerBtm->setBoundaryRect(0.0, 1.0-markerHeight, 1.0, markerHeight);
+            huePositionMarker->setBoundaryRect(0.0, 0.0, hueMarkerWidth, 1.0);
+            huePositionMarker->setMovementBoundaryRect( -halfHueMarkerWidth, 0, 1.0 + hueMarkerWidth, 0.0);
+            huePositionMarker->setInteraction(&Ux::interactionHZ);
+
+
+            markerTop->setBoundaryRect(0.0, -markerOutset, 1.0, markerHeight);
+            markerBtm->setBoundaryRect(0.0, 1.0-markerHeight+markerOutset, 1.0, markerHeight);
 
             uxInstance->printCharToUiObject(markerTop, CHAR_ARR_DN, DO_NOT_RESIZE_NOW);
             uxInstance->printCharToUiObject(markerBtm, CHAR_ARR_UP, DO_NOT_RESIZE_NOW);

@@ -46,6 +46,14 @@ void Ux::updateModal(uiObject *newModal, anInteractionFn pModalDismissal){
     }
 }
 void Ux::endModal(uiObject *oldModal){
+    /*
+     if( controllerCursorModeEnabled ){
+     controllerCursorTemporarilyDisabledForModalChange = true;
+     // thinking about this here too, when we leave the minigame....
+     // same problem may occur though
+     // unless we block eevnts during "controllerCursorTemporarilyDisabledForModalChange" too....
+
+     */
     if( currentModal == oldModal ){
         currentModal = oldModal->modalParent;
     }else{
@@ -971,7 +979,16 @@ void Ux::refreshControllerCursorObjects(){
         if( curObj != nullptr ){
             if( !seekObjectInCursorObjects(curObj) ){
                 if( !seekObjectInCursorObjects(curObj->interactionProxy) ){
-                    // still didn't find it!
+                    if( !seekObjectInCursorObjects(curObj->parentObject) ){
+                        int index = 0;
+                        int total = curObj->getChildCount();
+                        while( index < total && !seekObjectInCursorObjects(curObj->childList[index]) ){
+                            index++; // still didn't find it!
+                        }
+    //                    if( index == total ){
+    //                        // still didn't find it!
+    //                    }
+                    }
                 }
             }
         }
@@ -1217,7 +1234,7 @@ void Ux::updateControllerCursorPosition(bool animationsJustCompleted){
     }
 
     //TODO: we could just ALWAS set this rect before rendering.... if in this mdoe anyway... but we may still need to know when to rescan....
-    if(controllerCursorModeEnabled){
+    if(controllerCursorModeEnabled && controllerCursorObjects->total() > 0 ){
 
         uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
         controllerCursor->boundryRect.setRectConstrainedToUnit(&curObj->collisionRect);
