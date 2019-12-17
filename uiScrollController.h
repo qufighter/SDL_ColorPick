@@ -265,7 +265,7 @@ struct uiScrollController{
         uiScrollController* self = interactionObj->myScrollController;
         Ux* uxInstance = Ux::Singleton();
         uiKeyInteractions* keyInteractions = uxInstance->getKeyInteractions(); // TODO: eventually a helper on uxInstance should handle this... computing for either mouse, finger, or key durations and returining the appropriate multipler
-        self->animateScrollXyRelative(0, 0.001 * keyInteractions->downDuration(delta->lastUpdate, 6.0, 2.0));
+        self->animateScrollXyRelative(0, 0.001 * keyInteractions->downDuration(delta->lastUpdate, 6.0, 3.0));
         //self->scrolly += 0.1; // TODO ANIMATE!
         //self->reflowTiles();
         //self->animConstrainToScrollableRegion();
@@ -276,7 +276,7 @@ struct uiScrollController{
         uiScrollController* self = interactionObj->myScrollController;
         Ux* uxInstance = Ux::Singleton();
         uiKeyInteractions* keyInteractions = uxInstance->getKeyInteractions();
-        self->animateScrollXyRelative(0, -0.001 * keyInteractions->downDuration(delta->lastUpdate, 6.0, 2.0));
+        self->animateScrollXyRelative(0, -0.001 * keyInteractions->downDuration(delta->lastUpdate, 6.0, 3.0));
         //        self->scrolly -= 0.1; // TODO ANIMATE!
         //        self->reflowTiles();
         //        self->animConstrainToScrollableRegion();

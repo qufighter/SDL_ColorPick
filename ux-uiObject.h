@@ -268,6 +268,7 @@ struct uiObject
         canCollide=false; // with cursor
         doesNotCollide=false;
         interactionNonController=false;
+        controllerInteractionKeyupOnly=false;
         hasInteraction=false;
         hasInteractionCb=false;
         interactionCallbackTypeClick=false;
@@ -386,7 +387,8 @@ struct uiObject
 
     // when collision occurs we must define what to do
     bool hasInteraction;
-    bool interactionNonController;
+    bool interactionNonController; // Controller Cursor will still fire interaction callback, but skip interaction mode (i.e controllerCursorLockedToObject)
+    bool controllerInteractionKeyupOnly;
     anInteractionFn interactionFn;
     //void (*interactionFn)(uiObject *interactionObj, uiInteraction *delta);
     bool hasInteractionCb;

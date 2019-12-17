@@ -115,13 +115,16 @@ void OpenGLContext::keyUp(Uint32 timestamp, SDL_Keycode k){
 
 void OpenGLContext::EnterKeyEvent(){
     if( generalUx->controllerCursorModeEnabled ){
-        //generalUx->selectCurrentControllerCursor();
-        // handled in main render loop
-    }else{
+
+        if( !generalUx->controllerCursorLockedToObject ){
+            generalUx->selectCurrentControllerCursor(0); // some objecs will only interact on key up.... so we can get to those now probably :)  this does a rescan for new cursors in case scroll occured
+        } //^ is typically handled in main render loop
+
+    }else if(keyInteractions.enter->wasNotCanceled()){
         if( isMinigameMode() ){
 
         }else{
-            if( setup_complete && NoModalBlocksPicker() ){ // this check is specifically to guard the enter key durign shader compilation error messaage box...
+            if( setup_complete && NoModalBlocksPicker() ){ // setup_complete check is specifically to guard the enter key durign shader compilation error messaage box...
                 generalUx->addCurrentToPickHistory();
             }
         }
@@ -1416,7 +1419,8 @@ void OpenGLContext::renderScene(void) {
 
 
             if( keyInteractions.enter->isPressed(ticks) ){
-                generalUx->selectCurrentControllerCursor();
+                keyInteractions.enter->consume(); // prevent pollution across states when we exit controllerCursorModeEnabled
+                generalUx->selectCurrentControllerCursor(keyInteractions.enter->keydown_timestamp); // timestamp is validate against other actions, so enter will not live beyond cursor movements or cursor re-scans
             }
         }
     }

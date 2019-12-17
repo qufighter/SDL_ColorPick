@@ -210,7 +210,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         //settingsList->add(SettingsListObj(openBtn->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
 
-        settingsList->add(SettingsListObj((new uiObject()), SETTING_TYPES_ENUM::SPACE, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        //settingsList->add(SettingsListObj((new uiObject()), SETTING_TYPES_ENUM::SPACE, UI_SETTINGS_ENUM::UI_SETTING_NONE));
         settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->pad(0.4,0.001)->print("Options")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
         settingsList->add(SettingsListObj((new uiControlBooleanToggle(dummyContainer, "+1 Points", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_GAME_ON));

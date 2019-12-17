@@ -32,7 +32,6 @@ struct uiHueGradient{
         huePositionMarker = new uiObject();
         //huePositionMarker->setBoundaryRect(0.0, 0.0, 0.1, 1.0);// whatever we size here does  not matter
         huePositionMarker->doesInFactRender = false;
-        huePositionMarker->doesRenderChildObjects = false;
 
         huePositionMarker->setAnimationPercCallback(&uiHueGradient::setHueByPercentageBoundaryAnimCb);
 
@@ -166,13 +165,14 @@ struct uiHueGradient{
 
     void showHueSlider(){
         hueSliderVisible = true;
-        huePositionMarker->doesRenderChildObjects = true;
+        huePositionMarker->showAndAllowInteraction();
         repositionHueSlider(lastPickPercent, false);
+        huePositionMarker->doesInFactRender = false; // its just a container, save a render pass :)
     }
 
     void hideHueSlider(){
         hueSliderVisible = true;
-        huePositionMarker->doesRenderChildObjects = false;
+        huePositionMarker->hideAndNoInteraction();
     }
 
     void repositionHueSlider(float percent, float skipUpdate){

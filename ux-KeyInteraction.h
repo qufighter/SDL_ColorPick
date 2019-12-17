@@ -37,6 +37,7 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
                 is_new = true;
                 parent->downCounter++;
             }
+            is_consumed = false;
             keydown_timestamp = time;
             // parent->lastKeyDownTime = time; this would be a different mode, where we only count "known keys" downtime....
         }
@@ -44,7 +45,7 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
         void keyup(Uint32 time){
             if( timestamp != 0 ){
                 defaults();
-                if( parent->downCounter > 0 ) parent->downCounter--; // Uint32 would loop to large nubmers, better safe than sorry...
+                if( parent->downCounter > 0 ) parent->downCounter--; // Uint32 would loop to large nubmers? better safe than sorry...
             }
         }
 
@@ -72,10 +73,23 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
             return parent->lastKeyDownTime <= keydown_timestamp;
         }
 
+        bool wasCanceled(){
+            return is_consumed || wasCanceledByLaterKeypress();
+        }
+
+        bool wasNotCanceled(){
+            return !wasCanceled();
+        }
+
+        void consume(){
+            is_consumed = true;
+        }
+
         Uint32 timestamp;
         Uint32 keydown_timestamp;
         bool is_new;
         bool was_new;
+        bool is_consumed;
         uiKeyInteractions* parent;
     }; //end struct uiKeyInteraction
 
@@ -154,10 +168,11 @@ struct uiKeyInteractions // used to track interactions that repeat, may also be 
                 elapsed = ceiling_seconds;
             }
             // now we COULD scale this so its from 0.0 - 1.0 but the low side is useless, and multipler scales it anyway
-            return elapsed * multiplier;
+            elapsed = elapsed * multiplier;
             if( elapsed < 1.0 ){
                 elapsed = 1.0;
             }
+            return elapsed;
         }
         return 1.0;
     }

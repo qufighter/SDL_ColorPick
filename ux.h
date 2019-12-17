@@ -412,7 +412,7 @@ static Ux* Singleton();
     void disableControllerCursor();
     void navigateControllerCursor(int x, int y);
     void updateControllerCursorPosition(bool animationsJustCompleted);
-    void selectCurrentControllerCursor();
+    void selectCurrentControllerCursor(Uint32 time);
     void moveLockedControllerCursor();
     void newCursorAnimation();
     static void CursorAnimationCompleted(uiAnimation* uiAnim);
@@ -617,7 +617,7 @@ static Ux* Singleton();
     int controllerCursorIndex;
     bool controllerCursorLockedToObject;
     bool controllerCursorTemporarilyDisabledForModalChange;
-
+    Uint32 controllerCursorLastMovedAtTimestamp;
 
     char* historyPath;
     char* palletePath;

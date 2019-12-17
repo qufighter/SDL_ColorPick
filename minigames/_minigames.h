@@ -447,6 +447,7 @@ struct Minigames{
 
         myUxRef->endModal(myUxRef->minigamesUiContainer);
         //myUxRef->disableControllerCursor(); // enter selection ads last color loosing score!  or did I hold enter too long????
+        // still need to look at this ^ while this is disabling we shouldn't trigger enter elsewhere...
 
         myUxRef->minigameColorList->clear();
 

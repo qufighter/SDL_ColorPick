@@ -95,6 +95,7 @@ Ux::Ux(void) {
     controllerCursorLockedToObject=false;
     controllerCursorTemporarilyDisabledForModalChange=false;
     controllerCursorIndex = 0;
+    controllerCursorLastMovedAtTimestamp = 0;
 
     isMinigameMode = false;
 
@@ -685,6 +686,7 @@ Ux::uiObject* Ux::create(void){
     printCharToUiObject(addHistoryBtn, CHAR_CIRCLE_PLUSS, DO_NOT_RESIZE_NOW);
     addHistoryBtn->squarify(); // "keep round"
     addHistoryBtn->setRoundedCorners(0.5);
+    addHistoryBtn->controllerInteractionKeyupOnly = true;
 
 
     optionsGearBtn = new uiObject();
@@ -964,6 +966,8 @@ bool Ux::seekObjectInCursorObjects(uiObject* curObj){
 }
 
 void Ux::refreshControllerCursorObjects(){
+    controllerCursorLastMovedAtTimestamp = SDL_GetTicks();
+
     uiObject* curObj = nullptr;
     uiObject* curModal = currentModal != nullptr ? currentModal : rootUiObject;
 
@@ -1018,7 +1022,7 @@ void Ux::enableControllerCursor(){
 void Ux::disableControllerCursor(){
     if( controllerCursorLockedToObject ){
         currentInteractions[0].canceled = true; // helps click handlers (and other interactionCallbaks) know this was NOT a click
-        selectCurrentControllerCursor(); // exists this mode and releases the object....
+        selectCurrentControllerCursor(0); // exists this mode and releases the object.... this zero may have no effect in this locked mode...
     }
     controllerCursorModeEnabled = false;
 
@@ -1038,6 +1042,7 @@ void Ux::navigateControllerCursor(int x, int y){
         moveLockedControllerCursor();
         return;
     }
+    controllerCursorLastMovedAtTimestamp = SDL_GetTicks();
     bool isY = y != 0;
     uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
 
@@ -1120,7 +1125,7 @@ void Ux::moveLockedControllerCursor(){
     }
 }
 
-void Ux::selectCurrentControllerCursor(){
+void Ux::selectCurrentControllerCursor(Uint32 down_timestamp){
     // this is to either "activate and enter" soem fine control choices for the selection (movement mode)
     // OR simply to click it... depends on the object and interactions contained!
 
@@ -1128,10 +1133,21 @@ void Ux::selectCurrentControllerCursor(){
     uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
 
     if( !controllerCursorLockedToObject ){
-        // MAYBe call trigger interaction instead???
 
-        // currentInteractions needs a click
-
+        if( down_timestamp > 0 ){
+            if( controllerCursorLastMovedAtTimestamp >= down_timestamp ){
+                return; // since enter was pressed, well it got canceled... by a cursor movement or rescan event
+            }
+            if( curObj->controllerInteractionKeyupOnly ){
+                return; // skip keydown
+            }
+        }else{ // keyup event (typically we ignore these, since we trigger the event on keydown)
+            if( !curObj->controllerInteractionKeyupOnly ){
+                refreshControllerCursorObjects(); // we can still refresh the view now, it may have changed,
+                // TODO there are other caess for the keyup only objects, where we may too wish to rescan the view!
+                return;  // this isn't our special key up event object... ignore it
+            }
+        }
 
         currentInteractions[0].begin(SDL_GetTicks(), curObj->collisionRect.x + (curObj->collisionRect.w * 0.5), curObj->collisionRect.y + (curObj->collisionRect.h * 0.5));
 
@@ -1158,12 +1174,6 @@ void Ux::selectCurrentControllerCursor(){
             // should we still call interaction update?? probably..... or ohterwise slow it down velocity wize....
             currentInteractions[0].update(SDL_GetTicks());
 
-//            if( curObj->hasInteractionCb ){
-//                // OR jsut call interactionComplete ????? then we don't need no IF statement eh?
-//                curObj->interactionCallback(curObj, &currentInteractions[0]); // NOTE this BAD hack... lucky most modal dismissals dont' care much about the interaction details......
-//
-//            }
-
             bool result = interactionComplete(&currentInteractions[0]); // better for delegating the interactionProxy ?
 
             //enableControllerCursor(); // rescan... should defer this ? hasAnimCb ? (not all will)
@@ -1181,11 +1191,11 @@ void Ux::selectCurrentControllerCursor(){
 
         // OR just call interactionUpdate ??? (now done elsewhere)
 
-    }else{ // if( curObj->hasInteractionCb ){
+    }else{
 
-        // OR jsut call interactionComplete ????? then we don't need no IF statement eh?
-        //curObj->interactionCallback(curObj, &currentInteractions[0]); // NOTE this BAD hack... lucky most modal dismissals dont' care much about the interaction details......
         bool result = interactionComplete(&currentInteractions[0]); // better for delegating the interactionProxy ?
+        //if( down_timestamp == 0 && !controllerCursorLockedToObject ) refreshControllerCursorObjects(); <- for keyup only objects, we probably want to do this now?
+        // problem being, the arg down_timestamp could be two different things... if we are exiting controllerCursorLockedToObject we SHOULD never be in this else, but you never know right?
 
         //enableControllerCursor(); // rescan... should defer this ? hasAnimCb ? (not all will)
 
@@ -1229,12 +1239,12 @@ void Ux::updateControllerCursorPosition(bool animationsJustCompleted){
         if( controllerCursorTemporarilyDisabledForModalChange ){
             enableControllerCursor();
         }else if( controllerCursorModeEnabled ){
-            refreshControllerCursorObjects(); //  <- should be pretty safe to call whenever objects are added....
+            //refreshControllerCursorObjects(); //  <- should be pretty safe to call whenever objects are added.... messes up key repeats... better to call later...
         }
     }
 
     //TODO: we could just ALWAS set this rect before rendering.... if in this mdoe anyway... but we may still need to know when to rescan....
-    if(controllerCursorModeEnabled && controllerCursorObjects->total() > 0 ){
+    if(controllerCursorModeEnabled && controllerCursorObjects->total() > controllerCursorIndex ){
 
         uiObject* curObj = *controllerCursorObjects->get(controllerCursorIndex);
         controllerCursor->boundryRect.setRectConstrainedToUnit(&curObj->collisionRect);
@@ -1869,6 +1879,7 @@ void Ux::interactionConstrainToParentObject(uiAnimation* uiAnim, animationCallba
     }
 }
 
+
 // this overrides the interface fn?
 // this function is a bit odd for now, but is planned to be used to drag and throw objects that will otherwise animiate in, or not animate in based on this - Pane
 //static
@@ -1948,16 +1959,6 @@ void Ux::interactionSliderVT(uiObject *interactionObj, uiInteraction *delta){
     myUxRef->updateRenderPositions(interactionObj);
 }
 
-void Ux::clickZoomSliderBg(uiObject *interactionObj, uiInteraction *delta){
-    float percent = (delta->px - interactionObj->collisionRect.x) * (1.0/interactionObj->collisionRect.w); // it is arguable delta aleady "know" this?
-    if( percent < 0 ) percent = 0;
-    else if( percent > 1 ) percent = 1;
-    OpenGLContext* ogg=OpenGLContext::Singleton();
-    ogg->setFishScalePerentage(interactionObj, percent);
-    Ux* myUxRef = Ux::Singleton();
-    myUxRef->zoomSlider->updateAnimationPercent(percent, 0.0);
-}
-
 //static // this seems like interactionSliderHZ ? // must have move boundary rect....
 void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
 
@@ -2007,6 +2008,16 @@ void Ux::interactionHZ(uiObject *interactionObj, uiInteraction *delta){
  //     for sliders where the center point of the object is all that is considered for positioning (bool isCentered) <-- ? untrue ? planing stage problems
 }
 
+
+void Ux::clickZoomSliderBg(uiObject *interactionObj, uiInteraction *delta){
+    float percent = (delta->px - interactionObj->collisionRect.x) * (1.0/interactionObj->collisionRect.w); // it is arguable delta aleady "know" this?
+    if( percent < 0 ) percent = 0;
+    else if( percent > 1 ) percent = 1;
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    ogg->setFishScalePerentage(interactionObj, percent);
+    Ux* myUxRef = Ux::Singleton();
+    myUxRef->zoomSlider->updateAnimationPercent(percent, 0.0);
+}
 
 
 //
