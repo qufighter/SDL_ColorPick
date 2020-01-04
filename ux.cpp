@@ -853,9 +853,7 @@ Ux::uiObject* Ux::create(void){
     //                  myUxRef->temporarilyDisableControllerCursorForAnimation(); where you trigger the animation, your cursor should then fix itself momentarily
 
     // CUSOR BUGS: TODO
-    // 1) press "default" pallete button from options screen... the modal is ended, animation occurs, but cursor does not reset properly
-    // 2) iirc funny observation after jumping from pallete color to hsv adjuster view, rescan did not occur after modal animation ??? occured too soon ??? (see above, similar bug was fixed)  problem here we endModal instead of updateModal probably
-    // 3) leaving minigame - think this is solved but we may wish to fix this better.... leaving this here controllerCursorTemporarilyDisabledForAnimatedChange
+    // 0)
     // CURSOR IMPROVEMENTS:
     // 1) hints and indicators about direction may be optionally stored on and displayed from some objects when entering controllerCursorLockedToObject and hidden otherwise
     //     a) these hints should be dynamic: i.e you can only move to the left initially, but may move either way after you have stated moving ???

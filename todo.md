@@ -34,7 +34,6 @@ pigcel
 drag scroller edge bg beyond end/start is actually annoying
 
 KEYBOARD INPUT NOT sent to MINIGAME!!!
-multigesture input not sent to minigame
 
 mouse wheel/pinch not intercepted during minigame (actually it is intercepted and sent to UI objects... so its not sent to the minigame directly...)
 
@@ -69,6 +68,8 @@ images can have a color space????
 3finger zoom - Max Animation Chains 128 Exceeded
 
 ##  can do
+
+mode to disable opacity, but also reverse rendeirng or otherwise render using z-buffer, to boost mali fps
 
 an "exit without save" button
 
@@ -202,7 +203,8 @@ a way to expand collision bounds outside object bounds automatically to contain 
   or just use testChildCollisionIgnoreBounds ??
 
 
-arrow interaction repeat....
+arrow interaction repeat.... (done!)  also cursor interaction repeat (done)
+mouse interaction repeat....
 
 home pressed - maybe ios screenshot? time for gimicky marketing ploy (doesn't work...)
 
