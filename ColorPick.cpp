@@ -145,7 +145,7 @@ void OpenGLContext::BackButtonEvent(){
 }
 
 bool OpenGLContext::NoModalBlocksPicker(){
-    return (!generalUx->hasCurrentModal() || generalUx->currentModal == generalUx->returnToLastImgBtn);
+    return (!generalUx->hasCurrentModal() || generalUx->currentModal == generalUx->returnToLastImgBtn) && !generalUx->controllerCursorTemporarilyDisabledForAnimatedChange;
 }
 
 void OpenGLContext::chooseFile(void) {
@@ -1465,7 +1465,7 @@ void OpenGLContext::renderScene(void) {
 colorPickState->directionOfEffect=signOfEffect(keyInteractions.keyIdentifier->was_new ? 1 : moveSpeed); \
 indicateHighSpeed();
 
-                if( !generalUx->controllerCursorModeEnabled && !generalUx->controllerCursorTemporarilyDisabledForModalChange ){
+                if( !generalUx->controllerCursorModeEnabled && !generalUx->controllerCursorTemporarilyDisabledForAnimatedChange ){
                     if( keyInteractions.up->isPressed(ticks) ){
                         dirKeyPressedApplicationMacro(mmovey, +, up)
                     }

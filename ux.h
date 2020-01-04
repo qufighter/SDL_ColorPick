@@ -400,6 +400,8 @@ static Ux* Singleton();
     void readInState(void);
     void readInState(char* filepath, void* dest, int destMaxSize, int* readSize);
 
+    void addBordersToObject(uiObject* parent, SDL_Color borderColor, float borderThickness);
+
     void updateRenderPositions(void);
     void updateRenderPositions(uiObject *renderObj);
     void seekAllControllerCursorObjects();
@@ -409,6 +411,7 @@ static Ux* Singleton();
 
     void toggleControllerCursor();
     void enableControllerCursor();
+    void temporarilyDisableControllerCursorForAnimation();
     void disableControllerCursor();
     void navigateControllerCursor(int x, int y);
     void updateControllerCursorPosition(bool animationsJustCompleted);
@@ -616,7 +619,7 @@ static Ux* Singleton();
     bool controllerCursorModeEnabled;
     int controllerCursorIndex;
     bool controllerCursorLockedToObject;
-    bool controllerCursorTemporarilyDisabledForModalChange;
+    bool controllerCursorTemporarilyDisabledForAnimatedChange;
     Uint32 controllerCursorLastMovedAtTimestamp;
 
     char* historyPath;

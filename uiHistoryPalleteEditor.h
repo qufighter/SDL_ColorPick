@@ -925,7 +925,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
         int existingLocation = myUxRef->palleteList->locate(tmpLocate);
 
         if( existingLocation > -1 ){
-            // this color is already taken then
+            // this color is already taken then, this becomes an error and game over loss :) (handy comment to search for)
 
             self->palleteScroller->scrollToItemByIndex(existingLocation);
 
@@ -953,6 +953,8 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             //        if( removeButton != nullptr ){
             //            myUxRef->uxAnimations->rvbounce(removeButton);
             //        }
+
+            myUxRef->temporarilyDisableControllerCursorForAnimation(); // cursor gets borked by these anim, wait for them to complete :)
 
             // if in easy mode don't loose :)
             if( self->isGameModeEnabled() && self->isGameModeHardMode() ){

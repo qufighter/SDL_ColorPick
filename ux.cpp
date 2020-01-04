@@ -40,28 +40,19 @@ void Ux::updateModal(uiObject *newModal, anInteractionFn pModalDismissal){
     newModal->modalParent = currentModal;
     newModal->modalDismissal = pModalDismissal;
     currentModal = newModal;
-    if( controllerCursorModeEnabled ){
-        controllerCursorTemporarilyDisabledForModalChange = true;
-        disableControllerCursor();
-    }
+    temporarilyDisableControllerCursorForAnimation();
 }
 void Ux::endModal(uiObject *oldModal){
-    /*
-     if( controllerCursorModeEnabled ){
-     controllerCursorTemporarilyDisabledForModalChange = true;
-     // thinking about this here too, when we leave the minigame....
-     // same problem may occur though
-     // unless we block eevnts during "controllerCursorTemporarilyDisabledForModalChange" too....
-
-     */
     if( currentModal == oldModal ){
         currentModal = oldModal->modalParent;
     }else{
         if( oldModal->modalParent && currentModal == oldModal->modalParent ){
+            //SDL_Log("Well there's your problem right there, not calling temporarilyDisableControllerCursorForAnimation here !!!!!!!!!!!!!!!!!!!!!!!!!"); //< unsure this would or will ever be the problem....
             return; // preserve modal
         }
         currentModal = nullptr;
     }
+    temporarilyDisableControllerCursorForAnimation();
 }
 void Ux::endCurrentModal(){
     if( hasCurrentModal() ){
@@ -93,7 +84,7 @@ Ux::Ux(void) {
 
     controllerCursorModeEnabled = false;
     controllerCursorLockedToObject=false;
-    controllerCursorTemporarilyDisabledForModalChange=false;
+    controllerCursorTemporarilyDisabledForAnimatedChange=false;
     controllerCursorIndex = 0;
     controllerCursorLastMovedAtTimestamp = 0;
 
@@ -836,11 +827,41 @@ Ux::uiObject* Ux::create(void){
 
     // FINALLY !!!!!!!!!!!!!!
     controllerCursor = new uiObject();
-    controllerCursor->hasBackground = true;
-    Ux::setColor(&controllerCursor->backgroundColor, 255, 0, 0, 128);
-    controllerCursor->setRoundedCorners(0.486);
-    printCharToUiObject(controllerCursor, CHAR_CIRCLE_PLAIN, DO_NOT_RESIZE_NOW);
+//    controllerCursor->hasBackground = true;
+//    Ux::setColor(&controllerCursor->backgroundColor, 255, 0, 0, 128);
+//    controllerCursor->setRoundedCorners(0.486);
+//    printCharToUiObject(controllerCursor, CHAR_CIRCLE_PLAIN, DO_NOT_RESIZE_NOW);
+
     rootUiObject->addChild(controllerCursor);
+    controllerCursor->matrixInheritedByDescendants = true; // Must be set AFTER addChild or it just auto inherits this value :)
+
+
+    float outsetAmount = 0.1;
+    uiObject* controllerCursorOutset = new uiObject();
+    controllerCursorOutset->setBoundaryRect(-outsetAmount, -outsetAmount, 1.0+outsetAmount+outsetAmount, 1.0+outsetAmount+outsetAmount);
+    controllerCursor->addChild(controllerCursorOutset);
+
+    outsetAmount = 0.05;
+    uiObject* controllerCursorBorder = new uiObject();
+    controllerCursorOutset->setBoundaryRect(-outsetAmount, -outsetAmount, 1.0+outsetAmount+outsetAmount, 1.0+outsetAmount+outsetAmount);
+    controllerCursor->addChild(controllerCursorBorder);
+
+    addBordersToObject(controllerCursorOutset, (SDL_Color){0, 0, 0, 128}, 0.15);
+    addBordersToObject(controllerCursorBorder, (SDL_Color){255, 0, 0, 192}, 0.1);
+
+    // CURSOR HINTS: 1) if your cursor is getting all messed up, and you are triggerin an animation which is messing it up, just call:
+    //                  myUxRef->temporarilyDisableControllerCursorForAnimation(); where you trigger the animation, your cursor should then fix itself momentarily
+
+    // CUSOR BUGS: TODO
+    // 1) press "default" pallete button from options screen... the modal is ended, animation occurs, but cursor does not reset properly
+    // 2) iirc funny observation after jumping from pallete color to hsv adjuster view, rescan did not occur after modal animation ??? occured too soon ??? (see above, similar bug was fixed)  problem here we endModal instead of updateModal probably
+    // 3) leaving minigame - think this is solved but we may wish to fix this better.... leaving this here controllerCursorTemporarilyDisabledForAnimatedChange
+    // CURSOR IMPROVEMENTS:
+    // 1) hints and indicators about direction may be optionally stored on and displayed from some objects when entering controllerCursorLockedToObject and hidden otherwise
+    //     a) these hints should be dynamic: i.e you can only move to the left initially, but may move either way after you have stated moving ???
+    //     b) may be nice to have these auto hide ??  once user starts they can figure it out ?? (simler than having it fully dynamic)
+    //     c) may be confusing (user thinks only choise is to slide, when they can also just press enter without movign for a different result...)
+
 
     controllerCursorObjects = new uiList<uiObject*, Uint8>(controllerCursorObjectsMax); // controller cursor limit
     disableControllerCursor(); // just hides it
@@ -922,7 +943,62 @@ Ux::uiObject* Ux::create(void){
     return rootUiObject;
 }
 
+// these borders are not sized dynamically, borderThickness is proportional to the shape of the object
+void Ux::addBordersToObject(uiObject* parent, SDL_Color borderColor, float borderThickness){
 
+    // parent->matrixInheritedByDescendants = true;  // ASSERT THIS IS TRUE.... but also if we wish to transform any parent... it has to be true all the way up to that parent...  but as long as it was set on the parent BEFORE children were added, it will be inherited by all child objects
+
+    uiObject* cursor_part;
+    glm::mat4 cursor_part_mat; // we use matrix for these so that the size is inherited properly ???
+
+    float cursor_scale = borderThickness;
+    float cursor_scale2 = cursor_scale + cursor_scale;
+
+    // top
+    cursor_part = new uiObject();
+    cursor_part->hasBackground = true;
+    Ux::setColor(&cursor_part->backgroundColor, &borderColor);
+    cursor_part_mat = glm::mat4(1.0);
+    cursor_part_mat = glm::translate(cursor_part_mat, glm::vec3(0.0, 1.0 - cursor_scale, 0.0) );
+    cursor_part_mat = glm::scale(cursor_part_mat, glm::vec3(1.0 - cursor_scale2, cursor_scale, 1.0) );
+    cursor_part->matrix = cursor_part_mat;
+//    printCharToUiObject(cursor_part, '-', DO_NOT_RESIZE_NOW);
+    parent->addChild(cursor_part);
+
+    // btm
+    cursor_part = new uiObject();
+    cursor_part->hasBackground = true;
+    Ux::setColor(&cursor_part->backgroundColor, &borderColor);
+    cursor_part_mat = glm::mat4(1.0);
+    cursor_part_mat = glm::translate(cursor_part_mat, glm::vec3(0.0, -1.0 + cursor_scale, 0.0) );
+    cursor_part_mat = glm::scale(cursor_part_mat, glm::vec3(1.0 - cursor_scale2, cursor_scale, 1.0) );
+    cursor_part->matrix = cursor_part_mat;
+//    printCharToUiObject(cursor_part, '-', DO_NOT_RESIZE_NOW);
+    parent->addChild(cursor_part);
+
+    // left
+    cursor_part = new uiObject();
+    cursor_part->hasBackground = true;
+    Ux::setColor(&cursor_part->backgroundColor, &borderColor);
+    cursor_part_mat = glm::mat4(1.0);
+    cursor_part_mat = glm::translate(cursor_part_mat, glm::vec3(-1.0 + cursor_scale, 0.0, 0.0) );
+    cursor_part_mat = glm::scale(cursor_part_mat, glm::vec3(cursor_scale, 1.0, 1.0) );
+    cursor_part->matrix = cursor_part_mat;
+//    printCharToUiObject(cursor_part, '|', DO_NOT_RESIZE_NOW);
+    parent->addChild(cursor_part);
+
+    // right
+    cursor_part = new uiObject();
+    cursor_part->hasBackground = true;
+    Ux::setColor(&cursor_part->backgroundColor, &borderColor);
+    cursor_part_mat = glm::mat4(1.0);
+    cursor_part_mat = glm::translate(cursor_part_mat, glm::vec3(1.0 - cursor_scale, 0.0, 0.0) );
+    cursor_part_mat = glm::scale(cursor_part_mat, glm::vec3(cursor_scale, 1.0, 1.0) );
+    cursor_part->matrix = cursor_part_mat;
+//    printCharToUiObject(cursor_part, '|', DO_NOT_RESIZE_NOW);
+    parent->addChild(cursor_part);
+
+}
 
 
 void Ux::updateRenderPositions(void){
@@ -1012,11 +1088,27 @@ void Ux::toggleControllerCursor(){
 }
 void Ux::enableControllerCursor(){
     refreshControllerCursorObjects();
-    controllerCursorTemporarilyDisabledForModalChange=false;
+    controllerCursorTemporarilyDisabledForAnimatedChange=false;
     if( controllerCursorObjects->total() > 0 ){
         controllerCursorModeEnabled = true;
         controllerCursorLockedToObject = false;
         controllerCursor->show();
+    }
+}
+void Ux::temporarilyDisableControllerCursorForAnimation(){
+    // maybe we only want to be notified abut a specific anim?? we wait for all of them though :)
+    // this will even ADD a 1s animation if NONE are found, so ADD YOUR ANIM FIRST
+    if( controllerCursorModeEnabled ){
+        if( !uxAnimations->hasAnimations() ){
+            // we can push a dummy animation or something... a simple 1 second animation???
+            uxAnimations->scale_bounce(rootUiObject);
+            // this looks scary, but the matrix of the root is not inherited, and root doens't render
+            // so it looks like it has an effect, but the above is "completely free" currently (sans matrix maths....)....
+            // maybe we can pick another object or different animation to debug/detect when this branch is triggered though!
+            // except for when exiting the minigame I'd consider reachng this code to be a bug, this is just a workaround
+        }
+        controllerCursorTemporarilyDisabledForAnimatedChange = true;
+        disableControllerCursor();
     }
 }
 void Ux::disableControllerCursor(){
@@ -1236,7 +1328,7 @@ void Ux::CursorAnimationCompleted(uiAnimation* uiAnim){
 void Ux::updateControllerCursorPosition(bool animationsJustCompleted){
 
     if( animationsJustCompleted ){
-        if( controllerCursorTemporarilyDisabledForModalChange ){
+        if( controllerCursorTemporarilyDisabledForAnimatedChange ){
             enableControllerCursor();
         }else if( controllerCursorModeEnabled ){
             //refreshControllerCursorObjects(); //  <- should be pretty safe to call whenever objects are added.... messes up key repeats... better to call later...
@@ -2329,7 +2421,9 @@ int Ux::renderObjects(uniformLocationStruct *uniformLocations, uiObject *renderO
     glm::mat4 resolvedRenderObjMat = renderObj->matrix; // copy struct
 
     if( renderObj->matrixInheritedByDescendants ){
-        resolvedRenderObjMat *= inheritMat; // we limit the matrix math except where needed this way....
+//        resolvedRenderObjMat *= inheritMat; // we limit the matrix math except where needed this way....
+        resolvedRenderObjMat = inheritMat * resolvedRenderObjMat; // we limit the matrix math except where needed this way....
+
     }
 
 //    if( renderObj->isDebugObject ){

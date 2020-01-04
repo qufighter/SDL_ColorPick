@@ -601,6 +601,10 @@ struct UxAnim
         return true;
     }
 
+    bool hasAnimations(){
+        return animChainIndex != 0;
+    }
+
     bool animationsJustCompleted(){
         if( wasUpdating && animChainIndex == 0 && !aniIsUpdating ){
             wasUpdating = false;
