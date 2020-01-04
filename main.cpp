@@ -750,6 +750,11 @@ void ShowFrame(void*)
 //    currentTime = SDL_GetTicks();
 //    openglContext->updateFrame(currentTime - lastTimerTime);
 
+    //TODO: confirm - do these events ever reach the event filter?
+    // or elaborate on why we insist on processing these here
+
+    // I think the idea is to fire the timer/event in the main thread
+    // often from the event thread
 
 #ifdef COLORPICK_MISSING_MAIN_LOOP
     SDL_Event event;

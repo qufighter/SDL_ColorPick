@@ -5,6 +5,8 @@ import org.libsdl.app.SDLActivity;
 
 //import android.app.Activity;
 import android.content.Intent;
+import android.content.ActivityNotFoundException;
+
 import android.database.Cursor;
 //import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -82,8 +84,29 @@ public class SDLColorPickActivity extends SDLActivity {
                               Intent.ACTION_PICK,
                               android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 
-        startActivityForResult(i, RESULT_LOAD_IMAGE);
-        
+        boolean success = false;
+        try {
+            startActivityForResult(i, RESULT_LOAD_IMAGE);
+            success = true;
+        } catch (ActivityNotFoundException ie) {
+            ie.printStackTrace();
+        }
+
+        if( !success ){
+            // this way is more powerful, works on fire TV even!  I think this is devices where Intent.ACTION_PICK doesn't find a gallery ? ? ?
+            // we CAN ALSO try Intent.createChooser with our old intent, but I don't think that will work....
+
+            i = new Intent()
+            .setType("*/*")
+            .setAction(Intent.ACTION_GET_CONTENT);
+
+            try {
+                startActivityForResult(Intent.createChooser(i, "Select a file"), RESULT_LOAD_IMAGE);
+            } catch (ActivityNotFoundException ie) {
+                ie.printStackTrace();
+            }
+
+        }
 
     }
 
