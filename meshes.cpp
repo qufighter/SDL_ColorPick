@@ -107,11 +107,10 @@ void buildMesh(Mesh* mesh, int vertex_items, float* vertices, float* normals, fl
         glEnableVertexAttribArray(SHADER_COLOR); // Enable the second vertex attribute array
     }
 
-
-    //    glBindBuffer(GL_ARRAY_BUFFER, mesh->buffers[SHADER_TEXTURE]); // Bind our second Vertex Buffer Object
-    //    glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), texCoord, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
-    //    glVertexAttribPointer((GLuint)SHADER_TEXTURE, 2, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
-    //    glEnableVertexAttribArray(SHADER_TEXTURE); // Enable the second vertex attribute array
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->buffers[SHADER_TEXTURE]); // Bind our second Vertex Buffer Object
+    glBufferData(GL_ARRAY_BUFFER, vertex_items * sizeof(GLfloat), texCoords, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
+    glVertexAttribPointer((GLuint)SHADER_TEXTURE, 2, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
+    glEnableVertexAttribArray(SHADER_TEXTURE); // Enable the second vertex attribute array
 
     glBindBuffer(GL_ARRAY_BUFFER, mesh->buffers[SHADER_NORMAL]); // Bind our second Vertex Buffer Object
     glBufferData(GL_ARRAY_BUFFER, vertex_items * sizeof(GLfloat), normals, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
