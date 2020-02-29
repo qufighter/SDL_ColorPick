@@ -319,7 +319,7 @@ UIViewController *top;
 
     [self dismissSelf]; // dismiss myFc
 
-    openglContext->imageWasSelectedCb(myCoolSurface);
+    openglContext->imageWasSelectedCb(myCoolSurface, true);
 
 }
 

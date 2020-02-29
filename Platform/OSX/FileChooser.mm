@@ -34,7 +34,7 @@ void beginImageSelector()
             NSString* fileName = [[files objectAtIndex:i] path];
             NSLog(@"file: %@", fileName);
 
-            openglContext->imageWasSelectedCb(openglContext->textures->LoadSurface([fileName cStringUsingEncoding:NSUTF8StringEncoding]));
+            openglContext->imageWasSelectedCb(openglContext->textures->LoadSurface([fileName cStringUsingEncoding:NSUTF8StringEncoding]), true);
 
             //SDL_ShowWindow(window);
             SDL_RaiseWindow(openglContext->getSdlWindow());

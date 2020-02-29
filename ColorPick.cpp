@@ -199,6 +199,13 @@ GLuint OpenGLContext::oggLoadTextureSized(SDL_Surface *surface, GLuint& containe
     return result;
 }
 
+void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface, bool zoomOut){
+    imageWasSelectedCb(myCoolSurface);
+
+    setFishScalePerentage(nullptr, 0.0);
+    generalUx->zoomSlider->updateAnimationPercent(0.0, 0.0);
+}
+
 void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
 
     if( lastHue!=nullptr ) SDL_free(lastHue);
@@ -819,6 +826,10 @@ void OpenGLContext::setupScene(void) {
     begin3dDropperAnimation(); // gets the ticks....
 
     setup_complete = true;
+}
+
+bool OpenGLContext::isProgramBooted(){
+    return setup_complete;
 }
 
 void OpenGLContext::loadShaders(void){

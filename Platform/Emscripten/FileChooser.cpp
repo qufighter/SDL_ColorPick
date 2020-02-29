@@ -48,7 +48,7 @@ void load_img_canvas_now(){
         SDL_Log("no suface..");
         SDL_Log("%s", SDL_GetError());
     }
-    openglContext->imageWasSelectedCb(fancyImg);
+    openglContext->imageWasSelectedCb(fancyImg, true);
 }
 
 
@@ -58,6 +58,12 @@ void resize_img_canvas_now(int w, int h){
 }
 //__Z21resize_img_canvas_nowii
 
+
+EMSCRIPTEN_KEEPALIVE
+bool is_program_booted(){
+
+    return openglContext->isProgramBooted();
+}
 
 //
 //EMSCRIPTEN_KEEPALIVE int testversion() {

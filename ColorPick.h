@@ -207,6 +207,7 @@ public:
 
     GLuint oggLoadTextureSized(SDL_Surface *surface, GLuint& contained_in_texture_id, GLuint& textureid, int size, int *x, int *y);
     void imageWasSelectedCb(SDL_Surface *myCoolSurface);
+    void imageWasSelectedCb(SDL_Surface *myCoolSurface, bool zoomOut);
     bool restoreLastSurface();
     void loadNextTestImage();
     void loadNextTestImageByIndex(int index);
@@ -232,6 +233,7 @@ public:
 
     bool canMesh();
 
+    bool isProgramBooted();
 private:
 
     unsigned int fbo;

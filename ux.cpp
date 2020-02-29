@@ -679,6 +679,9 @@ Ux::uiObject* Ux::create(void){
     addHistoryBtn->setRoundedCorners(0.5);
     addHistoryBtn->controllerInteractionKeyupOnly = true;
 
+#ifdef COLORPICK_BUILD_FOR_EXT
+    Ux::setColor(&addHistoryBtn->foregroundColor, 255, 0, 0, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+#endif
 
     optionsGearBtn = new uiObject();
     optionsGearBtn->hasForeground = true;

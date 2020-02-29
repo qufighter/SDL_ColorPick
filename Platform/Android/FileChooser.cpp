@@ -172,7 +172,7 @@ void getImagePathFromMainThread(){
         SDL_Log("We got the path `%s`" , cpath);
 
         if( SDL_strlen(cpath) > 0 ){
-            openglContext->imageWasSelectedCb(openglContext->textures->LoadSurface(cpath));
+            openglContext->imageWasSelectedCb(openglContext->textures->LoadSurface(cpath), true);
         }
 
         env->ReleaseStringUTFChars(path, cpath);
