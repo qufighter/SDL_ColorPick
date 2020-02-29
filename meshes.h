@@ -150,6 +150,10 @@ typedef struct Mesh
         nIdx = 0;
         cIdx = 0;
         tIdx = 0;
+        has_vertices=false;
+        has_colors=false;
+        has_normals=false;
+        has_texCoords=false;
         vertices=nullptr;
         colors=nullptr;
         normals=nullptr;
@@ -183,26 +187,27 @@ typedef struct Mesh
                                         color_additive.a);
     }
 
+
+    void bindSpecific(bool enabled, GLuint SHADER_INDEX,  GLint size){
+        if( enabled ){
+            glBindBuffer(GL_ARRAY_BUFFER, this->buffers[SHADER_INDEX]); // Bind our second Vertex Buffer Object
+            glVertexAttribPointer(/*(GLuint)*/SHADER_INDEX, size, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
+            glEnableVertexAttribArray(SHADER_INDEX);
+        }else{
+            glDisableVertexAttribArray(SHADER_INDEX);
+        }
+    }
+
     void bind(){
-
 #ifdef COLORPICK_OPENGL_ES2
-
-        glBindBuffer(GL_ARRAY_BUFFER, this->buffers[SHADER_POSITION]); // Bind our Vertex Buffer Object
-        glVertexAttribPointer((GLuint)SHADER_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
-
-        glBindBuffer(GL_ARRAY_BUFFER, this->buffers[SHADER_COLOR]); // Bind our second Vertex Buffer Object
-        glVertexAttribPointer((GLuint)SHADER_COLOR, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
-
-        glBindBuffer(GL_ARRAY_BUFFER, this->buffers[SHADER_TEXTURE]); // Bind our second Vertex Buffer Object
-        glVertexAttribPointer((GLuint)SHADER_TEXTURE, 2, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
-
-        glBindBuffer(GL_ARRAY_BUFFER, this->buffers[SHADER_NORMAL]); // Bind our second Vertex Buffer Object
-        glVertexAttribPointer((GLuint)SHADER_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
+        bindSpecific(has_vertices, SHADER_POSITION, 3);
+        bindSpecific(has_colors, SHADER_COLOR, 3);
+        bindSpecific(has_normals, SHADER_NORMAL, 3);
+        bindSpecific(has_texCoords, SHADER_TEXTURE, 2);
 #else
         glBindVertexArray(vertex_array[0]);
 
 #endif
-
         // todo, alternate bindings ???
     }
 
@@ -237,6 +242,11 @@ typedef struct Mesh
     int nIdx;
     int cIdx;
     int tIdx;
+
+    bool has_vertices;
+    bool has_colors;
+    bool has_normals;
+    bool has_texCoords;
 
     bool file_loaded;
     bool is_fully_loaded;

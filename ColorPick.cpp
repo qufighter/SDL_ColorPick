@@ -2051,6 +2051,7 @@ Mesh* OpenGLContext::createSquare(void) {
     glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(GLfloat), vertices, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
     glVertexAttribPointer((GLuint)SHADER_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
     glEnableVertexAttribArray(SHADER_POSITION); // Enable the first our Vertex Array Object
+    mesh->has_vertices=true;
 
     //you can comment out this block, we dont use colors for rects
 //    glBindBuffer(GL_ARRAY_BUFFER, mesh->buffers[SHADER_COLOR]); // Bind our second Vertex Buffer Object
@@ -2062,6 +2063,7 @@ Mesh* OpenGLContext::createSquare(void) {
     glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), texCoord, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW
     glVertexAttribPointer((GLuint)SHADER_TEXTURE, 2, GL_FLOAT, GL_FALSE, 0, 0); // Set up our vertex attributes pointer
     glEnableVertexAttribArray(SHADER_TEXTURE); // Enable the second vertex attribute array
+    mesh->has_texCoords=true;
 
     //you can comment out this block we dn't use normals for rendering rects
 //    glBindBuffer(GL_ARRAY_BUFFER,  mesh->buffers[SHADER_NORMAL]); // Bind our second Vertex Buffer Object
