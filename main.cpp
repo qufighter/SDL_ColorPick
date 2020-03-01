@@ -427,6 +427,8 @@ int EventFilter(void* userdata, SDL_Event* event){
 
                     SDL_Log("\n SDL_WINDOWEVENT_MINIMIZED || SDL_WINDOWEVENT_HIDDEN");
 
+                    //openglContext->generalUx->writeOutState(); //no write detected for em
+
                     return 0;
                 case SDL_WINDOWEVENT_SHOWN:
                 case SDL_WINDOWEVENT_EXPOSED:

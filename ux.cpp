@@ -2248,6 +2248,13 @@ void Ux::showBasicUpgradeMessage(){
     defaultYesNoChoiceDialogue->allowFastYes();
 }
 
+
+#if defined(__EMSCRIPTEN__) && defined(COLORPICK_BUILD_FOR_EXT)
+EM_JS(void, em_add_current_to_history, (int r, int g, int b), {
+    addColorToHistory(r, g, b);
+});
+#endif
+
 void Ux::addCurrentToPickHistory(){
 
 
@@ -2258,6 +2265,10 @@ void Ux::addCurrentToPickHistory(){
 
  //     IMPORTANT remember ot text with pickHistoryMax = <5
  //     IMPORTANT remember to check more than 10 colors
+
+#if defined(__EMSCRIPTEN__) && defined(COLORPICK_BUILD_FOR_EXT)
+    em_add_current_to_history(currentlyPickedColor->r, currentlyPickedColor->g, currentlyPickedColor->b );
+#endif
 
     ColorList anEntry = ColorList(*currentlyPickedColor);
     bool historyEnabled = true;

@@ -1,16 +1,34 @@
 #!/bin/sh
 
-
-#rm -fr ./shaders
-#rm -fr ./textures
-
-#cp -R ../shaders ./shaders
-#cp -R ../textures ./textures
+# USAGE:
+# allowed args
+# DEBUG - first of two args, enables debug builds (console output)
+# EXT - make this an EXTENSION build (as in chrome extension) and copy the results there ( call publish-ext.sh )
 
 rm -fr ./fs
 mkdir ./fs
 cp -R ../shaders ./fs/shaders
 cp -R ../textures ./fs/textures
+
+
+arg1=$1
+arg2=$2
+dDefines="HUHITSDEFTHENHULLNOEFFECTIGUESS" #some string needed for -D so we make a random ifdef (hopefully it will not break a thing)
+buildFlags="-O2"
+echo $arg1
+
+test $arg1 == "EXT"
+if [[ $? -eq 0 ]]; then
+    dDefines="COLORPICK_BUILD_FOR_EXT=1"
+fi
+
+echo $dDefines
+
+test
+test $arg1 == "DEBUG" || test $arg2 == "DEBUG"
+if [[ $? -eq 0 ]]; then
+    buildFlags=""
+fi
 
 # The html page you are running is not emrun-capable. Stdout, stderr and exit(returncode) capture will not work. Recompile the application with the --emrun linker flag to enable this, or pass --no_emrun_detect to emrun to hide this check.
 
@@ -32,9 +50,11 @@ cp -R ../textures ./fs/textures
 
 # define an ifdef....
 #  -D COLORPICK_BUILD_FOR_EXT=1 
-emcc ../*.cpp ../Platform/Emscripten/*.cpp -D COLORPICK_BUILD_FOR_EXT=1 -s WASM=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s STB_IMAGE=1 -s TOTAL_MEMORY=1073741824 -s "BINARYEN_TRAP_MODE='clamp'" -s ERROR_ON_UNDEFINED_SYMBOLS=0 -I/Users/saml/git/emscripten-ports/SDL2/include -I/Users/saml/git/emscripten-ports/SDL2_image/ -o hello.html --preload-file ./fs@/ --exclude-file *.DS_Store  --use-preload-plugins -s ALLOW_MEMORY_GROWTH=1 -O2 #-s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' # --emrun 
+emcc ../*.cpp ../Platform/Emscripten/*.cpp -D $dDefines -s WASM=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s STB_IMAGE=1 -s TOTAL_MEMORY=1073741824 -s "BINARYEN_TRAP_MODE='clamp'" -s ERROR_ON_UNDEFINED_SYMBOLS=0 -I/Users/saml/git/emscripten-ports/SDL2/include -I/Users/saml/git/emscripten-ports/SDL2_image/ -o hello.html --preload-file ./fs@/ --exclude-file *.DS_Store  --use-preload-plugins -s ALLOW_MEMORY_GROWTH=1 $buildFlags #-s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' # --emrun
 
-# thats a debug build... we performed many hacks to ~/.emscripten_ports/sdl2_image/SDL2_image-version_4 to make it work, so the headers we specified above simply match
+if [[ $? -eq 0 ]]; then
+
+# thats a debug build (without -O2 ?  see $buildFlags)... we performed many hacks to ~/.emscripten_ports/sdl2_image/SDL2_image-version_4 to make it work, so the headers we specified above simply match
 # hacks documented
 # cd ~/.emscripten_ports/sdl2_image/SDL2_image-version_4
 # cp ../../sdl2/SDL2-version_17/include/* .
@@ -46,5 +66,17 @@ emcc ../*.cpp ../Platform/Emscripten/*.cpp -D COLORPICK_BUILD_FOR_EXT=1 -s WASM=
 # + define HAVE_STDIO_H
 
 
-# output to console is supplied by  --emrun
-emrun --no_browser --port 8080 .
+    # output to console is supplied by  --emrun
+    test $arg1 == "EXT"
+    if [[ $? -eq 0 ]]; then
+        ./publish-ext.sh
+        echo "publish done..."
+    else
+        emrun --no_browser --port 8080 .
+    fi
+
+else
+    echo "ERRORS - please fix the build and try again :)"
+
+    exit 1
+fi
