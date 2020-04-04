@@ -264,6 +264,7 @@ typedef struct HSV_Color
 #include "ux-Interaction.h"
 #include "ux-KeyInteraction.h"
 
+
 class Ux {
 public:
 
@@ -396,6 +397,8 @@ static Ux* Singleton();
 
     void GetPrefPath(char* preferencesPath, const char* filename, char** historyPath);
 
+    SDL_RWops* GET_SDL_RWFromFile(const char *file, const char *mode);
+    void PERFORM_SDL_RWclose(SDL_RWops* fileref);
     void writeOutState(void);
     void readInState(void);
     void readInState(char* filepath, void* dest, int destMaxSize, int* readSize);
@@ -529,6 +532,7 @@ static Ux* Singleton();
 
     void updateColorValueDisplay(SDL_Color* color);
     void showBasicUpgradeMessage();
+    void visitExtensionOptions();
     void addCurrentToPickHistory();
     void updatePickHistoryPreview();
     void updatePalleteScroller();

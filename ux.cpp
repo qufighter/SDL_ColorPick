@@ -32,6 +32,23 @@ Ux::~Ux(void) {
 
 }
 
+#if defined(__EMSCRIPTEN__) && defined(COLORPICK_BUILD_FOR_EXT)
+
+EM_JS(void, em_add_current_to_history, (int r, int g, int b), {
+    addColorToHistory(r, g, b);
+});
+
+EM_JS(const char*, em_history_loaded, (int numLoaded), {
+    return historyLoaded(numLoaded);
+});
+
+EM_JS(void, em_launch_extension_options, (), {
+    launchExtensionOptions();
+});
+
+#endif
+
+
 void Ux::updateModal(uiObject *newModal, anInteractionFn pModalDismissal){
     if( currentModal == newModal ) return;
     if( currentModal == nullptr ){
@@ -109,6 +126,10 @@ Ux::Ux(void) {
 
     char* preferencesPath = SDL_GetPrefPath("vidsbee", "colorpick");
 
+    if( preferencesPath == nullptr ){
+        preferencesPath = "";
+    }
+
     GetPrefPath(preferencesPath, "history.bin", &historyPath);
     GetPrefPath(preferencesPath, "pallete.bin", &palletePath);
     GetPrefPath(preferencesPath, "setting.bin", &settingPath);
@@ -124,10 +145,40 @@ Ux::Ux(void) {
     SDL_free(preferencesPath);
 }
 
-void Ux::readInState(char* filepath, void* dest, int destMaxSize, int* readSize){
-    SDL_RWops* fileref = SDL_RWFromFile(filepath, "r");
-    if( fileref == NULL ) return;
+// this wrapper helps us get something POSSIBLY usable on emscripten side...
+SDL_RWops* Ux::GET_SDL_RWFromFile(const char *file, const char *mode){
+    SDL_RWops* possibly_fileref = SDL_RWFromFile(file, mode);
 
+#if defined(__EMSCRIPTEN__)
+    if( possibly_fileref == NULL ){
+
+        // read this setting from local storage...
+        // and then create a new SDL_RWFromMem for this....
+
+        // OR create a new SDL_RWFromMem
+        // and later write it to local storage...
+    }
+#endif
+
+    return possibly_fileref;
+}
+
+void Ux::PERFORM_SDL_RWclose(SDL_RWops* fileref){
+    // ONLY call this on "files" that we want to persist to local storage (on emscripten).... before we close them!
+    // so for EG only during WRITE operation...
+    #if defined(__EMSCRIPTEN__)
+
+    #endif
+    SDL_RWclose(fileref);
+}
+
+void Ux::readInState(char* filepath, void* dest, int destMaxSize, int* readSize){
+    //SDL_Log("READING: %s", filepath);
+    SDL_RWops* fileref = GET_SDL_RWFromFile(filepath, "r");
+    if( fileref == NULL ){
+        SDL_Log("ERR READING: %s", SDL_GetError());
+        return;
+    }
     SDL_RWops* memref = SDL_RWFromMem(dest, destMaxSize);
     Sint64 filesize = SDL_RWsize(fileref); // this filesize is in ? units... not a count of u8? (actually it seems to count u8s)
     int currentPosition = 0;
@@ -199,8 +250,11 @@ void Ux::readInState(void){
     eachElementSize = sizeof(Sint32);
     int maxReads = 6 * eachElementSize; // TOTAL SETTINGS NUMBER!
     Sint32 tempRead = 0;
-    SDL_RWops* fileref = SDL_RWFromFile(scoresPath, "r");
-    if( fileref == NULL ) return;
+    SDL_RWops* fileref = GET_SDL_RWFromFile(scoresPath, "r");
+    if( fileref == NULL ){
+        SDL_Log("ERR READING: %s", SDL_GetError());
+        return;
+    }
     Sint64 filesize = SDL_RWsize(fileref); // this filesize is in ? units... not a count of u8? (actually it seems to count u8s)
     int currentPosition = 0;
     if( currentPosition < filesize && currentPosition < maxReads ){
@@ -251,7 +305,11 @@ void Ux::readInState(void){
 
     SDL_RWclose(fileref);
  //    *readSize = currentPosition;
+
+
 }
+
+
 
 void Ux::writeOutState(void){
 //    SDL_Log("Pref file path: %s", historyPath);
@@ -267,7 +325,7 @@ void Ux::writeOutState(void){
     SDL_Color *color;
 
     myIterator = pickHistoryList->iterate();
-    fileref = SDL_RWFromFile(historyPath, "w");
+    fileref = GET_SDL_RWFromFile(historyPath, "w");
     color = &myIterator->next()->color;
     while(color != nullptr){
         //SDL_Log("%i %i %i", color->r, color->g, color->b);
@@ -278,22 +336,22 @@ void Ux::writeOutState(void){
         color = &myIterator->next()->color;
     }
     SDL_free(myIterator);
-    SDL_RWclose(fileref);
+    PERFORM_SDL_RWclose(fileref);
 
 //    totalUint8s = pickHistoryList->memorySize();
 //    memref = SDL_RWFromMem(pickHistoryList->listItself, totalUint8s);
-//    fileref = SDL_RWFromFile(historyPath, "w");
+//    fileref = GET_SDL_RWFromFile(historyPath, "w");
 //    currentPosition = 0;
 //    while( currentPosition < totalUint8s ){
 //        SDL_WriteU8(fileref, SDL_ReadU8(memref));
 //        currentPosition++;
 //    }
 //    if( memref != NULL ) SDL_RWclose(memref);
-//    SDL_RWclose(fileref);
+//    PERFORM_SDL_RWclose(fileref);
 
 
     myIterator = palleteList->iterate();
-    fileref = SDL_RWFromFile(palletePath, "w");
+    fileref = GET_SDL_RWFromFile(palletePath, "w");
     color = &myIterator->next()->color;
     while(color != nullptr){
         //SDL_Log("%i %i %i", color->r, color->g, color->b);
@@ -304,33 +362,33 @@ void Ux::writeOutState(void){
         color = &myIterator->next()->color;
     }
     SDL_free(myIterator);
-    SDL_RWclose(fileref);
+    PERFORM_SDL_RWclose(fileref);
 
     
 //    totalUint8s = palleteList->memorySize();
 //    memref = SDL_RWFromMem(palleteList->listItself, totalUint8s);
-//    fileref = SDL_RWFromFile(palletePath, "w");
+//    fileref = GET_SDL_RWFromFile(palletePath, "w");
 //    currentPosition = 0;
 //    while( currentPosition < totalUint8s ){
 //        SDL_WriteU8(fileref, SDL_ReadU8(memref));
 //        currentPosition++;
 //    }
 //    if( memref != NULL ) SDL_RWclose(memref);
-//    SDL_RWclose(fileref);
+//    PERFORM_SDL_RWclose(fileref);
 
-    fileref = SDL_RWFromFile(settingPath, "w");
+    fileref = GET_SDL_RWFromFile(settingPath, "w");
     settingsScroller->writeSettingsToFile(fileref);
-    SDL_RWclose(fileref);
+    PERFORM_SDL_RWclose(fileref);
 
 
-    fileref = SDL_RWFromFile(scoresPath, "w");
+    fileref = GET_SDL_RWFromFile(scoresPath, "w");
     SDL_WriteBE32(fileref, defaultScoreDisplay->int_max_score);
     SDL_WriteLE32(fileref, defaultScoreDisplay->int_max_score);
     SDL_WriteBE32(fileref, defaultScoreDisplay->int_score);
     SDL_WriteLE32(fileref, defaultScoreDisplay->int_score);
     SDL_WriteBE32(fileref, defaultScoreDisplay->combo_chain);
     SDL_WriteLE32(fileref, defaultScoreDisplay->combo_chain);
-    SDL_RWclose(fileref);
+    PERFORM_SDL_RWclose(fileref);
 
 }
 
@@ -872,6 +930,47 @@ Ux::uiObject* Ux::create(void){
 
 
     readInState(); // reads saved state into lists, requires historyPalleteEditor
+
+
+#if defined(__EMSCRIPTEN__) && defined(COLORPICK_BUILD_FOR_EXT)
+    // Javascript will return the color history string, or empty string
+    const char* result = em_history_loaded(pickHistoryList->total());
+    int total = SDL_strlen(result);
+    int c = 0;
+    int co = 0;
+    int charsCtr = 0;
+    SDL_Color colorRead;
+    if( total > 0 ){
+        pickHistoryList->clear();
+        char* twoChars = (char*)SDL_malloc( sizeof(char) * 2 );
+        for( c=0; c<total; c++ ){
+            if( result[c] == '#' ){
+                co = 0; // reset color offset...
+                charsCtr = 0; // reset chars ctr...
+            }else{
+                twoChars[charsCtr++] = result[c];
+                if( charsCtr > 1 ){ // every two chars...
+                    charsCtr = 0;
+                    long conversion = SDL_strtoul(twoChars, nullptr, 16);
+                    if( co == 0 ){
+                        colorRead.r = (Uint8)conversion;co++;
+                    }else if( co == 1){
+                        colorRead.g = (Uint8)conversion;co++;
+                    }else if (co == 2){
+                        colorRead.b = (Uint8)conversion;co++;
+                    }
+                    if( co > 2 ){
+                        co = 0;
+                        pickHistoryList->add(ColorList(colorRead));
+                    }
+                }
+            }
+        }
+        updatePickHistoryPreview();
+        SDL_free(twoChars);
+    }
+#endif
+
 
     defaultScoreDisplay->updateScoreDisplay();
 
@@ -2248,12 +2347,11 @@ void Ux::showBasicUpgradeMessage(){
     defaultYesNoChoiceDialogue->allowFastYes();
 }
 
-
+void Ux::visitExtensionOptions(){
 #if defined(__EMSCRIPTEN__) && defined(COLORPICK_BUILD_FOR_EXT)
-EM_JS(void, em_add_current_to_history, (int r, int g, int b), {
-    addColorToHistory(r, g, b);
-});
+    em_launch_extension_options();
 #endif
+}
 
 void Ux::addCurrentToPickHistory(){
 

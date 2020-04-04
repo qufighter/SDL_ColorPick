@@ -27,7 +27,19 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
      and finally, the string below:
      */
 
+
+#if defined(__EMSCRIPTEN__)
+#if defined(COLORPICK_BUILD_FOR_EXT)
+    const char* appVersion = "ColorPick 1.3 WAsmEXT";
+#else
+    const char* appVersion = "ColorPick 1.3 WAsm";
+#endif
+#else
     const char* appVersion = "ColorPick 1.3";
+#endif
+
+
+
     const static int maxSettings = 50; // the indexing may break at 254....
 
     typedef enum  {
@@ -213,6 +225,13 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         //settingsList->add(SettingsListObj((new uiObject()), SETTING_TYPES_ENUM::SPACE, UI_SETTINGS_ENUM::UI_SETTING_NONE));
         settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->pad(0.4,0.001)->print("Options")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
 
+
+#if defined(__EMSCRIPTEN__) && defined(COLORPICK_BUILD_FOR_EXT)
+        settingsList->add(SettingsListObj((new uiControlButton(d, "Extension Options", &interactionGoExtOptions))->uiObjectItself, SETTING_TYPES_ENUM::ACTION_BUTTON, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+        //settingsList->add(SettingsListObj((new uiObject()), SETTING_TYPES_ENUM::SPACE, UI_SETTINGS_ENUM::UI_SETTING_NONE));
+#endif
+
+
         settingsList->add(SettingsListObj((new uiControlBooleanToggle(dummyContainer, "+1 Points", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_GAME_ON));
 
         settingsList->add(SettingsListObj((new uiControlBooleanToggle(dummyContainer, " Easy Mode", true))->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_GAME_EASY_MODE));
@@ -226,6 +245,8 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
         uxInstance->printCharToUiObject(toggle_arrows->labelText->getTextChar(2), CHAR_ARR_RIGHT, DO_NOT_RESIZE_NOW);
         settingsList->add(SettingsListObj(toggle_arrows->uiObjectItself, SETTING_TYPES_ENUM::BOOLEAN_TOGGLE, UI_SETTINGS_ENUM::UI_SETTING_SHOW_NAV_ARROWS));
 #endif
+
+
 
         settingsList->add(SettingsListObj((new uiObject()), SETTING_TYPES_ENUM::SPACE, UI_SETTINGS_ENUM::UI_SETTING_NONE));
         settingsList->add(SettingsListObj((new uiText(dummyContainer, headingWidth))->pad(0.4,0.001)->print("Achievements")->uiObjectItself, SETTING_TYPES_ENUM::HEADING, UI_SETTINGS_ENUM::UI_SETTING_NONE));
@@ -572,6 +593,11 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
     }
 
 
+
+    static void interactionGoExtOptions(uiObject *interactionObj, uiInteraction *delta){
+        Ux* myUxRef = Ux::Singleton();
+        myUxRef->visitExtensionOptions();
+    }
 
     static void interactionClickGoToHistoryBtn(uiObject *interactionObj, uiInteraction *delta){
 
