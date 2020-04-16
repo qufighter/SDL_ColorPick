@@ -23,6 +23,9 @@ void requestReview();
 
 void emscripen_copy_to_clipboard(char* url);
 
+#if defined(__EMSCRIPTEN__) && defined(COLORPICK_BUILD_FOR_EXT)
+    // if u need a macro....
+#endif
 
 #endif
 #endif

@@ -206,8 +206,13 @@ public:
     //typedef void (*imageSelectedCallback)(const char *); // < its this type
 
     GLuint oggLoadTextureSized(SDL_Surface *surface, GLuint& contained_in_texture_id, GLuint& textureid, int size, int *x, int *y);
+    GLuint oggLoadTextureSized(SDL_Surface *surface, GLuint& contained_in_texture_id, GLuint& textureid, int size, int *x, int *y, SDL_Point* desired_xy_tl);
     void imageWasSelectedCb(SDL_Surface *myCoolSurface);
+    void imageWasSelectedCb(SDL_Surface *myCoolSurface, SDL_Point* desired_xy_tl);
     void imageWasSelectedCb(SDL_Surface *myCoolSurface, bool zoomOut);
+    void imageWasSelectedCb(SDL_Surface *myCoolSurface, bool zoomOut, int desierd_x, int desierd_y);
+    void imageWasSelectedCb(SDL_Surface *myCoolSurface, bool zoomOut, SDL_Point* desired_xy_tl);
+
     bool restoreLastSurface();
     void loadNextTestImage();
     void loadNextTestImageByIndex(int index);

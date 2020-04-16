@@ -42,13 +42,19 @@ but this isn't like the tutorial...... so what gives with the name here??
 
 
 EMSCRIPTEN_KEEPALIVE
-void load_img_canvas_now(){
+void load_img_canvas_now(int x, int y){ // AKA __Z19load_img_canvas_nowii
     SDL_Surface* fancyImg = IMG_Load("/latest-custom-img");
     if( !fancyImg ){
         SDL_Log("no suface..");
         SDL_Log("%s", SDL_GetError());
     }
-    openglContext->imageWasSelectedCb(fancyImg, true);
+
+    if( x > 0 || y > 0 ){
+        openglContext->imageWasSelectedCb(fancyImg, true, x, y);
+    }else{
+        openglContext->imageWasSelectedCb(fancyImg, true);
+    }
+
 }
 
 
@@ -163,7 +169,7 @@ EM_JS(void, em_get_file, (), {
 //            Module.HEAP8.set(fauxPath, p);
 //
 //            __Z19load_img_canvas_nowPKc(p);
-            __Z19load_img_canvas_nowv();
+            __Z19load_img_canvas_nowii();
         };
         img.src = URL.createObjectURL(i.files[0]);
 

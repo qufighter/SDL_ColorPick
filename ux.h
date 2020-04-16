@@ -597,6 +597,7 @@ static Ux* Singleton();
 
         uiObject *historyPreviewHolder;
         uiObject *historyPreview;
+        uiObject *previewMessageOver;
         //uiObject *historyFullsize;
 
 

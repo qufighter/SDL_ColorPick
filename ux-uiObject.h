@@ -249,7 +249,7 @@ struct uiObject
 
 
     int childListIndex = 0;
-    const static int childListMax = 128;
+    const static int childListMax = 144;
     uiObject* childList[childListMax]; // ui object may have a max of 128 child objects each
 
     Float_Rect boundryRect; // please call setBoundaryRect if you are going to animate the object
@@ -288,6 +288,7 @@ struct uiObject
         hasMovementBoundary=false;
         childListIndex = 0;
         Ux::setColor(&foregroundColor, 255, 255, 255, 255);
+        textRowsAfter = 0;
 
         doesInFactRender=true;
         doesRenderChildObjects=true;
@@ -340,6 +341,7 @@ struct uiObject
     float containTextPadding;
 
     glm::vec2 textPadding;
+    int textRowsAfter; // really basic stuff, better to use some features of uiText to do this...
 
     //float textSpacing; // don't use this, just matrix scale the parent object of the text... or fix this...
     uint8_t textDirection;
@@ -1565,10 +1567,13 @@ struct uiObject
     void organizeChildNodesBasedOnTextDir(){
 
         int ctr=0;
+        int row=0;
+        int inRow=0;
         int i=0;
         //int charOffset = 0;
         //char * i;
         uiObject* letter;
+
 
 
         int len=getChildCount();
@@ -1607,7 +1612,12 @@ struct uiObject
             if( textDirection == TEXT_DIR_ENUM::LTR ){
                 for( ctr=0,i=0; i<len; i++/*,ctr++*/ ){
                     letter = childList[i];
-                    letter->setBoundaryRect( (i*1.0), 0.0, 1.0, 1.0);
+                    if( textRowsAfter > 0 && i % textRowsAfter == 0 && i > 0 ){
+                        row++;
+                        inRow=0;
+                    }
+                    letter->setBoundaryRect( (inRow++*1.0), (row * 1.5), 1.0, 1.0);
+
                 }
             }else if( textDirection == TEXT_DIR_ENUM::RTL ){
                 for( ctr=0,i=len-1; i>-1; i--,ctr++ ){

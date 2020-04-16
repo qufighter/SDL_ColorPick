@@ -13,6 +13,14 @@
 #define USE_FBO_FOR_RENDERING 0
 
 
+#if defined(__EMSCRIPTEN__) && defined(COLORPICK_BUILD_FOR_EXT)
+
+EM_JS(void, em_update_picker_position, (int x, int y), {
+    updatePickerPosition(x,y);
+});
+
+#endif
+
 //OpenGLContext::pInstance = NULL;
 bool OpenGLContext::ms_bInstanceCreated = false;
 OpenGLContext* OpenGLContext::pInstance = NULL;
@@ -191,22 +199,49 @@ static Uint32 render_one_more_frame(Uint32 interval, void* parm){
 }
 
 GLuint OpenGLContext::oggLoadTextureSized(SDL_Surface *surface, GLuint& contained_in_texture_id, GLuint& textureid, int size, int *x, int *y) {
+    return OpenGLContext::oggLoadTextureSized(surface, contained_in_texture_id, textureid,  size,  x, y, nullptr);
+}
+
+GLuint OpenGLContext::oggLoadTextureSized(SDL_Surface *surface, GLuint& contained_in_texture_id, GLuint& textureid, int size, int *x, int *y, SDL_Point* desired_xy_tl) {
+
+    // realistically we can assing *x and *y now.... possibly we can save a little maths passing this in further or extending surface with useful properties
+    // this is a little rare of an opperation though
+    if( desired_xy_tl  != nullptr ){
+        *x = SDL_floorf(surface->w * 0.5) - desired_xy_tl->x - 1;
+        *y = SDL_floorf(surface->h * 0.5) - desired_xy_tl->y - 1;
+    }
+
     GLuint result = textures->LoadTextureSized(surface, contained_in_texture_id, textureid, size, x, y);
-    position_cropped_x = position_x;
-    position_cropped_y = position_y;
-    position_offset_x=0;
+    position_cropped_x = *x;
+    position_cropped_y = *y;
+    position_offset_x=0; // always zero these, snap is never offset
     position_offset_y=0;
     return result;
 }
 
-void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface, bool zoomOut){
-    imageWasSelectedCb(myCoolSurface);
 
-    setFishScalePerentage(nullptr, 0.0);
-    generalUx->zoomSlider->updateAnimationPercent(0.0, 0.0);
+void OpenGLContext::imageWasSelectedCb(SDL_Surface *myCoolSurface, bool zoomOut){
+    imageWasSelectedCb(myCoolSurface, zoomOut, nullptr);
 }
 
-void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
+void OpenGLContext::imageWasSelectedCb(SDL_Surface *myCoolSurface, bool zoomOut, int desierd_x, int desierd_y){
+    SDL_Point desired_xy_tl = {desierd_x, desierd_y};
+    imageWasSelectedCb(myCoolSurface, zoomOut, &desired_xy_tl);
+}
+
+void OpenGLContext::imageWasSelectedCb(SDL_Surface *myCoolSurface, bool zoomOut, SDL_Point* desired_xy_tl){
+    imageWasSelectedCb(myCoolSurface, desired_xy_tl);
+    if( zoomOut ){
+        setFishScalePerentage(nullptr, 0.0);
+        generalUx->zoomSlider->updateAnimationPercent(0.0, 0.0);
+    }
+}
+
+void OpenGLContext::imageWasSelectedCb(SDL_Surface *myCoolSurface){
+    imageWasSelectedCb(myCoolSurface, nullptr);
+}
+
+void OpenGLContext::imageWasSelectedCb(SDL_Surface *myCoolSurface, SDL_Point* desired_xy_tl){
 
     if( lastHue!=nullptr ) SDL_free(lastHue);
     lastHue = nullptr;
@@ -242,7 +277,7 @@ void OpenGLContext:: imageWasSelectedCb(SDL_Surface *myCoolSurface){
     fullPickImgSurface = textures->ConvertSurface(myCoolSurface);
     loadedImageMaxSize = SDL_max(fullPickImgSurface->clip_rect.w, fullPickImgSurface->clip_rect.h);
 
-    oggLoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y);
+    oggLoadTextureSized(fullPickImgSurface, textureId_default, textureId_pickImage, textureSize, &position_x, &position_y, desired_xy_tl);
 
     // tada: also shrink image to be within some other texture.....
     //  then we can maintain magic when zoomed out...
@@ -339,7 +374,6 @@ void OpenGLContext::pickerForHue(HSV_Color* color, SDL_Color* desired_color){
     position_y = huePositionY(color);
 
     SDL_Log("moved by x/y %i/%i <--- computed", ix-position_x, iy-position_y );
-
 
     pickerForHue(generalUx->huePicker->colorForPercent(1.0-(color->h/360.0)));
     //    position_x = 0;
@@ -1218,10 +1252,17 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
 
     // update
     if(colorPickState->mmovex != 0 || colorPickState->mmovey != 0){
+
+        #if defined(__EMSCRIPTEN__) && defined(COLORPICK_BUILD_FOR_EXT)
+        if( !last_mode_hue_picker ) em_update_picker_position(-colorPickState->mmovex, -colorPickState->mmovey);
+        #endif
+
         position_x += colorPickState->mmovex;
         colorPickState->mmovex=0;
         position_y += colorPickState->mmovey;
         colorPickState->mmovey=0;
+
+        
 
         generalUx->hideHistoryPalleteIfShowing(); // panning background...
 

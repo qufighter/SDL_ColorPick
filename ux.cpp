@@ -43,7 +43,9 @@ EM_JS(const char*, em_history_loaded, (int numLoaded), {
 });
 
 EM_JS(void, em_launch_extension_options, (), {
-    launchExtensionOptions();
+    setTimeout(function(){
+        launchExtensionOptions();
+    }, 500); // we give the time for our animation engine to catch up... the first part of scale UP needs to complete BEFORE time starts accumulating.....
 });
 
 #endif
@@ -499,6 +501,9 @@ void Ux::resizeUiElements(void){
             historyPreviewHolder->setInteraction(&Ux::interactionHorizontal);
                 historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::BTT, true);
 
+            //previewMessage->setChildNodeDirection(TEXT_DIR_ENUM::TTB, true);
+
+
             // depending on animation state rect is different....
             Float_Rect visibleModal = Float_Rect(0.025, ws_clock, 0.92, 1.0 - ws_clock);
             Float_Rect hiddenModal = Float_Rect(1.0, ws_clock, 0.92, 1.0 - ws_clock);
@@ -550,6 +555,8 @@ void Ux::resizeUiElements(void){
             historyPreviewHolder->setBoundaryRect(0.0, 1.0-history_preview, 1.0, history_preview);
             historyPreviewHolder->setInteraction(&Ux::interactionVert);
                 historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::RTL, true);
+
+            //previewMessage->setChildNodeDirection(TEXT_DIR_ENUM::LTR, true);
 
             // depending on animation state rect is different....
 
@@ -737,9 +744,6 @@ Ux::uiObject* Ux::create(void){
     addHistoryBtn->setRoundedCorners(0.5);
     addHistoryBtn->controllerInteractionKeyupOnly = true;
 
-#ifdef COLORPICK_BUILD_FOR_EXT
-    Ux::setColor(&addHistoryBtn->foregroundColor, 255, 0, 0, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-#endif
 
     optionsGearBtn = new uiObject();
     optionsGearBtn->hasForeground = true;
@@ -838,6 +842,17 @@ Ux::uiObject* Ux::create(void){
     mainUiContainer->addChild(historyPreviewHolder);
 
 
+    //historyPreviewHolder->addChild(previewMessage);
+    //previewMessage->setChildNodeDirection(TEXT_DIR_ENUM::LTR, true); // this superceedes containText in so many ways... but text won't rotate (did it ever?)
+
+
+//    historyPreviewHolder->setBoundaryRect(0.0, 1.0-history_preview, 1.0, history_preview);
+//    historyPreviewHolder->setInteraction(&Ux::interactionVert);
+//        historyPreview->setChildNodeDirection(TEXT_DIR_ENUM::RTL, true);
+
+
+
+
 
 #ifndef OMIT_SCROLLY_ARROWS
     movementArrows = new uiNavArrows(mainUiContainer, Float_Rect(0.0, clock_bar + 0.27777777777778, 1.0, 0.38), &Ux::interactionDirectionalArrowClicked);
@@ -852,6 +867,43 @@ Ux::uiObject* Ux::create(void){
     historyPreviewHolder->interactionProxy = historyPalleteEditor->historyPalleteHolder; // when we drag the preview effect the fullsize sliding into view...
     historyPreviewHolder->setInteractionCallback(&historyPalleteEditor->interactionToggleHistory);
 
+
+    previewMessageOver = new uiObject();
+
+#if defined(__EMSCRIPTEN__) && defined(COLORPICK_BUILD_FOR_EXT)
+    uiObject* previewMessage = new uiObject();
+    //previewMessage->setBoundaryRect(0.0, 0.0, 0.9 * 0.5, 0.1);
+    //previewMessage->setBoundaryRect(0.0, 0.0, 0.9 * 0.25, 0.1);// sizing for uiText so strange... 1/4 size same result!  wait whats .1425 for??
+    previewMessage->setBoundaryRect(0.0, 0.0, 0.9 * 0.30, 0.1);
+
+    //printStringToUiObject(previewMessage, "Tablet Edition", DO_NOT_RESIZE_NOW);
+    //previewMessage->setChildNodeDirection(TEXT_DIR_ENUM::LTR, true); // this superceedes containText in so many ways... but text won't rotate (did it ever?)
+    uiText * previewMessageText = new uiText(previewMessage, 0.1425);
+    previewMessageText->print(" Web Tablet Edition*");
+
+    SDL_memcpy(previewMessageOver, previewMessage, sizeof(uiObject)); // we shallow clone a UI object this way, nify :)
+    // the child nodes (text) are not distinct though, and they cannot render at different locations (no update is called mid render to move them based on a parent obj boundary change)
+
+    uiObject* previewMessage2 = new uiObject();
+    previewMessage2->setBoundaryRect(0.0, 0.1, 0.9 * 0.30, 0.1);
+    uiText * previewMessage2Text = new uiText(previewMessage2, 0.1425);
+    previewMessage2Text->print("* Changes made in this"
+                               " history scroller or  "
+                               " palete editor below  "
+                               " will not be saved in "
+                               " this version.        "
+                               " See base extension."); // this method also exceeds 128 child objects
+    previewMessage2Text->text_itself->textRowsAfter = 22; /// needs to be set before calling setChildNodeDirection
+    previewMessage2Text->text_itself->setChildNodeDirection(previewMessage2Text->text_itself->textDirection); /// needs to be after, multi line printing wont' work without this.... either
+
+    historyPalleteEditor->historyScroller->uiObjectItself->addChild(previewMessageOver);
+
+    previewMessageOver->hide();
+
+    historyPalleteEditor->historyScroller->uiObjectItself->addBottomChild(previewMessage);
+
+    historyPalleteEditor->historyScroller->uiObjectItself->addBottomChild(previewMessage2);
+#endif
 
     settingsScroller = new uiSettingsScroller(mainUiContainer);
 //    optionsGearBtn->setClickInteractionCallback(&Ux::interactionVisitSettings);
@@ -1554,7 +1606,10 @@ void Ux::printStringToUiObject(uiObject* printObj, const char* text, bool resize
         if( printObj->containText == true ){
             // LTR default, see below - maybe we can check if we aren't TEXT_DIR_ENUM::NO_TEXT
             // move this right out of the else aboe, since we should fit any len text within, and also needs resize IF text len changed.... !?! easy compute
+
             letter->setBoundaryRect( firstOffset+(ctr*letterSpacing), vertOffset, letterWidth, letterHeight);  /// TODO move size components into function to calculate on window rescale bonus points for suqare?
+
+
         }
 
         letter->hasForeground = true; // printObj->hasForeground;
@@ -1576,6 +1631,7 @@ void Ux::printStringToUiObject(uiObject* printObj, const char* text, bool resize
     if( printObj->textDirection == TEXT_DIR_ENUM::NO_TEXT ){
         printObj->textDirection = TEXT_DIR_ENUM::LTR;
     }
+    //printObj->setChildNodeDirection(printObj->textDirection); // some printings should not do this.... breaks things in confirmation dialogue..
 
  //     we just printed a shorter string than we did previously, hide any allocated letteres beyond current str len
  //     it is also possible extra letters need to be set to offeset 0 to render space?
@@ -2495,6 +2551,14 @@ void Ux::updatePickHistoryPreview(){
             histIndex = pickHistoryList->largestIndex();
         }
     }
+
+
+    if( pickHistoryList->total() >= SIX_ACROSS){
+        previewMessageOver->show();
+    }else{
+        previewMessageOver->hide();
+    }
+
 
  //     somertimes upate the full histoury preview too
     if( historyPalleteEditor->historyPalleteHolder->isInBounds ){
