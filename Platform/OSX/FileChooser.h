@@ -16,7 +16,11 @@
 
 
 void beginImageSelector();
+void beginScreenshotSeleced();
 bool openURL(const std::string &url);
 void requestReview();
+
+
+
 
 #endif
