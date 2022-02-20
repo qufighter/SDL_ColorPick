@@ -7,12 +7,207 @@
 
 @implementation ColorPickOsx
 
-- (NSDictionary *)userInfo {
-    return [NSDictionary dictionaryWithObject:[NSDate date] forKey:@"StartDate"];
+//- (NSDictionary *)userInfo {
+//    return [NSDictionary dictionaryWithObject:[NSDate date] forKey:@"StartDate"];
+//}
+
+// Once we have our image, we need to get it into an SDL_Surface
+static SDL_Surface* Create_SDL_Surface_From_CGImage_RGB(CGImageRef image_ref)
+{
+    /* This code is adapted from Apple's Documentation found here:
+     * http://developer.apple.com/documentation/GraphicsImaging/Conceptual/OpenGL-MacProgGuide/index.html
+     * Listing 9-4††Using a Quartz image as a texture source.
+     * Unfortunately, this guide doesn't show what to do about
+     * non-RGBA image formats so I'm making the rest up.
+     * All this code should be scrutinized.
+     */
+
+    size_t w = CGImageGetWidth(image_ref);
+    size_t h = CGImageGetHeight(image_ref);
+    CGRect rect = {{0, 0}, {static_cast<CGFloat>(w), static_cast<CGFloat>(h)}};
+
+    CGImageAlphaInfo alpha = CGImageGetAlphaInfo(image_ref);
+    //size_t bits_per_pixel = CGImageGetBitsPerPixel(image_ref);
+    size_t bits_per_component = 8;
+
+    SDL_Surface* surface;
+    Uint32 Amask;
+    Uint32 Rmask;
+    Uint32 Gmask;
+    Uint32 Bmask;
+
+    CGContextRef bitmap_context;
+    CGBitmapInfo bitmap_info;
+    CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+
+    if (alpha == kCGImageAlphaNone ||
+        alpha == kCGImageAlphaNoneSkipFirst ||
+        alpha == kCGImageAlphaPremultipliedFirst || // added
+        alpha == kCGImageAlphaPremultipliedLast || // added
+        alpha == kCGImageAlphaNoneSkipLast) {
+        bitmap_info = kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host; /* XRGB */
+        Amask = 0x00000000;
+    } else {
+        /* kCGImageAlphaFirst isn't supported */
+        //bitmap_info = kCGImageAlphaFirst | kCGBitmapByteOrder32Host; /* ARGB */
+        if( alpha == kCGImageAlphaFirst ){
+            bitmap_info = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host; /* ARGB */
+        }else{
+            bitmap_info = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host; /* ARGB */
+        }
+        Amask = 0xFF000000;
+    }
+
+    Rmask = 0x00FF0000;
+    Gmask = 0x0000FF00;
+    Bmask = 0x000000FF;
+
+    surface = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, Rmask, Gmask, Bmask, Amask);
+    if (surface)
+    {
+        // Sets up a context to be drawn to with surface->pixels as the area to be drawn to
+        bitmap_context = CGBitmapContextCreate(
+                                               surface->pixels,
+                                               surface->w,
+                                               surface->h,
+                                               bits_per_component,
+                                               surface->pitch,
+                                               color_space,
+                                               bitmap_info
+                                               );
+
+        // Draws the image into the context's image_data
+        CGContextDrawImage(bitmap_context, rect, image_ref);
+
+        CGContextRelease(bitmap_context);
+
+        // FIXME: Reverse the premultiplied alpha
+        if ((bitmap_info & kCGBitmapAlphaInfoMask) == kCGImageAlphaPremultipliedFirst) {
+            int i, j;
+            Uint8 *p = (Uint8 *)surface->pixels;
+            for (i = surface->h * surface->pitch/4; i--; ) {
+#if __LITTLE_ENDIAN__
+                Uint8 A = p[3];
+                if (A) {
+                    for (j = 0; j < 3; ++j) {
+                        p[j] = (p[j] * 255) / A;
+                    }
+                }
+#else
+                Uint8 A = p[0];
+                if (A) {
+                    for (j = 1; j < 4; ++j) {
+                        p[j] = (p[j] * 255) / A;
+                    }
+                }
+#endif /* ENDIAN */
+                p += 4;
+            }
+        }
+    }
+
+    if (color_space)
+    {
+        CGColorSpaceRelease(color_space);
+    }
+
+    return surface;
+}
+static SDL_Surface* Create_SDL_Surface_From_CGImage_Index(CGImageRef image_ref)
+{
+    size_t w = CGImageGetWidth(image_ref);
+    size_t h = CGImageGetHeight(image_ref);
+    size_t bits_per_pixel = CGImageGetBitsPerPixel(image_ref);
+    size_t bytes_per_row = CGImageGetBytesPerRow(image_ref);
+
+    SDL_Surface* surface;
+    SDL_Palette* palette;
+    CGColorSpaceRef color_space = CGImageGetColorSpace(image_ref);
+    CGColorSpaceRef base_color_space = CGColorSpaceGetBaseColorSpace(color_space);
+    size_t num_components = CGColorSpaceGetNumberOfComponents(base_color_space);
+    size_t num_entries = CGColorSpaceGetColorTableCount(color_space);
+    uint8_t *entry, entries[num_components * num_entries];
+
+    /* What do we do if it's not RGB? */
+    if (num_components != 3) {
+        SDL_SetError("Unknown colorspace components %lu", num_components);
+        return NULL;
+    }
+    if (bits_per_pixel != 8) {
+        SDL_SetError("Unknown bits_per_pixel %lu", bits_per_pixel);
+        return NULL;
+    }
+
+    CGColorSpaceGetColorTable(color_space, entries);
+    surface = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, bits_per_pixel, 0, 0, 0, 0);
+    if (surface) {
+        uint8_t* pixels = (uint8_t*)surface->pixels;
+        CGDataProviderRef provider = CGImageGetDataProvider(image_ref);
+        NSData* data = (id)CFBridgingRelease(CGDataProviderCopyData(provider));
+        //[data autorelease];
+        const uint8_t* bytes = (const unsigned char*)[data bytes];
+        size_t i;
+
+        palette = surface->format->palette;
+        for (i = 0, entry = entries; i < num_entries; ++i) {
+            palette->colors[i].r = entry[0];
+            palette->colors[i].g = entry[1];
+            palette->colors[i].b = entry[2];
+            entry += num_components;
+        }
+
+        for (i = 0; i < h; ++i) {
+            SDL_memcpy(pixels, bytes, w);
+            pixels += surface->pitch;
+            bytes += bytes_per_row;
+        }
+    }
+    return surface;
+}
+// todo export this?
+static SDL_Surface* Create_SDL_Surface_From_CGImage(CGImageRef image_ref)
+{
+    CGColorSpaceRef color_space = CGImageGetColorSpace(image_ref);
+    CGColorSpaceModel color_space_model = CGColorSpaceGetModel(color_space);
+
+    if (color_space_model == kCGColorSpaceModelIndexed) {
+        return Create_SDL_Surface_From_CGImage_Index(image_ref);
+    } else {
+        return Create_SDL_Surface_From_CGImage_RGB(image_ref);
+    }
 }
 
-- (void)timerFireMethod:(NSTimer*)theTimer {
+
+
+- (void)takeScreenshot {
+    //int h = CGDisplayPixelsHigh(kCGDirectMainDisplay); //(useful for takings screenshot since it accepts corrd from top left of main display)
+
+    NSRect screenRect;
+    screenRect = [[NSScreen mainScreen] frame];
+
+    NSArray* allscreens = [NSScreen screens];
+    if([allscreens count] > 1){
+        for(NSScreen* s in allscreens)
+            screenRect = NSUnionRect(screenRect, [s frame]);
+    }
+
+    CGRect grect=CGRectMake(screenRect.origin.x,screenRect.origin.y,screenRect.size.width,screenRect.size.height);
+
+    CGImageRef img = CGDisplayCreateImageForRect(kCGDirectMainDisplay,grect);
+
+    // ios code? (included above!)
+    SDL_Surface *myCoolSurface = Create_SDL_Surface_From_CGImage(img);
+
+    OpenGLContext* openglContext = OpenGLContext::Singleton();
+    openglContext->imageWasSelectedCb(myCoolSurface, false);
+
+    CGImageRelease(img);
+}
+
+
+static Uint32 color_pick_osx_timer_fire(Uint32 interval, void* parm){
     NSPoint mloc = [NSEvent mouseLocation];
+
 
     //SDL_Log("%f %f", mloc.x, mloc.y);
 
@@ -23,72 +218,79 @@
     openglContext->position_y =((int)mloc.y - openglContext->fullPickImgSurface->clip_rect.h) + (openglContext->fullPickImgSurface->clip_rect.h / 2);
     colorPickState->movedxory = true;
 
-    openglContext->renderScene();
+    openglContext->renderShouldUpdate = true; // do not call renderScene from timer thread!
 
-//    mloc.x+=mouse_point_offset.x,
-//    mloc.y+=mouse_point_offset.y;
-//
-//
-//    // expeirence on non-retna follows: enable log statment named [-reporteding-]
-//    // mouse location is adjusted to account for strange error in precison after visiting bottom or right edge of screen.
-//    // after visitng bottom locY is reported with trailign decimal  647.003906 when position is actually 648
-//    // after visiting right locX is reported with trailing decimal 1657.996094 when posiiton is actually 1657
-//    // the misreporting causes the screenshot to be 257 px even though 256 are requested
-//    // this - somewhat - shatters hopes of increasd sub-pixel accuracy on retina when image is 2x resolution requested (512x512)
-//    // although we will perform rounding here in order that others may provide 0.5 increment to the capture function, the resultant
-//    // snapshot of the screen will remain enlarged beyond 512x512 as soon as floats are provided to the capture function
-//
-//    mloc.x = floor(mloc.x);
-//    mloc.y = ceil(mloc.y);
 
-    //[self render:mloc];
+    //    mloc.x+=mouse_point_offset.x,
+    //    mloc.y+=mouse_point_offset.y;
+    //
+    //
+    //    // expeirence on non-retna follows: enable log statment named [-reporteding-]
+    //    // mouse location is adjusted to account for strange error in precison after visiting bottom or right edge of screen.
+    //    // after visitng bottom locY is reported with trailign decimal  647.003906 when position is actually 648
+    //    // after visiting right locX is reported with trailing decimal 1657.996094 when posiiton is actually 1657
+    //    // the misreporting causes the screenshot to be 257 px even though 256 are requested
+    //    // this - somewhat - shatters hopes of increasd sub-pixel accuracy on retina when image is 2x resolution requested (512x512)
+    //    // although we will perform rounding here in order that others may provide 0.5 increment to the capture function, the resultant
+    //    // snapshot of the screen will remain enlarged beyond 512x512 as soon as floats are provided to the capture function
+    //
+    //    mloc.x = floor(mloc.x);
+    //    mloc.y = ceil(mloc.y);
+
+        //[self render:mloc];
+
+    return interval; // keeps timer alive!
 }
 
-CGEventRef myLowLevelMouseListener (CGEventTapProxy proxy,CGEventType type,CGEventRef event,void *refcon)
-{
-    SDL_Log("evtype: %i", type);
-    if(type == NX_LMOUSEDOWN){
-        //perhaps slow mouse movement
-        if(is_picking){
-            //NSLog(@"mousedown");
-            [(ColorPickOsx*)CFBridgingRelease(refcon) togglePicking];
-            return CGEventCreate(NULL);
-        }else{
-            //NSLog(@"mousedown NOT PICKING");//does not get here
-            return event;
-        }
-    }else if(type == NX_LMOUSEUP){
-        //dont forget to disble assistive devices!
-        //[(ColorPick*)refcon setOutHex:@"u clicked admit it!"];
-        //if(is_picking){
-        //    NSLog(@"mouseup");
-        //    [(ColorPickOsx*)refcon togglePicking];
-            return CGEventCreate(NULL);
-        //}else{
-            //CGEventTapEnable(mMachPortRef, false);//should never get here...
-        //    NSLog(@"mouseup NOT PICKING");
-            return event;
-        //}
-    }else if(type == NX_SCROLLWHEELMOVED){
-        SDL_Log("got the mouse wheel");
-        if(is_picking){
-            SDL_Log("got the mouse wheel is_picking" );
-            OpenGLContext* openglContext = OpenGLContext::Singleton();
-            if( CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1) > 0){
-                openglContext->setFishScale(1.0, 1.10f);
-            }else{
-                openglContext->setFishScale(-1.0, 1.10f);
-            }
-        }
 
-        return event;
-    }else if(type == kCGEventTapDisabledByTimeout || type == kCGEventTapDisabledByUserInput){
-        //re enable?
-        return event;
-    }else
-        return event;
-    return event;
-}
+//CGEventRef myLowLevelMouseListener (CGEventTapProxy proxy,CGEventType type,CGEventRef event,void *refcon)
+//{
+//    ColorPickOsx* aself;
+//    aself = CFBridgingRelease(refcon);
+//
+//    SDL_Log("evtype: %i", type);
+//    if(type == NX_LMOUSEDOWN){
+//        //perhaps slow mouse movement
+//        if(aself->is_picking){
+//            //NSLog(@"mousedown");
+//            [(ColorPickOsx*)CFBridgingRelease(refcon) togglePicking];
+//            return CGEventCreate(NULL);
+//        }else{
+//            //NSLog(@"mousedown NOT PICKING");//does not get here
+//            return event;
+//        }
+//    }else if(type == NX_LMOUSEUP){
+//        //dont forget to disble assistive devices!
+//        //[(ColorPick*)refcon setOutHex:@"u clicked admit it!"];
+//        //if(is_picking){
+//        //    NSLog(@"mouseup");
+//        //    [(ColorPickOsx*)refcon togglePicking];
+//            return CGEventCreate(NULL);
+//        //}else{
+//            //CGEventTapEnable(mMachPortRef, false);//should never get here...
+//        //    NSLog(@"mouseup NOT PICKING");
+//            return event;
+//        //}
+//    }else if(type == NX_SCROLLWHEELMOVED){
+//        SDL_Log("got the mouse wheel");
+//        if(aself->is_picking){
+//            SDL_Log("got the mouse wheel is_picking" );
+//            OpenGLContext* openglContext = OpenGLContext::Singleton();
+//            if( CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1) > 0){
+//                openglContext->setFishScale(1.0, 1.10f);
+//            }else{
+//                openglContext->setFishScale(-1.0, 1.10f);
+//            }
+//        }
+//
+//        return event;
+//    }else if(type == kCGEventTapDisabledByTimeout || type == kCGEventTapDisabledByUserInput){
+//        //re enable?
+//        return event;
+//    }else
+//        return event;
+//    return event;
+//}
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
@@ -112,7 +314,14 @@ CGEventRef myLowLevelMouseListener (CGEventTapProxy proxy,CGEventType type,CGEve
     }else if([keyPath isEqualToString:@"keyboard"]){
 //        [self processKeyboard:[main_window getLastKeycode]];
     }else if([keyPath isEqualToString:@"shield_keyboard"]){
-//        [self processKeyboard:[mainPickView getLastKeycode]];
+        [self processKeyboard:[mainPickView getLastKeycode]];
+
+    }else if([keyPath isEqualToString:@"shield_scrollywheel"]){
+        if( [mainPickSubview getLastScrollDir] > 0 ){
+            openglContext->setFishScale(1.0, 1.10f);
+        }else{
+            openglContext->setFishScale(-1.0, 1.10f);
+        }
     }else if([keyPath isEqualToString:@"shield_mouseup"]){
         if(is_picking) [self togglePicking];
 
@@ -150,27 +359,28 @@ CGEventRef myLowLevelMouseListener (CGEventTapProxy proxy,CGEventType type,CGEve
 
     main_window = wmInfo.info.cocoa.window;
 
-    //https://developer.apple.com/library/mac/#documentation/Carbon/Reference/QuartzEventServicesRef/Reference/reference.html#//apple_ref/c/func/CGEventTapCreate
-    mMachPortRef=CGEventTapCreate( kCGAnnotatedSessionEventTap, //kCGHIDEventTap, //crashes vm?
-                                  kCGHeadInsertEventTap,
-                                  kCGEventTapOptionDefault,
-                                  CGEventMaskBit(kCGEventLeftMouseDown) | CGEventMaskBit(kCGEventLeftMouseUp) | CGEventMaskBit(kCGEventScrollWheel),// | CGEventMaskBit(kCGEventMouseMoved),
-                                  (CGEventTapCallBack)myLowLevelMouseListener,
-                                  (void*)main_window ); //(void*)wmInfo.info.cocoa.window);
-
-    if(!mMachPortRef){
-        mouse_hooked=false;
-        SDL_Log("MOUSE HOOK -> FALSE");
-    }else{
-        mouse_hooked=true;
-        mMouseEventSrc = CFMachPortCreateRunLoopSource(NULL, mMachPortRef, 0);
-        if ( !mMouseEventSrc ){
-            mouse_hooked=false;
-        }else{
-            CFRunLoopAddSource([[NSRunLoop currentRunLoop] getCFRunLoop],  mMouseEventSrc, kCFRunLoopDefaultMode);
-            CGEventTapEnable(mMachPortRef, false);
-        }
-    }
+    // all this for scroll wheel? we found a better way...
+//    //https://developer.apple.com/library/mac/#documentation/Carbon/Reference/QuartzEventServicesRef/Reference/reference.html#//apple_ref/c/func/CGEventTapCreate
+//    mMachPortRef=CGEventTapCreate( kCGAnnotatedSessionEventTap, //kCGHIDEventTap, //crashes vm?
+//                                  kCGHeadInsertEventTap,
+//                                  kCGEventTapOptionDefault,
+//                                  CGEventMaskBit(kCGEventLeftMouseDown) | CGEventMaskBit(kCGEventLeftMouseUp) | CGEventMaskBit(kCGEventScrollWheel),// | CGEventMaskBit(kCGEventMouseMoved),
+//                                  (CGEventTapCallBack)myLowLevelMouseListener,
+//                                  (void*)self ); //(void*)wmInfo.info.cocoa.window);
+//
+//    if(!mMachPortRef){
+//        mouse_hooked=false;
+//        SDL_Log("MOUSE HOOK -> FALSE");
+//    }else{
+//        mouse_hooked=true;
+//        mMouseEventSrc = CFMachPortCreateRunLoopSource(NULL, mMachPortRef, 0);
+//        if ( !mMouseEventSrc ){
+//            mouse_hooked=false;
+//        }else{
+//            CFRunLoopAddSource([[NSRunLoop currentRunLoop] getCFRunLoop],  mMouseEventSrc, kCFRunLoopDefaultMode);
+//            CGEventTapEnable(mMachPortRef, false);
+//        }
+//    }
 
 
 
@@ -181,35 +391,23 @@ CGEventRef myLowLevelMouseListener (CGEventTapProxy proxy,CGEventType type,CGEve
 {
     if(is_picking){
 
-        [repeatingTimer invalidate];
+        SDL_RemoveTimer(sdlTimerId);
 
-        if(mouse_hooked) CGEventTapEnable(mMachPortRef, false);
+        //if(mouse_hooked) CGEventTapEnable(mMachPortRef, false);
 
         [self destroyPickWindow];
 
-        //CFRelease( mMachPortRef );
-        //CFRelease( mMouseEventSrc );
-
         is_picking=NO;
 
-        [self sendPickedColorToHistoryHelper];
     }else{
-
-        //[self sendPickedColorToHistory];
-        //[color_previous setColor:[color_current color]];
 
         [self createPickWindow];
 
          //SUCCESS?!
-        if(mouse_hooked) CGEventTapEnable(mMachPortRef, true);
+        //if(mouse_hooked) CGEventTapEnable(mMachPortRef, true);
 
-        //[out_hex setStringValue:(@"Hi")];
-        //[self render:[NSEvent mouseLocation]];
+        sdlTimerId = SDL_AddTimer(30, color_pick_osx_timer_fire, self);
 
-        repeatingTimer = [NSTimer scheduledTimerWithTimeInterval:0.033
-                                                          target:self selector:@selector(timerFireMethod:)
-                                                        userInfo:[self userInfo] repeats:YES];
-        //self.repeatingTimer = timer;
         is_picking = YES;
     }
 }
@@ -274,8 +472,7 @@ CGEventRef myLowLevelMouseListener (CGEventTapProxy proxy,CGEventType type,CGEve
 
     [mainPickView addObserver:self forKeyPath:@"shield_keyboard" options:0 context:NULL];
     [mainPickSubview addObserver:self forKeyPath:@"shield_mouseup" options:0 context:NULL];
-
-
+    [mainPickSubview addObserver:self forKeyPath:@"shield_scrollywheel" options:0 context:NULL];
 
 
     //mainPickViewParent=[mainPickView parentWindow];
@@ -290,6 +487,7 @@ CGEventRef myLowLevelMouseListener (CGEventTapProxy proxy,CGEventType type,CGEve
 - (void)destroyPickWindow{
     if(pick_window_created){
         [mainPickSubview removeObserver:self forKeyPath:@"shield_mouseup"];
+        [mainPickSubview removeObserver:self forKeyPath:@"shield_scrollywheel"];
         [mainPickView removeObserver:self forKeyPath:@"shield_keyboard"];
 
 
@@ -299,8 +497,6 @@ CGEventRef myLowLevelMouseListener (CGEventTapProxy proxy,CGEventType type,CGEve
         [mainPickSubview releaseResources];
         //[mainPickSubview release];  //should be released by teh following...
         //[mainPickView releaseResources];
-
-
 
         [mainPickView close];
         //[mainPickView release];
@@ -316,17 +512,43 @@ CGEventRef myLowLevelMouseListener (CGEventTapProxy proxy,CGEventType type,CGEve
     //[main_window setLevel:(CGShieldingWindowLevel())];
 }
 
-- (void)sendPickedColorToHistoryHelper{
-//    int newr=(int)round(255*[[color_current color] redComponent]);
-//    int newg=(int)round(255*[[color_current color] greenComponent]);
-//    int newb=(int)round(255*[[color_current color] blueComponent]);
-//
-//    [history_data insertObject:[NSString stringWithFormat:@"%d,%d,%d", newr, newg, newb] atIndex:0];
-//    [history_list reloadData];
-//
-//    NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex:0];
-//    [history_list selectRowIndexes:indexSet byExtendingSelection:NO];
 
+
+- (void)processKeyboard:(int)keyCode{
+    switch( keyCode ) {
+            //THE arrow keys should MODIFY the latest (top most) history entry !!!!!!!!!!!!!!!!!!!!!!!!!
+        case 126:       // up arrow
+            //[self translatPosition:NSMakePoint(0,arrowKeyMoveAmt)];
+            break;
+        case 125:       // down arrow
+            //[self translatPosition:NSMakePoint(0,-arrowKeyMoveAmt)];
+            break;
+        case 124:       // right arrow
+            //[self translatPosition:NSMakePoint(arrowKeyMoveAmt,0)];
+            break;
+        case 123:       // left arrow
+            //[self translatPosition:NSMakePoint(-arrowKeyMoveAmt,0)];
+            break;
+        case 53://esc
+            if(is_picking) [self togglePicking];//NSLog(@"esc!");
+            break;
+        case 15://r
+        case 38://j
+            if( is_picking ){
+                [self destroyPickWindow];
+                [self takeScreenshot];
+                [self createPickWindow];
+                //NSLog(@"r/j!");
+            }
+            break;
+        case 76://enter
+        case 36://return
+            [self togglePicking];//NSLog(@"return/enter!");
+            break;
+        default:
+            //NSLog(@"Key pressed: %@", keyCode);
+            break;
+    }
 }
 
 @end

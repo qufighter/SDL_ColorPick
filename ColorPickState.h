@@ -20,6 +20,9 @@ public:
 
     // probably should not be public but easier this way!
     int mmovex, mmovey; /// needs to be ux accessible singleton.......
+
+    bool movedxory;
+
     float viewport_ratio;
     float ui_mmv_scale; // if we are low dpi 1.0, otherwise 2.0
 

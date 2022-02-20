@@ -43,7 +43,8 @@ ColorPickState::ColorPickState(void) {
     //constructor
     mmovex=0;
     mmovey=0;
-
+    movedxory = false;
+    
     appInForeground = true;
 
     viewport_ratio = 1.0;

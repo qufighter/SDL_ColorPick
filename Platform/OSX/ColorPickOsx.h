@@ -27,35 +27,35 @@
 //#include <CommonCrypto/CommonDigest.h>
 
 
-static bool mouse_hooked = false;
-static bool is_picking = false;
-static bool pick_window_created=NO;
+@interface ColorPickOsx : NSObject{
 
-@interface ColorPickOsx : NSWindowController{
+    NSWindowLevel origionalWindowLevel;//used so when not picking we go back to our previous window level - important for when comptuer locks during sleep!
 
-    int origionalWindowLevel;//used so when not picking we go back to our previous window level - important for when comptuer locks during sleep!
+//    CFMachPortRef mMachPortRef;
+//    CFRunLoopSourceRef mMouseEventSrc;
+//    NSTimer* repeatingTimer;
 
-    CFMachPortRef mMachPortRef;
-    CFRunLoopSourceRef mMouseEventSrc;
+    SDL_TimerID sdlTimerId;
 
-    NSTimer* repeatingTimer;
-    
     NSOverlayWindow *mainPickView;
     NSOverlayView *mainPickSubview;
     NSWindow *main_window;
 
-    NSWindow * mainPickViewParent;
-//
-//@public
+//    NSWindow * mainPickViewParent;
 
+    bool pick_window_created;
+    bool mouse_hooked;
 
+@public
+
+    bool is_picking;
 }
 
-
+- (void)takeScreenshot;
 - (void)createPickWindow;
 - (void)destroyPickWindow;
 - (void)togglePicking;
-- (void)sendPickedColorToHistoryHelper;
+- (void)processKeyboard:(int)keyCode;
 
 @end
 

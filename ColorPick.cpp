@@ -156,6 +156,12 @@ bool OpenGLContext::NoModalBlocksPicker(){
     return (!generalUx->hasCurrentModal() || generalUx->currentModal == generalUx->returnToLastImgBtn) && !generalUx->controllerCursorTemporarilyDisabledForAnimatedChange;
 }
 
+void OpenGLContext::choosePickFromScreen(void){
+#ifdef PICK_FROM_SCREEN_ENABLED
+    beginScreenshotSeleced(); // only defined on osx so far...
+#endif
+}
+
 void OpenGLContext::chooseFile(void) {
 #ifdef DEVELOPER_TEST_MODE
     loadNextTestImage();
@@ -1251,7 +1257,7 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
     }
 
     // update
-    if(colorPickState->mmovex != 0 || colorPickState->mmovey != 0){
+    if(colorPickState->mmovex != 0 || colorPickState->mmovey != 0 || colorPickState->movedxory){
 
         #if defined(__EMSCRIPTEN__) && defined(COLORPICK_BUILD_FOR_EXT)
         if( !last_mode_hue_picker ) em_update_picker_position(-colorPickState->mmovex, -colorPickState->mmovey);
@@ -1262,6 +1268,7 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
         position_y += colorPickState->mmovey;
         colorPickState->mmovey=0;
 
+        colorPickState->movedxory = false;
         
 
         generalUx->hideHistoryPalleteIfShowing(); // panning background...

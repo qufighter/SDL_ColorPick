@@ -7,7 +7,7 @@
 //
 
 #import "NSOverlayView.h"
-
+#import <Cocoa/Cocoa.h>
 
 @implementation NSOverlayView
 
@@ -41,6 +41,16 @@
 - (void)mouseEntered:(NSEvent *)theEvent {
 	//[[NSCursor crosshairCursor] push];
     [custom_cursor push];
+}
+
+- (void)scrollWheel:(NSEvent *)event {
+    [self willChangeValueForKey:@"shield_scrollywheel"];
+    if( [event scrollingDeltaY] > 0.0 ){
+        lastScrollWheelDirection = 1;
+    }else{
+        lastScrollWheelDirection = -1;
+    }
+    [self didChangeValueForKey:@"shield_scrollywheel"];
 }
 
 - (void)mouseExited:(NSEvent *)theEvent {
@@ -106,5 +116,9 @@
 	//[self orderOut:self]; - 
 }
 */
+
+- (int)getLastScrollDir{
+    return lastScrollWheelDirection;
+}
 
 @end

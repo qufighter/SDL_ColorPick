@@ -15,6 +15,7 @@
 	//NSPoint downLocation;
 	//BOOL drawing;
 	NSCursor* custom_cursor;
+    int lastScrollWheelDirection;
 	//BOOL has_been_clicked_on;
 }
 
@@ -23,5 +24,6 @@
 
 //- (BOOL)getHasBeenClickedOn;
 - (void)releaseResources;
+- (int)getLastScrollDir;
 
 @end

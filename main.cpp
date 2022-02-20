@@ -846,7 +846,9 @@ void ReshapeWindow(bool fromMain){
 
     colorPickState->ui_mmv_scale=ui_mmv_scale;
 
-    // none of this experimental stuff really works:
+
+#ifdef DEVELOPER_TEST_MODE
+    
     int displayIndex = SDL_GetWindowDisplayIndex(sdl_Window);
     float ddpi=1.0f;
     float hdpi=1.0f;
@@ -867,17 +869,12 @@ void ReshapeWindow(bool fromMain){
 
     //int modeIndex=0;
 
-#ifdef DEVELOPER_TEST_MODE
     for( int modeIndex=0,totalModes=SDL_GetNumDisplayModes(displayIndex); modeIndex<totalModes; modeIndex++){
         SDL_GetDisplayMode(displayIndex, modeIndex, &mode);
 
         SDL_Log("POSSIBLE: w:%i h:%i %ihz ", mode.w, mode.h, mode.refresh_rate );
     }
-#endif
-
     //SDL_SetWindowDisplayMode(<#SDL_Window *window#>, <#const SDL_DisplayMode *mode#>)
-
-
 
     //SDL_GetDisplayMode(<#int displayIndex#>, <#int modeIndex#>, SDL_DisplayMode *mode)
     // Uint32 format;              /**< pixel format */
@@ -895,7 +892,7 @@ void ReshapeWindow(bool fromMain){
             size_result, miScreen.x, miScreen.y, miScreen.w, miScreen.h, ui_mmv_scale,
             bounds_result, usableBounds.x, usableBounds.y, usableBounds.w, usableBounds.h,
             int(miScreen.w*ui_mmv_scale), int(miScreen.h*ui_mmv_scale));
-
+#endif
     //if( )
 
 
@@ -1099,6 +1096,8 @@ int main(int argc, char *argv[]) {
         printf("Could not initialize Window\n");
         return 1;
     }
+
+
 
     colorPickState->viewport_ratio = (win_w+1.0f)/win_h;
 

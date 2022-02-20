@@ -461,6 +461,7 @@ static Ux* Singleton();
 
     static void interactionHistoryEnteredView(uiObject *interactionObj);
     static void interactionNoOp(uiObject *interactionObj, uiInteraction *delta);
+    static void interactionPickFromScreen(uiObject *interactionObj, uiInteraction *delta);
     static void interactionFileBrowserTime(uiObject *interactionObj, uiInteraction *delta);
     static void interactionReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta);
     static void interactionBeginReturnToPreviousSurface(uiObject *interactionObj, uiInteraction *delta);
@@ -569,6 +570,7 @@ static Ux* Singleton();
         uiObject *bottomBar;
         uiObject *bottomBarRightStack;
         uiObject *pickSourceBtn;
+        uiObject *pickScreenBtn;
         uiObject *addHistoryBtn;
         uiObject *optionsGearBtn;
 

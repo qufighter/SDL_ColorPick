@@ -125,6 +125,8 @@ public:
 
     void EnterKeyEvent(void);
     void BackButtonEvent(void);
+
+    void choosePickFromScreen(void);
     void chooseFile(void);
 
     bool NoModalBlocksPicker();
@@ -239,6 +241,10 @@ public:
     bool canMesh();
 
     bool isProgramBooted();
+
+    // made public so that platform specific can set??
+    int position_x = 0;
+    int position_y = 0;
 private:
 
     unsigned int fbo;
@@ -250,8 +256,7 @@ private:
 
     int textureSize = SHD_TEXTURE_SIZE;
     int halfTextureSize = textureSize * 0.5;
-    int position_x = 0;
-    int position_y = 0;
+
     int position_cropped_x = 0;
     int position_cropped_y = 0;
     float position_offset_x=0;

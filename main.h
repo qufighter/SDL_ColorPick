@@ -22,8 +22,13 @@
 
 //#elif defined(__MACOSX__) && defined(__LP64__)  /* this is deprecated in 10.12 sdk; favor gcc atomics. */
 
-#if defined(__MACOSX__) || defined(__WIN32__) || defined(__EMSCRIPTEN__)
+#if defined(__MACOSX__) || defined(__WIN32__) || defined(__LINUX__) || defined(__EMSCRIPTEN__)
 #define COLORPICK_PLATFORM_DESKTOP 1
+#endif
+
+
+#if defined(__MACOSX__) || defined(__WIN32__) || defined(__LINUX__)
+#define PICK_FROM_SCREEN_ENABLED = true
 #endif
 
 //#define NO_MESH_LOADING 1

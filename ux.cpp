@@ -12,7 +12,6 @@
 #include "FileChooserInclude.h"
 
 
-
 bool Ux::ms_bInstanceCreated = false;
 Ux* Ux::pInstance = NULL;
 
@@ -487,6 +486,9 @@ void Ux::resizeUiElements(void){
  //                    pickSourceBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
  //                    addHistoryBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
  //                    optionsGearBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+#ifdef PICK_FROM_SCREEN_ENABLED
+                    pickScreenBtn->stackBottom();
+#endif
                     pickSourceBtn->stackBottom();
                     addHistoryBtn->stackBottom();
                     optionsGearBtn->stackBottom();
@@ -542,6 +544,9 @@ void Ux::resizeUiElements(void){
  //                    pickSourceBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
  //                    addHistoryBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
  //                    optionsGearBtn->setBoundaryRect( 0.0, 0, 1.0, 1.0);
+#ifdef PICK_FROM_SCREEN_ENABLED
+                    pickScreenBtn->stackRight();
+#endif
                     pickSourceBtn->stackRight();
                     addHistoryBtn->stackRight();
                     optionsGearBtn->stackRight();
@@ -732,6 +737,17 @@ Ux::uiObject* Ux::create(void){
     pickSourceBtn->squarify();
 
 
+    pickScreenBtn = new uiObject();
+#ifdef PICK_FROM_SCREEN_ENABLED
+    pickScreenBtn->hasForeground = true;
+    Ux::setColor(&pickScreenBtn->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+//    pickScreenBtn->hasBackground = true;
+//    Ux::setColor(&pickScreenBtn->backgroundColor, 32, 0, 0, 128);
+    pickScreenBtn->setClickInteractionCallback(&Ux::interactionPickFromScreen); // TODO rename me
+     printCharToUiObject(pickScreenBtn, '+', DO_NOT_RESIZE_NOW);
+ //   printCharToUiObject(pickScreenBtn, CHAR_OPEN_FILES, DO_NOT_RESIZE_NOW);
+    pickScreenBtn->squarify();
+#endif
 
     addHistoryBtn = new uiObject();
     addHistoryBtn->hasForeground = true;
@@ -765,6 +781,9 @@ Ux::uiObject* Ux::create(void){
 
  //     stacked bottom bar elements...
     bottomBarRightStack->addChildStackedRight(addHistoryBtn);
+#ifdef PICK_FROM_SCREEN_ENABLED
+    bottomBarRightStack->addChildStackedRight(pickScreenBtn);
+#endif
     bottomBarRightStack->addChildStackedRight(pickSourceBtn);
     bottomBarRightStack->addChildStackedRight(optionsGearBtn);
 
@@ -2000,6 +2019,14 @@ void Ux::loadTestImageByIndex(int index){
     OpenGLContext* ogg=OpenGLContext::Singleton();
     ogg->loadNextTestImageByIndex(index);
 }
+
+void Ux::interactionPickFromScreen(uiObject *interactionObj, uiInteraction *delta){
+    Ux* myUxRef = Ux::Singleton();
+    myUxRef->uxAnimations->scale_bounce(interactionObj, 0.001);
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    ogg->choosePickFromScreen();
+}
+
 
 void Ux::interactionFileBrowserTime(uiObject *interactionObj, uiInteraction *delta){
     Ux* myUxRef = Ux::Singleton();
