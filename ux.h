@@ -308,6 +308,7 @@ static Ux* Singleton();
         return min + rand() % (max - min + 1);
     }
 
+    // linear mix, ok for greyscale, see mixColorsReal for true color mixing
     static SDL_Color mixColors(SDL_Color *a, SDL_Color *b){
         // could just call mixColors(a,b,0.5) maybe?.. but this is less maths.... (balanced avg)
         SDL_Color result;
@@ -318,6 +319,7 @@ static Ux* Singleton();
         return result;
     }
 
+    // linear mix, ok for greyscale, see mixColorsReal for true color mixing
     static SDL_Color mixColors(SDL_Color *a, SDL_Color *b, float progressAB){
         // progress can move from 0.0 (completely A) to 1.0 (completely B)
         float invProg = 1.0 - progressAB;
@@ -329,10 +331,9 @@ static Ux* Singleton();
         return result;
     }
 
-    // real mix should be not simply sum over 2, but the sqrt of the sum of the squared values over 2
     static SDL_Color mixColorsReal(SDL_Color *a, SDL_Color *b){
-        // could just call mixColorsReal(a,b,0.5) maybe?..
-        SDL_Color result;
+        // real mix is not simply sum over 2, but the sqrt of the sum of the squared values over 2
+        SDL_Color result; // see also HowToAvgColorsProperly.....png, minutephysics "computer color is broken" video
         result.r = SDL_sqrt(( ((Uint32)a->r * (Uint32)a->r) + ((Uint32)b->r * (Uint32)b->r) ) * 0.5);
         result.g = SDL_sqrt(( ((Uint32)a->g * (Uint32)a->g) + ((Uint32)b->g * (Uint32)b->g) ) * 0.5);
         result.b = SDL_sqrt(( ((Uint32)a->b * (Uint32)a->b) + ((Uint32)b->b * (Uint32)b->b) ) * 0.5);
@@ -343,52 +344,36 @@ static Ux* Singleton();
     // todo: fix for perf? at least works... good baseline?
     static SDL_Color mixColorsReal(SDL_Color *a, SDL_Color *b, float progressAB){
         // progress can move from 0.0 (completely A) to 1.0 (completely B)
-        // not quite sure how best to handle this...
-        // we could keep calling mixColorsReal(a,b) until we have all the intermediary values.. (expensive)
-        // we could try something else and attempt to inspect if the results match the above expensive way??
-
-        // thought is the orig ipml could almost work IF
-        // we simply scale the summed squared valeus before averagin???
-
-
+        // we keep calling mixColorsReal(a,b) until we have all the intermediary values.. (expensive)
+        // we could try something else and attempt to inspect if the results match this expensive way??
         SDL_Color stopa;
         SDL_Color stopb;
-
         SDL_Color result;
+        float stopaf = 0.0;
+        float stopbf = 1.0;
+        float curProg = 0.5; // (stopaf + stopbf) * 0.5;
+        float stopInc = 0.5;
+        float proximity = curProg - progressAB;
 
         Ux::setColor(&stopa, a);
         Ux::setColor(&stopb, b);
-
-        float stopaf = 0.0;
-        float stopbf = 1.0;
-        float curProg = (stopaf + stopbf) * 0.5;
-
-        float stopInc = 0.5;
-
-
         result = mixColorsReal(&stopa, &stopb);
-        float proximity = curProg - progressAB;
-
-        // basically we will /2 until within the threshold here... costly sometiems....
+        // basically we will /2 until within the threshold here... costly sometiems.... for 0.5 we don't even loop... 0.25 or 0.75 1 iter, etc
         while( proximity > 0.0001 || proximity < -0.0001 ){
             //SDL_Log("color; proximity: %f", proximity);
             if( progressAB < curProg ){
                 stopbf -= stopInc;
-                stopInc *= 0.5;
-                curProg = (stopaf + stopbf) * 0.5;
                 Ux::setColor(&stopb, &result);
                 result = mixColorsReal(&stopa, &stopb);
-                proximity = curProg - progressAB;
             }else{
                 stopaf += stopInc;
-                stopInc *= 0.5;
-                curProg = (stopaf + stopbf) * 0.5;
                 Ux::setColor(&stopa, &result);
                 result = mixColorsReal(&stopa, &stopb);
-                proximity = curProg - progressAB;
             }
+            stopInc *= 0.5;
+            curProg = (stopaf + stopbf) * 0.5;
+            proximity = curProg - progressAB;
         }
-
         return result;
     }
 
