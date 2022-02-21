@@ -1,9 +1,9 @@
 //
 //
-#ifndef ColorPick_iOS_SDL_MixMaster_h
-#define ColorPick_iOS_SDL_MixMaster_h
+#ifndef ColorPick_iOS_SDL_LinearMixerz_h
+#define ColorPick_iOS_SDL_LinearMixerz_h
 
-struct MixMaster{
+struct LinearMixer{
 
     const char* gameName = "Linear Mixer";
     const int maxSwatches = 6;
@@ -43,7 +43,7 @@ struct MixMaster{
 
     Minigames* minigames;
 
-    MixMaster(Uint8 pGameIndex){
+    LinearMixer(Uint8 pGameIndex){
         gameIndex = pGameIndex;
         Ux* myUxRef = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();
@@ -120,7 +120,7 @@ struct MixMaster{
         Ux* myUxRef = Ux::Singleton();
 
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        MixMaster* self = (MixMaster*)ogg->minigames->currentGame->gameItself; // helper?
+        LinearMixer* self = (LinearMixer*)ogg->minigames->currentGame->gameItself; // helper?
         if( self->isComplete ){
             // lock it up..
             return;
@@ -143,7 +143,7 @@ struct MixMaster{
         Ux::uiSwatch* swatch = (Ux::uiSwatch*)interactionObj->myUiController;
 
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        MixMaster* self = (MixMaster*)ogg->minigames->currentGame->gameItself; // helper?
+        LinearMixer* self = (LinearMixer*)ogg->minigames->currentGame->gameItself; // helper?
         if( self->isComplete ){
             // lock it up..
             SDL_snprintf(myUxRef->print_here, 7,  "%02x%02x%02x", swatch->last_color.r, swatch->last_color.g, swatch->last_color.b);
@@ -164,7 +164,7 @@ struct MixMaster{
         if( !interactionObj->isAnimating() ){ // its in the viewport still... lets snap it to the nearest dest if close enough...
 
             OpenGLContext* ogg=OpenGLContext::Singleton();
-            MixMaster* self = (MixMaster*)ogg->minigames->currentGame->gameItself; // helper?
+            LinearMixer* self = (LinearMixer*)ogg->minigames->currentGame->gameItself; // helper?
 
             //self->checkIfGameIsCompleted(uiAnim); // mostly to reset
             self->isGameComplete();
@@ -195,7 +195,7 @@ struct MixMaster{
 
     static void checkIfGameIsCompleted(Ux::uiAnimation* uiAnim){
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        MixMaster* self = (MixMaster*)ogg->minigames->currentGame->gameItself; // helper?
+        LinearMixer* self = (LinearMixer*)ogg->minigames->currentGame->gameItself; // helper?
 
         if( self->isGameComplete() ){
             //SDL_Log("Looks like you won!");
@@ -307,7 +307,7 @@ struct MixMaster{
     void showMatches(){
         Ux* uxInstance = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        MixMaster* self = (MixMaster*)ogg->minigames->currentGame->gameItself; // helper?
+        LinearMixer* self = (LinearMixer*)ogg->minigames->currentGame->gameItself; // helper?
 
         // we verify before this is called, every dest has 1 and only 1 match....
 
@@ -372,7 +372,7 @@ struct MixMaster{
     bool isGameComplete(){
         Ux* uxInstance = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();
-        MixMaster* self = (MixMaster*)ogg->minigames->currentGame->gameItself; // helper?
+        LinearMixer* self = (LinearMixer*)ogg->minigames->currentGame->gameItself; // helper?
 
         bool isWin = true; // lets see if any of them are non
         bool isReadyToScore = true;
@@ -449,7 +449,7 @@ struct MixMaster{
 
     // "reset state"
     static void show(void* gameItself){
-        MixMaster* self = (MixMaster*)gameItself;
+        LinearMixer* self = (LinearMixer*)gameItself;
         SDL_Log("%s show", self->gameName);
         Ux* myUxRef = Ux::Singleton();
 
@@ -564,7 +564,7 @@ struct MixMaster{
     }
 
     static void begin(void* gameItself){
-        MixMaster* self = (MixMaster*)gameItself;
+        LinearMixer* self = (LinearMixer*)gameItself;
         SDL_Log("%s begin", self->gameName);
         self->startTime = SDL_GetTicks();
         Ux* myUxRef = Ux::Singleton();
@@ -572,7 +572,7 @@ struct MixMaster{
     }
 
     static void resize(void* gameItself){
-        MixMaster* self = (MixMaster*)gameItself;
+        LinearMixer* self = (LinearMixer*)gameItself;
         SDL_Log("%s resize", self->gameName);
         Ux* uxInstance = Ux::Singleton();
         if( uxInstance->widescreen ){
@@ -584,44 +584,44 @@ struct MixMaster{
     }
 
     static void update(void* gameItself){
-        MixMaster* self = (MixMaster*)gameItself;
+        LinearMixer* self = (LinearMixer*)gameItself;
         //SDL_Log("%s update", self->gameName);
     }
 
     static void render(void* gameItself){
-        MixMaster* self = (MixMaster*)gameItself;
+        LinearMixer* self = (LinearMixer*)gameItself;
         //SDL_Log("%s render", self->gameName);
     }
 
     static void end(void* gameItself){
-        MixMaster* self = (MixMaster*)gameItself;
+        LinearMixer* self = (LinearMixer*)gameItself;
         SDL_Log("%s end", self->gameName);
         self->gameRootUi->hideAndNoInteraction();
     }
 
     static const char* getGameName(void* gameItself){
-        MixMaster* self = (MixMaster*)gameItself;
+        LinearMixer* self = (LinearMixer*)gameItself;
         return self->gameName;
     }
 
     static int getTimeLimit(void* gameItself){
-        MixMaster* self = (MixMaster*)gameItself;
+        LinearMixer* self = (LinearMixer*)gameItself;
         return self->timeLimit;
     }
 
     //    static int getStartTime(void* gameItself){ // is this used?
-    //        MixMaster* self = (MixMaster*)gameItself;
+    //        LinearMixer* self = (LinearMixer*)gameItself;
     //        return self->startTime;
     //    }
 
     //    static int getRemainingTime(void* gameItself){ // NOT IMPLEMENTED
-    //        MixMaster* self = (MixMaster*)gameItself;
+    //        LinearMixer* self = (LinearMixer*)gameItself;
     //        return self->getTimeLimit(self) - self->getElapsedTime(self);
     //    }
 
     static int getElapsedTime(void* gameItself){
         // maybe game can pause itself...
-        MixMaster* self = (MixMaster*)gameItself;
+        LinearMixer* self = (LinearMixer*)gameItself;
 
         if( self->isComplete ){
             return self->lastTicks - self->startTime;

@@ -114,7 +114,7 @@ todo: keep moving (non int) stuff to vsh???
 /// so there is no need to track ANY chain in this file :)
 
 ERROR::: Max Animation Chains 128 Exceeded !!!!!!!!
-  ^ simply do not allow this to occur?
+  ^ simply do not allow this to occur? (yes, keep limit) 
 
 add all button cannot achieve achievement (due to mulitple achievement of achievement...)
     addColorToPallete 
@@ -141,6 +141,7 @@ settings -
 - open imgs style
 
 rclick menu is not responsive (its only sized once)
+rclick menu should work on rclick on desktop (not just double touch)
 
 show alpha value when < 255, rgba hex too?ååå
 
@@ -246,11 +247,11 @@ ellipsis when sorting large lists (instead of blank space)
 > hide scrolly arrows on touchy devices OMIT_SCROLLY_ARROWS OMIT_SCROLLBAR_ARROWS
 
 ## desktop any
-desktop scroll wheel in pallete (modal)  - scroll wheel improvements possible
+desktop scroll wheel in pallete (modal) (works/done)  - scroll wheel improvements possible
 other keypress support (modal confirm enter, ...)
 clock bar hide (enabled now for dev) (dev cleanup) (seperate testing constant to trigger it? DEVELOPER_TEST_MODE )
 SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK < - do we want a right click menu?
-- copy menu on right click....
+- copy menu on right click.... (dupe, see rclick)
 handle when save of history data occurs (specifically desktop plat?) (program exit)
     see SDL_APP_WILLENTERBACKGROUND < this is where we currently write state, works good on mobile clients where there is no fixed quit command...
     SDL_WINDOWEVENT_LEAVE,

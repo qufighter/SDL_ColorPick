@@ -667,13 +667,12 @@ Ux::uiObject* Ux::create(void){
     rootUiObject = new uiObject();
     rootUiObject->isRoot = true;
 
-    rootUiObject->hasBackground = true;
-    Ux::setColor(&rootUiObject->backgroundColor, 0, 0, 0, 0);
+    rootUiObject->setBackgroundColor(0, 0, 0, 0); // transparent 0
 
-    rootUiObject->hasForeground = true; // render texture
-    Ux::setColor(&rootUiObject->foregroundColor, 0, 255, 0, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-    Ux::setColor(&rootUiObject->foregroundColor, 0, 0, 0, 0); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-    rootUiObject->hasForeground = false; // render texture
+//    rootUiObject->hasForeground = true; // render texture
+//    Ux::setColor(&rootUiObject->foregroundColor, 0, 255, 0, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+//    Ux::setColor(&rootUiObject->foregroundColor, 0, 0, 0, 0); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+//    rootUiObject->hasForeground = false; // render texture
 
 
  //     make this color the selected color ! ! ! ! !! ^ ^ ^
@@ -681,16 +680,13 @@ Ux::uiObject* Ux::create(void){
 
     screenRenderQuadObj = new uiObject(); // an orphan, it is a root of sorts...
     screenRenderQuadObj->setForegroundColor(255,255,255,128);
-    Ux::setRect(&screenRenderQuadObj->textureCropRect,
-                0, 0,
-                1, -1.0);
+    Ux::setRect(&screenRenderQuadObj->textureCropRect,0, 0,1, -1.0);
 
 
     mainUiContainer = new uiObject();
 
     minigamesUiContainer = new uiObject();
-    minigamesUiContainer->hasBackground = true;
-    Ux::setColor(&minigamesUiContainer->backgroundColor, 0, 0, 0, 255);
+    minigamesUiContainer->setBackgroundColor(0, 0, 0, 255);
     minigamesUiContainer->setBoundaryRect(5000.0, 5000.0, 1.0, 1.0);
 
 
@@ -706,8 +702,7 @@ Ux::uiObject* Ux::create(void){
 
     returnToLastImgBtn = new uiObject();
     returnToLastImgBtn->hasForeground = true;
-    returnToLastImgBtn->hasBackground = true;
-    Ux::setColor(&returnToLastImgBtn->backgroundColor, 0, 0, 0, 50);
+    returnToLastImgBtn->setBackgroundColor(0, 0, 0, 50);
     returnToLastImgBtn->setRoundedCorners(0.5); // collision check will be "circular"
     printCharToUiObject(returnToLastImgBtn, CHAR_BACK_ICON, DO_NOT_RESIZE_NOW);
     returnToLastImgBtn->setInteractionBegin(&Ux::interactionBeginReturnToPreviousSurface);
@@ -717,8 +712,7 @@ Ux::uiObject* Ux::create(void){
     returnToLastImgBtn->storeControllerCursor = false; // this modal is indistinguishable from root ???
 
     bottomBar = new uiObject();
-    bottomBar->hasBackground = true;
-    Ux::setColor(&bottomBar->backgroundColor, 0, 0, 0, 198);
+    bottomBar->setBackgroundColor(0, 0, 0, 198);
     mainUiContainer->addChild(bottomBar);
     bottomBar->setInteractionCallback(Ux::interactionNoOp); // cannot click through this bar...
 
@@ -727,8 +721,7 @@ Ux::uiObject* Ux::create(void){
 
 
     pickSourceBtn = new uiObject();
-    pickSourceBtn->hasForeground = true;
-    Ux::setColor(&pickSourceBtn->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+    pickSourceBtn->setForegroundColor(255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
 //    pickSourceBtn->hasBackground = true;
 //    Ux::setColor(&pickSourceBtn->backgroundColor, 32, 0, 0, 128);
     pickSourceBtn->setClickInteractionCallback(&Ux::interactionFileBrowserTime); // TODO rename me
@@ -739,19 +732,22 @@ Ux::uiObject* Ux::create(void){
 
     pickScreenBtn = new uiObject();
 #ifdef PICK_FROM_SCREEN_ENABLED
-    pickScreenBtn->hasForeground = true;
-    Ux::setColor(&pickScreenBtn->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-//    pickScreenBtn->hasBackground = true;
-//    Ux::setColor(&pickScreenBtn->backgroundColor, 32, 0, 0, 128);
+    pickScreenBtn->setForegroundColor(255, 255, 255, 255);
     pickScreenBtn->setClickInteractionCallback(&Ux::interactionPickFromScreen); // TODO rename me
      printCharToUiObject(pickScreenBtn, '+', DO_NOT_RESIZE_NOW);
  //   printCharToUiObject(pickScreenBtn, CHAR_OPEN_FILES, DO_NOT_RESIZE_NOW);
     pickScreenBtn->squarify();
+
+    uiObject* pickScreenBtnSub = new uiObject();
+    pickScreenBtnSub->setForegroundColor(255, 255, 255, 255);
+    pickScreenBtnSub->setBackgroundColor(255, 0, 0, 128);
+    printCharToUiObject(pickScreenBtnSub, '+', DO_NOT_RESIZE_NOW);
+    pickScreenBtnSub->setBoundaryRect(0.5, 0.5, 0.5, 0.5);
+    pickScreenBtn->addChild(pickScreenBtnSub);
 #endif
 
     addHistoryBtn = new uiObject();
-    addHistoryBtn->hasForeground = true;
-    Ux::setColor(&addHistoryBtn->foregroundColor, 255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+    addHistoryBtn->setForegroundColor(255, 255, 255, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
 //    addHistoryBtn->hasBackground = true;
 //    Ux::setColor(&addHistoryBtn->backgroundColor, 32, 0, 0, 128);
     addHistoryBtn->setClickInteractionCallback(&Ux::interactionAddHistory); // TODO rename me
@@ -762,8 +758,7 @@ Ux::uiObject* Ux::create(void){
 
 
     optionsGearBtn = new uiObject();
-    optionsGearBtn->hasForeground = true;
-    Ux::setColor(&optionsGearBtn->foregroundColor, 240, 240, 240, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+    optionsGearBtn->setForegroundColor(240, 240, 240, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
  //        optionsGearBtn->hasBackground = true;
  //        Ux::setColor(&optionsGearBtn->backgroundColor, 32, 0, 0, 128);
  //    optionsGearBtn->setClickInteractionCallback(&Ux::interactionAddHistory); // TODO rename me
@@ -808,8 +803,7 @@ Ux::uiObject* Ux::create(void){
 
     zoomSlider = new uiObject();
     //zoomSlider->isDebugObject=true;
-    zoomSlider->hasBackground = true;
-    Ux::setColor(&zoomSlider->backgroundColor, 255, 255, 255, 255);
+    zoomSlider->setBackgroundColor(255, 255, 255, 255);
     Ux::setColor(&zoomSlider->foregroundColor, 0, 0, 0, 50); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
     zoomSlider->setInteraction(&Ux::interactionHZ);//zoomSlider->canCollide = true;
  //    printCharToUiObject(zoomSlider, '^', DO_NOT_RESIZE_NOW);
@@ -825,8 +819,7 @@ Ux::uiObject* Ux::create(void){
 
 
     historyPreviewHolder = new uiObject();
-    historyPreviewHolder->hasBackground = true;
-    Ux::setColor(&historyPreviewHolder->backgroundColor, 0, 0, 0, 192);
+    historyPreviewHolder->setBackgroundColor( 0, 0, 0, 192);
 
 
     historyPreview = new uiObject();

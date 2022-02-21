@@ -116,15 +116,17 @@ struct Minigames{
 
     typedef enum  {
         GAME0_RESERVED=0,
-        GAME1_MATCH_MAKER,
-        GAME2_MIX_MASTER,
-        GAME3_FLIP_MASTER,
+        GAME_MATCH_MAKER,
+        GAME_LINEAR_MIXER,
+        GAME_MIX_MASTER,
+        GAME_FLIP_MASTER,
         TOTAL_GAMES
     } MINIGAMES_ENUM;
 
 #include "MatchMaster/MatchMaster.h"
-#include "MixMaster/MixMaster.h"
+#include "LinearMixer/LinearMixer.h"
 #include "FlipMaster/FlipMaster.h"
+#include "MixMaster/MixMaster.h"
 
     Minigames(){
         Ux* myUxRef = Ux::Singleton();
@@ -139,13 +141,15 @@ struct Minigames{
         gameList = new Ux::uiList<GameListObj, Uint8>(maxGames);
         gameList->index(MINIGAMES_ENUM::TOTAL_GAMES, indexForGame);
 
-        MatchMaster* matchmaker = new MatchMaster(MINIGAMES_ENUM::GAME1_MATCH_MAKER);
-//        MixMaster* minigame1 = new MixMaster(MINIGAMES_ENUM::GAME1_MATCH_MAKER);
-        MixMaster* mixmaster = new MixMaster(MINIGAMES_ENUM::GAME2_MIX_MASTER);
-        FlipMaster* flipmatcher = new FlipMaster(MINIGAMES_ENUM::GAME3_FLIP_MASTER);
+        // if you get Must use 'struct' tag to refer to type '' in this scope: means you named your object poorly (distinguish from struct name)
+        MatchMaster* matchmaker = new MatchMaster(MINIGAMES_ENUM::GAME_MATCH_MAKER);
+        LinearMixer* linearmixer = new LinearMixer(MINIGAMES_ENUM::GAME_LINEAR_MIXER);
+        MixMaster* mixmaster = new MixMaster(MINIGAMES_ENUM::GAME_MIX_MASTER);
+        FlipMaster* flipmatcher = new FlipMaster(MINIGAMES_ENUM::GAME_FLIP_MASTER);
 
         gameList->add(GameListObj(makeGameArgs(matchmaker)));
-        gameList->add(GameListObj(makeGameArgs(mixmaster)));
+        gameList->add(GameListObj(makeGameArgs(linearmixer)));
+        //gameList->add(GameListObj(makeGameArgs(mixmaster)));
         gameList->add(GameListObj(makeGameArgs(flipmatcher)));
 
 //        SDL_Log("testing this out");
