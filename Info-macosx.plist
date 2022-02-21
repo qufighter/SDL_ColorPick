@@ -5,18 +5,20 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>${EXECUTABLE_NAME}</string>
+	<string>ColorPickSDL</string>
 	<key>CFBundleGetInfoString</key>
 	<string>http://www.vidsbee.com http://www.libsdl.org</string>
 	<key>CFBundleIconFile</key>
-	<string></string>
+	<string>ColorPick.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<string>com.vidsbee.desktopcolorpicksdl</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
 	<string>2.0.80</string>
 	<key>CFBundleVersion</key>
 	<string>2.0.80</string>
+	<key>CFBundleDisplayName</key>
+	<string>ColorPick</string>
 </dict>
 </plist>
