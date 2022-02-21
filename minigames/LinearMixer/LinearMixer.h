@@ -73,7 +73,7 @@ struct LinearMixer{
         int x;
 
         for( x=0; x<maxSwatches; x++ ){
-            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)); // ignore these rect....
+            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5), false); // ignore these rect....
             //tmp2->displayHex();
             //            tmp2->hideBg();
 
@@ -83,14 +83,14 @@ struct LinearMixer{
         }
 
         for( x=0; x<maxSwatches; x++ ){
-            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)); // ignore these rect....
+            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5), false); // ignore these rect....
             //tmp2->displayHex(); // this is MEH methinks ??
             tmp2->hideBg();
             matchList->add(tmp2);
         }
 
         for( x=0; x<maxSwatches; x++ ){
-            Ux::uiSwatch* tmp1 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)); // ignore these rect....
+            Ux::uiSwatch* tmp1 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5), false); // ignore these rect....
             tmp1->uiObjectItself->setInteraction(&interactionSwatchDragMove);
             tmp1->uiObjectItself->setInteractionCallback(&interactionSwatchDragMoveConstrain);
 
@@ -374,9 +374,10 @@ struct LinearMixer{
         OpenGLContext* ogg=OpenGLContext::Singleton();
         LinearMixer* self = (LinearMixer*)ogg->minigames->currentGame->gameItself; // helper?
 
+        if( ogg->minigames->gameCompleted ) return true; // prevent stray anim from ruining final score screen...
+
         bool isWin = true; // lets see if any of them are non
         bool isReadyToScore = true;
-
 
         int destCtr = 0;
         for( int x=0; x<self->totalMixes; x++ ){

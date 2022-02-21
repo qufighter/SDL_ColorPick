@@ -63,14 +63,14 @@ struct MatchMaster{
         int x;
 
         for( x=0; x<maxSwatches; x++ ){
-            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)); // ignore these rect....
+            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5), false); // ignore these rect....
             tmp2->displayHex();
             tmp2->hideBg();
             matchList->add(tmp2);
         }
 
         for( x=0; x<maxSwatches; x++ ){
-            Ux::uiSwatch* tmp1 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)); // ignore these rect....
+            Ux::uiSwatch* tmp1 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5), false); // ignore these rect....
             tmp1->uiObjectItself->setInteraction(&interactionSwatchDragMove);
             tmp1->uiObjectItself->setInteractionCallback(interactionSwatchDragMoveConstrain);
 

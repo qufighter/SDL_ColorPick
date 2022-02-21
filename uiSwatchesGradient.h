@@ -26,7 +26,7 @@ struct uiSwatchesGradient{
     uiGradientLinear* grad2;
 
 
-    uiSwatchesGradient(uiObject* parentObj, Float_Rect boundaries){
+    uiSwatchesGradient(uiObject* parentObj, Float_Rect boundaries, bool mixReal){
 
         Ux* uxInstance = Ux::Singleton();
 
@@ -35,8 +35,8 @@ struct uiSwatchesGradient{
         uiObjectItself->myUiController = this;
         uiObjectItself->setBoundaryRect(&boundaries);
 
-        grad1 = new uiGradientLinear(uiObjectItself, Float_Rect(0.0,0.0,0.1,1.0));
-        grad2 = new uiGradientLinear(uiObjectItself, Float_Rect(0.1,0.0,0.9,1.0));
+        grad1 = new uiGradientLinear(uiObjectItself, Float_Rect(0.0,0.0,0.1,1.0), mixReal);
+        grad2 = new uiGradientLinear(uiObjectItself, Float_Rect(0.1,0.0,0.9,1.0), mixReal);
 
         parentObj->addChild(uiObjectItself);
 

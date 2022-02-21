@@ -147,9 +147,11 @@ struct Minigames{
         MixMaster* mixmaster = new MixMaster(MINIGAMES_ENUM::GAME_MIX_MASTER);
         FlipMaster* flipmatcher = new FlipMaster(MINIGAMES_ENUM::GAME_FLIP_MASTER);
 
+        // noteworthy pattern, see: prevent stray anim from ruining final score screen...
+
         gameList->add(GameListObj(makeGameArgs(matchmaker)));
         gameList->add(GameListObj(makeGameArgs(linearmixer)));
-        //gameList->add(GameListObj(makeGameArgs(mixmaster)));
+        gameList->add(GameListObj(makeGameArgs(mixmaster)));
         gameList->add(GameListObj(makeGameArgs(flipmatcher)));
 
 //        SDL_Log("testing this out");
@@ -165,6 +167,43 @@ struct Minigames{
             SDL_Quit();
             exit(1);
         }
+
+        // solving puzzle
+//        Uint8 test_result = 0;
+//        Uint8 test_value = 254;
+//        test_result =(test_value + test_value) * 0.25;
+//        SDL_Log("does basic uint8math make sense? %i", test_result);
+        // seems to work, so does the + implicitly cast to a type taht can contain the result???
+
+
+        // primitive gradi test...
+//        SDL_Color a;
+//        SDL_Color b;
+//        Ux::setColor(&a, 255, 0, 0, 0);
+//        Ux::setColor(&b, 0, 255, 0, 0);
+//
+//        SDL_Color r;
+//
+//        r = Ux::mixColors(&a, &b);
+//        SDL_Log("color; r:%i g:%i b:%i", r.r, r.g, r.b);
+//        r = Ux::mixColorsReal(&a, &b);
+//        SDL_Log("color; r:%i g:%i b:%i", r.r, r.g, r.b);
+//
+//        r = Ux::mixColors(&a, &b, 0.5);
+//        SDL_Log("color; r:%i g:%i b:%i", r.r, r.g, r.b);
+//        r = Ux::mixColorsReal(&a, &b, 0.5);
+//        SDL_Log("color; r:%i g:%i b:%i", r.r, r.g, r.b);
+//
+//        r = Ux::mixColorsReal(&a, &b, 0.25);
+//        SDL_Log("color; r:%i g:%i b:%i", r.r, r.g, r.b);
+//
+//        r = Ux::mixColorsReal(&a, &b, 0.75);
+//        SDL_Log("color; r:%i g:%i b:%i", r.r, r.g, r.b);
+//
+//        for( float f = 0.0; f<=1.0; f+= 0.001){
+//            r = Ux::mixColorsReal(&a, &b, f);
+//            SDL_Log("color; %f  r:%i g:%i b:%i", f, r.r, r.g, r.b);
+//        }
 
 
         // all games should be added now, anything next will be attop it all....
@@ -205,7 +244,7 @@ struct Minigames{
 
 
 #ifdef COLORPICK_CLOCK_BAR_PRESENT
-        Ux::uiGradientLinear* topGrad = (new Ux::uiGradientLinear(controlBarTopHolder, Float_Rect(0.0,0.0,1.0,1.0)))
+        Ux::uiGradientLinear* topGrad = (new Ux::uiGradientLinear(controlBarTopHolder, Float_Rect(0.0,0.0,1.0,1.0), false))
 //            ->addStop(0.25, 255,0,0,255)
 //            ->addStop(0.75, 0,0,255,255)
 //            ->addStop(0.5, 0,255,0,255)

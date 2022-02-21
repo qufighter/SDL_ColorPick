@@ -39,7 +39,11 @@ struct uiGradientLinear{
     int detail; // how many child objects, max is 128 right now according to uiObject...
     uiList<Gradient_Stop, Uint8>* gradientStops;
 
-    uiGradientLinear(uiObject* parentObj, Float_Rect boundaries){
+    typedef SDL_Color (*TGradMixFn)(SDL_Color *a, SDL_Color *b, float progressAB); // why float ??? maybe okay.... glm::distance
+
+    TGradMixFn selectedGradMixFn;
+    
+    uiGradientLinear(uiObject* parentObj, Float_Rect boundaries, bool mixReal){
 
         Ux* uxInstance = Ux::Singleton();
 
@@ -54,7 +58,10 @@ struct uiGradientLinear{
         detail = 48;
         angle = 0;
 
-        
+        selectedGradMixFn = Ux::mixColors;
+        if( mixReal ){
+            selectedGradMixFn = Ux::mixColorsReal;
+        }
 
         parentObj->addChild(uiObjectItself);
 
@@ -148,7 +155,7 @@ struct uiGradientLinear{
 //            SDL_Log("overall prog:  %f inter-stop prog %f", prog, stopProg);
 
 
-            SDL_Color mixed = Ux::mixColors(&prevStop->color, &stop->color, 1.0 - (stopProg * multipl));
+            SDL_Color mixed = selectedGradMixFn(&prevStop->color, &stop->color, (stopProg * multipl));
 
 //            SDL_Log("result %i %i %i %i", mixed.r, mixed.g, mixed.b, mixed.a);
 

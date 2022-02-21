@@ -17,7 +17,7 @@
 
 struct uiSwatch{
 
-    uiSwatch(uiObject* parentObj, Float_Rect boundaries){
+    uiSwatch(uiObject* parentObj, Float_Rect boundaries, bool mixReal){
 
         Ux* uxInstance = Ux::Singleton();
 
@@ -45,7 +45,7 @@ struct uiSwatch{
         Ux::setColor(&swatchItself->backgroundColor, 0, 0, 0, 255);
         uiObjectItself->addChild(swatchItself);
 
-        gradientDisplay = (new Ux::uiSwatchesGradient(swatchItself, Float_Rect(0.0,0.25,0.35,0.5)));
+        gradientDisplay = (new Ux::uiSwatchesGradient(swatchItself, Float_Rect(0.0,0.25,0.35,0.5), mixReal));
         gradientDisplay->hide();
 
 //        swatchItself->hasForeground=true;

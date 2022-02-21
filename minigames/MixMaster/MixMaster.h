@@ -73,7 +73,7 @@ struct MixMaster{
         int x;
 
         for( x=0; x<maxSwatches; x++ ){
-            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)); // ignore these rect....
+            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5), true); // ignore these rect....
             //tmp2->displayHex();
             //            tmp2->hideBg();
 
@@ -83,14 +83,14 @@ struct MixMaster{
         }
 
         for( x=0; x<maxSwatches; x++ ){
-            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)); // ignore these rect....
+            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5), true); // ignore these rect....
             //tmp2->displayHex(); // this is MEH methinks ??
             tmp2->hideBg();
             matchList->add(tmp2);
         }
 
         for( x=0; x<maxSwatches; x++ ){
-            Ux::uiSwatch* tmp1 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5)); // ignore these rect....
+            Ux::uiSwatch* tmp1 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5), true); // ignore these rect....
             tmp1->uiObjectItself->setInteraction(&interactionSwatchDragMove);
             tmp1->uiObjectItself->setInteractionCallback(&interactionSwatchDragMoveConstrain);
 
@@ -208,7 +208,6 @@ struct MixMaster{
             self->lastTicks = SDL_GetTicks();
 
             ogg->minigames->gameIsCompleted(); // save CPUs.
-
             // at this piont, we can allow the game to end and lock it up somehow.... ?
             // and we show the score....
             self->computeGameScore();
@@ -339,7 +338,7 @@ struct MixMaster{
             // so we know for sure we have both right?  just chekcing...
             if( dest1move != nullptr  && dest2move != nullptr ){
 
-                SDL_Color mixed = Ux::mixColors( &dest1move->last_color, &dest2move->last_color );
+                SDL_Color mixed = Ux::mixColorsReal( &dest1move->last_color, &dest2move->last_color );
 
                 mixSwatch->showGradient();
 
@@ -374,6 +373,8 @@ struct MixMaster{
         OpenGLContext* ogg=OpenGLContext::Singleton();
         MixMaster* self = (MixMaster*)ogg->minigames->currentGame->gameItself; // helper?
 
+        if( ogg->minigames->gameCompleted ) return true; // prevent stray anim from ruining final score screen...
+
         bool isWin = true; // lets see if any of them are non
         bool isReadyToScore = true;
 
@@ -386,7 +387,7 @@ struct MixMaster{
             Ux::uiSwatch* dest2 = *self->matchList->get(destCtr+1);
             destCtr+=2;
 //
-//            SDL_Color mixed = Ux::mixColors( dest1->, &myDestList->get(mixIndex+1)->color );
+//            SDL_Color mixed = Ux::mixColorsReal( dest1->, &myDestList->get(mixIndex+1)->color );
 //            mixSwatch->update( &mixed );
 
 
@@ -422,7 +423,7 @@ struct MixMaster{
 
                 //if(!isWin) continue; // arguably if we are going to save another loop later, we'd instead keep going here.....
 
-                SDL_Color mixed = Ux::mixColors( &dest1move->last_color, &dest2move->last_color );
+                SDL_Color mixed = Ux::mixColorsReal( &dest1move->last_color, &dest2move->last_color );
                 mixSwatch->hideGradient()->updateGradient(&dest1move->last_color, &dest2move->last_color, &mixed);
 
 
@@ -431,7 +432,7 @@ struct MixMaster{
                 }
 
             }else{
-                mixSwatch->hideGradient();
+                //mixSwatch->hideGradient();
                 isReadyToScore = false;
                 isWin = false;
             }
@@ -531,7 +532,7 @@ struct MixMaster{
 
                     mixSwatch->uiObjectItself->setBoundaryRect(0.5/*0.6-0.1*/, y, 0.4, height * 2);
 
-                    SDL_Color mixed = Ux::mixColors( &myDestList->get(mixIndex)->color, &myDestList->get(mixIndex+1)->color );
+                    SDL_Color mixed = Ux::mixColorsReal( &myDestList->get(mixIndex)->color, &myDestList->get(mixIndex+1)->color );
                     mixSwatch->update( &mixed );
 
                     mixIndex+=2;

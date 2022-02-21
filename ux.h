@@ -311,10 +311,10 @@ static Ux* Singleton();
     static SDL_Color mixColors(SDL_Color *a, SDL_Color *b){
         // could just call mixColors(a,b,0.5) maybe?.. but this is less maths.... (balanced avg)
         SDL_Color result;
-        result.r = (a->r + b->r) * 0.5;
-        result.g = (a->g + b->g) * 0.5;
-        result.b = (a->b + b->b) * 0.5;
-        result.a = (a->a + b->a) * 0.5;
+        result.r = ((Uint16)a->r + (Uint16)b->r) * 0.5; // puzzle: will uint8 + uint8 really work for 255 + 255 ? see solving puzzle.. think we should cast anyway...
+        result.g = ((Uint16)a->g + (Uint16)b->g) * 0.5;
+        result.b = ((Uint16)a->b + (Uint16)b->b) * 0.5;
+        result.a = ((Uint16)a->a + (Uint16)b->a) * 0.5;
         return result;
     }
 
@@ -322,10 +322,73 @@ static Ux* Singleton();
         // progress can move from 0.0 (completely A) to 1.0 (completely B)
         float invProg = 1.0 - progressAB;
         SDL_Color result;
-        result.r = (a->r * progressAB) + (b->r * invProg);
-        result.g = (a->g * progressAB) + (b->g * invProg);
-        result.b = (a->b * progressAB) + (b->b * invProg);
-        result.a = (a->a * progressAB) + (b->a * invProg);
+        result.r = (a->r * invProg) + (b->r * progressAB);
+        result.g = (a->g * invProg) + (b->g * progressAB);
+        result.b = (a->b * invProg) + (b->b * progressAB);
+        result.a = (a->a * invProg) + (b->a * progressAB);
+        return result;
+    }
+
+    // real mix should be not simply sum over 2, but the sqrt of the sum of the squared values over 2
+    static SDL_Color mixColorsReal(SDL_Color *a, SDL_Color *b){
+        // could just call mixColorsReal(a,b,0.5) maybe?..
+        SDL_Color result;
+        result.r = SDL_sqrt(( ((Uint32)a->r * (Uint32)a->r) + ((Uint32)b->r * (Uint32)b->r) ) * 0.5);
+        result.g = SDL_sqrt(( ((Uint32)a->g * (Uint32)a->g) + ((Uint32)b->g * (Uint32)b->g) ) * 0.5);
+        result.b = SDL_sqrt(( ((Uint32)a->b * (Uint32)a->b) + ((Uint32)b->b * (Uint32)b->b) ) * 0.5);
+        result.a = SDL_sqrt(( ((Uint32)a->a * (Uint32)a->a) + ((Uint32)b->a * (Uint32)b->a) ) * 0.5);
+        return result;
+    }
+
+    // todo: fix for perf? at least works... good baseline?
+    static SDL_Color mixColorsReal(SDL_Color *a, SDL_Color *b, float progressAB){
+        // progress can move from 0.0 (completely A) to 1.0 (completely B)
+        // not quite sure how best to handle this...
+        // we could keep calling mixColorsReal(a,b) until we have all the intermediary values.. (expensive)
+        // we could try something else and attempt to inspect if the results match the above expensive way??
+
+        // thought is the orig ipml could almost work IF
+        // we simply scale the summed squared valeus before averagin???
+
+
+        SDL_Color stopa;
+        SDL_Color stopb;
+
+        SDL_Color result;
+
+        Ux::setColor(&stopa, a);
+        Ux::setColor(&stopb, b);
+
+        float stopaf = 0.0;
+        float stopbf = 1.0;
+        float curProg = (stopaf + stopbf) * 0.5;
+
+        float stopInc = 0.5;
+
+
+        result = mixColorsReal(&stopa, &stopb);
+        float proximity = curProg - progressAB;
+
+        // basically we will /2 until within the threshold here... costly sometiems....
+        while( proximity > 0.0001 || proximity < -0.0001 ){
+            //SDL_Log("color; proximity: %f", proximity);
+            if( progressAB < curProg ){
+                stopbf -= stopInc;
+                stopInc *= 0.5;
+                curProg = (stopaf + stopbf) * 0.5;
+                Ux::setColor(&stopb, &result);
+                result = mixColorsReal(&stopa, &stopb);
+                proximity = curProg - progressAB;
+            }else{
+                stopaf += stopInc;
+                stopInc *= 0.5;
+                curProg = (stopaf + stopbf) * 0.5;
+                Ux::setColor(&stopa, &result);
+                result = mixColorsReal(&stopa, &stopb);
+                proximity = curProg - progressAB;
+            }
+        }
+
         return result;
     }
 
