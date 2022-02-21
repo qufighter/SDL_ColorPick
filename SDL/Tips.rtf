@@ -1,0 +1,30 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red255\green255\blue255;\red196\green26\blue22;
+\red243\green235\blue10;\red255\green255\blue51;\red252\green189\blue9;}
+{\*\expandedcolortbl;;\csgenericrgb\c0\c0\c0;\csgenericrgb\c100000\c100000\c100000;\csgenericrgb\c77000\c10200\c8600;
+\cssrgb\c96264\c92423\c0;\cssrgb\c99946\c98636\c25320;\cssrgb\c99477\c78089\c0;}
+\margl1440\margr1440\vieww37220\viewh7460\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 SDL Image Build Notes:\
+\
+FOr ALL IOS\
+Modified the scripts to contain the following:\
+\
+\pard\tx543\pardeftab543\pardirnatural\partightenfactor0
+
+\f1\fs22 \cf2 \cb3 xcodebuild -target \cf4 "$TARGET"\cf2  -configuration Debug -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\cf4 "$\{BUILD_DIR\}"\cf2  BUILD_ROOT=\cf4 "$\{BUILD_ROOT\}"\cf2  clean build
+\f0\fs24 \cf0 \
+
+\f1\fs22 \cf2 xcodebuild -target \cf4 "$TARGET"\cf2  \cb5 OTHER_CFLAGS=\cf4 "-fembed-bitcode -Qunused-arguments"\cf2 \cb3  -configuration Release -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO \cb6 ENABLE_BITCODE=YES\cb3  BUILD_DIR=\cf4 "$\{BUILD_DIR\}"\cf2  BUILD_ROOT=\cf4 "$\{BUILD_ROOT\}"\cf2  clean build
+\f0\fs24 \cf0 \
+
+\f1\fs22 \cf2 xcodebuild -target \cf4 "$TARGET"\cf2  ONLY_ACTIVE_ARCH=NO -configuration Debug -sdk iphoneos  BUILD_DIR=\cf4 "$\{BUILD_DIR\}"\cf2  BUILD_ROOT=\cf4 "$\{BUILD_ROOT\}"\cf2  clean build
+\f0\fs24 \cf0 \
+
+\f1\fs22 \cf2 xcodebuild -target \cf4 "$TARGET"\cf2  \cb7 OTHER_CFLAGS=\cf4 "-fembed-bitcode -Qunused-arguments\cb3 "\cf2  ONLY_ACTIVE_ARCH=NO \cb6 ENABLE_BITCODE=YES\cb3  -configuration Release -sdk iphoneos  BUILD_DIR=\cf4 "$\{BUILD_DIR\}"\cf2  BUILD_ROOT=\cf4 "$\{BUILD_ROOT\}"\cf2  clean build
+\f0\fs24 \cf0 \cb1 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+}
