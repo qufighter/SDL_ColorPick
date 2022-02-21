@@ -284,7 +284,7 @@ struct uiViewColor{
     static void pickHexValueClicked(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
         uiViewColor* self = ((uiViewColor*)interactionObj->myUiController);
-        if( delta->isSecondInteraction ){
+        if( delta->wasMenuClick() ){
             //SDL_Log("Double touched color preview......");
             uxInstance->rClickMenu->clearMenuItems();
             uxInstance->rClickMenu->addMenuItem(self->hexBg, self->getHexString(ECOPY_PREFIX"  ", true), &copyHexValueOmitHashClicked, nullptr);
@@ -307,7 +307,7 @@ struct uiViewColor{
     static void pickRgbValueClicked(uiObject *interactionObj, uiInteraction *delta){
         Ux* uxInstance = Ux::Singleton();
         uiViewColor* self = ((uiViewColor*)interactionObj->myUiController);
-        if( delta->isSecondInteraction ){
+        if( delta->wasMenuClick() ){
             //SDL_Log("Double touched rgb color preview......");
             uxInstance->rClickMenu->clearMenuItems();
 

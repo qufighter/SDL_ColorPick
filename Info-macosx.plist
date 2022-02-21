@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>ColorPickSDL</string>
 	<key>CFBundleGetInfoString</key>
-	<string>http://www.vidsbee.com http://www.libsdl.org</string>
+	<string>http://www.vidsbee.com</string>
 	<key>CFBundleIconFile</key>
 	<string>ColorPick.icns</string>
 	<key>CFBundleIdentifier</key>

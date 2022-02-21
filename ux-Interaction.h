@@ -39,7 +39,9 @@ struct uiInteraction
     void interactionNonTap(){
         lastInteractionObject = nullptr;
         isSecondInteraction=false;
+        isStationaryRightClick=false;
     }
+
     void begin(Uint32 ticks, float x, float y){
 
         px=x; // previous
@@ -56,6 +58,7 @@ struct uiInteraction
         vy=0;
         wheel = 0;
         isSecondInteraction=false;
+        isStationaryRightClick=false;
 
         fingerStateDown = false; // its set to true externally..... if requierd...
         didCollideWithObject=false;
@@ -163,6 +166,10 @@ struct uiInteraction
         return tx == 0 && ty == 0;
     }
 
+    bool wasMenuClick(){
+        return isSecondInteraction || isStationaryRightClick;
+    }
+
     void fixX(Float_Rect r, Float_Rect p){
         float min = r.x;
         if( px < min ){
@@ -230,6 +237,7 @@ struct uiInteraction
     Uint32 startTime;
 
     bool isSecondInteraction;
+    bool isStationaryRightClick;
     //    int mvx;// unused ?
     //    int mvy;
 };

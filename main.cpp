@@ -239,7 +239,13 @@ void mouseUpEvent(SDL_Event* event){
         isLockedForZoomUntilFingersZeros = false;
     }
 
+    //SDL_Log("Mouse Button ID: %i", event->button.button); see isSecondInteraction
+
     uiInteraction* fingerInteraction = openglContext->generalUx->interactionForPointerEvent(event);
+
+    if( fingerInteraction->wasStationary() && event->button.button == 3){
+        fingerInteraction->isStationaryRightClick = true;
+    }
 
     SDL_Point tmp = getMouseXYforEvent(event);
     tx = tmp.x; ty=tmp.y;
