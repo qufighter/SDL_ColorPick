@@ -15,6 +15,8 @@ project(ColorPick CXX)
 
 #Be aware that this cmake script can fail if the path to project contains spaces (at least on Mac OS). Other than that, indeed it is an easy way to statically link to SDL2. –
 
+#UNIX WIN32 APPLE CYGWIN MSVC MSVC80 MSVC_IDE iOS  CMAKE_SYSTEM_NAME
+# CMAKE_CL_64 #Using the 64 bit compiler from Microsoft
 
 # !!! FIXME: this should probably do "MACOSX_RPATH ON" as a target property
 # !!! FIXME:  for the SDL2 shared library (so you get an
@@ -30,7 +32,6 @@ set( CMAKE_OSX_DEPLOYMENT_TARGET "10.10" )
 # TODO: consider mulitple ARCH /abi build...
 
 set(CMAKE_OSX_ARCHITECTURES "i386;x86_64;arm64" CACHE STRING "")
-
 #set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)" CACHE STRING "") # xcode expanded
 
 file(REMOVE BUILD/colorpick_main)

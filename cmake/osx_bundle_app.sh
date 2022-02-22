@@ -18,7 +18,7 @@ cp -r shaders ColorPickSDL.app/Contents/Resources/
 cp textures/crosshair.png ColorPickSDL.app/Contents/Resources/
 cp textures/crosshair.png .
 
-cp Info-macosx.plist ColorPickSDL.app/Contents/Info.plist
+cp ../Info-macosx.plist ColorPickSDL.app/Contents/Info.plist
 
 echo "APPL????" > ColorPickSDL.app/Contents/PkgInfo
 #cp PkgInfo ColorPickSDL.app/Contents/
