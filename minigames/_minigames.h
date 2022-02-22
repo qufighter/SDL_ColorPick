@@ -25,6 +25,7 @@ struct Minigames{
     typedef int (*anIntGenericGameCb)(void* gameItself);
     typedef const char* (*aConstCharStarGenericGameCb)(void* gameItself);
 
+    // if only we would also pass in the TYPE then we'd be pretty set... could cast gameItself back...
     typedef struct GameListObj
     {
         GameListObj(Uint8 gameId, void* p_gameItself,
@@ -107,12 +108,18 @@ struct Minigames{
     Ux::uiObject* minigamesCloseX;
     Ux::uiObject* minigamesColorPickIcon;
     Ux::uiObject* gameHeadingHolder;
+    Ux::uiObject* gameHeadingRegion; // faux region to click heading
     Ux::uiText* gameHeading;
     Ux::uiText* gameTimer;
 
     int my_timer_id;
     bool gotMinigameAnnounceDone;
     bool gameCompleted;
+
+    typedef enum  {
+        LINEAR=0,
+        MASTER
+    } GAME_MIX_MODES;
 
     typedef enum  {
         GAME0_RESERVED=0,
@@ -124,7 +131,7 @@ struct Minigames{
     } MINIGAMES_ENUM;
 
 #include "MatchMaster/MatchMaster.h"
-#include "LinearMixer/LinearMixer.h"
+//#include "LinearMixer/LinearMixer.h" // dprecated!  mix master takes argument to configure it...
 #include "FlipMaster/FlipMaster.h"
 #include "MixMaster/MixMaster.h"
 
@@ -143,8 +150,9 @@ struct Minigames{
 
         // if you get Must use 'struct' tag to refer to type '' in this scope: means you named your object poorly (distinguish from struct name)
         MatchMaster* matchmaker = new MatchMaster(MINIGAMES_ENUM::GAME_MATCH_MAKER);
-        LinearMixer* linearmixer = new LinearMixer(MINIGAMES_ENUM::GAME_LINEAR_MIXER);
-        MixMaster* mixmaster = new MixMaster(MINIGAMES_ENUM::GAME_MIX_MASTER);
+        //LinearMixer* linearmixer = new LinearMixer(MINIGAMES_ENUM::GAME_LINEAR_MIXER);
+        MixMaster* linearmixer = new MixMaster(MINIGAMES_ENUM::GAME_MIX_MASTER, GAME_MIX_MODES::LINEAR);
+        MixMaster* mixmaster = new MixMaster(MINIGAMES_ENUM::GAME_MIX_MASTER, GAME_MIX_MODES::MASTER);
         FlipMaster* flipmatcher = new FlipMaster(MINIGAMES_ENUM::GAME_FLIP_MASTER);
 
         // noteworthy pattern, see: prevent stray anim from ruining final score screen...
@@ -257,22 +265,48 @@ struct Minigames{
         controlBarTopHolder->addChild(controlBarTop);
 
         gameTimer = (new Ux::uiText(controlBarTop, 1.0/5.0))->pad(0.0,0.0)->margins(0.0,0.35,0.0,0.35)->print("00:00");
-        controlBarTopHolder->setClickInteractionCallback(&interactionHeadingClick);
+        controlBarTopHolder->setClickInteractionCallback(&interactionTimerClick);
 
 
+        gameHeadingRegion = new Ux::uiObject();
         gameHeadingHolder = new Ux::uiObject();
         controls->addChild(gameHeadingHolder);
+        controls->addChild(gameHeadingRegion);
 
         gameHeadingHolder->setBoundaryRect(0.0, 0.0, 1.0, 1.0);
+        gameHeadingRegion->setBoundaryRect(0.0, 0.9, 1.0, 0.1);
+
+        //gameHeadingRegion->setBackgroundColor(255,0,0,63);
 
         //last for on top
         gameHeading = (new Ux::uiText(gameHeadingHolder, 0.1))->pad(0.0,0.0)->margins(0.25,0.0,0.0,0.0)->print("");
 //        gameHeading->text_itself->setClickInteractionCallback(&interactionHeadingClick);
 //        gameHeading->text_itself->doesNotCollide = false;
-        
+        gameHeadingRegion->setClickInteractionCallback(&interactionHeadingClick);
+        gameHeadingRegion->doesNotCollide = false;
+
+        // todo: send to game instead?
+        // or let(each) game hook into this element? (eg reset interactions on each game start) beginNextGame
     }
 
     static void interactionHeadingClick(Ux::uiObject *interactionObj, uiInteraction *delta){
+        OpenGLContext* ogg=OpenGLContext::Singleton();
+        Minigames* self = ogg->minigames;
+        Ux* myUxRef = ogg->generalUx;
+        if( self->gameCompleted ){
+            interactionCloseXClicked(interactionObj, delta);
+        }else{
+            //currentGame->show();
+
+            // THE anti-pattern... but it's okay here (typically use makeGameArgs to register references we can just call)
+            if( self->currentGame->gameEnumIndex == GAME_MIX_MASTER || self->currentGame->gameEnumIndex == GAME_LINEAR_MIXER ){
+                MixMaster* mixer = (MixMaster*)self->currentGame->gameItself;
+                //mixer->toggleColorMixMode(); // finish impl...
+            }
+        }
+    }
+
+    static void interactionTimerClick(Ux::uiObject *interactionObj, uiInteraction *delta){
         OpenGLContext* ogg=OpenGLContext::Singleton();
         Minigames* self = ogg->minigames;
         Ux* myUxRef = ogg->generalUx;
@@ -464,7 +498,7 @@ struct Minigames{
 
         gameHeading->uiObjectItself->resetPosition();
 
-        gameHeading->size(1.0 / SDL_strlen(currentGame->getGameName()))->print(currentGame->getGameName());
+        reprintGameName();
 
         my_timer_id = -1;
 
@@ -477,6 +511,10 @@ struct Minigames{
         }
 
         myUxRef->resizeUiElements();
+    }
+
+    void reprintGameName(){
+        gameHeading->size(1.0 / SDL_strlen(currentGame->getGameName()))->print(currentGame->getGameName());
     }
 
     /* you may call this from the minigame... if you want to auto exit after some amount of time */

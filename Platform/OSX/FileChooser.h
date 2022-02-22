@@ -12,7 +12,7 @@
 #ifndef ColorPick_iOS_SDL_FileChooser_h
 #define ColorPick_iOS_SDL_FileChooser_h
 
-#include "ColorPick.h"
+#include "../../ColorPick.h"
 
 
 void beginImageSelector();

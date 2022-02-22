@@ -244,7 +244,7 @@ void OpenGLContext::imageWasSelectedCb(SDL_Surface *myCoolSurface, bool zoomOut,
 }
 
 void OpenGLContext::imageWasSelectedCb(SDL_Surface *myCoolSurface){
-    imageWasSelectedCb(myCoolSurface, nullptr);
+    imageWasSelectedCb(myCoolSurface, (SDL_Point*)nullptr);
 }
 
 void OpenGLContext::imageWasSelectedCb(SDL_Surface *myCoolSurface, SDL_Point* desired_xy_tl){

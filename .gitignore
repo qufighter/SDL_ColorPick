@@ -11,4 +11,5 @@ android-project/keystore.properties
 *.xcbkptlist
 *.xcuserstate
 *.xcexplist
+PkgInfo
 

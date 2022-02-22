@@ -19,6 +19,8 @@
 
 struct uiGradientLinear{
 
+    typedef SDL_Color (*TGradMixFn)(SDL_Color *a, SDL_Color *b, float progressAB); // why float ??? maybe okay.... glm::distance
+
     typedef struct Gradient_Stop
     {
         SDL_Color color;
@@ -39,7 +41,6 @@ struct uiGradientLinear{
     int detail; // how many child objects, max is 128 right now according to uiObject...
     uiList<Gradient_Stop, Uint8>* gradientStops;
 
-    typedef SDL_Color (*TGradMixFn)(SDL_Color *a, SDL_Color *b, float progressAB); // why float ??? maybe okay.... glm::distance
 
     TGradMixFn selectedGradMixFn;
     

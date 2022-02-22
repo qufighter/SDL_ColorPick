@@ -5,7 +5,9 @@
 
 struct MixMaster{
 
-    const char* gameName = "Mix Master";
+    typedef SDL_Color (*TMixFn)(SDL_Color *a, SDL_Color *b);
+
+    const char* gameName = "Linear Mixer"; // name changes on constructor arg...
     const int maxSwatches = 6;
     const int timeLimit = 60000; // one minute....
     const int scoreBreakdownLn = 10;
@@ -24,6 +26,9 @@ struct MixMaster{
 
     bool isReadyToScore;
     bool isComplete;
+    bool mixModeReal;
+    TMixFn selectedColorMixFn;
+
     int solveAttempts = 0;
 
     Ux::uiObject* gameRootUi;
@@ -43,7 +48,7 @@ struct MixMaster{
 
     Minigames* minigames;
 
-    MixMaster(Uint8 pGameIndex){
+    MixMaster(Uint8 pGameIndex, Uint8 mixMode){
         gameIndex = pGameIndex;
         Ux* myUxRef = Ux::Singleton();
         OpenGLContext* ogg=OpenGLContext::Singleton();
@@ -67,13 +72,20 @@ struct MixMaster{
 
         gameSwatchesHolder->setBoundaryRect(0.1, 0.1, 1.0-0.2, 1.0-0.2); // margins all round
 
-
         gameSwatchesHolder->setModeWhereChildCanCollideAndOwnBoundsIgnored();
+
+        mixModeReal = mixMode == GAME_MIX_MODES::LINEAR ? false : true;
+
+        selectedColorMixFn = Ux::mixColors;
+        if( mixModeReal ){
+            selectedColorMixFn = Ux::mixColorsReal;
+            gameName = "Mix Master";
+        }
 
         int x;
 
         for( x=0; x<maxSwatches; x++ ){
-            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5), true); // ignore these rect....
+            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5), mixModeReal); // ignore these rect....
             //tmp2->displayHex();
             //            tmp2->hideBg();
 
@@ -83,14 +95,14 @@ struct MixMaster{
         }
 
         for( x=0; x<maxSwatches; x++ ){
-            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5), true); // ignore these rect....
+            Ux::uiSwatch* tmp2 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5), mixModeReal); // ignore these rect....
             //tmp2->displayHex(); // this is MEH methinks ??
             tmp2->hideBg();
             matchList->add(tmp2);
         }
 
         for( x=0; x<maxSwatches; x++ ){
-            Ux::uiSwatch* tmp1 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5), true); // ignore these rect....
+            Ux::uiSwatch* tmp1 = new Ux::uiSwatch(gameSwatchesHolder, Float_Rect(0.25,0.25,0.5,0.5), mixModeReal); // ignore these rect....
             tmp1->uiObjectItself->setInteraction(&interactionSwatchDragMove);
             tmp1->uiObjectItself->setInteractionCallback(&interactionSwatchDragMoveConstrain);
 
@@ -114,6 +126,26 @@ struct MixMaster{
         activeSwatches=0;
         //just a reminder.... don't init here, init in show();
 
+    }
+
+    static void toggleColorMixMode(){
+        OpenGLContext* ogg=OpenGLContext::Singleton();
+        MixMaster* self = (MixMaster*)ogg->minigames->currentGame->gameItself;
+        self->mixModeReal = !self->mixModeReal;
+        if( self->mixModeReal ){
+            self->gameName = "Mix Master";
+            self->selectedColorMixFn = Ux::mixColorsReal;
+        }else{
+            self->gameName = "Linear Mixer";
+            self->selectedColorMixFn = Ux::mixColors;
+        }
+
+        // need to loop all swatch and pass in new arg...
+        // need to remix (anywhere we call above)
+        // need to NOT re-randomize game...
+        ogg->minigames->reprintGameName();
+
+        self->show(self);
     }
 
     static void interactionSwatchDragMove(Ux::uiObject *interactionObj, uiInteraction *delta){
@@ -338,7 +370,7 @@ struct MixMaster{
             // so we know for sure we have both right?  just chekcing...
             if( dest1move != nullptr  && dest2move != nullptr ){
 
-                SDL_Color mixed = Ux::mixColorsReal( &dest1move->last_color, &dest2move->last_color );
+                SDL_Color mixed = selectedColorMixFn( &dest1move->last_color, &dest2move->last_color );
 
                 mixSwatch->showGradient();
 
@@ -387,7 +419,7 @@ struct MixMaster{
             Ux::uiSwatch* dest2 = *self->matchList->get(destCtr+1);
             destCtr+=2;
 //
-//            SDL_Color mixed = Ux::mixColorsReal( dest1->, &myDestList->get(mixIndex+1)->color );
+//            SDL_Color mixed = selectedColorMixFn( dest1->, &myDestList->get(mixIndex+1)->color );
 //            mixSwatch->update( &mixed );
 
 
@@ -423,7 +455,7 @@ struct MixMaster{
 
                 //if(!isWin) continue; // arguably if we are going to save another loop later, we'd instead keep going here.....
 
-                SDL_Color mixed = Ux::mixColorsReal( &dest1move->last_color, &dest2move->last_color );
+                SDL_Color mixed = selectedColorMixFn( &dest1move->last_color, &dest2move->last_color );
                 mixSwatch->hideGradient()->updateGradient(&dest1move->last_color, &dest2move->last_color, &mixed);
 
 
@@ -532,7 +564,7 @@ struct MixMaster{
 
                     mixSwatch->uiObjectItself->setBoundaryRect(0.5/*0.6-0.1*/, y, 0.4, height * 2);
 
-                    SDL_Color mixed = Ux::mixColorsReal( &myDestList->get(mixIndex)->color, &myDestList->get(mixIndex+1)->color );
+                    SDL_Color mixed = self->selectedColorMixFn( &myDestList->get(mixIndex)->color, &myDestList->get(mixIndex+1)->color );
                     mixSwatch->update( &mixed );
 
                     mixIndex+=2;

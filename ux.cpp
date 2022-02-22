@@ -740,9 +740,9 @@ Ux::uiObject* Ux::create(void){
 
     uiObject* pickScreenBtnSub = new uiObject();
     pickScreenBtnSub->setForegroundColor(255, 255, 255, 255);
-    pickScreenBtnSub->setBackgroundColor(255, 0, 0, 128);
-    printCharToUiObject(pickScreenBtnSub, '+', DO_NOT_RESIZE_NOW);
-    pickScreenBtnSub->setBoundaryRect(0.5, 0.5, 0.5, 0.5);
+    //pickScreenBtnSub->setBackgroundColor(255, 0, 0, 128);
+    printCharToUiObject(pickScreenBtnSub, CHAR_MOUSE_CURSOR, DO_NOT_RESIZE_NOW);
+    pickScreenBtnSub->setBoundaryRect(0.42, 0.42, 0.5, 0.5);
     pickScreenBtn->addChild(pickScreenBtnSub);
 #endif
 
@@ -2015,7 +2015,7 @@ void Ux::loadTestImageByIndex(int index){
 
 void Ux::interactionPickFromScreen(uiObject *interactionObj, uiInteraction *delta){
     Ux* myUxRef = Ux::Singleton();
-    myUxRef->uxAnimations->scale_bounce(interactionObj, 0.001);
+    myUxRef->uxAnimations->scale_bounce(interactionObj, 0.008);
     OpenGLContext* ogg=OpenGLContext::Singleton();
     ogg->choosePickFromScreen();
 }

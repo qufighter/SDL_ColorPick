@@ -13,6 +13,8 @@
 
 #define GL_GLEXT_PROTOTYPES 1
 
+// # needed for cmake build
+
 //#ifdef __EMSCRIPTEN__
 //#include "SDL2/SDL.h"
 //#else
@@ -127,7 +129,8 @@
 #define CHAR_ARR_UP 131
 #define CHAR_ARR_DN 132
 
-#define CHAR_BARS 133
+//#define CHAR_BARS 133
+#define CHAR_MOUSE_CURSOR 133
 
 #define CHAR_CIRCLE_PLAIN 134
 #define CHAR_CIRCLE_PLUSS 135

@@ -8,6 +8,8 @@
 #include "ColorPick.h" // includes openglContext
 #include <time.h>
 
+
+
 void DebugStr(const char *c_str ) {
 #ifdef COLORPICK_DEBUG_MODE
     SDL_Log("%s", c_str);
