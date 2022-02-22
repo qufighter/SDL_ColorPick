@@ -1,6 +1,17 @@
+# Bypass Static Linking
+
+These libraries are only required to static link, using cmake build.
+
+You can alwasy build and install the libraries and link dynamically.
+
+A planned argument to dynamic link will be:
+
+`COLORPICK_DYNAMIC_LINK`
+
 # External Libraries
 
-to build static library version of SDL Color Pick using cmake, we require 2 libraries in this directory.
+to build static library version of SDL Color Pick using cmake, 
+we require 2 libraries in this directory.
 
 The best way to get them MIGHT be to clone from source...
 

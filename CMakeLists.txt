@@ -56,17 +56,34 @@ endif()
 
 include_directories(${GLUT_INCLUDE_DIR})
 
+if(COLORPICK_DYNAMIC_LINK)
+    message(STATUS " COLORPICK_DYNAMIC_LINK was detected!")
+    set( SDL_STATIC OFF CACHE BOOL "" FORCE )
+    set( SDL_SHARED ON CACHE BOOL "" FORCE )
+    set( BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE )
 
-set( SDL_STATIC ON CACHE BOOL "" FORCE )
-set( SDL_SHARED OFF CACHE BOOL "" FORCE )
-add_subdirectory( external/SDL2 )
-add_subdirectory( external/SDL2_Image )
+    #TODO: configure to use shared library? COLORPICK_DYNAMIC_LINK
+
+    find_package(SDL2 REQUIRED)
+    find_package(SDL_Image REQUIRED)
+
+else()
+    message(STATUS " COLORPICK_DYNAMIC_LINK disabled STATIC LINK!")
+
+    set( SDL_STATIC ON CACHE BOOL "" FORCE )
+    set( SDL_SHARED OFF CACHE BOOL "" FORCE )
+    set( BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE )
+    add_subdirectory( external/SDL2 )
+    add_subdirectory( external/SDL2_Image )
+
+endif()
+
+
 
 include_directories(.)
 include_directories(minigames)
 
 # set(CUR_TARGET "ColorPickMain")
-
 
 if(APPLE)
     include_directories(Platform/OSX)
@@ -93,7 +110,12 @@ add_executable(colorpick_main main.cpp
                     ${EXTRA_SRC_FILES}
                )
 
-target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
+if(COLORPICK_DYNAMIC_LINK)
+    target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
+else()
+    target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
+endif()
+
 
 if(APPLE)
 
