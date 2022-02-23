@@ -4,7 +4,7 @@ project(ColorPick CXX)
 #steps are somewhat like this
 # 1) mkdir BUILD
 # 2) cd BUILD
-# 3) cmake ..
+# 3) cmake .. #OR: cmake .. -D COLORPICK_DYNAMIC_LINK=1
 # 3) make VERBOSE=1
 # of course, a better way might be to use the CMAKE gui to configure everything (set directories, click configure, click geneerate, then run make --VERBOSE from teh build folder...
 
@@ -41,7 +41,7 @@ file(COPY shaders DESTINATION .)
 file(COPY textures/crosshair.png DESTINATION .)
 
 find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
+find_package(GLUT)
 
 message(STATUS " OPENGL_INCLUDE_DIR:    ${OPENGL_INCLUDE_DIR}")
 message(STATUS " OPENGL_LIBRARIES:    ${OPENGL_LIBRARIES}")
@@ -53,11 +53,15 @@ if(GLUT_FOUND)
 message(STATUS " GLUT_INCLUDE_DIR:    ${GLUT_INCLUDE_DIR}")
 message(STATUS " GLUT_LIBRARIES:     ${GLUT_LIBRARIES}")
 
-endif()
-
 include_directories(${GLUT_INCLUDE_DIR})
 
+endif()
+
+
 if(COLORPICK_DYNAMIC_LINK)
+
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
     message(STATUS " COLORPICK_DYNAMIC_LINK was detected!")
     set( SDL_STATIC OFF CACHE BOOL "" FORCE )
     set( SDL_SHARED ON CACHE BOOL "" FORCE )
@@ -66,7 +70,10 @@ if(COLORPICK_DYNAMIC_LINK)
     #TODO: configure to use shared library? COLORPICK_DYNAMIC_LINK
 
     find_package(SDL2 REQUIRED)
-    find_package(SDL_Image REQUIRED)
+    find_package(SDL2_image REQUIRED)
+
+	#todo use system library directories instead..
+    include_directories(SDL/library SDLImage/library)
 
 else()
     message(STATUS " COLORPICK_DYNAMIC_LINK disabled STATIC LINK!")
@@ -96,6 +103,12 @@ if(APPLE)
       Platform/OSX/NSOverlayWindow.mm
     )
 
+elseif(UNIX)
+    include_directories(Platform/LINUX)
+    
+    list(APPEND EXTRA_SRC_FILES
+      Platform/LINUX/FileChooser.cpp
+    )
 
 endif()
 

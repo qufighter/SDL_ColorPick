@@ -101,7 +101,7 @@
 #else
 #include "SDL_opengl.h"
 //#include <OpenGL/gl.h>
-#include <OpenGL/gl3.h> // here is a nifty one, this isn't actually needed on mac osx seemingly :)
+//#include <OpenGL/gl3.h> // here is a nifty one, this isn't actually needed on mac osx seemingly :)
 #endif
 
 #include "SDL_image.h"
@@ -268,7 +268,11 @@ struct uniformLocationStruct
 
 //#define MAIN_THREAD_ANIMATIONS
 
-#ifndef __ANDROID__
+
+#if defined(__ANDROID__) //|| defined(__LINUX__)
+
+#else
+//#ifndef __ANDROID__
 // android requires some events and handled in the main thread, even some click events
 // this is all click events related to creating a new image:  (picker for hsv, return to last image)
 #define USE_EVENT_WATCH_FOR_EVENTS

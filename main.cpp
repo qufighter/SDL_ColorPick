@@ -1021,7 +1021,7 @@ int main(int argc, char *argv[]) {
 
 // UX read settings begin....
 
-#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__) 
     // OES (egl?) is already core?? (ish?)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
@@ -1037,6 +1037,8 @@ int main(int argc, char *argv[]) {
 
 //    SDL_Log("setting depth size....");
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24); // NOTE: some CRUMMY_ANDROID may not support 24 here?
+    
+
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
 //    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,0);
@@ -1076,14 +1078,15 @@ int main(int argc, char *argv[]) {
 
 #ifdef COLORPICK_PLATFORM_DESKTOP
 
-    // this enables 4x on osx....  it works on iphone but is slow in simulator
+    // this enables 4x on osx....  it works on iphone but is slow in simulator	
+#ifdef __MACOSX__
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 4);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
-
+#endif
 
     // BAD!!!!  check SDL_WINDOWEVENT_MOVED maybe and store this?  or forget it...
-    win_pos_x=512;
-    win_pos_y=512;
+    win_pos_x=10;
+    win_pos_y=10;
 #endif
 
     /* create window and renderer */
@@ -1102,6 +1105,7 @@ int main(int argc, char *argv[]) {
         );
     if (!sdl_Window) {
         printf("Could not initialize Window\n");
+        SDL_Log("%s", SDL_GetError());
         return 1;
     }
 
@@ -1124,6 +1128,7 @@ int main(int argc, char *argv[]) {
     result = openglContext->createContext(sdl_Window);
     if( !result ){
         printf("Could not create context\n");
+        SDL_Log("%s", SDL_GetError());
         return 1;
     }else{
 

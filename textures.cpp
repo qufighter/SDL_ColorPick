@@ -1140,7 +1140,7 @@ void Textures::screenshot(char* filename,int x, int y)//width height
     //flip
     int stride = x*bpp;
     for(int row =0; row<y; row++){
-        std::memcpy(&pixels2[row*stride],&pixels[(y-row-1)*stride],stride);
+        SDL_memcpy(&pixels2[row*stride],&pixels[(y-row-1)*stride],stride);
     }
 
     SDL_Surface * surf = SDL_CreateRGBSurfaceFrom(pixels2, x, y, 8*4, x*bpp, 0,0,0,0);
