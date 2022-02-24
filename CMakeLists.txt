@@ -17,7 +17,7 @@ set (CMAKE_CXX_STANDARD 11)
 
 #Be aware that this cmake script can fail if the path to project contains spaces (at least on Mac OS). Other than that, indeed it is an easy way to statically link to SDL2. –
 
-#UNIX WIN32 APPLE CYGWIN MSVC MSVC80 MSVC_IDE iOS  CMAKE_SYSTEM_NAME
+# UNIX WIN32 APPLE CYGWIN MSVC MSVC80 MSVC_IDE iOS  CMAKE_SYSTEM_NAME
 # CMAKE_CL_64 #Using the 64 bit compiler from Microsoft
 
 # !!! FIXME: this should probably do "MACOSX_RPATH ON" as a target property
@@ -36,6 +36,10 @@ set( CMAKE_OSX_DEPLOYMENT_TARGET "10.10" )
 set(CMAKE_OSX_ARCHITECTURES "i386;x86_64;arm64" CACHE STRING "")
 #set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)" CACHE STRING "") # xcode expanded
 
+# todo: target correct OSX sdk... cursor strangeness noted
+# signing
+
+
 file(REMOVE BUILD/colorpick_main)
 
 file(COPY textures DESTINATION .)
@@ -44,6 +48,7 @@ file(COPY textures/crosshair.png DESTINATION .)
 
 find_package(OpenGL REQUIRED)
 find_package(GLUT)
+
 
 message(STATUS " OPENGL_INCLUDE_DIR:    ${OPENGL_INCLUDE_DIR}")
 message(STATUS " OPENGL_LIBRARIES:    ${OPENGL_LIBRARIES}")
@@ -63,6 +68,16 @@ endif()
 if(COLORPICK_DYNAMIC_LINK)
 
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+    find_package(XCB)
+
+    if(XCB_FOUND)
+
+    message(STATUS " XCB_INCLUDE_DIR:    ${XCB_INCLUDE_DIR}")
+    message(STATUS " XCB_LIBRARIES:     ${XCB_LIBRARIES}")
+
+    include_directories(${XCB_INCLUDE_DIR})
+
+    endif()
 
     message(STATUS " COLORPICK_DYNAMIC_LINK was detected!")
     set( SDL_STATIC OFF CACHE BOOL "" FORCE )
@@ -127,7 +142,7 @@ add_executable(colorpick_main main.cpp
                )
 
 if(COLORPICK_DYNAMIC_LINK)
-    target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
+    target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${XCB_LIBRARIES})
 else()
     target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
 endif()

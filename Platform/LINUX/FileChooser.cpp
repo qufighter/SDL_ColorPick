@@ -13,105 +13,32 @@
     // skip, wrong platform!  we tried #defiend(__LINUX__) here but for some reason the constant is not defined...?
 #else
 
-#include "LinuxFileChooser.h"
+#include "LinuxFileChooser.h" //doens't work right...
 
+
+#include "../../ColorPick.h"
+#include "portable-file-dialogs.h"
+
+
+
+#include "SDL.h" // redundant?
+#include "stdlib.h"
+
+#define COLORPICK_USE_XCB 1
+#ifndef COLORPICK_USE_XCB
 #include   <X11/Xlib.h>
-//#include <xcb/xcb.h>
+#else
+#include <xcb/xcb.h>
+#endif
 
 void getImagePathFromMainThread(){
 
 }
 
-//std::vector<uint8_t> PixelsToBitmap(std::vector<uint8_t> pixels, size_t width, size_t height, int16_t depth)
-//{
-//    BITMAPFILEHEADER bmpFileHeader = {};
-//    bmpFileHeader.bfType = kBitmapHeaderMagic;
-//    bmpFileHeader.bfReserved1 = bmpFileHeader.bfReserved2 = 0;
-//    bmpFileHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-//    bmpFileHeader.bfSize = bmpFileHeader.bfOffBits + pixels.size();
-//
-//    BITMAPINFOHEADER bmpInfoHeader = {};
-//    bmpInfoHeader.biSize = sizeof(BITMAPINFOHEADER);
-//    bmpInfoHeader.biWidth = width;
-//    bmpInfoHeader.biHeight = -height;
-//    bmpInfoHeader.biPlanes = 1;
-//    bmpInfoHeader.biBitCount = static_cast<int16_t>(depth);
-//    bmpInfoHeader.biClrUsed = 0;
-//    bmpInfoHeader.biClrImportant = 0;
-//
-//    std::vector<uint8_t> bitmap;
-//    bitmap.reserve(bmpFileHeader.bfSize);
-//
-//    bitmap.insert(bitmap.end(),
-//        reinterpret_cast<uint8_t*>(&bmpFileHeader),
-//        reinterpret_cast<uint8_t*>(&bmpFileHeader) + sizeof(BITMAPFILEHEADER));
-//    bitmap.insert(bitmap.end(),
-//        reinterpret_cast<uint8_t*>(&bmpInfoHeader),
-//        reinterpret_cast<uint8_t*>(&bmpInfoHeader) + sizeof(BITMAPINFOHEADER));
-//    bitmap.insert(bitmap.end(), pixels.begin(), pixels.end());
-//    return bitmap;
-//} It was originally published on https://www.apriorit.com/
-
-// withxlib...
-//std::vector<uint8_t> pixels(
-//image->data
-//, image->data + image->bytes_per_line * image->height
-//);
-//auto bitmap = PixelsToBitmap(
-//pixels
-//, width
-//, height
-//, image->bits_per_pixel
-//);
-//
-//std::ofstream file(
-//"xlib.bmp"
-//, std::ios::binary
-//);
-//file.write(
-//reinterpret_cast<const char*>(bitmap.data())
-//, bitmap.size()
-//);
-
-
-//Now it’s time to explore the same operation with the XCB library:
-//
-//std::vector<uint8_t> pixels(
-//    xcb_get_image_data(image.get())
-//    , xcb_get_image_data(image.get()) +
-//xcb_get_image_data_length(image.get())
-//);
-//auto depth = pixels.size() / width / height * 8;
-//auto bitmap = PixelsToBitmap(pixels, width, height, depth);
-//
-//std::ofstream file("xcb.bmp", std::ios::binary);
-//file.write(
-//reinterpret_cast<const char*>(bitmap.data())
-//, bitmap.size()
-//); It was originally published on https://www.apriorit.com/
-
-static SDL_Surface* Create_SDL_Surface_From_XImage(XImaeg* img, XWindowAttributes attr){
-
-    SDL_Surface *tmp = SDL_CreateRGBSurface(SDL_SWSURFACE, at.width, at.height, 32, img->red_mask, img->green_mask, img->blue_mask, 0);
-    int x, y;
-    SDL_LockSurface(tmp);
-    // holy slow shit batman... we can do better than this!
-    for (y = 0; y < at.height; y++) {
-        for (x = 0; x < at.width; x++) {
-            ((unsigned *)tmp->pixels)[x + y * at.width] = XGetPixel(img, x,  y);
-        }
-    }
-    SDL_UnlockSurface(tmp);
-    return tmp
-    //SDL_SaveBMP(tmp, filename);
-    //SDL_FreeSurface(tmp);
-}
-
-#define COLORPICK_USE_XCB 1
 void beginScreenshotSeleced(){
 
     #ifndef COLORPICK_USE_XCB
-        //Xlib.h
+        //Xlib.h // not fully implemented! see below...
         Display* dsp = XOpenDisplay(nullptr);
         Window root = RootWindow(dsp, DefaultScreen(dsp));
 
@@ -123,14 +50,12 @@ void beginScreenshotSeleced(){
 
         XImage* image = XGetImage(dsp, root, 0, 0, width, height, AllPlanes, ZPixmap);
 
-        // now conveert and load...
+        // now conveert and load... TODO (not implemented!!)
 
         XDestroyImage(image);
 
         XCloseDisplay(dsp);
 
-
-    
         //xcb.h
     #else // ifdef COLORPICK_USE_XCB
         xcb_connection_t* dsp = xcb_connect(nullptr, nullptr);
@@ -166,9 +91,27 @@ void beginScreenshotSeleced(){
             , free
         );
 
-        uint8_t *xcb_get_image_data(const xcb_get_image_request_t *reply);
+        auto comppp = xcb_get_image_data_length(image.get()) / width / height;
+        auto depth = comppp * 8;
 
-        // next, process the data
+        SDL_Surface* srf = SDL_CreateRGBSurfaceFrom(xcb_get_image_data(image.get()),
+            width,
+            height,
+            depth,
+            comppp * width, // pitch isn't stride, its stride /8
+            0x00FF0000,
+            0x0000FF00,
+            0x000000FF,
+            0x00000000
+        );
+
+
+        openglContext->imageWasSelectedCb(srf, false);
+
+        // TODO: MOUSE SHILED
+        // TODO: FOOLLOW MOUSE
+        // TODO: CATCH CLICK
+
 
         xcb_disconnect(dsp);
     #endif
@@ -193,13 +136,15 @@ bool openURL(char* &url)
 {
     //url
     //system("x-www-browser http://www.google.com");
-
-    char * sysLaunchCmd = "xdg-open "
+    //SDL_Log("%s", url);
+    
+    char * sysLaunchCmd = "xdg-open ";
     size_t len = SDL_strlen(sysLaunchCmd) + SDL_strlen(url) + 4;
     char* fullCmdDest = (char*)SDL_malloc( sizeof(char) * len );
-    SDL_snprintf(*fullCmdDest, len, "%s%s", sysLaunchCmd, url);
+    SDL_snprintf(fullCmdDest, len, "%s%s", sysLaunchCmd, url);
+    //SDL_Log("%s", fullCmdDest);
     system(fullCmdDest);
-    SDL_Free(fullCmdDest);
+    SDL_free(fullCmdDest);
 
     return true;
 }

@@ -1405,17 +1405,20 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
                 long len = (totalColors * perColorChars) + SDL_strlen(urlBase);
                 char* clrStr = (char*)SDL_malloc( sizeof(char) * len );
-
+                char* clrStrB = (char*)SDL_malloc( sizeof(char) * len );// linux needs?
+                
                 SDL_snprintf(clrStr, SDL_strlen(urlBase)+1,  "%s", urlBase);
-
-
+                SDL_snprintf(clrStrB, len,  "%s", clrStr);// nix needs?
+                    
                 ColorList *colorItem = myIterator->next();
                 while(colorItem != nullptr){
                     SDL_Color* color = &colorItem->color;
                     if( color == nullptr ) continue;
                     // hex is best compression
                     //SDL_Log("%i %i %i", color->r, color->g, color->b);
-                    SDL_snprintf(clrStr, len,  "%s%02x%02x%02x,", clrStr, color->r, color->g, color->b);
+                    SDL_snprintf(clrStr, len,  "%s%02x%02x%02x,", clrStrB, color->r, color->g, color->b);
+                    SDL_snprintf(clrStrB, len,  "%s", clrStr);// nix needs?
+                    
                     colorItem = myIterator->next();
                 }
 
@@ -1426,6 +1429,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
                 myUxRef->doOpenURL(clrStr);
 
                 SDL_free(clrStr);
+                SDL_free(clrStrB);
                 SDL_free(myIterator); // does free recurse
 
                 myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);

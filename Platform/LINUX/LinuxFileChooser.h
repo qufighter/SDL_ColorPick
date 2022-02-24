@@ -15,6 +15,7 @@
 #include "../../ColorPick.h"
 #include "portable-file-dialogs.h"
 
+
 void getImagePathFromMainThread();
 void beginImageSelector();
 void beginScreenshotSeleced();
