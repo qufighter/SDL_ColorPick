@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.7)
-project(ColorPick CXX)
+project(ColorPick VERSION 1.00 LANGUAGES CXX)
+
+set (CMAKE_CXX_STANDARD 11)
 
 #steps are somewhat like this
 # 1) mkdir BUILD

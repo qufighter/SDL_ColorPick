@@ -13,7 +13,7 @@
 #define ColorPick_linx_SDL_FileChooser_h
 
 #include "../../ColorPick.h"
-
+#include "portable-file-dialogs.h"
 
 void getImagePathFromMainThread();
 void beginImageSelector();
@@ -21,7 +21,6 @@ void beginScreenshotSeleced();
 bool openURL(char* &url);
 void requestReview();
 
-bool enoughMemoryForMeshes();
 
 #endif
 #endif

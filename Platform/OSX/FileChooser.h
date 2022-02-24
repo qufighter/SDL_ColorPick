@@ -14,6 +14,11 @@
 
 #include "../../ColorPick.h"
 
+#define COLORPICK_OSX_NATIVE_DIALOGUE_CODE 1
+
+#ifndef COLORPICK_OSX_NATIVE_DIALOGUE_CODE
+#include "portable-file-dialogs.h"
+#endif
 
 void beginImageSelector();
 void beginScreenshotSeleced();

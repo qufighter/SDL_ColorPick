@@ -37,6 +37,20 @@ void beginScreenshotSeleced()
 void beginImageSelector()
 {
 
+#ifndef COLORPICK_OSX_NATIVE_DIALOGUE_CODE
+
+    // GENERIC CROSS PLATFORM FILE DIALOGUE!!! (cool :)
+    // https://github.com/samhocevar/portable-file-dialogs/blob/master/doc/open_file.md
+    auto selection = pfd::open_file("").result();
+    if (!selection.empty()){
+        openglContext->imageWasSelectedCb(openglContext->textures->LoadSurface(selection[0].c_str()), true);
+        SDL_RaiseWindow(openglContext->getSdlWindow());
+    }else{
+        SDL_RaiseWindow(openglContext->getSdlWindow());
+    }
+
+#else
+
     NSOpenPanel* openDlg = [NSOpenPanel openPanel];
 
     [openDlg setCanChooseFiles:YES];
@@ -63,7 +77,7 @@ void beginImageSelector()
     }else{
         SDL_RaiseWindow(openglContext->getSdlWindow());
     }
-
+#endif
 }
 
 bool openURL(const std::string &url)
