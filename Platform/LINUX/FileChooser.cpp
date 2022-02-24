@@ -13,16 +13,15 @@
     // skip, wrong platform!  we tried #defiend(__LINUX__) here but for some reason the constant is not defined...?
 #else
 
-#include "LinuxFileChooser.h" //doens't work right...
+#include "LinuxFileChooser.h" //doens't work right... we have to add our includes below...
 
 
 #include "../../ColorPick.h"
 #include "portable-file-dialogs.h"
 
 
-
 #include "SDL.h" // redundant?
-#include "stdlib.h"
+#include "stdlib.h" // for system() call
 
 #define COLORPICK_USE_XCB 1
 #ifndef COLORPICK_USE_XCB
@@ -31,9 +30,201 @@
 #include <xcb/xcb.h>
 #endif
 
-void getImagePathFromMainThread(){
+static bool pick_mode_enabled=false;
 
+// TODO: we need non GTK variant support...
+#define COLORPICK_X11_GTK 1
+#ifdef COLORPICK_USE_XCB
+#include <gtk/gtk.h>
+
+typedef struct {
+  GdkRectangle  rect;
+  gboolean      button_pressed;
+  GtkWidget    *window;
+
+  gboolean      aborted;
+} select_area_filter_data;
+
+static gboolean
+select_area_button_press (GtkWidget               *window,
+                          GdkEventButton          *event,
+                          select_area_filter_data *data)
+{
+  if (data->button_pressed)
+    return TRUE;
+
+  data->button_pressed = TRUE;
+  data->rect.x = event->x_root;
+  data->rect.y = event->y_root;
+
+  return TRUE;
 }
+
+static gboolean
+select_area_motion_notify (GtkWidget               *window,
+                           GdkEventMotion          *event,
+                           select_area_filter_data *data)
+{
+
+
+    OpenGLContext* openglContext = OpenGLContext::Singleton();
+    ColorPickState* colorPickState = ColorPickState::Singleton();
+
+    //openglContext->position_x =(openglContext->fullPickImgSurface->clip_rect.w - (int)mloc.x) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
+    //openglContext->position_y =((int)mloc.y - openglContext->fullPickImgSurface->clip_rect.h) + (openglContext->fullPickImgSurface->clip_rect.h / 2);
+    //colorPickState->movedxory = true;
+
+    openglContext->renderShouldUpdate = true; // do not call renderScene from timer thread!
+
+    return TRUE; // remove dead code below???
+
+  GdkRectangle draw_rect; // not used
+
+  if (!data->button_pressed)
+    return TRUE;
+
+
+  draw_rect.width = ABS (data->rect.x - event->x_root);
+  draw_rect.height = ABS (data->rect.y - event->y_root);
+  draw_rect.x = MIN (data->rect.x, event->x_root);
+  draw_rect.y = MIN (data->rect.y, event->y_root);
+
+  if (draw_rect.width <= 0 || draw_rect.height <= 0)
+    {
+      gtk_window_move (GTK_WINDOW (window), -100, -100);
+      gtk_window_resize (GTK_WINDOW (window), 10, 10);
+      return TRUE;
+    }
+
+  gtk_window_move (GTK_WINDOW (window), draw_rect.x, draw_rect.y);
+  gtk_window_resize (GTK_WINDOW (window), draw_rect.width, draw_rect.height);
+
+  /* We (ab)use app-paintable to indicate if we have an RGBA window */
+  if (!gtk_widget_get_app_paintable (window))
+    {
+      GdkWindow *gdkwindow = gtk_widget_get_window (window);
+
+      /* Shape the window to make only the outline visible */
+      if (draw_rect.width > 2 && draw_rect.height > 2)
+        {
+          cairo_region_t *region;
+          cairo_rectangle_int_t region_rect = {
+            0, 0,
+            draw_rect.width, draw_rect.height
+          };
+
+          region = cairo_region_create_rectangle (&region_rect);
+          region_rect.x++;
+          region_rect.y++;
+          region_rect.width -= 2;
+          region_rect.height -= 2;
+          cairo_region_subtract_rectangle (region, &region_rect);
+
+          gdk_window_shape_combine_region (gdkwindow, region, 0, 0);
+
+          cairo_region_destroy (region);
+        }
+      else
+        gdk_window_shape_combine_region (gdkwindow, NULL, 0, 0);
+    }
+
+  return TRUE;
+}
+
+static gboolean
+select_area_button_release (GtkWidget               *window,
+                            GdkEventButton          *event,
+                            select_area_filter_data *data)
+{
+  if (!data->button_pressed)
+    return TRUE;
+
+  data->rect.width  = ABS (data->rect.x - event->x_root);
+  data->rect.height = ABS (data->rect.y - event->y_root);
+  data->rect.x = MIN (data->rect.x, event->x_root);
+  data->rect.y = MIN (data->rect.y, event->y_root);
+
+  if (data->rect.width == 0 || data->rect.height == 0)
+    data->aborted = TRUE;
+
+  gtk_main_quit ();
+        // stop picking...
+    //    OpenGLContext* openglContext = OpenGLContext::Singleton();
+    //    openglContext->generalUx->addCurrentToPickHistory();
+  pick_mode_enabled = false;
+
+  return TRUE;
+}
+
+static gboolean
+select_area_key_press (GtkWidget               *window,
+                       GdkEventKey             *event,
+                       select_area_filter_data *data)
+{
+  if (event->keyval == GDK_KEY_Escape)
+    {
+      data->rect.x = 0;
+      data->rect.y = 0;
+      data->rect.width  = 0;
+      data->rect.height = 0;
+      data->aborted = TRUE;
+
+      gtk_main_quit ();
+      pick_mode_enabled = false;
+
+    }
+
+  return TRUE;
+}
+
+
+void begin_pick_mode_linux(){ // mode_x11_gtk
+    if( pick_mode_enabled ) return;
+
+    g_autoptr(GdkCursor) cursor = NULL;
+    GdkDisplay *display;
+    select_area_filter_data  data;
+    GdkSeat *seat;
+
+    data.rect.x = 0;
+    data.rect.y = 0;
+    data.rect.width  = 0;
+    data.rect.height = 0;
+    data.button_pressed = FALSE;
+    data.aborted = FALSE;
+    data.window = create_select_window();
+
+    g_signal_connect (data.window, "key-press-event", G_CALLBACK (select_area_key_press), &data);
+    g_signal_connect (data.window, "button-press-event", G_CALLBACK (select_area_button_press), &data);
+    g_signal_connect (data.window, "button-release-event", G_CALLBACK (select_area_button_release), &data);
+    g_signal_connect (data.window, "motion-notify-event", G_CALLBACK (select_area_motion_notify), &data);
+
+    display = gtk_widget_get_display (data.window);
+    cursor = gdk_cursor_new_for_display (display, GDK_CROSSHAIR);
+    seat = gdk_display_get_default_seat (display);
+
+    gdk_seat_grab (seat,
+                   gtk_widget_get_window (data.window),
+                   GDK_SEAT_CAPABILITY_ALL,
+                   FALSE,
+                   cursor,
+                   NULL,
+                   NULL,
+                   NULL);
+
+    gtk_main ();
+
+    gdk_seat_ungrab (seat);
+
+    gtk_widget_destroy (data.window);
+
+    cb_data->aborted = data.aborted;
+    cb_data->rectangle = data.rect;
+
+    pick_mode_enabled = true;
+}
+
+#endif // COLORPICK_USE_XCB
 
 void beginScreenshotSeleced(){
 
@@ -111,7 +302,7 @@ void beginScreenshotSeleced(){
         // TODO: MOUSE SHILED
         // TODO: FOOLLOW MOUSE
         // TODO: CATCH CLICK
-
+        begin_pick_mode_linux();
 
         xcb_disconnect(dsp);
     #endif
@@ -151,6 +342,10 @@ bool openURL(char* &url)
 
 void requestReview(){
     
+}
+
+void getImagePathFromMainThread(){
+
 }
 
 #endif

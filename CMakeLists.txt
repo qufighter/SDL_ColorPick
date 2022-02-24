@@ -56,12 +56,9 @@ message(STATUS " OPENGL_LIBRARIES:    ${OPENGL_LIBRARIES}")
 include_directories(${OPENGL_INCLUDE_DIR})
 
 if(GLUT_FOUND)
-
 message(STATUS " GLUT_INCLUDE_DIR:    ${GLUT_INCLUDE_DIR}")
 message(STATUS " GLUT_LIBRARIES:     ${GLUT_LIBRARIES}")
-
 include_directories(${GLUT_INCLUDE_DIR})
-
 endif()
 
 
@@ -71,12 +68,17 @@ if(COLORPICK_DYNAMIC_LINK)
     find_package(XCB)
 
     if(XCB_FOUND)
-
     message(STATUS " XCB_INCLUDE_DIR:    ${XCB_INCLUDE_DIR}")
     message(STATUS " XCB_LIBRARIES:     ${XCB_LIBRARIES}")
-
     include_directories(${XCB_INCLUDE_DIR})
+    endif()
 
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GTKMM REQUIRED gtkmm-3.0)
+    if(GTKMM_FOUND)
+    message(STATUS " GTKMM_INCLUDE_DIR:    ${GTKMM_INCLUDE_DIR}")
+    message(STATUS " GTKMM_LIBRARIES:     ${GTKMM_LIBRARIES}")
+    include_directories(${GTKMM_INCLUDE_DIR})
     endif()
 
     message(STATUS " COLORPICK_DYNAMIC_LINK was detected!")
@@ -142,7 +144,7 @@ add_executable(colorpick_main main.cpp
                )
 
 if(COLORPICK_DYNAMIC_LINK)
-    target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${XCB_LIBRARIES})
+    target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${XCB_LIBRARIES} ${GTKMM_LIBRARIES})
 else()
     target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
 endif()
