@@ -36,3 +36,16 @@ If you do use git clones, you can update using the usual commands
 cd <repo-folder>
 git pull origin master
 ```
+
+# Future
+
+Other external libs may also live here... 
+although external_always_static may be more sensible name
+
+```
+glm
+portable-file-dialogs-master
+```
+
+We may integrate those into the build process with
+cmake (although since just headers, seems potentially not necessary...)
