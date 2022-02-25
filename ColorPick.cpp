@@ -1094,6 +1094,10 @@ float OpenGLContext::getPixelMovementFactor(){
     // 16 - 0.126705653021442
     // 5.2 - 0.8333
     // 1.5 - 0.038011695906433
+
+//    colorPickState->ui_mmv_scale=ui_mmv_scale; // not sure this SHOULD factor in, so far NO
+
+
     float screen_pct = (SDL_sqrtf(fishEyeScale) / 8.0) * 0.25;
     int bigPixelSize = 1;
     int longerScreenSize = colorPickState->windowHeight;
@@ -1125,13 +1129,19 @@ float OpenGLContext::getPixelMovementFactor(){
 
     //float factor = ((openglContext->fishEyeScale - FISHEYE_SLOW_ZOOM_THRESHOLD) / (MAX_FISHEYE_ZOOM - FISHEYE_SLOW_ZOOM_THRESHOLD)) * FISHEYE_SLOW_ZOOM_MAX;
     float factor = bigPixelSize * 0.5; // the big pixel is N across, we must move by this much to move 1px... but if we start center pixel its half that much
+
+    //factor = bigPixelSize * (colorPickState->ui_mmv_scale=ui_mmv_scale * 0.5);
+
     if( factor < 1 ) factor = 1.0; // basically negates the normal effects of this block to slow things, when this is 1.0 we move 1px per px movement
 
 
     if( openglContext->fishEyeScale < FISHEYE_SLOW_ZOOM_MAX ){
+        SDL_Log("FISHEYE_SLOW_ZOOM_MAX threshold met %f ", openglContext->fishEyeScale);
         float intensity = 1.0 - ((openglContext->fishEyeScale-FISHEYE_SLOW_ZOOM_THRESHOLD) / (FISHEYE_SLOW_ZOOM_MAX-FISHEYE_SLOW_ZOOM_THRESHOLD));
         factor /= (25.0 * intensity);
     }
+
+    if( factor < 1 ) factor = 1.0;
 
 //    if( openglContext->fishEyeScale <= FISHEYE_SLOW_ZOOM_THRESHOLD ){
 //        //factor = (0.05 - openglContext->fishEyeScalePct) * 80;
