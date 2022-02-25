@@ -507,6 +507,9 @@ static Uint32 color_pick_osx_timer_fire(Uint32 interval, void* parm){
         
 
         [main_window setLevel:(origionalWindowLevel)];
+
+        OpenGLContext* openglContext = OpenGLContext::Singleton();
+        SDL_RaiseWindow(openglContext->getSdlWindow());
     }
     pick_window_created=NO;
     //[main_window setLevel:(CGShieldingWindowLevel())];
