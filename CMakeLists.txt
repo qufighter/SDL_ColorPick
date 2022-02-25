@@ -50,13 +50,13 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT)
 
 
-message(STATUS " OPENGL_INCLUDE_DIR:    ${OPENGL_INCLUDE_DIR}")
+message(STATUS " OPENGL_INCLUDE_DIR:  ${OPENGL_INCLUDE_DIR}")
 message(STATUS " OPENGL_LIBRARIES:    ${OPENGL_LIBRARIES}")
 
 include_directories(${OPENGL_INCLUDE_DIR})
 
 if(GLUT_FOUND)
-message(STATUS " GLUT_INCLUDE_DIR:    ${GLUT_INCLUDE_DIR}")
+message(STATUS " GLUT_INCLUDE_DIR:   ${GLUT_INCLUDE_DIR}")
 message(STATUS " GLUT_LIBRARIES:     ${GLUT_LIBRARIES}")
 include_directories(${GLUT_INCLUDE_DIR})
 endif()
@@ -76,9 +76,9 @@ if(COLORPICK_DYNAMIC_LINK)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(GTKMM REQUIRED gtkmm-3.0)
     if(GTKMM_FOUND)
-    message(STATUS " GTKMM_INCLUDE_DIR:    ${GTKMM_INCLUDE_DIR}")
+    message(STATUS " GTKMM_INCLUDE_DIRS:    ${GTKMM_INCLUDE_DIRS}")
     message(STATUS " GTKMM_LIBRARIES:     ${GTKMM_LIBRARIES}")
-    include_directories(${GTKMM_INCLUDE_DIR})
+    include_directories(${GTKMM_INCLUDE_DIRS})
     endif()
 
     message(STATUS " COLORPICK_DYNAMIC_LINK was detected!")

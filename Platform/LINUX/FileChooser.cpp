@@ -31,10 +31,11 @@
 #endif
 
 static bool pick_mode_enabled=false;
+static bool gtk_init_complete=false;
 
 // TODO: we need non GTK variant support...
 #define COLORPICK_X11_GTK 1
-#ifdef COLORPICK_USE_XCB
+#ifdef COLORPICK_X11_GTK
 #include <gtk/gtk.h>
 
 typedef struct {
@@ -66,69 +67,16 @@ select_area_motion_notify (GtkWidget               *window,
                            select_area_filter_data *data)
 {
 
-
     OpenGLContext* openglContext = OpenGLContext::Singleton();
     ColorPickState* colorPickState = ColorPickState::Singleton();
 
-    //openglContext->position_x =(openglContext->fullPickImgSurface->clip_rect.w - (int)mloc.x) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
-    //openglContext->position_y =((int)mloc.y - openglContext->fullPickImgSurface->clip_rect.h) + (openglContext->fullPickImgSurface->clip_rect.h / 2);
-    //colorPickState->movedxory = true;
-
+    openglContext->position_x =(openglContext->fullPickImgSurface->clip_rect.w - (int)event->x_root) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
+    openglContext->position_y =(openglContext->fullPickImgSurface->clip_rect.h - (int)event->y_root) - (openglContext->fullPickImgSurface->clip_rect.h / 2);
+    
+    colorPickState->movedxory = true;
     openglContext->renderShouldUpdate = true; // do not call renderScene from timer thread!
 
-    return TRUE; // remove dead code below???
-
-  GdkRectangle draw_rect; // not used
-
-  if (!data->button_pressed)
     return TRUE;
-
-
-  draw_rect.width = ABS (data->rect.x - event->x_root);
-  draw_rect.height = ABS (data->rect.y - event->y_root);
-  draw_rect.x = MIN (data->rect.x, event->x_root);
-  draw_rect.y = MIN (data->rect.y, event->y_root);
-
-  if (draw_rect.width <= 0 || draw_rect.height <= 0)
-    {
-      gtk_window_move (GTK_WINDOW (window), -100, -100);
-      gtk_window_resize (GTK_WINDOW (window), 10, 10);
-      return TRUE;
-    }
-
-  gtk_window_move (GTK_WINDOW (window), draw_rect.x, draw_rect.y);
-  gtk_window_resize (GTK_WINDOW (window), draw_rect.width, draw_rect.height);
-
-  /* We (ab)use app-paintable to indicate if we have an RGBA window */
-  if (!gtk_widget_get_app_paintable (window))
-    {
-      GdkWindow *gdkwindow = gtk_widget_get_window (window);
-
-      /* Shape the window to make only the outline visible */
-      if (draw_rect.width > 2 && draw_rect.height > 2)
-        {
-          cairo_region_t *region;
-          cairo_rectangle_int_t region_rect = {
-            0, 0,
-            draw_rect.width, draw_rect.height
-          };
-
-          region = cairo_region_create_rectangle (&region_rect);
-          region_rect.x++;
-          region_rect.y++;
-          region_rect.width -= 2;
-          region_rect.height -= 2;
-          cairo_region_subtract_rectangle (region, &region_rect);
-
-          gdk_window_shape_combine_region (gdkwindow, region, 0, 0);
-
-          cairo_region_destroy (region);
-        }
-      else
-        gdk_window_shape_combine_region (gdkwindow, NULL, 0, 0);
-    }
-
-  return TRUE;
 }
 
 static gboolean
@@ -149,8 +97,8 @@ select_area_button_release (GtkWidget               *window,
 
   gtk_main_quit ();
         // stop picking...
-    //    OpenGLContext* openglContext = OpenGLContext::Singleton();
-    //    openglContext->generalUx->addCurrentToPickHistory();
+        OpenGLContext* openglContext = OpenGLContext::Singleton();
+        openglContext->generalUx->addCurrentToPickHistory();
   pick_mode_enabled = false;
 
   return TRUE;
@@ -173,14 +121,81 @@ select_area_key_press (GtkWidget               *window,
       pick_mode_enabled = false;
 
     }
-
+  if (event->keyval == GDK_KEY_r || event->keyval == GDK_KEY_j){
+  	// TODO: a better method might be, drop out of pick mode, to give some time, then screenshot
+  	// TODO: also note, when we ener pick mode OR here, we loose some position information...
+  	beginScreenshotSeleced();
+  }
   return TRUE;
 }
 
 
-void begin_pick_mode_linux(){ // mode_x11_gtk
-    if( pick_mode_enabled ) return;
+static gboolean
+select_window_draw (GtkWidget *window, cairo_t *cr, gpointer unused)
+{
+  return TRUE; // why draw at all?? ?curious... guess we don't show a selection rect, so why bother?
+  /*
+  GtkStyleContext *style;
 
+  style = gtk_widget_get_style_context (window);
+
+  if (gtk_widget_get_app_paintable (window))
+    {
+      cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
+      cairo_set_source_rgba (cr, 255, 0, 0, 0);
+      cairo_paint (cr);
+
+      gtk_style_context_save (style);
+      gtk_style_context_add_class (style, GTK_STYLE_CLASS_RUBBERBAND);
+
+      gtk_render_background (style, cr,
+                             0, 0,
+                             gtk_widget_get_allocated_width (window),
+                             gtk_widget_get_allocated_height (window));
+      gtk_render_frame (style, cr,
+                        0, 0,
+                        gtk_widget_get_allocated_width (window),
+                        gtk_widget_get_allocated_height (window));
+
+      gtk_style_context_restore (style);
+    }
+*/
+  return TRUE;
+}
+
+static GtkWidget *
+create_select_window (void)
+{
+  GtkWidget *window;
+  GdkScreen *screen;
+  GdkVisual *visual;
+
+  screen = gdk_screen_get_default ();
+  visual = gdk_screen_get_rgba_visual (screen);
+
+  window = gtk_window_new (GTK_WINDOW_POPUP);
+  if (gdk_screen_is_composited (screen) && visual)
+    {
+      gtk_widget_set_visual (window, visual);
+      gtk_widget_set_app_paintable (window, TRUE);
+    }
+
+  g_signal_connect (window, "draw", G_CALLBACK (select_window_draw), NULL);
+
+  gtk_window_move (GTK_WINDOW (window), -100, -100);
+  gtk_window_resize (GTK_WINDOW (window), 10, 10);
+  gtk_widget_show (window);
+
+  return window;
+}
+
+                    
+gboolean begin_pick_mode_linux(gpointer user_data){ // mode_x11_gtk'[
+	SDL_Log("begin pick mode actally called");
+    if( pick_mode_enabled ) return FALSE;
+   if( !gtk_init_complete ){gtk_init(NULL, NULL);gtk_init_complete=true;}
+   	
+   	
     g_autoptr(GdkCursor) cursor = NULL;
     GdkDisplay *display;
     select_area_filter_data  data;
@@ -211,20 +226,25 @@ void begin_pick_mode_linux(){ // mode_x11_gtk
                    NULL,
                    NULL,
                    NULL);
-
-    gtk_main ();
+                   
+    pick_mode_enabled = true;
+    
+    gtk_main (); // locks everythign up!
 
     gdk_seat_ungrab (seat);
 
     gtk_widget_destroy (data.window);
 
-    cb_data->aborted = data.aborted;
-    cb_data->rectangle = data.rect;
-
-    pick_mode_enabled = true;
+    return TRUE;
 }
 
-#endif // COLORPICK_USE_XCB
+
+static int thread_begin_pck_mode_linux(void* data){
+	begin_pick_mode_linux(NULL);
+	return 0;
+}           
+
+#endif // COLORPICK_X11_GTK
 
 void beginScreenshotSeleced(){
 
@@ -298,15 +318,14 @@ void beginScreenshotSeleced(){
 
 
         openglContext->imageWasSelectedCb(srf, false);
-
-        // TODO: MOUSE SHILED
-        // TODO: FOOLLOW MOUSE
-        // TODO: CATCH CLICK
-        begin_pick_mode_linux();
-
         xcb_disconnect(dsp);
     #endif
 
+    // TODO: TEST MULTIPLE MONITORS!!! (likely broken... event x/y is screen or desktop?)
+    if( !pick_mode_enabled ){
+	SDL_Thread* thread = SDL_CreateThread(thread_begin_pck_mode_linux, "thread_begin_pck_mode_linux", nullptr);
+	SDL_DetachThread(thread);
+    }
 
 }
 
