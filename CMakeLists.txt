@@ -137,7 +137,12 @@ elseif(UNIX)
     list(APPEND EXTRA_SRC_FILES
       Platform/LINUX/FileChooser.cpp
     )
+elseif(WIN32)
+    include_directories(Platform/WIN)
 
+    list(APPEND EXTRA_SRC_FILES
+      Platform/WIN/FileChooser.cpp
+    )
 endif()
 
 message(STATUS " EXTRA_SRC_FILES:    ${EXTRA_SRC_FILES}")
@@ -159,7 +164,7 @@ else()
 endif()
 
 
-if(APPLE)
+if(APPLE AND NOT APPLE) #temporary BYPASS
 
     add_custom_command(TARGET colorpick_main POST_BUILD
         COMMAND ./cmake/osx_bundle_app.sh colorpick_main
@@ -171,3 +176,8 @@ if(APPLE)
 endif()
 
 
+set(MAIN_APP colorpick_main)
+set(DIRS_PATH "textures;shaders")
+
+
+add_subdirectory( cmake_install )
