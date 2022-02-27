@@ -1136,12 +1136,11 @@ float OpenGLContext::getPixelMovementFactor(){
 
 
     if( openglContext->fishEyeScale < FISHEYE_SLOW_ZOOM_MAX ){
-        SDL_Log("FISHEYE_SLOW_ZOOM_MAX threshold met %f ", openglContext->fishEyeScale);
         float intensity = 1.0 - ((openglContext->fishEyeScale-FISHEYE_SLOW_ZOOM_THRESHOLD) / (FISHEYE_SLOW_ZOOM_MAX-FISHEYE_SLOW_ZOOM_THRESHOLD));
         factor /= (25.0 * intensity);
+       //SDL_Log("FISHEYE_SLOW_ZOOM_MAX threshold met %f %f", openglContext->fishEyeScale, factor);
     }
 
-    if( factor < 1 ) factor = 1.0;
 
 //    if( openglContext->fishEyeScale <= FISHEYE_SLOW_ZOOM_THRESHOLD ){
 //        //factor = (0.05 - openglContext->fishEyeScalePct) * 80;
@@ -1179,8 +1178,9 @@ void OpenGLContext::triggerMovement(){
 
     //SDL_Log("max zoom time: current:%f max:%f threshold:%f range:%f computed factor: %f", openglContext->fishEyeScale, MAX_FISHEYE_ZOOM, FISHEYE_SLOW_ZOOM_THRESHOLD, FISHEYE_SLOW_ZOOM_MAX, factor);
 
-    int resultx = (int) accumulated_movement_x / pxFactor;
-    int resulty = (int) accumulated_movement_y / pxFactor;
+    // on some platforms, (int) cast is sufficient, others require rounding... to get consistent results we'll always try to round, but it may not alawys be needed or consistent to do so!
+    int resultx = (int) glm::round(accumulated_movement_x / pxFactor);
+    int resulty = (int) glm::round(accumulated_movement_y / pxFactor);
 
     colorPickState->mmovex = resultx;
     colorPickState->mmovey = resulty;

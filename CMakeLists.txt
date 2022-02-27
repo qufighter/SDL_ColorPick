@@ -6,7 +6,7 @@ set (CMAKE_CXX_STANDARD 11)
 #steps are somewhat like this
 # 1) mkdir BUILD
 # 2) cd BUILD
-# 3) cmake .. #OR: cmake .. -D COLORPICK_DYNAMIC_LINK=1
+# 3) cmake .. #OR: cmake .. -D COLORPICK_DYNAMIC_LINK=1 -D CMAKE_BUILD_TYPE=Release
 # 3) make VERBOSE=1
 # of course, a better way might be to use the CMAKE gui to configure everything (set directories, click configure, click geneerate, then run make --VERBOSE from teh build folder...
 
@@ -14,6 +14,8 @@ set (CMAKE_CXX_STANDARD 11)
 #make[2]: *** No rule to make target `/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/GLUT.framework/GLUT', needed by `external/SDL2_Image/external/libwebp-1.0.3/vwebp'.  Stop.
 #make[1]: *** [external/SDL2_Image/external/libwebp-1.0.3/CMakeFiles/vwebp.dir/all] Error 2
 # more specific work around may be to disable WEBP_BUILD_VWEBP
+set(SUPPORT_WEBP)
+unset(WEBP_BUILD_VWEBP)
 
 #Be aware that this cmake script can fail if the path to project contains spaces (at least on Mac OS). Other than that, indeed it is an easy way to statically link to SDL2. –
 
@@ -40,6 +42,13 @@ set(CMAKE_OSX_ARCHITECTURES "i386;x86_64;arm64" CACHE STRING "")
 # signing
 
 
+if(NOT APPLE AND UNIX AND NOT DEFINED COLORPICK_DYNAMIC_LINK)
+    set( COLORPICK_DYNAMIC_LINK "1" )
+    if( NOT DEFINED CMAKE_BUILD_TYPE )
+        set( CMAKE_BUILD_TYPE "Release" )
+    endif()
+endif()
+
 file(REMOVE BUILD/colorpick_main)
 
 file(COPY textures DESTINATION .)
@@ -47,7 +56,7 @@ file(COPY shaders DESTINATION .)
 file(COPY textures/crosshair.png DESTINATION .)
 
 find_package(OpenGL REQUIRED)
-find_package(GLUT)
+#find_package(GLUT) # we don't need vwebp...
 
 
 message(STATUS " OPENGL_INCLUDE_DIR:  ${OPENGL_INCLUDE_DIR}")
@@ -55,11 +64,11 @@ message(STATUS " OPENGL_LIBRARIES:    ${OPENGL_LIBRARIES}")
 
 include_directories(${OPENGL_INCLUDE_DIR})
 
-if(GLUT_FOUND)
-message(STATUS " GLUT_INCLUDE_DIR:   ${GLUT_INCLUDE_DIR}")
-message(STATUS " GLUT_LIBRARIES:     ${GLUT_LIBRARIES}")
-include_directories(${GLUT_INCLUDE_DIR})
-endif()
+# if(GLUT_FOUND)
+# message(STATUS " GLUT_INCLUDE_DIR:   ${GLUT_INCLUDE_DIR}")
+# message(STATUS " GLUT_LIBRARIES:     ${GLUT_LIBRARIES}")
+# include_directories(${GLUT_INCLUDE_DIR})
+# endif()
 
 
 if(COLORPICK_DYNAMIC_LINK)
@@ -144,9 +153,9 @@ add_executable(colorpick_main main.cpp
                )
 
 if(COLORPICK_DYNAMIC_LINK)
-    target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${XCB_LIBRARIES} ${GTKMM_LIBRARIES})
+    target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${XCB_LIBRARIES} ${GTKMM_LIBRARIES})
 else()
-    target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
+    target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} )
 endif()
 
 

@@ -851,7 +851,7 @@ void ReshapeWindow(bool fromMain){
         // even if win_w == SCREEN_WIDTH
         //  not guaranteed to be hidpi !~!!! !
     }
-    SDL_Log("ui_mmv_scale  %f", ui_mmv_scale );
+    SDL_Log("UI Retna Density Scale:  %f", ui_mmv_scale );
 
 
     colorPickState->ui_mmv_scale=ui_mmv_scale;
