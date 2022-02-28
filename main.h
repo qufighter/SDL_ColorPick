@@ -97,9 +97,29 @@
 #define glDeleteVertexArrays glDeleteVertexArraysOES // danger
 //#define glIsVertexArray glIsVertexArrayOES
 //#define glUnmapBuffer glUnmapBufferOES
+#elif __WINDOWS__
+
+#include <external/glew/include/GL/glew.h>
+//#include <external/glew/include/GL/wglew.h>
+
+#undef NO_SDL_GLEXT
+// #define SDL_VIDEO_OPENGL_WGL 1
+// #define SDL_VIDEO_DRIVER_WINDOWS 1
+#undef GL_GLEXT_PROTOTYPES // prototypes handled by glew...
+#include "SDL_opengl.h"
+
+//#include "SDL_windowsopengl.h"
+
+ // #include <GL/glu.h>
+ // #include <GL/gl.h>
+
+
+
 
 #else
+
 #include "SDL_opengl.h"
+//#include "SDL_opengl_glext.h" // should already be included.
 //#include <OpenGL/gl.h>
 //#include <OpenGL/gl3.h> // here is a nifty one, this isn't actually needed on mac osx seemingly :)
 #endif

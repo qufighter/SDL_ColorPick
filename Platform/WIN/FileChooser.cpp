@@ -6,9 +6,41 @@
 //
 
 // YOU MAY HAVE TO DELETE THIS FILE FROM OSX PROJECT - IT WILL CONFUSE XCODE
+#include <windows.h>
 
 
-#if defined(__WINDOWS__)
+//#if defined(__WINDOWS__)
+// using namespace System;
+// using namespace System::ComponentModel;
+// using namespace System::Collections;
+// using namespace System::Windows::Forms;
+// using namespace System::Drawing;
+// using namespace System::Security::Cryptography;
+// using namespace System::Net;
+// using namespace System::Threading;
+
+#define PICK_UPDATE_DELAY_MS 16 //render delay in picking thread
+
+
+
+#include <math.h>
+
+#include <algorithm>
+int op_increase (int i) { return i*1.25; }
+
+//#define _AFXDLL
+//#include <AFXWIN.H>
+
+
+
+#include <process.h>
+
+
+#include <wtypes.h>
+#include <objidl.h>
+#include <stdio.h>
+#include <stdlib.h>
+// evaluate - many above includes are NOT NEEDED AT ALL TODO TODO TODO
 
 #include "WinFileChooser.h" //doens't work right... we have to add our includes below...
 
@@ -21,6 +53,18 @@
 
 static bool pick_mode_enabled=false;
 static bool pick_from_wnd_created=false;
+
+typedef unsigned int CWnd; // suppress errors TEMPORARY!!
+#define DISABLE_WIN32_CODEBLOCKS 1
+
+static HWND pick_from_hwnd=NULL;
+static HWND preview_hwnd=NULL;
+static HWND pick_zoom_hwnd=NULL;
+static CWnd* preview_cwnd=NULL;
+static CWnd* pick_from_cwnd=NULL;
+
+static UINT uMyTimerId;
+
 
 SDL_Surface* CopyEntireScreenToSurfaceWin()
 {
@@ -73,12 +117,15 @@ SDL_Surface* CopyEntireScreenToSurfaceWin()
 
    hBitmap = SelectObject(hMemDC, hOldBitmap);
 
+   auto depth = 32;
+   auto comppp = 4;
+
     // TODO: fix me (not tested) chances are does notw ork...
-   SDL_Surface* srf = SDL_CreateRGBSurfaceFrom(hBitmap),
+   SDL_Surface* srf = SDL_CreateRGBSurfaceFrom(hBitmap,
        nWidth,
        nHeight,
        depth,
-       comppp * nWidth, // pitch isn't stride, its stride /8 (eg 4, when 4*8=32pbb)
+       comppp * nWidth, // pitch isn't stride, its stride /8 (eg width*4, when 4*8=32pbb)
        0x00FF0000,
        0x0000FF00,
        0x000000FF,
@@ -96,11 +143,12 @@ SDL_Surface* CopyEntireScreenToSurfaceWin()
 //defines message loop for the pickable area that shows the crosshair cursor
 LRESULT CALLBACK CPick_Preview_WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam )
 {
+    OpenGLContext* openglContext;
+    
     switch( message )
     {
     case WM_CREATE:
         //Beep( 50, 10 );
-        return 0;
         break;
     //case WM_CHAR:
     //    switch( wparam )
@@ -144,16 +192,15 @@ LRESULT CALLBACK CPick_Preview_WndProc(HWND hwnd, UINT message, WPARAM wparam, L
 
             EndPaint( hwnd, &ps );
         }
-        return 0;
         break;
     case WM_LBUTTONDOWN:
     case WM_RBUTTONDOWN:
             // no instance?? we may need to use singleton to reach into here... possibly simply calling beginScreenshotSeleced() again would disable...
-        if(pick_mode_enabled) winTogglePicking();
-            // OpenGLContext* openglContext = OpenGLContext::Singleton();
-            // openglContext->choosePickFromScreen(); //?
+//        if(pick_mode_enabled) winTogglePicking();
+             openglContext = OpenGLContext::Singleton();
+             openglContext->choosePickFromScreen(); //?
 //ShowWindow(pick_from_hwnd,SW_HIDE);//if we click on it, well we shouldn't click on it!  that is all - the window should never have focus
-return 0;
+
         break;
     case WM_KEYDOWN:
 
@@ -165,10 +212,9 @@ return 0;
         default:
             break;
         }
-        return 0;
+        break;
     case WM_DESTROY:
         //PostQuitMessage( 0 ) ;
-        return 0;
         break;
     }
     return DefWindowProc( hwnd, message, wparam, lparam );
@@ -182,7 +228,7 @@ static void initWinDesktopScreenshotPreviewWindow(){
         wcx.cbSize = sizeof( WNDCLASSEX );  // 1.  NEW!  must know its own size.
         wcx.cbWndExtra = 0;
         wcx.hbrBackground = (HBRUSH)GetStockObject( LTGRAY_BRUSH ); //HOLLOW_BRUSH option prevent screen flash
-        wcx.hCursor = LoadCursor( NULL, MAKEINTRESOURCE(IDC_CROSS) );
+        wcx.hCursor = NULL; // LoadCursor( NULL, MAKEINTRESOURCE(IDC_CROSS) ); // TODO: fix the cursor here !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         wcx.hIcon = NULL;//LoadIcon( NULL, IDI_APPLICATION );
         wcx.hIconSm = NULL;                 // 2.  NEW!!  Can specify small icon.
         wcx.hInstance = NULL;//GetModuleHandle(0);//hInstance;
@@ -209,24 +255,27 @@ static void initWinDesktopScreenshotPreviewWindow(){
     pick_from_hwnd = CreateWindowEx(
             WS_EX_PALETTEWINDOW /*WS_EX_TOPMOST*/,
             TEXT("cpick_prev_class"),
-            L"colorpick_preview_window",
+            "colorpick_preview_window",
             WS_POPUP /*WS_POPUP*/,
             virtual_start_x,virtual_start_y,scx,scy,
             NULL,NULL,GetModuleHandle(0),NULL
         );
+    #ifndef DISABLE_WIN32_CODEBLOCKS
     pick_from_cwnd = CWnd::FromHandle(pick_from_hwnd);
+    #endif
     pick_from_wnd_created=true;
 }
 
 static void winTogglePicking(){
+    #ifndef DISABLE_WIN32_CODEBLOCKS
     if(pick_mode_enabled){
 
         preview_cwnd->SetActiveWindow();
 
         //if(pickUpdateThread && pickUpdateThread->IsAlive )pickUpdateThread->Abort();
         pick_mode_enabled=false;
-        threadLoopCount = 0;
-        KillTimer(preview_hwnd, uMyTimerId);
+        //threadLoopCount = 0;
+        KillTimer(pick_from_hwnd, uMyTimerId);
 
         //End_Monitor_Mouse_Position();
         mpt->m1=false;//intercepted event
@@ -250,16 +299,17 @@ static void winTogglePicking(){
         //mpt = Get_Mouse_Position();/*!*/
         pick_mode_enabled=true;
 
-        if(usingThreadedPicking){
-            pickUpdateThread = gcnew Thread(gcnew ThreadStart(this, &ColorPick::threadUpdatePickPreview));
-            pickUpdateThread->Start();
-        }else{
-            threadLoopCount = 0;
-            uMyTimerId = SetTimer(preview_hwnd, NULL, PICK_UPDATE_DELAY_MS * 2, NULL);
-        }
+        initWinDesktopScreenshotPreviewWindow();
 
-        if(opt_frm->pick_from_snapshot->Checked){
-            initWinDesktopScreenshotPreviewWindow();
+
+        //if(usingThreadedPicking){
+        //    pickUpdateThread = gcnew Thread(gcnew ThreadStart(this, &ColorPick::threadUpdatePickPreview));
+        //    pickUpdateThread->Start();
+        //}else{
+            //threadLoopCount = 0;
+            uMyTimerId = SetTimer(pick_from_hwnd, NULL, PICK_UPDATE_DELAY_MS * 2, NULL);
+        //}
+
 
             ShowWindow(pick_from_hwnd,SW_HIDE);
 
@@ -273,16 +323,21 @@ static void winTogglePicking(){
 //            Sleep(5);
 //            bmp_screen->DrawImage(b,0,0);
 
-        }
 
 //        ShowWindow(preview_hwnd,SW_RESTORE);
 //        preview_cwnd->SetActiveWindow();
 //        preview_cwnd->ActivateTopParent();
     }
+    #endif
 }
 
 
 void beginScreenshotSeleced(){
+
+    if( pick_mode_enabled ){
+        winTogglePicking();
+        return;
+    }
 
     openglContext->imageWasSelectedCb(CopyEntireScreenToSurfaceWin(), false);
 
@@ -306,7 +361,9 @@ void beginImageSelector()
 
 bool openURL(char* &url)
 {
+    #ifndef DISABLE_WIN32_CODEBLOCKS
     System::Diagnostics::Process::Start(url);
+    #endif
     return true;
 }
 
@@ -319,4 +376,4 @@ void getImagePathFromMainThread(){
 
 }
 
-#endif
+//#endif

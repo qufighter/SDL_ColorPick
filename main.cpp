@@ -1088,7 +1088,7 @@ int main(int argc, char *argv[]) {
 
     // BAD!!!!  check SDL_WINDOWEVENT_MOVED maybe and store this?  or forget it...
     win_pos_x=10;
-    win_pos_y=10;
+    win_pos_y=30;
 #endif
 
     /* create window and renderer */
@@ -1127,12 +1127,28 @@ int main(int argc, char *argv[]) {
 
 
 
+
     result = openglContext->createContext(sdl_Window);
     if( !result ){
         printf("Could not create context\n");
         SDL_Log("%s", SDL_GetError());
         return 1;
     }else{
+
+    SDL_Log("context created -----------------------");
+#ifdef __WINDOWS__
+    GLenum error = glewInit(); // Enable GLEW
+    if (error != GLEW_OK) {// If GLEW fails
+        printf("glew init failed\n");
+        return false;
+    }else{
+        SDL_Log("glew init ok -----------------------");
+    }
+#endif
+
+// #ifdef __WINDOWS__
+//     WIN_GL_InitExtensions(nullptr);
+// #endif
 
 //SDL_RENDERER_PRESENTVSYNC
  //       SDL_GL_SetSwapInterval(0); // keep vsync off....??? (again may need to set this earlier??)
