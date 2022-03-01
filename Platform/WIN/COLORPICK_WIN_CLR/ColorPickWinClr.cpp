@@ -6,49 +6,45 @@
 //
 
 // YOU MAY HAVE TO DELETE THIS FILE FROM OSX PROJECT - IT WILL CONFUSE XCODE
-#include <windows.h>
+#include <ColorPickWinClr.h>
 
 
 //#if defined(__WINDOWS__)
-
+//using namespace System::ComponentModel;
+//using namespace System::Collections;
+//using namespace System::Windows::Forms;
+//using namespace System::Drawing;
+//using namespace System::Security::Cryptography;
+//using namespace System::Net;
+//using namespace System::Threading;
 
 #define PICK_UPDATE_DELAY_MS 16 //render delay in picking thread
 
 
 
 #include <math.h>
-
 #include <algorithm>
-int op_increase (int i) { return i*1.25; }
+//int op_increase (int i) { return i*1.25; }
 
-//#define _AFXDLL
-//#include <AFXWIN.H>
+#define _AFXDLL 1
+#include <AFXWIN.H>
 
 
 
 #include <process.h>
-
-
+//
+//
 #include <wtypes.h>
 #include <objidl.h>
 #include <stdio.h>
 #include <stdlib.h>
 // evaluate - many above includes are NOT NEEDED AT ALL TODO TODO TODO
 
-#include "WinFileChooser.h" //doens't work right... we have to add our includes below...
-
-
-#include "../../ColorPick.h"
-#include "portable-file-dialogs.h"
-
-#include "SDL.h" // redundant?
-//#include "stdlib.h" // for system() call
 
 static bool pick_mode_enabled=false;
 static bool pick_from_wnd_created=false;
 
-typedef unsigned int CWnd; // suppress errors TEMPORARY!!
-#define DISABLE_WIN32_CODEBLOCKS 1
+//#define DISABLE_WIN32_CODEBLOCKS 1
 
 static HWND pick_from_hwnd=NULL;
 static HWND preview_hwnd=NULL;
@@ -58,8 +54,10 @@ static CWnd* pick_from_cwnd=NULL;
 
 static UINT uMyTimerId;
 
+static pt_type* m_data;// = new pt_type(); //variable is defined elsewhere and passed into dll
 
-SDL_Surface* CopyEntireScreenToSurfaceWin()
+
+HGDIOBJ* ColorPickWinClrCopyEntireScreenToSurfaceWin()
 {
     HDC         hScrDC, hMemDC;         // screen DC and memory DC
     int         nX, nY, nX2, nY2;       // coordinates of rectangle to grab
@@ -114,6 +112,7 @@ SDL_Surface* CopyEntireScreenToSurfaceWin()
    auto comppp = 4;
 
     // TODO: fix me (not tested) chances are does notw ork...
+   /*
    SDL_Surface* srf = SDL_CreateRGBSurfaceFrom(hBitmap,
        nWidth,
        nHeight,
@@ -124,19 +123,22 @@ SDL_Surface* CopyEntireScreenToSurfaceWin()
        0x000000FF,
        0x00000000
    );
+   */
 
    // clean up
-    DeleteObject(hMemDC);
-    DeleteObject(hBitmap);
-   ::ReleaseDC(0,hScrDC);
-   return srf;
+ //   DeleteObject(hMemDC); // TODO
+ //   DeleteObject(hBitmap); // TODO
+ //  ::ReleaseDC(0,hScrDC); // TODO
+
+return &hBitmap;
+ //  return srf;
 }
 
 //this is run by the dialog color pick preview class cpick_prev_class
 //defines message loop for the pickable area that shows the crosshair cursor
 LRESULT CALLBACK CPick_Preview_WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam )
 {
-    OpenGLContext* openglContext;
+  //  OpenGLContext* openglContext;
     
     switch( message )
     {
@@ -190,8 +192,8 @@ LRESULT CALLBACK CPick_Preview_WndProc(HWND hwnd, UINT message, WPARAM wparam, L
     case WM_RBUTTONDOWN:
             // no instance?? we may need to use singleton to reach into here... possibly simply calling beginScreenshotSeleced() again would disable...
 //        if(pick_mode_enabled) winTogglePicking();
-             openglContext = OpenGLContext::Singleton();
-             openglContext->choosePickFromScreen(); //?
+       //      openglContext = OpenGLContext::Singleton();
+       //      openglContext->choosePickFromScreen(); //?
 //ShowWindow(pick_from_hwnd,SW_HIDE);//if we click on it, well we shouldn't click on it!  that is all - the window should never have focus
 
         break;
@@ -259,7 +261,7 @@ static void initWinDesktopScreenshotPreviewWindow(){
     pick_from_wnd_created=true;
 }
 
-static void winTogglePicking(){
+void ColorPickWinClr::winTogglePicking(){
     #ifndef DISABLE_WIN32_CODEBLOCKS
     if(pick_mode_enabled){
 
@@ -271,7 +273,7 @@ static void winTogglePicking(){
         KillTimer(pick_from_hwnd, uMyTimerId);
 
         //End_Monitor_Mouse_Position();
-        mpt->m1=false;//intercepted event
+        //mpt->m1=false;//intercepted event
 
         if(pick_from_wnd_created) ShowWindow(pick_from_hwnd,SW_HIDE);
 
@@ -325,48 +327,72 @@ static void winTogglePicking(){
 }
 
 
-void beginScreenshotSeleced(){
 
-    if( pick_mode_enabled ){
-        winTogglePicking();
-        return;
-    }
-
-    openglContext->imageWasSelectedCb(CopyEntireScreenToSurfaceWin(), false);
-
-    if( !pick_mode_enabled ){
-        winTogglePicking();
-    }
-}
-
-void beginImageSelector()
-{
-    // GENERIC CROSS PLATFORM FILE DIALOGUE!!! (cool :)
-    // https://github.com/samhocevar/portable-file-dialogs/blob/master/doc/open_file.md
-    auto selection = pfd::open_file("").result();
-    if (!selection.empty()){
-        openglContext->imageWasSelectedCb(openglContext->textures->LoadSurface(selection[0].c_str()), true);
-        SDL_RaiseWindow(openglContext->getSdlWindow());
-    }else{
-        SDL_RaiseWindow(openglContext->getSdlWindow());
-    }
-}
-
-bool openURL(char* &url)
+bool ColorPickWinClr::openURL(char* &url)
 {
     #ifndef DISABLE_WIN32_CODEBLOCKS
-    System::Diagnostics::Process::Start(url);
+	System::String^ temp = gcnew System::String(url);
+
+	
+    System::Diagnostics::Process::Start(temp);
     #endif
     return true;
 }
 
 
-void requestReview(){
-
-}
-
-void getImagePathFromMainThread(){
-
-}
-
 //#endif
+
+//main entry point for the application, when VB makes its first function call in this DLL
+BOOL APIENTRY DllMain(HINSTANCE hModule, DWORD  fdwReason, LPVOID lpReserved)
+{
+	if (fdwReason == DLL_PROCESS_ATTACH)
+	{
+		//myInstance = hModule;
+	};
+
+	if (fdwReason == DLL_PROCESS_DETACH)
+	{
+		//LogStr( "MOUSE.DLL stopping monitoring mouse position" );
+		//detachMouseHook();
+	}
+
+	return TRUE;
+}
+
+//Calling this function from VB simply ensures winMain gets called properly
+extern "C" __declspec(dllexport) int  Begin_Monitor_Mouse_Position(pt_type* mpt) {
+	m_data = mpt;
+	//m_data->X=-1,
+	//m_data->Y=-1,
+	m_data->m1 = false;
+
+	//if (!watchingMousePosition) {
+	//	if (colorPickExistsAndRunning()) {
+	//		//LogStr( "MOUSE.DLL starting to monitor mouse position" );
+	//		attachMouseHook(myInstance);
+
+
+	//	}
+	//}
+	//MessageBox(NULL, "hello", "bonjour(s)", MB_OK);
+	return TRUE;
+}
+
+//Calling this function from VB simply ensures winMain gets called properly
+extern "C" __declspec(dllexport) int  End_Monitor_Mouse_Position(void) {
+	//detachMouseHook();
+
+	//MessageBox(NULL, "goodbye", "bonjour(s)", MB_OK);
+	return TRUE;
+}
+
+//Calling this function from VB simply ensures winMain gets called properly
+extern "C" __declspec(dllexport) pt_type* Get_Mouse_Position(void) {
+	//m_data->X = mx;
+	//m_data->Y = my;
+	//m_data->m1 = m1;
+	//m_data->m2 = m2;
+	//m1=false,m2=false;//click has been intercepted
+	return m_data;
+
+}

@@ -16,8 +16,6 @@
 
 #include "main.h"
 
-
-
 #include "shader.h"
 
 #include "textures.h"
@@ -29,18 +27,13 @@
 
 //
 //#include "ux-anim.h"
-
 #include "FileChooserInclude.h"
-
-
 
 #define MIN_FISHEYE_ZOOM 0.1f
 #define FISHEYE_SLOW_ZOOM_THRESHOLD 0.1f
 // you'd have to move 16.0 px to move 1px at FISHEYE_SLOW_ZOOM_MAX
 #define FISHEYE_SLOW_ZOOM_MAX 0.9f // hopefully not use this <--
 #define MAX_FISHEYE_ZOOM 64.0f
-
-
 #define VIEW_MAX_CLIP_DISTANCE 100
 
 //

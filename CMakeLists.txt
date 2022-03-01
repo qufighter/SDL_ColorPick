@@ -42,9 +42,6 @@ set(CMAKE_OSX_ARCHITECTURES "i386;x86_64;arm64" CACHE STRING "")
 # signing
 
 
-set( CMAKE_DOTNET_TARGET_FRAMEWORK "3.5" )
-
-
 if(NOT APPLE AND UNIX AND NOT DEFINED COLORPICK_DYNAMIC_LINK)
     set( COLORPICK_DYNAMIC_LINK "1" )
     if( NOT DEFINED CMAKE_BUILD_TYPE )
@@ -57,6 +54,17 @@ file(REMOVE BUILD/colorpick_main)
 file(COPY textures DESTINATION .)
 file(COPY shaders DESTINATION .)
 file(COPY textures/crosshair.png DESTINATION .)
+
+if(WIN32)
+	file(COPY textures DESTINATION ./${CMAKE_BUILD_TYPE})
+	file(COPY shaders DESTINATION ./${CMAKE_BUILD_TYPE})
+	file(COPY textures/crosshair.png DESTINATION ./${CMAKE_BUILD_TYPE})
+
+	file(COPY textures DESTINATION ./Debug)
+	file(COPY shaders DESTINATION ./Debug)
+	file(COPY textures/crosshair.png DESTINATION ./Debug)
+
+endif()
 
 find_package(OpenGL REQUIRED)
 #find_package(GLUT) # we don't need vwebp...
@@ -119,6 +127,9 @@ else()
         add_subdirectory( external/glew/build/cmake )
         message(STATUS " GLEW_LIBRARIES ${GLEW_LIBRARIES}")
         message(STATUS " GLEW_LIB_NAME ${GLEW_LIB_NAME}")
+
+		add_subdirectory( Platform/WIN/COLORPICK_WIN_CLR )
+
     endif()
 endif()
 
@@ -164,35 +175,14 @@ add_executable(colorpick_main main.cpp
                     ${EXTRA_SRC_FILES}
                )
 
-if(WIN32)
-    # target_compile_options(colorpick_main PRIVATE /clr)
-    # target_compile_options(colorpick_main PRIVATE /fp:precise)
-    # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /clr")  
-    # target_compile_options(colorpick_main PRIVATE "/FU${asmPath}")
-    # set_target_properties(colorpick_main PROPERTIES COMPILE_FLAGS "/clr /EHa")
 
-    set_target_properties(colorpick_main PROPERTIES COMMON_LANGUAGE_RUNTIME "")
-
-
-    set_property(TARGET colorpick_main PROPERTY VS_GLOBAL_ROOTNAMESPACE ${project_name})
-
-    set_property(TARGET colorpick_main PROPERTY VS_GLOBAL_KEYWORD "ManagedCProj")
-
-    set_property(TARGET colorpick_main PROPERTY VS_GLOBAL_CLRSupport "true")
-
-    set_property(TARGET colorpick_main PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.0")
-
-    set_property(TARGET colorpick_main PROPERTY VS_DOTNET_REFERENCES "System")
-
-
-endif()
 
 
 if(COLORPICK_DYNAMIC_LINK)
     target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${XCB_LIBRARIES} ${GTKMM_LIBRARIES})
 else()
     if(WIN32)
-        target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} glew_s )
+        target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} glew_s colorpick_main_win_clr  )
     else()
         target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} )
     endif()

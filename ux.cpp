@@ -971,8 +971,11 @@ Ux::uiObject* Ux::create(void){
     controllerCursorOutset->setBoundaryRect(-outsetAmount, -outsetAmount, 1.0+outsetAmount+outsetAmount, 1.0+outsetAmount+outsetAmount);
     controllerCursor->addChild(controllerCursorBorder);
 
-    addBordersToObject(controllerCursorOutset, (SDL_Color){0, 0, 0, 128}, 0.15);
-    addBordersToObject(controllerCursorBorder, (SDL_Color){255, 0, 0, 192}, 0.1);
+	SDL_Color tmp;
+	Ux::setColor(&tmp, 0, 0, 0, 128);
+    addBordersToObject(controllerCursorOutset, tmp, 0.15);
+	Ux::setColor(&tmp, 255, 0, 0, 192);
+	addBordersToObject(controllerCursorBorder, tmp, 0.1);
 
     // CURSOR HINTS: 1) if your cursor is getting all messed up, and you are triggerin an animation which is messing it up, just call:
     //                  myUxRef->temporarilyDisableControllerCursorForAnimation(); where you trigger the animation, your cursor should then fix itself momentarily
