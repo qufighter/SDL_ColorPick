@@ -30,6 +30,13 @@ I do have a script to bundle up the osx app...
 
 Just wanted to try to get this out there just in case!  You never know and I'm not getting the installs to ever reach those goals.
 
+see todo for some work...
+
+more TODO that are more on the top of mind:
+1) test if clone from here works (really can't say)
+2) move the 2 library folders permanently into correct paths inside external folder
+3) other bookkeeping and organizing (a new directory external_static is planned)
+
 Hopefully someone in the future finds hte project usefulf or personal use or decides to coontinue development/code cleanup/etc!,
 much love (and etc)
 
@@ -39,4 +46,3 @@ PS:
 
 see also, the chrome extension src:
 https://github.com/qufighter/ColorPick
-
