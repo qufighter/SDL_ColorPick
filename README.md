@@ -2,9 +2,16 @@ https://vidsbee.com/ColorPick/Mobile/
 
 This will also complile into a:
 
-100% working Mac OS app
-100% wokring Linux app (for gtkmm-3.0)
-95% working/stable windows app (missking key screen feature)
+~100% working Mac OS app
+~100% wokring Linux app (for gtkmm-3.0 so far)
+~95% working/stable windows app (missking key screen feature)
+~IOS
+~Android
+~Emscripten
+... more?
+
+Before you contriubte, I suggest looking for forks of the project, to see if anyone else has move on with the work since I've left off.
+
 
 Check the readme in the "external" fodler though for instrucitons ot staic link SDL and SDL Image libraries.
 
@@ -27,3 +34,9 @@ Hopefully someone in the future finds hte project usefulf or personal use or dec
 much love (and etc)
 
 Sam
+
+PS:
+
+see also, the chrome extension src:
+https://github.com/qufighter/ColorPick
+
