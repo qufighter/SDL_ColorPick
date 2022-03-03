@@ -201,7 +201,7 @@ endif()
 
 
 
-if(APPLE AND NOT APPLE) #temporary BYPASS, testing cmake_install feature (not working?)
+if(APPLE) #  AND NOT APPLE) #temporary BYPASS, testing cmake_install feature (not working?)
 
     add_custom_command(TARGET colorpick_main POST_BUILD
         COMMAND ./cmake/osx_bundle_app.sh colorpick_main
