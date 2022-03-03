@@ -466,7 +466,7 @@ static int LoadObjectPLYThread(void* data){
     //SDL_strstr(const char *haystack, <#const char *needle#>)
 
     fileString->clear(); // is tghe string used?
-    SDL_free(fileString);
+	fileString->shrink_to_fit();
 
     headerString.clear(); // not really free?
 

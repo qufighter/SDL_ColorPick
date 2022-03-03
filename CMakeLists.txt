@@ -130,10 +130,14 @@ else()
 
 		add_subdirectory( Platform/WIN/COLORPICK_WIN_CLR )
 
+
     endif()
 endif()
 
 
+# especially nice for windows visual studio project generatoin...
+FILE(GLOB MY_HEADERS "*.h")
+#FILE(GLOB_RECURSE MY_HEADERS "*.h") # could lload to another list and append??
 
 include_directories(.)
 include_directories(minigames)
@@ -149,18 +153,24 @@ if(APPLE)
       Platform/OSX/NSOverlayWindow.mm
     )
 
+	FILE(GLOB EXTRA_HEADER_FILES "Platform/OSX/*.h")
+
 elseif(UNIX)
     include_directories(Platform/LINUX)
     
     list(APPEND EXTRA_SRC_FILES
       Platform/LINUX/FileChooser.cpp
     )
+	FILE(GLOB EXTRA_HEADER_FILES "Platform/LINUX/*.h")
+
+
 elseif(WIN32)
     include_directories(Platform/WIN)
 
     list(APPEND EXTRA_SRC_FILES
       Platform/WIN/FileChooser.cpp
     )
+	FILE(GLOB EXTRA_HEADER_FILES "Platform/WIN/*.h")
 endif()
 
 message(STATUS " EXTRA_SRC_FILES:    ${EXTRA_SRC_FILES}")
@@ -172,7 +182,8 @@ add_executable(colorpick_main main.cpp
                     meshes.cpp
                     ux.cpp
                     textures.cpp
-                    ${EXTRA_SRC_FILES}
+                    ${EXTRA_SRC_FILES} ${EXTRA_HEADER_FILES}
+					${MY_HEADERS}
                )
 
 

@@ -29,9 +29,11 @@
 #endif
 
 
-#if defined(__MACOSX__) || defined(__WIN32__) || defined(__LINUX__)
+#if defined(__MACOSX__) || defined(__LINUX__)
 #define PICK_FROM_SCREEN_ENABLED = true
 #endif
+
+#define FREE_FOR_NEW SDL_Free
 
 //#define NO_MESH_LOADING 1
 
@@ -113,8 +115,13 @@
  // #include <GL/glu.h>
  // #include <GL/gl.h>
 
+//
+//
+//#ifdef __WINDOWS__
+//#define MAIN_THREAD_ANIMATIONS 1 # depe
+//#endif
 
-
+#define FREE_FOR_NEW free // on windows, using the new operator to consturct means we really CANNOT use SDL_Free, and its tough to detect... sprinked around the project this way!
 
 #else
 

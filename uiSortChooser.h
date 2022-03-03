@@ -159,7 +159,7 @@ struct uiSortChooser{
             }
             hist = pickHistoryIterator->nextLast();
         }
-        SDL_free(pickHistoryIterator);
+		FREE_FOR_NEW(pickHistoryIterator);
         return oldLen;
     }
 
@@ -187,8 +187,8 @@ struct uiSortChooser{
             listToOffset->add(*hist);
             hist = pickHistoryIterator->nextLast();
         }
-        SDL_free(pickHistoryIterator);
-        SDL_free(tempList);
+		FREE_FOR_NEW(pickHistoryIterator);
+		FREE_FOR_NEW(tempList);
         return shiftedItems;
     }
 

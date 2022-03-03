@@ -328,6 +328,8 @@ void mouseUpEvent(SDL_Event* event){
     //SDL_GetRelativeMouseState(&colorPickState->mmovex, &colorPickState->mmovey);
 }
 
+
+
 // TODO: this might need to be in the animation loop for ios!!!!!!!
 int MainThreadUserEventHandler(SDL_Event* p_event){
 

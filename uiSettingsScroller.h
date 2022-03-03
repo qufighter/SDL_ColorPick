@@ -465,7 +465,7 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
             }
             setting = myIterator->next();
         }
-        SDL_free(myIterator);
+		FREE_FOR_NEW(myIterator);
     }
 
     /*SETTINGS */

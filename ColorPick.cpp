@@ -60,7 +60,6 @@ SDL_Window* OpenGLContext::getSdlWindow(){
 }
 
 bool OpenGLContext::createContext(SDL_Window *PsdlWindow) {
-
     sdlWindow = PsdlWindow;
 
     gl = SDL_GL_CreateContext(sdlWindow);
@@ -98,6 +97,7 @@ void OpenGLContext::keyDown(Uint32 timestamp, SDL_Keycode k){
     has_velocity=false;
     renderShouldUpdate=true;
 }
+
 void OpenGLContext::keyUp(Uint32 timestamp, SDL_Keycode k){
 
     keyInteractions.keyUp(timestamp, k);
@@ -249,8 +249,8 @@ void OpenGLContext::imageWasSelectedCb(SDL_Surface *myCoolSurface){
 
 void OpenGLContext::imageWasSelectedCb(SDL_Surface *myCoolSurface, SDL_Point* desired_xy_tl){
 
-    if( lastHue!=nullptr ) SDL_free(lastHue);
-    lastHue = nullptr;
+    if( lastHue!=nullptr ) FREE_FOR_NEW(lastHue);
+	lastHue = nullptr;
     //SDL_Log("an image was selected !!!!");
 
     if( myCoolSurface == NULL ){
@@ -312,8 +312,8 @@ void OpenGLContext:: loadNextTestImageByIndex(int index){
 
 void OpenGLContext:: loadSpecificTestImage(const char* surfaceFilePath){
 
-    if( lastHue!=nullptr ) SDL_free(lastHue);
-    lastHue = nullptr;
+	if (lastHue != nullptr) FREE_FOR_NEW(lastHue);
+	lastHue = nullptr;
     //SDL_Log("an image was selected !!!!");
 
     SDL_Surface *myCoolSurface = textures->LoadSurface(surfaceFilePath);
@@ -436,8 +436,8 @@ void OpenGLContext::pickerForHue(HSV_Color* color, SDL_Color* desired_color){
 
 void OpenGLContext:: pickerForHue(SDL_Color* color){
 
-    if( lastHue!=nullptr ) SDL_free(lastHue);
-    //lastHue = nullptr;
+    if( lastHue!=nullptr ) FREE_FOR_NEW(lastHue);
+	//lastHue = nullptr;
     lastHue = new SDL_Color();
     Ux::setColor(lastHue, color);
     //SDL_Log("we wish to get a picker for a color hue !!!!"); // TODO: second arg for selecting color???? position_y ??position_x

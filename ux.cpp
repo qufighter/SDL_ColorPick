@@ -336,7 +336,7 @@ void Ux::writeOutState(void){
         SDL_WriteU8(fileref, color->a);
         color = &myIterator->next()->color;
     }
-    SDL_free(myIterator);
+	FREE_FOR_NEW(myIterator); // again, free with use of new operator on windows causing issues!  we should use a macro
     PERFORM_SDL_RWclose(fileref);
 
 //    totalUint8s = pickHistoryList->memorySize();
@@ -362,7 +362,7 @@ void Ux::writeOutState(void){
         SDL_WriteU8(fileref, color->a);
         color = &myIterator->next()->color;
     }
-    SDL_free(myIterator);
+	FREE_FOR_NEW(myIterator); // free with new op causing issues on windows
     PERFORM_SDL_RWclose(fileref);
 
     

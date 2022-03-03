@@ -183,7 +183,7 @@ struct uiGradientLinear{
 //        }
 
 
-        SDL_free(stopIterator);
+		FREE_FOR_NEW(stopIterator);
 
         uiObjectItself->updateRenderPosition();
 

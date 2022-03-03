@@ -10,6 +10,7 @@
 
 
 //#if defined(__WINDOWS__)
+//using namespace System; FIX THIS!
 //using namespace System::ComponentModel;
 //using namespace System::Collections;
 //using namespace System::Windows::Forms;
@@ -57,14 +58,17 @@ static UINT uMyTimerId;
 static pt_type* m_data;// = new pt_type(); //variable is defined elsewhere and passed into dll
 
 
-HGDIOBJ* ColorPickWinClrCopyEntireScreenToSurfaceWin()
+HGDIOBJ* ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin()
 {
-    HDC         hScrDC, hMemDC;         // screen DC and memory DC
+	//TODO: ghastly but maybe we cAN pass something back?  so far no luck, see CopyEntireScreenToSurfaceWin
+	// there must be a way to 1) load the dll into shared (non protected) memory (probably preferred way?
+	//						  2) pass a (fixed length?) string of some tpye? (nasty solution...) but we know struct of fixed len works?! 
+
+    //HDC         hScrDC, hMemDC;         // screen DC and memory DC
     int         nX, nY, nX2, nY2;       // coordinates of rectangle to grab
-    int         nWidth, nHeight;        // DIB width and height
     int         xScrn, yScrn;           // screen resolution
 
-    HGDIOBJ     hOldBitmap , hBitmap;
+	HGDIOBJ     hOldBitmap;//, hBitmap;
     LONG num_monitors=((LONG)::GetSystemMetrics(SM_CMONITORS));
     LONG same_fmt=((LONG)::GetSystemMetrics(SM_SAMEDISPLAYFORMAT));
 
@@ -81,35 +85,32 @@ HGDIOBJ* ColorPickWinClrCopyEntireScreenToSurfaceWin()
 
     //http://stackoverflow.com/questions/576476/get-devicecontext-of-entire-screen-with-multiple-montiors
    //hScrDC = ::GetDC(0);//CreateDC("DISPLAY", NULL, NULL, NULL);
-   hScrDC = ::GetDC(0);//CreateDC(TEXT("DISPLAY"),NULL,NULL,NULL);
-   hMemDC = CreateCompatibleDC(hScrDC);      // get points of rectangle to grab
+   hScrDC = (HDCtype)::GetDC(0);//CreateDC(TEXT("DISPLAY"),NULL,NULL,NULL);
+   hMemDC = (HDCtype)CreateCompatibleDC((HDC)hScrDC);      // get points of rectangle to grab
 
 
    nX = virtual_start_x;//0;//lpRect->left;
    nY = virtual_start_y;//lpRect->top;
 
-   xScrn = GetDeviceCaps(hScrDC, HORZRES);
-   yScrn = GetDeviceCaps(hScrDC, VERTRES);
+   xScrn = GetDeviceCaps((HDC)hScrDC, HORZRES);
+   yScrn = GetDeviceCaps((HDC)hScrDC, VERTRES);
 
    nWidth = scx;//nX2 - nX;
    nHeight = scy;//nY2 - nY;
 
    // create a bitmap compatible with the screen DC
-   hBitmap = CreateCompatibleBitmap(hScrDC, nWidth, nHeight);
+   hBitmap = CreateCompatibleBitmap((HDC)hScrDC, nWidth, nHeight);
 
    // select new bitmap into memory DC
-   hOldBitmap =   SelectObject (hMemDC, hBitmap);
+   hOldBitmap =   SelectObject ((HDC)hMemDC, hBitmap);
 
    // bitblt screen DC to memory DC
-   BitBlt(hMemDC, 0, 0, nWidth, nHeight, hScrDC, nX, nY, SRCCOPY);
+   BitBlt((HDC)hMemDC, 0, 0, nWidth, nHeight, (HDC)hScrDC, nX, nY, SRCCOPY);
 
    // select old bitmap back into memory DC and get handle to
    // bitmap of the screen
 
-   hBitmap = SelectObject(hMemDC, hOldBitmap);
-
-   auto depth = 32;
-   auto comppp = 4;
+   hBitmap = SelectObject((HDC)hMemDC, hOldBitmap);
 
     // TODO: fix me (not tested) chances are does notw ork...
    /*
@@ -132,6 +133,12 @@ HGDIOBJ* ColorPickWinClrCopyEntireScreenToSurfaceWin()
 
 return &hBitmap;
  //  return srf;
+}
+
+void ColorPickWinClr::FreeLastBitmapWin() {
+    DeleteObject((HDC)hMemDC); // TODO
+   DeleteObject(hBitmap); // TODO
+   ::ReleaseDC(0,(HDC)hScrDC); // TODO
 }
 
 //this is run by the dialog color pick preview class cpick_prev_class
@@ -261,8 +268,18 @@ static void initWinDesktopScreenshotPreviewWindow(){
     pick_from_wnd_created=true;
 }
 
+bool ColorPickWinClr::ms_bInstanceCreated = false;
+ColorPickWinClr* ColorPickWinClr::pInstance = NULL;
+
+ColorPickWinClr* ColorPickWinClr::Singleton() {
+	if (!ms_bInstanceCreated) {
+		pInstance = new ColorPickWinClr();
+		ms_bInstanceCreated = true;
+	}
+	return pInstance;
+}
+
 void ColorPickWinClr::winTogglePicking(){
-    #ifndef DISABLE_WIN32_CODEBLOCKS
     if(pick_mode_enabled){
 
         preview_cwnd->SetActiveWindow();
@@ -323,7 +340,6 @@ void ColorPickWinClr::winTogglePicking(){
 //        preview_cwnd->SetActiveWindow();
 //        preview_cwnd->ActivateTopParent();
     }
-    #endif
 }
 
 
@@ -342,6 +358,62 @@ bool ColorPickWinClr::openURL(char* &url)
 
 //#endif
 
+
+
+//Calling this function from VB simply ensures winMain gets called properly
+extern "C" __declspec(dllexport) int  Begin_Monitor_Mouse_Position(pt_type* mpt) {
+	m_data = mpt;
+	//m_data->X=-1,
+	//m_data->Y=-1,
+	m_data->m1 = false;
+
+	//if (!watchingMousePosition) {
+	//	if (colorPickExistsAndRunning()) {
+	//		//LogStr( "MOUSE.DLL starting to monitor mouse position" );
+	//		attachMouseHook(myInstance);
+	//	}
+	//}
+	//MessageBox(NULL, "hello", "bonjour(s)", MB_OK);
+	return 0;
+}
+
+//Calling this function from VB simply ensures winMain gets called properly
+extern "C" __declspec(dllexport) int  End_Monitor_Mouse_Position(void) {
+	//detachMouseHook();
+
+	//MessageBox(NULL, "goodbye", "bonjour(s)", MB_OK);
+	return 0;
+}
+
+//Calling this function from VB simply ensures winMain gets called properly
+extern "C" __declspec(dllexport) pt_type* Get_Mouse_Position(void) {
+	//m_data->X = mx;
+	//m_data->Y = my;
+	//m_data->m1 = m1;
+	//m_data->m2 = m2;
+	//m1=false,m2=false;//click has been intercepted
+	return m_data;
+
+}
+extern "C" __declspec(dllexport) void color_pick_win_api_toggle_picking() {
+	colorPickWinClr->winTogglePicking();
+}
+
+extern "C" __declspec(dllexport) HGDIOBJ* color_pick_win_api_screen_to_bitmap() {
+	return colorPickWinClr->ColorPickWinClrCopyEntireScreenToBitmapWin();
+}
+
+extern "C" __declspec(dllexport) void color_pick_win_api_get(ColorPickWinClr* t) {
+	t = ColorPickWinClr::Singleton();
+}
+
+extern "C" __declspec(dllexport) bool color_pick_win_api_starturl(char* url) {
+	System::String^ str = gcnew System::String(url);
+	System::Diagnostics::Process::Start(str);
+	return true;
+}
+
+
 //main entry point for the application, when VB makes its first function call in this DLL
 BOOL APIENTRY DllMain(HINSTANCE hModule, DWORD  fdwReason, LPVOID lpReserved)
 {
@@ -356,43 +428,5 @@ BOOL APIENTRY DllMain(HINSTANCE hModule, DWORD  fdwReason, LPVOID lpReserved)
 		//detachMouseHook();
 	}
 
-	return TRUE;
-}
-
-//Calling this function from VB simply ensures winMain gets called properly
-extern "C" __declspec(dllexport) int  Begin_Monitor_Mouse_Position(pt_type* mpt) {
-	m_data = mpt;
-	//m_data->X=-1,
-	//m_data->Y=-1,
-	m_data->m1 = false;
-
-	//if (!watchingMousePosition) {
-	//	if (colorPickExistsAndRunning()) {
-	//		//LogStr( "MOUSE.DLL starting to monitor mouse position" );
-	//		attachMouseHook(myInstance);
-
-
-	//	}
-	//}
-	//MessageBox(NULL, "hello", "bonjour(s)", MB_OK);
-	return TRUE;
-}
-
-//Calling this function from VB simply ensures winMain gets called properly
-extern "C" __declspec(dllexport) int  End_Monitor_Mouse_Position(void) {
-	//detachMouseHook();
-
-	//MessageBox(NULL, "goodbye", "bonjour(s)", MB_OK);
-	return TRUE;
-}
-
-//Calling this function from VB simply ensures winMain gets called properly
-extern "C" __declspec(dllexport) pt_type* Get_Mouse_Position(void) {
-	//m_data->X = mx;
-	//m_data->Y = my;
-	//m_data->m1 = m1;
-	//m_data->m2 = m2;
-	//m1=false,m2=false;//click has been intercepted
-	return m_data;
-
+	return 0;
 }

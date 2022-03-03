@@ -201,7 +201,7 @@ struct uiAnimation
     // this is animationUpdateCallbackFn - if you implement your own you have to free the rect when you are done with it
     static void defaultUiObjectAnimationupdater(uiAnimation* self, Float_Rect *newBoundaryRect){
         Ux::setRect(&self->myUiObject->boundryRect, newBoundaryRect->x, newBoundaryRect->y, newBoundaryRect->w, newBoundaryRect->h);
-        SDL_free(newBoundaryRect);
+        //FREE_FOR_NEW(newBoundaryRect);
         self->myUiObject->updateRenderPosition(); // this is occuring in the animation timeout thread.... if threaded
     }
 
@@ -218,7 +218,7 @@ struct uiAnimation
             return true; // this animation is done (that was it)
         }
 
-        Float_Rect* newBounds = myGetBoundsFn(this);
+        Float_Rect* newBounds = myGetBoundsFn(this); // TODO: this should probably not continue to allocate memory?
 
         if( is_move ) {
             // we are moving to a point, so we compute a new vx/vy dynamically
@@ -429,7 +429,7 @@ struct uiAminChain
             result_done = this->animList[animListCurrent]->update(elapsedMs);
             if( result_done ){
 
-                SDL_free(this->animList[animListCurrent]); // GARBAGE COLLECTION ?! (we may mark an animation to not auto delete in the future, for reusing it)
+				FREE_FOR_NEW(this->animList[animListCurrent]); // GARBAGE COLLECTION ?! (we may mark an animation to not auto delete in the future, for reusing it)
 
                 animListCurrent++;
                 if( animListCurrent >= animListIndex ){
@@ -447,7 +447,7 @@ struct uiAminChain
 
     void end(){ // think about thread safe-ness if update is stll called in different thread
         while( animListCurrent < animListIndex ){
-            SDL_free(this->animList[animListCurrent]); // GARBAGE COLLECTION ?! (we may mark an animation to not auto delete in the future, for reusing it)
+			FREE_FOR_NEW(this->animList[animListCurrent]); // GARBAGE COLLECTION ?! (we may mark an animation to not auto delete in the future, for reusing it)
             animListCurrent++;
             if( animListCurrent >= animListMaxLen ){
                 break; // chain completed
@@ -457,7 +457,7 @@ struct uiAminChain
 
     void endAnimation(){ // thread safe, but you must call preserveReference if you want to call anything later
         if( this->chainCompleted || this->pushIncomplete ){ // either done or will never complete...
-            SDL_free(this);
+			FREE_FOR_NEW(this);
         }else{
             this->invalidateChain = true;
         }
@@ -523,6 +523,7 @@ struct UxAnim
 
 
     int animChainsDeletedCount;
+	int newXposition;
     bool result_done;
     bool result2_done;
     bool shouldUpdate;
@@ -550,7 +551,7 @@ struct UxAnim
             // WE GET AN EXCEPTION HERE SOMETIMES>>>>> (probably fixed this...)
             // malloc: *** error for object 0x7fbb4330: pointer being freed was not allocated
             // sometimes this is caused by adding an animation chain while updating another animation perhaps?  (I think this is mostly caused by the debugger... a breakpoint at "ERROR::: Max Animation" will ultimiately cause exceptins here)
-            SDL_free(myAnimChain); // GARBAGE COLLECTION ?! (we may mark a chain to not auto delete in the future, for reusing it?)
+			FREE_FOR_NEW(myAnimChain); // GARBAGE COLLECTION ?! (we may mark a chain to not auto delete in the future, for reusing it?)
         }else{
             myAnimChain->chainCompleted = true; // the only way the garbage can be otherwise collected
         }
@@ -562,16 +563,21 @@ struct UxAnim
         if( aniIsUpdating ) return false; // If we return false it won't have an effect on the runnign animation
         aniIsUpdating = true; // one at a time please
         animChainsDeletedCount = 0;
-
+		newXposition = 0;
 
         for( int x=0,l=animChainIndex; x<l; x++ ){
 
-            animChains[x-animChainsDeletedCount] = animChains[x]; // we hope this will copy teh reference....
+			newXposition = x - animChainsDeletedCount;
+            animChains[newXposition] = animChains[x]; // we hope this will copy teh reference....
 
-            result_done = animChains[x]->update(elapsedMs);
+			if (newXposition < x) {
+				animChains[x] = nullptr;
+			}
+
+            result_done = animChains[newXposition]->update(elapsedMs);
 
             if( result_done ){
-                freeAnimationChain(animChains[x]);
+                freeAnimationChain(animChains[newXposition]);
                 // we wish to drop this chain from the array of chains, so all subsequent chains move down by N index based on how many we have subtracted thus far
                 animChainsDeletedCount++;
             }

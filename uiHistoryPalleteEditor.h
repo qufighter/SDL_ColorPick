@@ -520,7 +520,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             }
             hist = pickHistoryIterator->nextLast();
         }
-        SDL_free(pickHistoryIterator);
+		FREE_FOR_NEW(pickHistoryIterator);
         myUxRef->updatePickHistoryPreview();
     }
 
@@ -549,7 +549,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
                 }
                 hist = pickHistoryIterator->next();
             }
-            SDL_free(pickHistoryIterator);
+			FREE_FOR_NEW(pickHistoryIterator);
             if( delCounter > 1 ){
                 myUxRef->defaultYesNoChoiceDialogue->displayAdditionalAction(&showAdditonalMessageLightenignBolt, &removeAllCheckedHistoryColor, delCounter-1);
             }else{
@@ -656,7 +656,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             }
             hist = pickHistoryIterator->nextLast();
         }
-        SDL_free(pickHistoryIterator);
+		FREE_FOR_NEW(pickHistoryIterator);
 
         if( addCounter < 2 ){
             SDL_snprintf(myUxRef->print_here, myUxRef->max_print_here, "+ %i?", addCounter);//"Add All?"
@@ -714,7 +714,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             self->palleteScroller->scrollToItemByIndex(myUxRef->palleteList->previousIndex());
             // TODO handle scoring todo note here...
         }
-        SDL_free(pickHistoryIterator);
+		FREE_FOR_NEW(pickHistoryIterator);
         myUxRef->defaultYesNoChoiceDialogue->updateNumberToEffectWhenYes(addedCounter);
     }
 
@@ -1247,7 +1247,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             }
             pallete = palleteListIterator->nextLast();
         }
-        SDL_free(palleteListIterator);
+		FREE_FOR_NEW(palleteListIterator);
         self->palleteScroller->updateTiles();
     }
 
@@ -1275,7 +1275,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
                 }
                 pallete = palleteListIterator->next();
             }
-            SDL_free(palleteListIterator);
+			FREE_FOR_NEW(palleteListIterator);
             if( delCounter > 1 ){
                 myUxRef->defaultYesNoChoiceDialogue->displayAdditionalAction(&showAdditonalMessageLightenignBolt, &removeAllCheckedPalleteColor, delCounter-1);
             }else{
@@ -1430,7 +1430,7 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
                 SDL_free(clrStr);
                 SDL_free(clrStrB);
-                SDL_free(myIterator); // does free recurse
+				FREE_FOR_NEW(myIterator);
 
                 myUxRef->uxAnimations->scale_bounce(interactionObj->childList[1], 0.001);
 

@@ -341,7 +341,7 @@ struct uiScrollController{
     static void scrollAnimationUpdaterCb(uiAnimation* uiAnim, Float_Rect *newBoundaryRect){
         uiScrollController* self = uiAnim->myUiObject->myScrollController;
         self->scrolly = newBoundaryRect->y;
-        SDL_free(newBoundaryRect);
+        //SDL_free(newBoundaryRect); // todo; odd  use of free here...
         self->reflowTiles();
     }
 

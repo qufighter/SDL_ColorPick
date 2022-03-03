@@ -328,7 +328,7 @@ struct uiList
         if( _indexed ){
             SDL_free(indexItself);
         }
-        SDL_free(this); // < does this really work? (seems to work fine)
+        //free(this); // < does this really work? (seems to work fine) ./// windows should use free, to correspond with new operator used elsewhere, also strange to free within own object in a way... did seem to work though...
     }
 
     //Uint8 palleteColorsIndex[COLOR_INDEX_MAX]; // we do not search the array

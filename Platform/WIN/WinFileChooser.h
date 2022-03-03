@@ -13,13 +13,15 @@
 #define ColorPick_windiows_SDL_FileChooser_h
 
 #include "../../ColorPick.h"
+#include "./COLORPICK_WIN_CLR/ColorPickWinClr.h"
 #include "portable-file-dialogs.h"
+
 
 
 void getImagePathFromMainThread();
 void beginImageSelector();
 void beginScreenshotSeleced();
-bool openURL(char* &url);
+bool openURL(char* url);
 void requestReview();
 
 
