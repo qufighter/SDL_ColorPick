@@ -112,7 +112,7 @@ struct uiHueGradient{
         lockPickerEvent = true; // hmm seems like we still need to use a timer if we really want to debounce it...
         SDL_AddTimer(250, my_callbackfunc, this);
 #else
-        pickerForPercentV(&percent);
+        pickerForPercentV(&percentage);
 #endif
 
     }
