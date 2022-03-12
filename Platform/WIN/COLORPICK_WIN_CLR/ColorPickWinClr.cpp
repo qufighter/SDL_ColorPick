@@ -57,8 +57,12 @@ static UINT uMyTimerId;
 
 static pt_type* m_data;// = new pt_type(); //variable is defined elsewhere and passed into dll
 
+#define SHMEMSIZE 4096
 
-HGDIOBJ* ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin()
+static LPVOID lpvMem = NULL;      // pointer to shared memory
+static HANDLE hMapObject = NULL;  // handle to file mapping
+
+void ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin(void* ret_bitm, int* ret_size, pt_type* info)
 {
 	//TODO: ghastly but maybe we cAN pass something back?  so far no luck, see CopyEntireScreenToSurfaceWin
 	// there must be a way to 1) load the dll into shared (non protected) memory (probably preferred way?
@@ -131,7 +135,26 @@ HGDIOBJ* ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin()
  //   DeleteObject(hBitmap); // TODO
  //  ::ReleaseDC(0,hScrDC); // TODO
 
-return &hBitmap;
+   // some bookkeeeping here... we need to cpy the bitmap to shared memory
+   // then, arguablly, we coudl free it right now...
+
+
+   int copySize = nWidth * nHeight;
+   if (copySize > SHMEMSIZE) {
+	   copySize = SHMEMSIZE;
+   }
+
+   memcpy(lpvMem, hBitmap, copySize);
+
+   ret_bitm = &lpvMem;
+   *ret_size = nWidth * nHeight;
+
+   info->W = nWidth;
+   info->H = nHeight;
+
+   FreeLastBitmapWin();
+
+//return &hBitmap;
  //  return srf;
 }
 
@@ -399,8 +422,12 @@ extern "C" __declspec(dllexport) void color_pick_win_api_toggle_picking() {
 	colorPickWinClr->winTogglePicking();
 }
 
-extern "C" __declspec(dllexport) HGDIOBJ* color_pick_win_api_screen_to_bitmap() {
-	return colorPickWinClr->ColorPickWinClrCopyEntireScreenToBitmapWin();
+//extern "C" __declspec(dllexport) HGDIOBJ* color_pick_win_api_screen_to_bitmap() {
+//	return colorPickWinClr->ColorPickWinClrCopyEntireScreenToBitmapWin();
+//}
+
+extern "C" __declspec(dllexport) void color_pick_win_api_screen_to_bitmap(void* bitm, int* &size, pt_type* &info) {
+	return colorPickWinClr->ColorPickWinClrCopyEntireScreenToBitmapWin(bitm, size, info);
 }
 
 extern "C" __declspec(dllexport) void color_pick_win_api_get(ColorPickWinClr* t) {
@@ -414,18 +441,61 @@ extern "C" __declspec(dllexport) bool color_pick_win_api_starturl(char* url) {
 }
 
 
+
 //main entry point for the application, when VB makes its first function call in this DLL
 BOOL APIENTRY DllMain(HINSTANCE hModule, DWORD  fdwReason, LPVOID lpReserved)
 {
+	BOOL fInit, fIgnore;
+
+
 	if (fdwReason == DLL_PROCESS_ATTACH)
 	{
 		//myInstance = hModule;
+
+		// Create a named file mapping object
+		hMapObject = CreateFileMapping(
+			INVALID_HANDLE_VALUE,   // use paging file
+			NULL,                   // default security attributes you may choose to use a SECURITY_ATTRIBUTES structure to provide additional security.
+			PAGE_READWRITE,         // read/write access
+			0,                      // size: high 32-bits
+			SHMEMSIZE,              // size: low 32-bits
+			TEXT("colorpickfilemap")); // name of map object
+		if (hMapObject == NULL)
+			return FALSE;
+
+		// The first process to attach initializes memory
+
+		fInit = (GetLastError() != ERROR_ALREADY_EXISTS);
+
+		// Get a pointer to the file-mapped shared memory
+
+		lpvMem = MapViewOfFile(
+			hMapObject,     // object to map view of
+			FILE_MAP_WRITE, // read/write access
+			0,              // high offset:  map from
+			0,              // low offset:   beginning
+			0);             // default: map entire file
+		if (lpvMem == NULL)
+			return FALSE;
+
+		// Initialize memory if this is the first process
+
+		if (fInit)
+			memset(lpvMem, '\0', SHMEMSIZE);
+
+
 	};
 
 	if (fdwReason == DLL_PROCESS_DETACH)
 	{
 		//LogStr( "MOUSE.DLL stopping monitoring mouse position" );
 		//detachMouseHook();
+
+		// Unmap shared memory from the process's address space
+		fIgnore = UnmapViewOfFile(lpvMem);
+
+		// Close the process's handle to the file-mapping object
+		fIgnore = CloseHandle(hMapObject);
 	}
 
 	return 0;

@@ -53,9 +53,9 @@ typedef BOOL(__stdcall* pEnd_Monitor_Mouse_Position)();
 //typedef pt_type* (__stdcall* pGet_Mouse_Position)();
 typedef bool(__stdcall* p_color_pick_win_api_starturl)(char*);
 typedef void(__stdcall* p_color_pick_win_api_toggle_picking)();
-typedef HGDIOBJ*(__stdcall* p_color_pick_win_api_screen_to_bitmap)();
+typedef void(__stdcall* p_color_pick_win_api_screen_to_bitmap)(void* ret_bitm, int* &ret_size, pt_type* &info);
 
-typedef void(__stdcall* p_color_pick_win_api_get)(ColorPickWinClr*);
+//typedef void(__stdcall* p_color_pick_win_api_get)(ColorPickWinClr*); // will not wrok this way
 
 pBegin_Monitor_Mouse_Position Begin_Monitor_Mouse_Position;
 pEnd_Monitor_Mouse_Position End_Monitor_Mouse_Position;
@@ -63,8 +63,29 @@ pEnd_Monitor_Mouse_Position End_Monitor_Mouse_Position;
 p_color_pick_win_api_starturl color_pick_win_api_starturl;
 p_color_pick_win_api_toggle_picking color_pick_win_api_toggle_picking;
 p_color_pick_win_api_screen_to_bitmap color_pick_win_api_screen_to_bitmap;
-p_color_pick_win_api_get color_pick_win_api_get;
+//p_color_pick_win_api_get color_pick_win_api_get;
 
+/*
+
+// we may be missing something here...
+private: void ColorPick::loadMouseListener(){
+				HINSTANCE hDLL = NULL;
+				hDLL = LoadLibrary(L"ColorPickMouse.dll");
+
+				if( hDLL == NULL ){
+					System::Windows::Forms::MessageBox::Show("Fatal Error: Could not load ColorPickMouse.dll","ColorPick");
+					exit(0);
+					return;
+				}else{
+					Begin_Monitor_Mouse_Position = (pBegin_Monitor_Mouse_Position)GetProcAddress(hDLL, "Begin_Monitor_Mouse_Position");
+					End_Monitor_Mouse_Position = (pEnd_Monitor_Mouse_Position)GetProcAddress(hDLL, "End_Monitor_Mouse_Position");
+					Get_Mouse_Position = (pGet_Mouse_Position)GetProcAddress(hDLL, "Get_Mouse_Position");
+					//mpt = Get_Mouse_Position();
+					//Begin_Monitor_Mouse_Position(mpt);
+				}
+		 }
+
+*/
 
 static bool pick_mode_enabled=false;
 static bool pick_from_wnd_created=false;
@@ -88,26 +109,38 @@ SDL_Surface* CopyEntireScreenToSurfaceWin()
 {
 	//HGDIOBJ* hBitmap = p_color_pick_win_api_screen_to_bitmap();
 
-	ColorPickWinClr* colorPickWinClr = nullptr;
+	//ColorPickWinClr* colorPickWinClr = nullptr;
 
-	color_pick_win_api_get(colorPickWinClr);
+	//color_pick_win_api_get(colorPickWinClr);
 
 	auto depth = 32;
 	auto comppp = 4;
 
+	//HGDIOBJ ret_bitm;
+	Uint32* ret_bitm;
+	int* size = 0;
+	pt_type* sizeInfo = new pt_type();
+
+	// one problem, we need to allocate enough memory for our screen object...
+
+	ret_bitm = (Uint32*)SDL_malloc(sizeof(Uint32) * 4096); // size shared!! FIXME!!
+
+	color_pick_win_api_screen_to_bitmap(&ret_bitm, size, sizeInfo);
+
+
     // TODO: fix me (not tested) chances are does notw ork...
-	SDL_Surface* srf = SDL_CreateRGBSurfaceFrom(colorPickWinClr->ColorPickWinClrCopyEntireScreenToBitmapWin(),
-		colorPickWinClr->nWidth,
-		colorPickWinClr->nHeight,
+	SDL_Surface* srf = SDL_CreateRGBSurfaceFrom(ret_bitm,
+		sizeInfo->W,
+		sizeInfo->H,
        depth,
-       comppp * colorPickWinClr->nWidth, // pitch isn't stride, its stride /8 (eg width*4, when 4*8=32pbb)
+       comppp * sizeInfo->W, // pitch isn't stride, its stride /8 (eg width*4, when 4*8=32pbb)
        0x00FF0000,
        0x0000FF00,
        0x000000FF,
        0x00000000
    );
 
-   colorPickWinClr->FreeLastBitmapWin();
+   //colorPickWinClr->FreeLastBitmapWin();
 
    return srf;
 }

@@ -11,9 +11,12 @@ set( CMAKE_DOTNET_TARGET_FRAMEWORK "4.0" )
 
 message(STATUS " EXTRA_SRC_FILES:    ${EXTRA_SRC_FILES}")
 
+FILE(GLOB EXTRA_HEADER_FILES "*.h")
+
+
 #add_executable(colorpick_main_win_clr ColorPickWinClr.cpp)
 
-add_library(colorpick_main_win_clr STATIC ColorPickWinClr.cpp)
+add_library(colorpick_main_win_clr STATIC ColorPickWinClr.cpp  ${EXTRA_HEADER_FILES})
 
 include_directories(.)
 

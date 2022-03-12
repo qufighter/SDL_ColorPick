@@ -14,13 +14,13 @@
 
 struct pt_type
 {
-	int	X, Y, W;
+	int	X, Y, W, H;
 	bool m1, m2;
 	pt_type() {
-		X = 0, Y = 0, W = 0, m1 = false, m2 = false;
+		X = 0, Y = 0, W = 0, H = 0, m1 = false, m2 = false;
 	}
 	pt_type(int pX, int pY, bool pm1, bool pm2) {
-		X = pX, Y = pY, W = 0, m1 = pm1, m2 = pm2;
+		X = pX, Y = pY, W = 0, H = 0, m1 = pm1, m2 = pm2;
 	}
 };
 
@@ -46,7 +46,7 @@ public:
 	static bool ms_bInstanceCreated;
 	static ColorPickWinClr* pInstance;
 
-	HGDIOBJ* ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin();
+	void ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin(void* ret_bitm, int* ret_size, pt_type* info);
 	void ColorPickWinClr::FreeLastBitmapWin();
 
 };
