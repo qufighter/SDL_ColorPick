@@ -17,7 +17,7 @@
 
 
 #include "../../ColorPick.h"
-#include "portable-file-dialogs.h"
+#include "external_static/portable-file-dialogs.h"
 
 
 #include "SDL.h" // redundant?

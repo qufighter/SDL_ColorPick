@@ -13,7 +13,7 @@
 #define ColorPick_linx_SDL_FileChooser_h
 
 #include "../../ColorPick.h"
-#include "portable-file-dialogs.h"
+#include "external_static/portable-file-dialogs.h"
 
 
 void getImagePathFromMainThread();

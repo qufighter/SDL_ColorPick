@@ -39,7 +39,7 @@ int op_increase (int i) { return i*1.25; }
 
 
 #include "../../ColorPick.h"
-#include "portable-file-dialogs.h"
+#include "external_static/portable-file-dialogs.h"
 
 #include "SDL.h" // redundant?
 //#include "stdlib.h" // for system() call

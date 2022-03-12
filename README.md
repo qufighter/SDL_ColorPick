@@ -34,8 +34,8 @@ see todo for some work...
 
 more TODO that are more on the top of mind:
 1) test if clone from here works (really can't say)
-2) move the 2 library folders permanently into correct paths inside external folder
-3) other bookkeeping and organizing (a new directory external_static is planned)
+2) move the 2 SDL library folders permanently into correct paths inside external folder
+3) other bookkeeping and organizing (a new directory external_static is planned)(wip)
 
 Hopefully someone in the future finds hte project usefulf or personal use or decides to coontinue development/code cleanup/etc!,
 much love (and etc)

@@ -33,7 +33,7 @@
 #define PICK_FROM_SCREEN_ENABLED = true
 #endif
 
-#define FREE_FOR_NEW SDL_Free
+#define FREE_FOR_NEW SDL_free
 
 //#define NO_MESH_LOADING 1
 
@@ -187,12 +187,12 @@
 #define CHAR_OPEN_FILES 151
 
 // GLM include files
-#include "glm/glm.hpp"
-#include "glm/gtx/projection.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtx/fast_square_root.hpp"
-#include "glm/gtx/perpendicular.hpp"
-#include "glm/gtx/normal.hpp"
+#include "external_static/glm/glm.hpp"
+#include "external_static/glm/gtx/projection.hpp"
+#include "external_static/glm/gtc/matrix_transform.hpp"
+#include "external_static/glm/gtx/fast_square_root.hpp"
+#include "external_static/glm/gtx/perpendicular.hpp"
+#include "external_static/glm/gtx/normal.hpp"
 
 
 // ^ glm possibly not needed for such simple project
