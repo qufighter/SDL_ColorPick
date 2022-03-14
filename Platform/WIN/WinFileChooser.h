@@ -13,7 +13,7 @@
 #define ColorPick_windiows_SDL_FileChooser_h
 
 #include "../../ColorPick.h"
-#include "./COLORPICK_WIN_CLR/ColorPickWinClr.h"
+#include "./COLORPICK_WIN_CLR/ColorPickWinClrShared.h"
 #include "external_static/portable-file-dialogs.h"
 
 

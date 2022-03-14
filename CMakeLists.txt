@@ -193,7 +193,9 @@ if(COLORPICK_DYNAMIC_LINK)
     target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${XCB_LIBRARIES} ${GTKMM_LIBRARIES})
 else()
     if(WIN32)
-        target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} glew_s colorpick_main_win_clr  )
+        target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} glew_s colorpick_main_win_clr) # pretty strange, since we dynamic link colorpick_main_win_clr, but this ensures the dependency is built... 
+        # target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} glew_s  )
+		#target_link_libraries(colorpick_main PUBLIC  colorpick_main_win_clr)
     else()
         target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} )
     endif()
@@ -209,12 +211,17 @@ if(APPLE) #  AND NOT APPLE) #temporary BYPASS, testing cmake_install feature (no
         COMMENT "Bundling into app bundle..."
     )
 
+endif()
+
+
+if(WIN32)
+
+	# set(LIBS_PATH colorpick_main_win_clr) # strange effect, copying the debug dll is a broken debugging experience......
 
 endif()
 
 
 set(MAIN_APP colorpick_main)
 set(DIRS_PATH "textures;shaders")
-
 
 add_subdirectory( cmake_install )

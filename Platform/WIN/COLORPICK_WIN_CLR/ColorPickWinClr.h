@@ -12,17 +12,7 @@
 #define ColorPick_windiows_clrmain__h
 
 
-struct pt_type
-{
-	int	X, Y, W, H;
-	bool m1, m2;
-	pt_type() {
-		X = 0, Y = 0, W = 0, H = 0, m1 = false, m2 = false;
-	}
-	pt_type(int pX, int pY, bool pm1, bool pm2) {
-		X = pX, Y = pY, W = 0, H = 0, m1 = pm1, m2 = pm2;
-	}
-};
+#include "ColorPickWinClrShared.h"
 
 #define DECLARE_HANDLE(name) struct name##__{int unused;}; typedef struct name##__ *name
 typedef void * HGDIOBJ;
@@ -32,12 +22,11 @@ class ColorPickWinClr
 {
 private:
 	HDCtype     hScrDC, hMemDC;         // screen DC and memory DC
-	HGDIOBJ     hBitmap;
-
+	//HGDIOBJ     hBitmap;
+	//HBITMAP      hBitmap;
 
 public:
 	int         nWidth, nHeight;        // DIB width and height
-
 
 	static ColorPickWinClr* Singleton();
 	void winTogglePicking();

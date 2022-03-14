@@ -42,6 +42,7 @@
 // evaluate - many above includes are NOT NEEDED AT ALL TODO TODO TODO
 
 
+
 static bool pick_mode_enabled=false;
 static bool pick_from_wnd_created=false;
 
@@ -57,10 +58,20 @@ static UINT uMyTimerId;
 
 static pt_type* m_data;// = new pt_type(); //variable is defined elsewhere and passed into dll
 
-#define SHMEMSIZE 4096
 
 static LPVOID lpvMem = NULL;      // pointer to shared memory
 static HANDLE hMapObject = NULL;  // handle to file mapping
+
+byte* GetBitmapSizeAndData(HBITMAP hbmp, int& width, int& height)
+{
+	// Get width and height
+	BITMAP bm;
+	memset((void*)& bm, 0, sizeof(BITMAP));
+	int irv = GetObject(hbmp, sizeof(BITMAP), (void*)& bm);
+	width = bm.bmWidth;
+	height = bm.bmHeight;
+	return (byte*)bm.bmBits;
+}
 
 void ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin(void* ret_bitm, int* ret_size, pt_type* info)
 {
@@ -73,6 +84,7 @@ void ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin(void* ret_bitm,
     int         xScrn, yScrn;           // screen resolution
 
 	HGDIOBJ     hOldBitmap;//, hBitmap;
+	HBITMAP      hBitmap;
     LONG num_monitors=((LONG)::GetSystemMetrics(SM_CMONITORS));
     LONG same_fmt=((LONG)::GetSystemMetrics(SM_SAMEDISPLAYFORMAT));
 
@@ -114,54 +126,136 @@ void ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin(void* ret_bitm,
    // select old bitmap back into memory DC and get handle to
    // bitmap of the screen
 
-   hBitmap = SelectObject((HDC)hMemDC, hOldBitmap);
+   //hBitmap = 
+	SelectObject((HDC)hMemDC, hOldBitmap);
 
-    // TODO: fix me (not tested) chances are does notw ork...
-   /*
-   SDL_Surface* srf = SDL_CreateRGBSurfaceFrom(hBitmap,
-       nWidth,
-       nHeight,
-       depth,
-       comppp * nWidth, // pitch isn't stride, its stride /8 (eg width*4, when 4*8=32pbb)
-       0x00FF0000,
-       0x0000FF00,
-       0x000000FF,
-       0x00000000
-   );
-   */
-
-   // clean up
- //   DeleteObject(hMemDC); // TODO
- //   DeleteObject(hBitmap); // TODO
- //  ::ReleaseDC(0,hScrDC); // TODO
 
    // some bookkeeeping here... we need to cpy the bitmap to shared memory
    // then, arguablly, we coudl free it right now...
 
+   printf("dimensions w: %i h %i EOM\n", nWidth, nHeight);
 
+   
    int copySize = nWidth * nHeight;
    if (copySize > SHMEMSIZE) {
 	   copySize = SHMEMSIZE;
    }
 
-   memcpy(lpvMem, hBitmap, copySize);
+   printf("TEST2! %i EOM\n", copySize);
 
-   ret_bitm = &lpvMem;
+  // byte* sourceBytes = GetBitmapSizeAndData(hBitmap, nWidth, nHeight);
+
+
+   BITMAPINFO MyBMInfo = { 0 };
+   MyBMInfo.bmiHeader.biSize = sizeof(MyBMInfo.bmiHeader);
+
+   // Get the BITMAPINFO structure from the bitmap
+   if (0 == GetDIBits((HDC)hMemDC, hBitmap, 0, 0, NULL, &MyBMInfo, DIB_RGB_COLORS)) {
+	   printf("ERROR123 EOM\n");
+   }
+
+   // create the bitmap buffer
+   BYTE* lpPixels = new BYTE[MyBMInfo.bmiHeader.biSizeImage];
+
+   // Better do this here - the original bitmap might have BI_BITFILEDS, which makes it
+   // necessary to read the color table - you might not want this.
+   MyBMInfo.bmiHeader.biCompression = BI_RGB;
+
+   // get the actual bitmap buffer
+   if (0 == GetDIBits((HDC)hMemDC, hBitmap, 0, MyBMInfo.bmiHeader.biHeight, (LPVOID)lpPixels, &MyBMInfo, DIB_RGB_COLORS)) {
+	   printf("ERROR12345 EOM\n");
+   }
+
+   //UINT8* lpszTmp;
+   //lpszTmp = (UINT8*)ret_bitm;
+
+   //for (int i = 0; i < 100; i++) {
+	  // printf("TEST2! %i EOM\n", (UINT8)lpPixels[i]);
+
+	  // //((int *)ret_bitm)[i] = (int)lpPixels[i];
+
+	  // *lpszTmp++ = (UINT8)lpPixels[i];
+   //}
+
+   //printf("EEEE TEST2! %i EOM\n", copySize);
+
+
+   //memcpy(lpvMem, lpPixels, copySize);
+
+   memcpy(ret_bitm, lpPixels, copySize * sizeof(UINT32));
+
+   printf("ZZZZ TEST2! %i EOM\n", copySize);
+
+   //memcpy(&ret_bitm, lpvMem, SHMEMSIZE);
+
+   //printf("bytes %i %i %i %i %i %i EOM\n", (int)sourceBytes[0], (int)sourceBytes[1], (int)sourceBytes[2], (int)sourceBytes[3], (int)sourceBytes[4], (int)sourceBytes[5]);
+
+
+  // memcpy(lpvMem, sourceBytes, SHMEMSIZE);
+
+   //lpvMem = '\0';
+   //memcpy(lpvMem, hBitmap, 1);
+   //memset(lpvMem, '\0', SHMEMSIZE);
+
+   //LPWSTR bmpSrc;
+   //bmpSrc = (LPWSTR)hBitmap;
+
+   //LPWSTR lpszTmp;
+   //lpszTmp = (LPWSTR)lpvMem;
+   //// Get the address of the shared memory block
+   ////lpszTmp = (LPWSTR)hBitmap;
+   //// Copy from shared memory into the caller's buffer
+
+   //while (*bmpSrc && --copySize) {
+	  // printf("Iter: %i EOM\n", copySize);
+	  // * lpszTmp++ = *bmpSrc++;
+   //}
+   //*lpszTmp = '\0';
+
+   //LPWSTR lpszBuf = (LPWSTR)ret_bitm;
+   //LPWSTR lpszTmp;
+
+   //// Get the address of the shared memory block
+
+   //lpszTmp = (LPWSTR)lpvMem;
+
+   //// Copy from shared memory into the caller's buffer
+
+   //while (*lpszTmp&& --copySize) {
+	  // printf("TEST2! %i EOM\n", copySize);
+	  // *lpszBuf++ = *lpszTmp++;
+   //}
+   //*lpszBuf = '\0';
+
+
+
+   printf("TEST2! %i EOM\n", copySize);
+
+  // memcpy(&ret_bitm, lpvMem, copySize);
+
+   // ret_bitm = &lpvMem;
+	//ret_bitm = &lpszTmp;
+
    *ret_size = nWidth * nHeight;
 
    info->W = nWidth;
    info->H = nHeight;
 
-   FreeLastBitmapWin();
+   //FreeLastBitmapWin();
+
+   DeleteObject((HDC)hMemDC); 
+   DeleteObject(hBitmap);
+   ::ReleaseDC(0, (HDC)hScrDC);
+
+   delete[] lpPixels;
+
 
 //return &hBitmap;
  //  return srf;
 }
 
 void ColorPickWinClr::FreeLastBitmapWin() {
-    DeleteObject((HDC)hMemDC); // TODO
-   DeleteObject(hBitmap); // TODO
-   ::ReleaseDC(0,(HDC)hScrDC); // TODO
+
 }
 
 //this is run by the dialog color pick preview class cpick_prev_class
@@ -383,6 +477,7 @@ bool ColorPickWinClr::openURL(char* &url)
 
 
 
+
 //Calling this function from VB simply ensures winMain gets called properly
 extern "C" __declspec(dllexport) int  Begin_Monitor_Mouse_Position(pt_type* mpt) {
 	m_data = mpt;
@@ -408,16 +503,23 @@ extern "C" __declspec(dllexport) int  End_Monitor_Mouse_Position(void) {
 	return 0;
 }
 
-//Calling this function from VB simply ensures winMain gets called properly
-extern "C" __declspec(dllexport) pt_type* Get_Mouse_Position(void) {
-	//m_data->X = mx;
-	//m_data->Y = my;
-	//m_data->m1 = m1;
-	//m_data->m2 = m2;
-	//m1=false,m2=false;//click has been intercepted
-	return m_data;
+////Calling this function from VB simply ensures winMain gets called properly
+//extern "C" __declspec(dllexport) pt_type* Get_Mouse_Position(void) {
+//	//m_data->X = mx;
+//	//m_data->Y = my;
+//	//m_data->m1 = m1;
+//	//m_data->m2 = m2;
+//	//m1=false,m2=false;//click has been intercepted
+//	return m_data;
+//
+//}
 
+extern "C" __declspec(dllexport) bool color_pick_win_api_starturl(char* url) {
+	System::String^ str = gcnew System::String(url);
+	System::Diagnostics::Process::Start(str);
+	return true;
 }
+
 extern "C" __declspec(dllexport) void color_pick_win_api_toggle_picking() {
 	colorPickWinClr->winTogglePicking();
 }
@@ -426,28 +528,30 @@ extern "C" __declspec(dllexport) void color_pick_win_api_toggle_picking() {
 //	return colorPickWinClr->ColorPickWinClrCopyEntireScreenToBitmapWin();
 //}
 
-extern "C" __declspec(dllexport) void color_pick_win_api_screen_to_bitmap(void* bitm, int* &size, pt_type* &info) {
-	return colorPickWinClr->ColorPickWinClrCopyEntireScreenToBitmapWin(bitm, size, info);
+extern "C" __declspec(dllexport) void color_pick_win_api_screen_to_bitmap(void* bitm, int* size, pt_type* info) {
+
+
+	colorPickWinClr->ColorPickWinClrCopyEntireScreenToBitmapWin(bitm, size, info);
+
 }
 
-extern "C" __declspec(dllexport) void color_pick_win_api_get(ColorPickWinClr* t) {
-	t = ColorPickWinClr::Singleton();
-}
-
-extern "C" __declspec(dllexport) bool color_pick_win_api_starturl(char* url) {
-	System::String^ str = gcnew System::String(url);
-	System::Diagnostics::Process::Start(str);
-	return true;
-}
+//extern "C" __declspec(dllexport) void color_pick_win_api_get(ColorPickWinClr* t) {
+//	t = ColorPickWinClr::Singleton();
+//}
 
 
+#pragma unmanaged
 
 //main entry point for the application, when VB makes its first function call in this DLL
 BOOL APIENTRY DllMain(HINSTANCE hModule, DWORD  fdwReason, LPVOID lpReserved)
 {
 	BOOL fInit, fIgnore;
 
+	return TRUE; // seems to err
+	/*
+ 
 
+	*/
 	if (fdwReason == DLL_PROCESS_ATTACH)
 	{
 		//myInstance = hModule;
@@ -498,5 +602,6 @@ BOOL APIENTRY DllMain(HINSTANCE hModule, DWORD  fdwReason, LPVOID lpReserved)
 		fIgnore = CloseHandle(hMapObject);
 	}
 
-	return 0;
+	//return 0; // registration of dll via LoadLibrary will never work!
+	return TRUE;  //1 required!
 }

@@ -454,6 +454,8 @@ int EventFilter(void* userdata, SDL_Event* event){
 
                     SDL_Log("\n SDL_WINDOWEVENT_LEAVE");
 
+					// TODO: on windows this doesn't seem to trigger anythign, which is good actually, but we need to (in this case) stop any drag event that is panning...
+
                     return 0;
 
                 case SDL_WINDOWEVENT_FOCUS_LOST:
@@ -743,6 +745,12 @@ event is maybe going to have
             if( event->type == SDL_JOYAXISMOTION ){
                 break; // presumably we handled this or will plan to handle it.... above.... for now this makes silence on android....
             }
+
+#ifdef __WIN32__
+            if( event->type == SDL_POLLSENTINEL){
+                break; // presumably we handled this or will plan to handle it.... above.... for now this makes silence on android....
+            }
+#endif
 
             // see instead (of the above) SDL_HINT_TOUCH_MOUSE_EVENTS (actually that broke android?)
             SDL_Log("unrecognized event; type %02x", event->type );
