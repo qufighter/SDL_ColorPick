@@ -4,7 +4,7 @@ This will also complile into a:
 
 ~100% working Mac OS app
 ~100% wokring Linux app (for gtkmm-3.0 so far)
-~95% working/stable windows app (missking key screen feature)
+~95% working/stable windows app (some errors observed)
 ~IOS
 ~Android
 ~Emscripten

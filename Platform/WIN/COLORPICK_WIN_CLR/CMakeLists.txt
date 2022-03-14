@@ -49,9 +49,16 @@ if(WIN32)
 
  # added back anyway since when only the dll is rebuilt, copy seems to NOT occur... we don't need all these files though and release is not considered here...
      add_custom_command(TARGET colorpick_main_win_clr POST_BUILD
+         COMMAND  ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BUILD_TYPE} ../../../${CMAKE_BUILD_TYPE}/
+         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+         COMMENT "copying in ${CMAKE_BUILD_TYPE} colorpick_main_win_clr.dll library..."
+		 MAIN_DEPENDENCY ${CMAKE_BUILD_TYPE}/colorpick_main_win_clr.dll
+     )
+
+	 add_custom_command(TARGET colorpick_main_win_clr POST_BUILD
          COMMAND  ${CMAKE_COMMAND} -E copy_directory Debug ../../../Debug/
          WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-         COMMENT "copying in colorpick_main_win_clr.dll library..."
+         COMMENT "copying in Debug colorpick_main_win_clr.dll library..."
 		 MAIN_DEPENDENCY Debug/colorpick_main_win_clr.dll
      )
 

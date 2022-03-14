@@ -316,8 +316,9 @@ void beginScreenshotSeleced(){
             0x00000000
         );
 
-
-        openglContext->imageWasSelectedCb(srf, false);
+		// by passing 0,0 we will ensure that we get the right snap... trust me...  without it, there are some issues retrunign to pick mode, or even panning quick and ending up in the wrong place
+		// there are some alternate soltuions, to try to get the CORRECT mouse position (eg maybe we could pass in screen coord of the click that triggered this function call...)
+        openglContext->imageWasSelectedCb(srf, false, 0 , 0);
         xcb_disconnect(dsp);
     #endif
 

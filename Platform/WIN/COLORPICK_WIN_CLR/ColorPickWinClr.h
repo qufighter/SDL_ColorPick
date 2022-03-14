@@ -1,12 +1,3 @@
-//
-//  FileChooser.h
-//  ColorPick SDL
-//
-//  Created by Sam Larison on 8/13/16.
-//
-//
-
-// USED BY LINUX / UNIX
 
 #ifndef ColorPick_windiows_clrmain__h
 #define ColorPick_windiows_clrmain__h
@@ -29,14 +20,14 @@ public:
 	int         nWidth, nHeight;        // DIB width and height
 
 	static ColorPickWinClr* Singleton();
-	void winTogglePicking();
+	bool winTogglePicking();
 	bool openURL(char*& url);
 
 	static bool ms_bInstanceCreated;
 	static ColorPickWinClr* pInstance;
 
+	void ColorPickWinClr::ColorPickWinClrGetScreenSize(pt_type* info);
 	void ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin(void* ret_bitm, int* ret_size, pt_type* info);
-	void ColorPickWinClr::FreeLastBitmapWin();
 
 };
 

@@ -53,16 +53,16 @@ file(REMOVE BUILD/colorpick_main)
 
 file(COPY textures DESTINATION .)
 file(COPY shaders DESTINATION .)
-file(COPY textures/crosshair.png DESTINATION .)
+#file(COPY textures/crosshair.png DESTINATION .)
 
 if(WIN32)
 	file(COPY textures DESTINATION ./${CMAKE_BUILD_TYPE})
 	file(COPY shaders DESTINATION ./${CMAKE_BUILD_TYPE})
-	file(COPY textures/crosshair.png DESTINATION ./${CMAKE_BUILD_TYPE})
+	#file(COPY textures/crosshair.png DESTINATION ./${CMAKE_BUILD_TYPE})
 
 	file(COPY textures DESTINATION ./Debug)
 	file(COPY shaders DESTINATION ./Debug)
-	file(COPY textures/crosshair.png DESTINATION ./Debug)
+	#file(COPY textures/crosshair.png DESTINATION ./Debug)
 
 endif()
 

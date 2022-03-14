@@ -29,7 +29,7 @@
 #endif
 
 
-#if defined(__MACOSX__) || defined(__LINUX__) //     || defined(__WIN32__)
+#if defined(__MACOSX__) || defined(__LINUX__) || defined(__WIN32__)
 #define PICK_FROM_SCREEN_ENABLED = true
 #endif
 
@@ -225,6 +225,7 @@ typedef enum  {
     VIEW_RECENTLY_ROTATED,
     RENDER_VIEW_AGAIN,
     ANIMATE_MAIN_THREAD,
+	PICK_AGAIN_NOW, // for after "refresh" and wish to pick again as though we never stopped (desktop only) PICK_FROM_SCREEN_ENABLED
 } USER_EVENT_ENUM; // these may not be supported as of now on IOS ... ??
 
 
@@ -296,7 +297,7 @@ struct uniformLocationStruct
 //#define MAIN_THREAD_ANIMATIONS
 
 
-#if defined(__ANDROID__) //|| defined(__LINUX__)
+#if defined(__ANDROID__) //|| defined(__WIN32__)
 
 #else
 //#ifndef __ANDROID__

@@ -43,50 +43,61 @@
 
 
 
-static bool pick_mode_enabled=false;
-static bool pick_from_wnd_created=false;
+static bool pick_mode_enabled=false; // dupe of m_clr_data->picking_active
+static bool pick_from_wnd_created=false; // dupe of m_clr_data->shield_created  - also recreate shield instaed...
 
-//#define DISABLE_WIN32_CODEBLOCKS 1
 
 static HWND pick_from_hwnd=NULL;
 static HWND preview_hwnd=NULL;
 static HWND pick_zoom_hwnd=NULL;
-static CWnd* preview_cwnd=NULL;
+//static CWnd* preview_cwnd=NULL;
 static CWnd* pick_from_cwnd=NULL;
 
 static UINT uMyTimerId;
 
-static pt_type* m_data;// = new pt_type(); //variable is defined elsewhere and passed into dll
+static pt_type* m_clr_data = new pt_type(); //variable is defined elsewhere and passed into dll
 
 
 static LPVOID lpvMem = NULL;      // pointer to shared memory
 static HANDLE hMapObject = NULL;  // handle to file mapping
 
-byte* GetBitmapSizeAndData(HBITMAP hbmp, int& width, int& height)
-{
-	// Get width and height
-	BITMAP bm;
-	memset((void*)& bm, 0, sizeof(BITMAP));
-	int irv = GetObject(hbmp, sizeof(BITMAP), (void*)& bm);
-	width = bm.bmWidth;
-	height = bm.bmHeight;
-	return (byte*)bm.bmBits;
+bool ColorPickWinClr::ms_bInstanceCreated = false;
+ColorPickWinClr* ColorPickWinClr::pInstance = NULL;
+
+
+void ColorPickWinClr::ColorPickWinClrGetScreenSize(pt_type* info) {
+
+	//LONG num_monitors = ((LONG)::GetSystemMetrics(SM_CMONITORS));
+	//LONG same_fmt = ((LONG)::GetSystemMetrics(SM_SAMEDISPLAYFORMAT));
+
+	LONG virtual_start_x = ((LONG)::GetSystemMetrics(SM_XVIRTUALSCREEN));
+	LONG virtual_start_y = ((LONG)::GetSystemMetrics(SM_YVIRTUALSCREEN));
+	LONG virtual_end_x = ((LONG)::GetSystemMetrics(SM_CXVIRTUALSCREEN));
+	LONG virtual_end_y = ((LONG)::GetSystemMetrics(SM_CYVIRTUALSCREEN));
+
+	int scx = abs(virtual_start_x - virtual_end_x);
+	int scy = abs(virtual_start_y - virtual_end_y);
+
+	info->W = scx;
+	info->H = scy;
+
+	m_clr_data->W = scx;
+	m_clr_data->H = scy;
+
 }
+
 
 void ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin(void* ret_bitm, int* ret_size, pt_type* info)
 {
-	//TODO: ghastly but maybe we cAN pass something back?  so far no luck, see CopyEntireScreenToSurfaceWin
-	// there must be a way to 1) load the dll into shared (non protected) memory (probably preferred way?
-	//						  2) pass a (fixed length?) string of some tpye? (nasty solution...) but we know struct of fixed len works?! 
 
     //HDC         hScrDC, hMemDC;         // screen DC and memory DC
-    int         nX, nY, nX2, nY2;       // coordinates of rectangle to grab
-    int         xScrn, yScrn;           // screen resolution
+	int         nX, nY; // , nX2, nY2;       // coordinates of rectangle to grab
+    //int         xScrn, yScrn;           // screen resolution
 
 	HGDIOBJ     hOldBitmap;//, hBitmap;
 	HBITMAP      hBitmap;
-    LONG num_monitors=((LONG)::GetSystemMetrics(SM_CMONITORS));
-    LONG same_fmt=((LONG)::GetSystemMetrics(SM_SAMEDISPLAYFORMAT));
+    //LONG num_monitors=((LONG)::GetSystemMetrics(SM_CMONITORS));
+    //LONG same_fmt=((LONG)::GetSystemMetrics(SM_SAMEDISPLAYFORMAT));
 
     LONG virtual_start_x=((LONG)::GetSystemMetrics(SM_XVIRTUALSCREEN));
     LONG virtual_start_y=((LONG)::GetSystemMetrics(SM_YVIRTUALSCREEN));
@@ -94,8 +105,8 @@ void ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin(void* ret_bitm,
     LONG virtual_end_y=((LONG)::GetSystemMetrics(SM_CYVIRTUALSCREEN));
 
     //total width across all monitors (size of bitmap)
-    int scx = abs(virtual_start_x-virtual_end_x);
-    int scy = abs(virtual_start_y-virtual_end_y);
+	nWidth = abs(virtual_start_x-virtual_end_x);
+	nHeight = abs(virtual_start_y-virtual_end_y);
     //s->cx = (LONG)::GetSystemMetrics( SM_CXFULLSCREEN );//SM_CXSCREEN
     //s->cy = (LONG)::GetSystemMetrics( SM_CYSCREEN );
 
@@ -108,11 +119,8 @@ void ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin(void* ret_bitm,
    nX = virtual_start_x;//0;//lpRect->left;
    nY = virtual_start_y;//lpRect->top;
 
-   xScrn = GetDeviceCaps((HDC)hScrDC, HORZRES);
-   yScrn = GetDeviceCaps((HDC)hScrDC, VERTRES);
-
-   nWidth = scx;//nX2 - nX;
-   nHeight = scy;//nY2 - nY;
+   //xScrn = GetDeviceCaps((HDC)hScrDC, HORZRES);
+   //yScrn = GetDeviceCaps((HDC)hScrDC, VERTRES);
 
    // create a bitmap compatible with the screen DC
    hBitmap = CreateCompatibleBitmap((HDC)hScrDC, nWidth, nHeight);
@@ -130,28 +138,19 @@ void ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin(void* ret_bitm,
 	SelectObject((HDC)hMemDC, hOldBitmap);
 
 
-   // some bookkeeeping here... we need to cpy the bitmap to shared memory
-   // then, arguablly, we coudl free it right now...
+   //printf("dimensions w: %i h %i EOM\n", nWidth, nHeight);
 
-   printf("dimensions w: %i h %i EOM\n", nWidth, nHeight);
 
-   
    int copySize = nWidth * nHeight;
-   if (copySize > SHMEMSIZE) {
-	   copySize = SHMEMSIZE;
-   }
 
-   printf("TEST2! %i EOM\n", copySize);
-
-  // byte* sourceBytes = GetBitmapSizeAndData(hBitmap, nWidth, nHeight);
-
+   //printf("TEST2! %i EOM\n", copySize);
 
    BITMAPINFO MyBMInfo = { 0 };
    MyBMInfo.bmiHeader.biSize = sizeof(MyBMInfo.bmiHeader);
 
    // Get the BITMAPINFO structure from the bitmap
    if (0 == GetDIBits((HDC)hMemDC, hBitmap, 0, 0, NULL, &MyBMInfo, DIB_RGB_COLORS)) {
-	   printf("ERROR123 EOM\n");
+	   printf("ColorPick GetDIBits CodeColorPickERROR123 EOM\n");
    }
 
    // create the bitmap buffer
@@ -163,115 +162,46 @@ void ColorPickWinClr::ColorPickWinClrCopyEntireScreenToBitmapWin(void* ret_bitm,
 
    // get the actual bitmap buffer
    if (0 == GetDIBits((HDC)hMemDC, hBitmap, 0, MyBMInfo.bmiHeader.biHeight, (LPVOID)lpPixels, &MyBMInfo, DIB_RGB_COLORS)) {
-	   printf("ERROR12345 EOM\n");
+	   printf("ColorPick GetDIBits CodeColorPickERROR12345 EOM\n");
    }
 
-   //UINT8* lpszTmp;
-   //lpszTmp = (UINT8*)ret_bitm;
-
-   //for (int i = 0; i < 100; i++) {
-	  // printf("TEST2! %i EOM\n", (UINT8)lpPixels[i]);
-
-	  // //((int *)ret_bitm)[i] = (int)lpPixels[i];
-
-	  // *lpszTmp++ = (UINT8)lpPixels[i];
-   //}
-
-   //printf("EEEE TEST2! %i EOM\n", copySize);
-
-
-   //memcpy(lpvMem, lpPixels, copySize);
-
    memcpy(ret_bitm, lpPixels, copySize * sizeof(UINT32));
-
-   printf("ZZZZ TEST2! %i EOM\n", copySize);
-
-   //memcpy(&ret_bitm, lpvMem, SHMEMSIZE);
-
-   //printf("bytes %i %i %i %i %i %i EOM\n", (int)sourceBytes[0], (int)sourceBytes[1], (int)sourceBytes[2], (int)sourceBytes[3], (int)sourceBytes[4], (int)sourceBytes[5]);
-
-
-  // memcpy(lpvMem, sourceBytes, SHMEMSIZE);
-
-   //lpvMem = '\0';
-   //memcpy(lpvMem, hBitmap, 1);
-   //memset(lpvMem, '\0', SHMEMSIZE);
-
-   //LPWSTR bmpSrc;
-   //bmpSrc = (LPWSTR)hBitmap;
-
-   //LPWSTR lpszTmp;
-   //lpszTmp = (LPWSTR)lpvMem;
-   //// Get the address of the shared memory block
-   ////lpszTmp = (LPWSTR)hBitmap;
-   //// Copy from shared memory into the caller's buffer
-
-   //while (*bmpSrc && --copySize) {
-	  // printf("Iter: %i EOM\n", copySize);
-	  // * lpszTmp++ = *bmpSrc++;
-   //}
-   //*lpszTmp = '\0';
-
-   //LPWSTR lpszBuf = (LPWSTR)ret_bitm;
-   //LPWSTR lpszTmp;
-
-   //// Get the address of the shared memory block
-
-   //lpszTmp = (LPWSTR)lpvMem;
-
-   //// Copy from shared memory into the caller's buffer
-
-   //while (*lpszTmp&& --copySize) {
-	  // printf("TEST2! %i EOM\n", copySize);
-	  // *lpszBuf++ = *lpszTmp++;
-   //}
-   //*lpszBuf = '\0';
-
-
-
-   printf("TEST2! %i EOM\n", copySize);
-
-  // memcpy(&ret_bitm, lpvMem, copySize);
-
-   // ret_bitm = &lpvMem;
-	//ret_bitm = &lpszTmp;
 
    *ret_size = nWidth * nHeight;
 
    info->W = nWidth;
    info->H = nHeight;
 
-   //FreeLastBitmapWin();
-
    DeleteObject((HDC)hMemDC); 
    DeleteObject(hBitmap);
    ::ReleaseDC(0, (HDC)hScrDC);
-
    delete[] lpPixels;
 
-
-//return &hBitmap;
- //  return srf;
+   m_clr_data->refresh_requested = false;
 }
 
-void ColorPickWinClr::FreeLastBitmapWin() {
-
-}
 
 //this is run by the dialog color pick preview class cpick_prev_class
 //defines message loop for the pickable area that shows the crosshair cursor
 LRESULT CALLBACK CPick_Preview_WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam )
 {
   //  OpenGLContext* openglContext;
-    
+	ColorPickWinClr* cpwinclr_instance = ColorPickWinClr::Singleton();
+
     switch( message )
     {
     case WM_CREATE:
         //Beep( 50, 10 );
         break;
-    //case WM_CHAR:
-    //    switch( wparam )
-    //    {
+    case WM_CHAR:
+        switch( wparam )
+        {
+		case 'r':
+		case 'R':
+		case 'j':
+		case 'J':
+			//printf("char event R r rrrr ");
+			m_clr_data->refresh_requested = true;
     //    case 'G':   // make ghostly
     //    case 'g':
     //        // maintain old style, turn on WS_EX_LAYERED bits on.
@@ -300,9 +230,9 @@ LRESULT CALLBACK CPick_Preview_WndProc(HWND hwnd, UINT message, WPARAM wparam, L
     //        // to write code that'll work
     //        // on both 32-bit and 64-bit windows!
     //        // http://msdn2.microsoft.com/en-us/library/ms644898(VS.85).aspx
-    //    }
+        }
     //    return 0;
-    //    break;
+        break;
     case WM_PAINT:
         {
             HDC hdc;
@@ -312,13 +242,26 @@ LRESULT CALLBACK CPick_Preview_WndProc(HWND hwnd, UINT message, WPARAM wparam, L
             EndPaint( hwnd, &ps );
         }
         break;
+	case WM_MOUSEMOVE:
+		
+		// maybe we can just use this? undecided...
+		m_clr_data->X = GET_X_LPARAM(lparam);
+		m_clr_data->Y = GET_Y_LPARAM(lparam);
+		// wparam tells us about many button states/modifiers https://docs.microsoft.com/en-us/windows/win32/inputdev/wm-mousemove
+		// printf(" %i %i %i  %i %i", message, wparam, lparam, m_clr_data->X, m_clr_data->Y );
+
+		break;
+
     case WM_LBUTTONDOWN:
     case WM_RBUTTONDOWN:
             // no instance?? we may need to use singleton to reach into here... possibly simply calling beginScreenshotSeleced() again would disable...
-//        if(pick_mode_enabled) winTogglePicking();
+
+        if(pick_mode_enabled) cpwinclr_instance->winTogglePicking(); // we'll likely be polling for some changes (mouse, etc) and we can just detect this state?
        //      openglContext = OpenGLContext::Singleton();
        //      openglContext->choosePickFromScreen(); //?
 //ShowWindow(pick_from_hwnd,SW_HIDE);//if we click on it, well we shouldn't click on it!  that is all - the window should never have focus
+
+
 
         break;
     case WM_KEYDOWN:
@@ -326,7 +269,10 @@ LRESULT CALLBACK CPick_Preview_WndProc(HWND hwnd, UINT message, WPARAM wparam, L
         switch( wparam )
         {
         case VK_ESCAPE:
-            PostQuitMessage( 0 );
+			//printf("ESCAPE key pressed...\n\n");
+            //PostQuitMessage( 0 ); // no effect...
+			m_clr_data->picking_canceled = true;
+			if (pick_mode_enabled) cpwinclr_instance->winTogglePicking(); // we'll likely be polling for some changes (mouse, etc) and we can just detect this state?
             break;
         default:
             break;
@@ -346,8 +292,8 @@ static void initWinDesktopScreenshotPreviewWindow(){
         wcx.cbClsExtra = 0;
         wcx.cbSize = sizeof( WNDCLASSEX );  // 1.  NEW!  must know its own size.
         wcx.cbWndExtra = 0;
-        wcx.hbrBackground = (HBRUSH)GetStockObject( LTGRAY_BRUSH ); //HOLLOW_BRUSH option prevent screen flash
-        wcx.hCursor = NULL; // LoadCursor( NULL, MAKEINTRESOURCE(IDC_CROSS) ); // TODO: fix the cursor here !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		wcx.hbrBackground = (HBRUSH)GetStockObject(HOLLOW_BRUSH); // LTGRAY_BRUSH ); //HOLLOW_BRUSH option prevent screen flash
+		wcx.hCursor = LoadCursor(NULL, IDC_CROSS); //NULL LoadCursor(NULL, MAKEINTRESOURCE("textures/crosshair.png"));// NULL; // LoadCursor( NULL, MAKEINTRESOURCE(IDC_CROSS) ); // TODO: fix the cursor here !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         wcx.hIcon = NULL;//LoadIcon( NULL, IDI_APPLICATION );
         wcx.hIconSm = NULL;                 // 2.  NEW!!  Can specify small icon.
         wcx.hInstance = NULL;//GetModuleHandle(0);//hInstance;
@@ -379,14 +325,13 @@ static void initWinDesktopScreenshotPreviewWindow(){
             virtual_start_x,virtual_start_y,scx,scy,
             NULL,NULL,GetModuleHandle(0),NULL
         );
-    #ifndef DISABLE_WIN32_CODEBLOCKS
-    pick_from_cwnd = CWnd::FromHandle(pick_from_hwnd);
-    #endif
-    pick_from_wnd_created=true;
+
+	pick_from_cwnd = CWnd::FromHandle(pick_from_hwnd);
+
+	pick_from_wnd_created=true;
+	m_clr_data->shield_created = true;
 }
 
-bool ColorPickWinClr::ms_bInstanceCreated = false;
-ColorPickWinClr* ColorPickWinClr::pInstance = NULL;
 
 ColorPickWinClr* ColorPickWinClr::Singleton() {
 	if (!ms_bInstanceCreated) {
@@ -396,20 +341,22 @@ ColorPickWinClr* ColorPickWinClr::Singleton() {
 	return pInstance;
 }
 
-void ColorPickWinClr::winTogglePicking(){
+bool ColorPickWinClr::winTogglePicking(){
     if(pick_mode_enabled){
 
-        preview_cwnd->SetActiveWindow();
+        //preview_cwnd->SetActiveWindow();
 
         //if(pickUpdateThread && pickUpdateThread->IsAlive )pickUpdateThread->Abort();
         pick_mode_enabled=false;
+		m_clr_data->picking_active = false;
+
         //threadLoopCount = 0;
-        KillTimer(pick_from_hwnd, uMyTimerId);
+//        KillTimer(pick_from_hwnd, uMyTimerId);
 
         //End_Monitor_Mouse_Position();
         //mpt->m1=false;//intercepted event
 
-        if(pick_from_wnd_created) ShowWindow(pick_from_hwnd,SW_HIDE);
+        if(pick_from_wnd_created) ShowWindow(pick_from_hwnd,SW_HIDE); //destroy?
 
         //ShowWindow(preview_hwnd,SW_RESTORE);
         //preview_cwnd->SetActiveWindow();
@@ -427,8 +374,11 @@ void ColorPickWinClr::winTogglePicking(){
         //Begin_Monitor_Mouse_Position(mpt);
         //mpt = Get_Mouse_Position();/*!*/
         pick_mode_enabled=true;
+		m_clr_data->picking_active = true;
+		m_clr_data->picking_canceled = false;
 
-        initWinDesktopScreenshotPreviewWindow();
+
+        initWinDesktopScreenshotPreviewWindow(); // todo: if screen changes, do we not need to resize/ resposition this (aftifact of another time??)??
 
 
         //if(usingThreadedPicking){
@@ -436,7 +386,7 @@ void ColorPickWinClr::winTogglePicking(){
         //    pickUpdateThread->Start();
         //}else{
             //threadLoopCount = 0;
-            uMyTimerId = SetTimer(pick_from_hwnd, NULL, PICK_UPDATE_DELAY_MS * 2, NULL);
+   //         uMyTimerId = SetTimer(pick_from_hwnd, NULL, PICK_UPDATE_DELAY_MS * 2, NULL); // todo: kill timer?? not needed?
         //}
 
 
@@ -457,18 +407,16 @@ void ColorPickWinClr::winTogglePicking(){
 //        preview_cwnd->SetActiveWindow();
 //        preview_cwnd->ActivateTopParent();
     }
+
+	return m_clr_data->picking_active;
 }
 
 
 
 bool ColorPickWinClr::openURL(char* &url)
 {
-    #ifndef DISABLE_WIN32_CODEBLOCKS
 	System::String^ temp = gcnew System::String(url);
-
-	
     System::Diagnostics::Process::Start(temp);
-    #endif
     return true;
 }
 
@@ -480,10 +428,14 @@ bool ColorPickWinClr::openURL(char* &url)
 
 //Calling this function from VB simply ensures winMain gets called properly
 extern "C" __declspec(dllexport) int  Begin_Monitor_Mouse_Position(pt_type* mpt) {
-	m_data = mpt;
+	//m_clr_data = mpt;
+
 	//m_data->X=-1,
 	//m_data->Y=-1,
-	m_data->m1 = false;
+	m_clr_data->m1 = false;
+
+	// eh - how to handle this... maybe
+	memcpy(mpt, m_clr_data, sizeof(pt_type));
 
 	//if (!watchingMousePosition) {
 	//	if (colorPickExistsAndRunning()) {
@@ -503,6 +455,10 @@ extern "C" __declspec(dllexport) int  End_Monitor_Mouse_Position(void) {
 	return 0;
 }
 
+extern "C" __declspec(dllexport) void  color_pick_win_api_getstatus(pt_type* mpt) {
+	memcpy(mpt, m_clr_data, sizeof(pt_type));
+}
+
 ////Calling this function from VB simply ensures winMain gets called properly
 //extern "C" __declspec(dllexport) pt_type* Get_Mouse_Position(void) {
 //	//m_data->X = mx;
@@ -520,19 +476,20 @@ extern "C" __declspec(dllexport) bool color_pick_win_api_starturl(char* url) {
 	return true;
 }
 
-extern "C" __declspec(dllexport) void color_pick_win_api_toggle_picking() {
-	colorPickWinClr->winTogglePicking();
+extern "C" __declspec(dllexport) bool color_pick_win_api_toggle_picking() {
+	return colorPickWinClr->winTogglePicking();
 }
 
 //extern "C" __declspec(dllexport) HGDIOBJ* color_pick_win_api_screen_to_bitmap() {
 //	return colorPickWinClr->ColorPickWinClrCopyEntireScreenToBitmapWin();
 //}
 
+extern "C" __declspec(dllexport) void color_pick_win_api_get_screen_size(pt_type* info) {
+	colorPickWinClr->ColorPickWinClrGetScreenSize(info);
+}
+
 extern "C" __declspec(dllexport) void color_pick_win_api_screen_to_bitmap(void* bitm, int* size, pt_type* info) {
-
-
 	colorPickWinClr->ColorPickWinClrCopyEntireScreenToBitmapWin(bitm, size, info);
-
 }
 
 //extern "C" __declspec(dllexport) void color_pick_win_api_get(ColorPickWinClr* t) {
@@ -545,63 +502,10 @@ extern "C" __declspec(dllexport) void color_pick_win_api_screen_to_bitmap(void* 
 //main entry point for the application, when VB makes its first function call in this DLL
 BOOL APIENTRY DllMain(HINSTANCE hModule, DWORD  fdwReason, LPVOID lpReserved)
 {
-	BOOL fInit, fIgnore;
+	//BOOL fInit, fIgnore;
 
 	return TRUE; // seems to err
-	/*
- 
-
-	*/
-	if (fdwReason == DLL_PROCESS_ATTACH)
-	{
-		//myInstance = hModule;
-
-		// Create a named file mapping object
-		hMapObject = CreateFileMapping(
-			INVALID_HANDLE_VALUE,   // use paging file
-			NULL,                   // default security attributes you may choose to use a SECURITY_ATTRIBUTES structure to provide additional security.
-			PAGE_READWRITE,         // read/write access
-			0,                      // size: high 32-bits
-			SHMEMSIZE,              // size: low 32-bits
-			TEXT("colorpickfilemap")); // name of map object
-		if (hMapObject == NULL)
-			return FALSE;
-
-		// The first process to attach initializes memory
-
-		fInit = (GetLastError() != ERROR_ALREADY_EXISTS);
-
-		// Get a pointer to the file-mapped shared memory
-
-		lpvMem = MapViewOfFile(
-			hMapObject,     // object to map view of
-			FILE_MAP_WRITE, // read/write access
-			0,              // high offset:  map from
-			0,              // low offset:   beginning
-			0);             // default: map entire file
-		if (lpvMem == NULL)
-			return FALSE;
-
-		// Initialize memory if this is the first process
-
-		if (fInit)
-			memset(lpvMem, '\0', SHMEMSIZE);
-
-
-	};
-
-	if (fdwReason == DLL_PROCESS_DETACH)
-	{
-		//LogStr( "MOUSE.DLL stopping monitoring mouse position" );
-		//detachMouseHook();
-
-		// Unmap shared memory from the process's address space
-		fIgnore = UnmapViewOfFile(lpvMem);
-
-		// Close the process's handle to the file-mapping object
-		fIgnore = CloseHandle(hMapObject);
-	}
 
 	//return 0; // registration of dll via LoadLibrary will never work!
-	return TRUE;  //1 required!
+	//return TRUE;  //1 required!
 }

@@ -387,6 +387,12 @@ int MainThreadUserEventHandler(SDL_Event* p_event){
             openglContext->renderShouldUpdate = true;
             return 0;
         }
+		case USER_EVENT_ENUM::PICK_AGAIN_NOW:
+        {
+            SDL_Log("USER EVENT - PICK_AGAIN_NOW");
+            openglContext->choosePickFromScreen(); // better yet, trigger via general UX press of the correct button??? to bounce it??
+            return 0;
+        }
     }
 
     //return 1; // not handled, leave it in the queue ?????? only really makes sense if we process events elsewhere right?  tough to say for sure but we'd have to make sure all platforms handle the other events somehow...
@@ -1333,8 +1339,6 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
         SDL_AddEventWatch(EventFilter, nullptr); // second param is provided to filter which runs in different thread... void* userdata
 #endif
 
-
-
         //ReshapeWindow();
         openglContext->setupScene();
         ReshapeWindow();
@@ -1406,6 +1410,12 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
     openglContext->destroyContext();
     SDL_DestroyWindow(sdl_Window);
     SDL_Quit();
+
+//
+//#ifdef __WIN32__
+//	SDL_Delay(250); //to allow other threads to cease?  stack corruption could be avoided?
+//#endif
+
 #endif
 
     return 0;

@@ -11,10 +11,7 @@
 
 //#if defined(__WINDOWS__)
 
-
 #define PICK_UPDATE_DELAY_MS 16 //render delay in picking thread
-
-
 
 #include <math.h>
 
@@ -47,73 +44,50 @@ int op_increase (int i) { return i*1.25; }
 // read form ColorPickWinClr (dll)
 
 
-//http://www.cplusplus.com/forum/general/8090/
-//  typedef LONG (__stdcall *pCreateCompression)(LONG *context, LONG flags);
+// connect dll
+
 typedef BOOL(__stdcall* pBegin_Monitor_Mouse_Position)(pt_type*);
 typedef BOOL(__stdcall* pEnd_Monitor_Mouse_Position)();
 //typedef pt_type* (__stdcall* pGet_Mouse_Position)();
+typedef bool(__stdcall* p_color_pick_win_api_getstatus)(pt_type* info);
 typedef bool(__stdcall* p_color_pick_win_api_starturl)(char*);
-typedef void(__stdcall* p_color_pick_win_api_toggle_picking)();
+typedef bool(__stdcall* p_color_pick_win_api_toggle_picking)();
+typedef void(__stdcall* p_color_pick_win_api_get_screen_size)(pt_type* info);
 typedef void(__stdcall* p_color_pick_win_api_screen_to_bitmap)(void* ret_bitm, int* ret_size, pt_type* info);
 
-//typedef void(__stdcall* p_color_pick_win_api_get)(ColorPickWinClr*); // will not wrok this way
 
 pBegin_Monitor_Mouse_Position Begin_Monitor_Mouse_Position;
 pEnd_Monitor_Mouse_Position End_Monitor_Mouse_Position;
 //pGet_Mouse_Position Get_Mouse_Position;
+p_color_pick_win_api_getstatus color_pick_win_api_getstatus;
 p_color_pick_win_api_starturl color_pick_win_api_starturl;
 p_color_pick_win_api_toggle_picking color_pick_win_api_toggle_picking;
+p_color_pick_win_api_get_screen_size color_pick_win_api_get_screen_size;
 p_color_pick_win_api_screen_to_bitmap color_pick_win_api_screen_to_bitmap;
-//p_color_pick_win_api_get color_pick_win_api_get;
 
-/*
+//see also, regDllFunctionsIfNotRegistered()
 
-// we may be missing something here...
-private: void ColorPick::loadMouseListener(){
-				HINSTANCE hDLL = NULL;
-				hDLL = LoadLibrary(L"ColorPickMouse.dll");
 
-				if( hDLL == NULL ){
-					System::Windows::Forms::MessageBox::Show("Fatal Error: Could not load ColorPickMouse.dll","ColorPick");
-					exit(0);
-					return;
-				}else{
-					Begin_Monitor_Mouse_Position = (pBegin_Monitor_Mouse_Position)GetProcAddress(hDLL, "Begin_Monitor_Mouse_Position");
-					End_Monitor_Mouse_Position = (pEnd_Monitor_Mouse_Position)GetProcAddress(hDLL, "End_Monitor_Mouse_Position");
-					Get_Mouse_Position = (pGet_Mouse_Position)GetProcAddress(hDLL, "Get_Mouse_Position");
-					//mpt = Get_Mouse_Position();
-					//Begin_Monitor_Mouse_Position(mpt);
-				}
-		 }
-
-*/
 
 static HINSTANCE hDLL = NULL;
 
-static bool pick_mode_enabled=false;
-static bool pick_from_wnd_created=false;
+//typedef unsigned int CWnd; // suppress errors TEMPORARY!!
 
-typedef unsigned int CWnd; // suppress errors TEMPORARY!!
+static pt_type* m_clr_status = new pt_type(); // not allocated...
 
-static pt_type* mouse_point;
+//static HWND pick_from_hwnd=NULL;
+//static HWND preview_hwnd=NULL;
+//static HWND pick_zoom_hwnd=NULL;
+//static CWnd* preview_cwnd=NULL;
+//static CWnd* pick_from_cwnd=NULL;
 
-#define DISABLE_WIN32_CODEBLOCKS 1
-
-static HWND pick_from_hwnd=NULL;
-static HWND preview_hwnd=NULL;
-static HWND pick_zoom_hwnd=NULL;
-static CWnd* preview_cwnd=NULL;
-static CWnd* pick_from_cwnd=NULL;
-
-static UINT uMyTimerId;
+//static UINT uMyTimerId;
 
 static bool regDllFunctionsIfNotRegistered() {
 	if (hDLL == NULL) {
 
-		HINSTANCE hDLL = NULL;
 		hDLL = LoadLibrary("colorpick_main_win_clr.dll");
 		//hDLL = LoadLibrary("../Platform/WIN/COLORPICK_WIN_CLR/Debug/colorpick_main_win_clr.dll");
-
 
 		if (hDLL == NULL) {
 			SDL_Log("Fatal Error: Could not load colorpick_main_win_clr.dll");
@@ -121,8 +95,10 @@ static bool regDllFunctionsIfNotRegistered() {
 			return false;
 		}
 		else {
+			color_pick_win_api_getstatus = (p_color_pick_win_api_getstatus)GetProcAddress(hDLL, "color_pick_win_api_getstatus");
 			color_pick_win_api_starturl = (p_color_pick_win_api_starturl)GetProcAddress(hDLL, "color_pick_win_api_starturl");
 			color_pick_win_api_toggle_picking = (p_color_pick_win_api_toggle_picking)GetProcAddress(hDLL, "color_pick_win_api_toggle_picking");
+			color_pick_win_api_get_screen_size = (p_color_pick_win_api_get_screen_size)GetProcAddress(hDLL, "color_pick_win_api_get_screen_size");
 			color_pick_win_api_screen_to_bitmap = (p_color_pick_win_api_screen_to_bitmap)GetProcAddress(hDLL, "color_pick_win_api_screen_to_bitmap");
 			return true;
 		}
@@ -138,6 +114,16 @@ SDL_Surface* CopyEntireScreenToSurfaceWin()
 
 	//color_pick_win_api_get(colorPickWinClr);
 
+	pt_type sizeInfo; // juse reuse m_clr_status ??
+
+	// first see what size bmp we need to allocate...
+
+	color_pick_win_api_get_screen_size(&sizeInfo);
+
+	UINT32 pixelFootprint = 0;
+
+	pixelFootprint = sizeInfo.W * sizeInfo.H;
+
 	auto depth = 32;
 	auto comppp = 4;
 
@@ -146,21 +132,19 @@ SDL_Surface* CopyEntireScreenToSurfaceWin()
 	Uint8* ret_bitm_flipped;
 
 	int size = 0;
-	pt_type sizeInfo;
 
 
 	// one problem, we need to allocate enough memory for our screen object...
 
-	ret_bitm = (Uint8*)SDL_malloc(sizeof(Uint32) * SHMEMSIZE); // over allocated....
+	ret_bitm = (Uint8*)SDL_malloc(sizeof(Uint32) * pixelFootprint); // over allocated?? or actualy now it should always be allocated exactly correct...
 
 	SDL_Log("before call to dll... s: %i width: %i height: %i ", size, sizeInfo.W, sizeInfo.H);
-
 
 	color_pick_win_api_screen_to_bitmap(ret_bitm, &size, &sizeInfo);
 
 	SDL_Log("Recieved information from dll... s: %i width: %i height: %i ", size, sizeInfo.W, sizeInfo.H);
 
-	SDL_Log("Recieved bitmap info.. %i, %i, %i, %i, %i, %i ", ret_bitm[0], ret_bitm[1], ret_bitm[2], ret_bitm[3], ret_bitm[4], ret_bitm[5]);
+	//SDL_Log("Recieved bitmap info.. %i, %i, %i, %i, %i, %i ", ret_bitm[0], ret_bitm[1], ret_bitm[2], ret_bitm[3], ret_bitm[4], ret_bitm[5]);
 
 	//SDL_memcpy(ret_bitm_flipped, ret_bitm, sizeof(Uint32) * SHMEMSIZE);
 
@@ -186,39 +170,88 @@ SDL_Surface* CopyEntireScreenToSurfaceWin()
        0x00000000
    );
 
-
 	SDL_free(ret_bitm);
 	//SDL_free(ret_bitm_flipped); // whatever we give surface, cannot free it!
-
-
-   //colorPickWinClr->FreeLastBitmapWin();
 
    return srf;
 }
 
+static Uint32 pick_again_soon(Uint32 interval, void* parm) {
+	// to make just this timer, fire on main thread - push event!
+	SDL_Event event;
+	SDL_UserEvent userevent;
+	userevent.type = SDL_USEREVENT;
+	userevent.code = USER_EVENT_ENUM::PICK_AGAIN_NOW;
+	event.type = SDL_USEREVENT;
+	event.user = userevent;
+	SDL_PushEvent(&event);
+	return 0;
+}
+
+static Uint32 check_active_picking_activities(Uint32 interval, void* parm) {
+
+	color_pick_win_api_getstatus(m_clr_status);
+	OpenGLContext* openglContext = OpenGLContext::Singleton();
+
+	if (m_clr_status->picking_active) {
+
+		if (m_clr_status->refresh_requested) {
+			beginScreenshotSeleced(); // first call: toggles picking OFF!
+			SDL_AddTimer(250, pick_again_soon, nullptr);
+			//beginScreenshotSeleced(); // if we tried it again now, from this thread, everything gets really broken!
+			return 0;
+		}
+
+		ColorPickState* colorPickState = ColorPickState::Singleton();
+
+		// the position is pretty wierd sometimes (bg in correct position, fg not... I think I know WHY possibly???) we have to move a certian amount to fix the panning....
+		openglContext->position_x = (openglContext->fullPickImgSurface->clip_rect.w - (int)m_clr_status->X) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
+		openglContext->position_y = (openglContext->fullPickImgSurface->clip_rect.h - (int)m_clr_status->Y) - (openglContext->fullPickImgSurface->clip_rect.h / 2);
+
+		colorPickState->movedxory = true;
+		openglContext->renderShouldUpdate = true; // do not call renderScene from timer thread!
+
+
+	} else {
+
+		// if we ended, depending on how (cancel vs click) we should push the color to history!s
+		if (!m_clr_status->picking_canceled) {
+			OpenGLContext* openglContext = OpenGLContext::Singleton();
+			openglContext->generalUx->addCurrentToPickHistory();
+		}
+		SDL_RaiseWindow(openglContext->getSdlWindow()); // timeout??? this seems to only work when using escape (eg picking_canceled)
+
+		return 0; // end timer
+	}
+
+	return interval;
+}
+
 
 static void win_TogglePicking(){
-    #ifndef DISABLE_WIN32_CODEBLOCKS
-   
-    #else
 
-		//color_pick_win_api_toggle_picking();
-
-	#endif
+	if (color_pick_win_api_toggle_picking()) { // invalidates m_clr_status...
+		// picking was activated!  monitor it...
+		SDL_AddTimer(33, check_active_picking_activities, nullptr);
+	}
 }
 
 
 void beginScreenshotSeleced(){
 	regDllFunctionsIfNotRegistered();
 
-    if( pick_mode_enabled ){
+	color_pick_win_api_getstatus(m_clr_status);
+
+    if(m_clr_status->picking_active){
 		win_TogglePicking();
         return;
     }
-	
-    openglContext->imageWasSelectedCb(CopyEntireScreenToSurfaceWin(), false);
 
-    if( !pick_mode_enabled ){
+	// by passing 0,0 we will ensure that we get the right snap... trust me...  without it, there are some issues retrunign to pick mode, or even panning quick and ending up in the wrong place
+	// there are some alternate soltuions, to try to get the CORRECT mouse position (eg maybe we could pass in screen coord of the click that triggered this function call...)
+	openglContext->imageWasSelectedCb(CopyEntireScreenToSurfaceWin(), false, 0, 0);
+
+    if( !m_clr_status->picking_active){
 		win_TogglePicking();
     }
 }
@@ -239,13 +272,7 @@ void beginImageSelector()
 
 bool openURL(char* url)
 {
-    #ifndef DISABLE_WIN32_CODEBLOCKS
-    System::Diagnostics::Process::Start(url);
-    #endif
-
 	regDllFunctionsIfNotRegistered();
-
-
 	color_pick_win_api_starturl(url);
     return true;
 }

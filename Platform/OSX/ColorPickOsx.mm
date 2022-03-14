@@ -199,7 +199,9 @@ static SDL_Surface* Create_SDL_Surface_From_CGImage(CGImageRef image_ref)
     SDL_Surface *myCoolSurface = Create_SDL_Surface_From_CGImage(img);
 
     OpenGLContext* openglContext = OpenGLContext::Singleton();
-    openglContext->imageWasSelectedCb(myCoolSurface, false);
+	// by passing 0,0 we will ensure that we get the right snap step... trust me...  without it, there are some issues retrunign to pick mode, or even panning quick and ending up in the wrong place
+	// there are some alternate soltuions, to try to get the CORRECT mouse position (eg maybe we could pass in screen coord of the click that triggered this function call...)
+    openglContext->imageWasSelectedCb(myCoolSurface, false, 0, 0);
 
     CGImageRelease(img);
 }
