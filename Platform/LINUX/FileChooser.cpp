@@ -46,6 +46,12 @@ typedef struct {
   gboolean      aborted;
 } select_area_filter_data;
 
+
+static void stop_picking_mode(){
+    gtk_main_quit ();
+    pick_mode_enabled = false;
+}
+
 static gboolean
 select_area_button_press (GtkWidget               *window,
                           GdkEventButton          *event,
@@ -95,13 +101,25 @@ select_area_button_release (GtkWidget               *window,
   if (data->rect.width == 0 || data->rect.height == 0)
     data->aborted = TRUE;
 
-  gtk_main_quit ();
+    stop_picking_mode();
+
         // stop picking...
         OpenGLContext* openglContext = OpenGLContext::Singleton();
         openglContext->generalUx->addCurrentToPickHistory();
-  pick_mode_enabled = false;
 
   return TRUE;
+}
+
+static Uint32 pick_again_soon(Uint32 interval, void* parm) {
+    // to make just this timer, fire on main thread - push event!
+    SDL_Event event;
+    SDL_UserEvent userevent;
+    userevent.type = SDL_USEREVENT;
+    userevent.code = USER_EVENT_ENUM::PICK_AGAIN_NOW;
+    event.type = SDL_USEREVENT;
+    event.user = userevent;
+    SDL_PushEvent(&event);
+    return 0;
 }
 
 static gboolean
@@ -117,14 +135,16 @@ select_area_key_press (GtkWidget               *window,
       data->rect.height = 0;
       data->aborted = TRUE;
 
-      gtk_main_quit ();
-      pick_mode_enabled = false;
+        stop_picking_mode();
 
     }
   if (event->keyval == GDK_KEY_r || event->keyval == GDK_KEY_j){
   	// TODO: a better method might be, drop out of pick mode, to give some time, then screenshot
   	// TODO: also note, when we ener pick mode OR here, we loose some position information...
-  	beginScreenshotSeleced();
+  	//beginScreenshotSeleced();
+
+      stop_picking_mode();
+      SDL_AddTimer(250, pick_again_soon, nullptr);
   }
   return TRUE;
 }

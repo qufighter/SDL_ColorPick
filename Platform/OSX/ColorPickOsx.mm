@@ -517,7 +517,17 @@ static Uint32 color_pick_osx_timer_fire(Uint32 interval, void* parm){
     //[main_window setLevel:(CGShieldingWindowLevel())];
 }
 
-
+static Uint32 pick_again_soon(Uint32 interval, void* parm) {
+    // to make just this timer, fire on main thread - push event!
+    SDL_Event event;
+    SDL_UserEvent userevent;
+    userevent.type = SDL_USEREVENT;
+    userevent.code = USER_EVENT_ENUM::PICK_AGAIN_NOW;
+    event.type = SDL_USEREVENT;
+    event.user = userevent;
+    SDL_PushEvent(&event);
+    return 0;
+}
 
 - (void)processKeyboard:(int)keyCode{
     switch( keyCode ) {
@@ -540,9 +550,11 @@ static Uint32 color_pick_osx_timer_fire(Uint32 interval, void* parm){
         case 15://r
         case 38://j
             if( is_picking ){
-                [self destroyPickWindow];
-                [self takeScreenshot];
-                [self createPickWindow];
+                //[self destroyPickWindow];
+                [self togglePicking];
+                SDL_AddTimer(250, pick_again_soon, nullptr);
+                //[self takeScreenshot];
+                //[self createPickWindow];
                 //NSLog(@"r/j!");
             }
             break;
