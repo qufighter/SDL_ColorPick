@@ -1,5 +1,5 @@
 //
-//  uiObject.h /// really this should be uiObject.h.inc  inc.h ?  its a partial??
+//  uiObject.h /// really this should be uiObject.h.inc  inc.h ?  its a partial??
 // struct MyStruct ; /* Forward declaration */ - maybe we can use this?
 //  ColorPick SDL
 //
@@ -1224,7 +1224,7 @@ struct uiObject
 
 
         /*
-         // scaleRectForRenderX(&boundryRect) < = is this not the collision rect for x
+         // scaleRectForRenderX(&boundryRect) < = is this not the collision rect for x
          */
 
         //if( boundryRect.w < 1.0 ){
