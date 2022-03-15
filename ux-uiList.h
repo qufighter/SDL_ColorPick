@@ -133,7 +133,19 @@ struct uiList
             SDL_Log("Sorry sort in indexed list not currently supported");
             return;
         }
+		/*if(_out_of_space){
+            SDL_Log("Sorry sort may fail and cause heap corruption and cause inabliity to free memory of the list.. see elsewhere for theory...(clone)");
+        }*/
+		// we deteremined this does not work on windows... basically cause of all our problems!
+
+#ifndef __WIN32__
         SDL_qsort(listItself, total(), sizeof(genType), p_ComparitorFn);
+#else
+		//todo
+
+
+#endif
+
         //TODO: does not fix the index....
     }
 
@@ -206,6 +218,7 @@ struct uiList
 
         if( _nextIndex > _largestIndex ) _largestIndex = _nextIndex;
 
+		//SDL_memcpy(&listItself[_nextIndex++], &item, sizeof(genType)); // equivilent to following...
         listItself[_nextIndex++] = item;
 
         if( _indexed ){
@@ -323,13 +336,13 @@ struct uiList
         return maxSize * sizeof(genType);
     }
 
-    void free(){
+    void free_list(){
         SDL_free(listItself);
         if( _indexed ){
             SDL_free(indexItself);
         }
-        //free(this); // < does this really work? (seems to work fine) ./// windows should use free, to correspond with new operator used elsewhere, also strange to free within own object in a way... did seem to work though...
-    }
+		FREE_FOR_NEW(this); // shold not be needed???
+	}
 
     //Uint8 palleteColorsIndex[COLOR_INDEX_MAX]; // we do not search the array
     //Uint8* palleteColorsIndex = (Uint8*)SDL_malloc( sizeof(Uint8) * COLOR_INDEX_MAX ); // totally equivilent to above

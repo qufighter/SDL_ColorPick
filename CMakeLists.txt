@@ -142,6 +142,11 @@ FILE(GLOB MY_HEADERS "*.h")
 include_directories(.)
 include_directories(minigames)
 
+FILE(GLOB EXTRA_MINIGAME_H_FILES "minigames/**/*.h")
+message(STATUS " EXTRA_MINIGAME_H_FILES ${EXTRA_MINIGAME_H_FILES}")
+
+include_directories(${EXTRA_MINIGAME_H_FILES})
+
 
 if(APPLE)
     include_directories(Platform/OSX)
@@ -184,6 +189,8 @@ add_executable(colorpick_main main.cpp
                     textures.cpp
                     ${EXTRA_SRC_FILES} ${EXTRA_HEADER_FILES}
 					${MY_HEADERS}
+					minigames/_minigames.h
+					${EXTRA_MINIGAME_H_FILES}
                )
 
 

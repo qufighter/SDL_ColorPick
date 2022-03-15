@@ -2508,7 +2508,9 @@ void Ux::addCurrentToPickHistory(){
     if( ogg->minigames->minigamesEnabled() ){
         Ux::setColor(&ogg->generalUx->minigameCounterText->foregroundColor, 255, 255, 255, 255);
 
-        int existingLocation = minigameColorList->locate(anEntry);
+		ColorList anEntryB = ColorList(*currentlyPickedColor);
+
+        int existingLocation = minigameColorList->locate(anEntryB);
         if( existingLocation < 0 ){
             // other checks - minigame colors can't be too dark, too light, or too grey....
             int total = (int)currentlyPickedColor->r + (int)currentlyPickedColor->g + (int)currentlyPickedColor->b;
@@ -2516,7 +2518,7 @@ void Ux::addCurrentToPickHistory(){
                 int avg = total / 3;
                 int variance =  SDL_abs(avg-currentlyPickedColor->r) + SDL_abs(avg-currentlyPickedColor->g) + SDL_abs(avg-currentlyPickedColor->b);
                 if( variance > 49 ){
-                    minigameColorList->add(ColorList(*currentlyPickedColor));
+                    minigameColorList->add(anEntryB);
                     if( minigameColorList->_out_of_space || minigameColorList->total() >= ogg->minigames->requiredSwatchesForMinigames() ){
                         // is this the condition to tirgger the minigame????
                         ogg->begin3dDropperAnimation(OpenGLContext::ANIMATION_ZOOM_INTO_BULB, currentlyPickedColor);

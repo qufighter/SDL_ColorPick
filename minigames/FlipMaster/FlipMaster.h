@@ -426,7 +426,7 @@ struct FlipMaster{
         }
 
 
-        myColorList->free();
+        myColorList->free_list();
 
         self->gameRootUi->showAndAllowInteraction();
         self->startTime = SDL_GetTicks();

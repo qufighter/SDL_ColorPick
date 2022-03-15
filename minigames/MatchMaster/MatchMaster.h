@@ -374,9 +374,10 @@ struct MatchMaster{
         for( int x=0; x<totalTiles; x++ ){ // clipped
             myDestList->add(*myColorList->get(x));
         }
-        myColorList->free();
+        myColorList->free_list();
 
         myColorList = myDestList->clone();
+		//myColorList gets messed up around here on windows... observatoins: we use SDL_qsort and the list is _out_of_space	true - this means we haven't over-allocated in the slightest, and perhaps that messes up the sort????
         myColorList->sort(&Ux::randomSort);
         myColorList->sort(&Ux::randomSort);
 
@@ -417,8 +418,8 @@ struct MatchMaster{
         }
 
 
-        myColorList->free();
-        myDestList->free();
+        myColorList->free_list();
+        myDestList->free_list();
 
         self->gameRootUi->showAndAllowInteraction();
         self->startTime = SDL_GetTicks();

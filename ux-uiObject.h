@@ -94,6 +94,7 @@ static float scaleRectForRenderY(Float_Rect * rect, Float_Rect * prect){
 //} ColorListState;
 
 
+// sizeof(ColorList) -> windows=5;
 typedef struct ColorList // cannot really use this since we do not persist ths to disk
 {
     ColorList(){
@@ -105,6 +106,9 @@ typedef struct ColorList // cannot really use this since we do not persist ths t
     }
     SDL_Color color;
     bool is_delete_state;
+    bool is_delete_state6;
+    bool is_delete_state7;
+    bool is_delete_state8; // padding to get it up to 8 bytes...
 
     bool operator==(const Ux::ColorList i) {
         //SDL_Log("spla2 %i %i", &i, this );

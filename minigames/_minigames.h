@@ -480,6 +480,7 @@ struct Minigames{
             currentGame = randomGame(); // roll again
             attempts++;
         }
+		SDL_Log("selected game name: %s", currentGame->getGameName());
 
         gotMinigameAnnounceDone = false;
         Ux::uiAminChain* myAnimChain = myUxRef->defaultScoreDisplay->displayExplanation(" Mini Game ");

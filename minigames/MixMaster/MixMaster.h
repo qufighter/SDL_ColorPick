@@ -508,7 +508,7 @@ struct MixMaster{
         for( int x=0; x<totalTiles; x++ ){ // clipped
             myDestList->add(*myColorList->get(x));
         }
-        myColorList->free();
+        myColorList->free_list();
 
         myColorList = myDestList->clone();
         myColorList->sort(&Ux::randomSort);
@@ -581,8 +581,8 @@ struct MixMaster{
             }
         }
 
-        myColorList->free();
-        myDestList->free();
+        myColorList->free_list();
+        myDestList->free_list();
 
         self->gameRootUi->showAndAllowInteraction();
         self->startTime = SDL_GetTicks();
