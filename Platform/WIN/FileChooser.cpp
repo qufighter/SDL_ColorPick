@@ -208,6 +208,10 @@ static Uint32 check_active_picking_activities(Uint32 interval, void* parm) {
 		openglContext->position_x = (openglContext->fullPickImgSurface->clip_rect.w - (int)m_clr_status->X) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
 		openglContext->position_y = (openglContext->fullPickImgSurface->clip_rect.h - (int)m_clr_status->Y) - (openglContext->fullPickImgSurface->clip_rect.h / 2);
 
+        // todo: note; theory; all 3 platforms suffer from the fact that this is occuring in another thread...
+        // which means our position_x  position_y updates may or may not be consumed, or may change mid move...
+        // as a better approach lets 1) push an event 2) let those be consumed by the main thread
+
 		colorPickState->movedxory = true;
 		openglContext->renderShouldUpdate = true; // do not call renderScene from timer thread!
 
@@ -249,7 +253,9 @@ void beginScreenshotSeleced(){
 
 	// by passing 0,0 we will ensure that we get the right snap... trust me...  without it, there are some issues retrunign to pick mode, or even panning quick and ending up in the wrong place
 	// there are some alternate soltuions, to try to get the CORRECT mouse position (eg maybe we could pass in screen coord of the click that triggered this function call...)
-	openglContext->imageWasSelectedCb(CopyEntireScreenToSurfaceWin(), false, 0, 0);
+    SDL_Point gm_result = {0,0};
+    SDL_GetGlobalMouseState(&gm_result.x, &gm_result.y);
+    openglContext->imageWasSelectedCb(CopyEntireScreenToSurfaceWin(), false, gm_result.x, gm_result.y);
 
     if( !m_clr_status->picking_active){
 		win_TogglePicking();

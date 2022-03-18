@@ -201,7 +201,10 @@ static SDL_Surface* Create_SDL_Surface_From_CGImage(CGImageRef image_ref)
     OpenGLContext* openglContext = OpenGLContext::Singleton();
 	// by passing 0,0 we will ensure that we get the right snap step... trust me...  without it, there are some issues retrunign to pick mode, or even panning quick and ending up in the wrong place
 	// there are some alternate soltuions, to try to get the CORRECT mouse position (eg maybe we could pass in screen coord of the click that triggered this function call...)
-    openglContext->imageWasSelectedCb(myCoolSurface, false, 0, 0);
+
+    SDL_Point gm_result = {0,0};
+    SDL_GetGlobalMouseState(&gm_result.x, &gm_result.y);
+    openglContext->imageWasSelectedCb(myCoolSurface, false, gm_result.x, gm_result.y);
 
     CGImageRelease(img);
 }
@@ -218,8 +221,12 @@ static Uint32 color_pick_osx_timer_fire(Uint32 interval, void* parm){
 
     openglContext->position_x =(openglContext->fullPickImgSurface->clip_rect.w - (int)mloc.x) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
     openglContext->position_y =((int)mloc.y - openglContext->fullPickImgSurface->clip_rect.h) + (openglContext->fullPickImgSurface->clip_rect.h / 2);
-    colorPickState->movedxory = true;
 
+    // todo: note; theory; all 3 platforms suffer from the fact that this is occuring in another thread...
+    // which means our position_x  position_y updates may or may not be consumed, or may change mid move...
+    // as a better approach lets 1) push an event 2) let those be consumed by the main thread
+
+    colorPickState->movedxory = true;
     openglContext->renderShouldUpdate = true; // do not call renderScene from timer thread!
 
 
