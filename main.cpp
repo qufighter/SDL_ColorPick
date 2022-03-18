@@ -393,6 +393,19 @@ int MainThreadUserEventHandler(SDL_Event* p_event){
             openglContext->choosePickFromScreen(); // better yet, trigger via general UX press of the correct button??? to bounce it??
             return 0;
         }
+
+        case USER_EVENT_ENUM::PICK_AT_POSITION:
+        {
+            SDL_Log("USER EVENT - PICK_AT_POSITION");
+            SDL_Point mmv_result = *((SDL_Point*)event.user.data1);
+            openglContext->position_x = mmv_result.x;
+            openglContext->position_y = mmv_result.y;
+            colorPickState->movedxory = true;
+            openglContext->renderShouldUpdate = true; // do not call renderScene from timer thread!
+            FREE_FOR_NEW(event.user.data1); // note: perhaps we should allocate this a different way so we can just use SDL_free (windows)
+            return 0;
+        }
+
     }
 
     //return 1; // not handled, leave it in the queue ?????? only really makes sense if we process events elsewhere right?  tough to say for sure but we'd have to make sure all platforms handle the other events somehow...
@@ -757,6 +770,11 @@ event is maybe going to have
                 break; // presumably we handled this or will plan to handle it.... above.... for now this makes silence on android....
             }
 #endif
+
+            if( event->type == SDL_USEREVENT ){
+                // handled elsewhere......
+                break;//return 0;
+            }
 
             // see instead (of the above) SDL_HINT_TOUCH_MOUSE_EVENTS (actually that broke android?)
             SDL_Log("unrecognized event; type %02x", event->type );
@@ -1374,6 +1392,7 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
 
 
     while (!done) {
+
         while (SDL_PollEvent(&event)) {
 
             switch ( event.type ){

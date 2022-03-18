@@ -73,18 +73,38 @@ select_area_motion_notify (GtkWidget               *window,
                            select_area_filter_data *data)
 {
 
-    OpenGLContext* openglContext = OpenGLContext::Singleton();
-    ColorPickState* colorPickState = ColorPickState::Singleton();
+//    OpenGLContext* openglContext = OpenGLContext::Singleton();
+//    ColorPickState* colorPickState = ColorPickState::Singleton();
+//
+//    openglContext->position_x =(openglContext->fullPickImgSurface->clip_rect.w - (int)event->x_root) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
+//    openglContext->position_y =(openglContext->fullPickImgSurface->clip_rect.h - (int)event->y_root) - (openglContext->fullPickImgSurface->clip_rect.h / 2);
+//
+//    // todo: note; theory; all 3 platforms suffer from the fact that this is occuring in another thread...
+//    // which means our position_x  position_y updates may or may not be consumed, or may change mid move...
+//    // as a better approach lets 1) push an event 2) let those be consumed by the main thread
+//
+//    colorPickState->movedxory = true;
+//    openglContext->renderShouldUpdate = true; // do not call renderScene from timer thread!
 
-    openglContext->position_x =(openglContext->fullPickImgSurface->clip_rect.w - (int)event->x_root) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
-    openglContext->position_y =(openglContext->fullPickImgSurface->clip_rect.h - (int)event->y_root) - (openglContext->fullPickImgSurface->clip_rect.h / 2);
 
-    // todo: note; theory; all 3 platforms suffer from the fact that this is occuring in another thread...
-    // which means our position_x  position_y updates may or may not be consumed, or may change mid move...
-    // as a better approach lets 1) push an event 2) let those be consumed by the main thread
+    SDL_Event event;
+    SDL_UserEvent userevent;
+    SDL_Point* mmevent = new SDL_Point(); // note: we deallocate this on main thread...
 
-    colorPickState->movedxory = true;
-    openglContext->renderShouldUpdate = true; // do not call renderScene from timer thread!
+    mmevent->x = (openglContext->fullPickImgSurface->clip_rect.w - (int)event->x_root) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
+    mmevent->y = (openglContext->fullPickImgSurface->clip_rect.h - (int)event->y_root) - (openglContext->fullPickImgSurface->clip_rect.h / 2);
+
+    userevent.type = SDL_USEREVENT;
+    userevent.code = USER_EVENT_ENUM::PICK_AT_POSITION;
+    userevent.data1 = mmevent;
+    userevent.data2 = NULL;
+
+    event.type = SDL_USEREVENT;
+    event.user = userevent;
+
+    //SDL_Log("mm event pos type %i", USER_EVENT_ENUM::PICK_AT_POSITION);
+    SDL_PushEvent(&event);
+
 
     return TRUE;
 }
