@@ -10,14 +10,14 @@ This will also compile into a:
  * ~Emscripten [demo](https://qufighter.github.io/ColorPick/Mobile/WebDemo/index.html)
  * ... more?
 
-![ColorPick SDL Screenshot!](screenshot.png "ColorPick SDL Screenshot")
+<img src="screenshot.png" width="320" height="480" alt="ColorPick SDL Screenshot" />
 
 Before you contribute, I suggest looking for forks of the project, to see if anyone else has move on with the work since I've left off.
 
 
 Check the [README.md](external) in the "external" folder though for instructions to static link SDL and SDL Image libraries.
 
-The windows visual studio project can be generated from CMAKE!  Have tested the llvm build too which is probably more stable (better threads and no cashes from using the worng free function, even though the one key feature won't work there it's not quite done yet form VS either, easy fix probably)
+The windows visual studio project can be generated from CMAKE!  Have tested the llvm build too which is probably more stable (better threads and no cashes from using the worng free function, even though the one key feature won't work there it's not quite done yet from VS either, easy fix probably)
 
 The mac OS project is the most up to date and is the most used development project.
 
