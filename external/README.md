@@ -2,7 +2,7 @@
 
 These libraries are only required to static link, using cmake build.
 
-You can alwasy build and install the libraries and link dynamically.
+You can always build and install the libraries and link dynamically.
 
 A planned argument to dynamic link will be:
 
@@ -30,22 +30,30 @@ git clone git@github.com:libsdl-org/SDL.git SDL2
 
 In practice it may be better to choose an actual release, YMMV.
 
+```
+cd <repo-folder>
+git tag # shows list of releases
+git checkout release-2.0.5 # or whatever release...
+git branch # show list of branches
+git checkout main # return to main branch
+```
+
 If you do use git clones, you can update using the usual commands
 
 ```
 cd <repo-folder>
+git checkout main # see above to select correct branch name...
 git pull origin master
 ```
 
-# Future
+# Other folder: external_static
 
-Other external libs may also live here... 
-although external_always_static may be more sensible name
+Other external libs live nearby... 
+see the external_static folder
 
 ```
 glm
-portable-file-dialogs-master
+portable-file-dialogs
 ```
 
-We may integrate those into the build process with
-cmake (although since just headers, seems potentially not necessary...)
+We may integrate those into the build process with cmake instead...
