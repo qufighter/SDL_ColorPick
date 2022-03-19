@@ -778,6 +778,10 @@ event is maybe going to have
                 break;//return 0;
             }
 
+            if( event->type == SDL_POLLSENTINEL ){ // intenral, not sure why we see this... (debug build?)
+                break;
+            }
+
             // see instead (of the above) SDL_HINT_TOUCH_MOUSE_EVENTS (actually that broke android?)
             SDL_Log("unrecognized event; type %02x", event->type );
             break;

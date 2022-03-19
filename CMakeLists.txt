@@ -143,7 +143,10 @@ include_directories(.)
 include_directories(minigames)
 
 FILE(GLOB EXTRA_MINIGAME_H_FILES "minigames/**/*.h")
+FILE(GLOB EXTRA_MINIGAME_DIRECTORIES "minigames/**/")
+
 message(STATUS " EXTRA_MINIGAME_H_FILES ${EXTRA_MINIGAME_H_FILES}")
+message(STATUS " EXTRA_MINIGAME_DIRECTORIES (fixme... has non direcotires...) ${EXTRA_MINIGAME_DIRECTORIES}")
 
 include_directories(${EXTRA_MINIGAME_H_FILES})
 
@@ -196,9 +199,14 @@ add_executable(colorpick_main main.cpp
 
 
 
+set( SDL_VERSION_STATIC_OR_NOT "SDL2" )
+
+
 if(COLORPICK_DYNAMIC_LINK)
     target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${XCB_LIBRARIES} ${GTKMM_LIBRARIES})
 else()
+    set( SDL_VERSION_STATIC_OR_NOT "SDL2-static" )
+
     if(WIN32)
         target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} glew_s colorpick_main_win_clr) # pretty strange, since we dynamic link colorpick_main_win_clr, but this ensures the dependency is built... 
         # target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} glew_s  )
@@ -207,6 +215,13 @@ else()
         target_link_libraries(colorpick_main SDL2main SDL2-static SDL2_image ${OPENGL_LIBRARIES} )
     endif()
 endif()
+
+# tests...
+add_executable(         colorpick_test_dirscan test/directionalScanTest.cpp)
+target_link_libraries(  colorpick_test_dirscan SDL2main ${SDL_VERSION_STATIC_OR_NOT})
+
+add_executable(         colorpick_test_uilist test/uiListTest.cpp)
+target_link_libraries(  colorpick_test_uilist SDL2main ${SDL_VERSION_STATIC_OR_NOT})
 
 
 

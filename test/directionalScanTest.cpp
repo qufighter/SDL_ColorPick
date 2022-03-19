@@ -11,11 +11,11 @@
 #include <iostream> // cpp functioanlity, not .c
 
 // GLM include files
-#include "../glm/glm.hpp"
-#include "../glm/gtx/projection.hpp"
-#include "../glm/gtc/matrix_transform.hpp"
-#include "../glm/gtx/fast_square_root.hpp"
-#include "../glm/gtx/perpendicular.hpp"
+#include "../external_static/glm/glm.hpp"
+#include "../external_static/glm/gtx/projection.hpp"
+#include "../external_static/glm/gtc/matrix_transform.hpp"
+#include "../external_static/glm/gtx/fast_square_root.hpp"
+#include "../external_static/glm/gtx/perpendicular.hpp"
 
 #include "directionalScan.h"
 

@@ -10,13 +10,12 @@
 
 #include "ux-uiList.h"
 
-
 // GLM include files
-#include "../glm/glm.hpp"
-#include "../glm/gtx/projection.hpp"
-#include "../glm/gtc/matrix_transform.hpp"
-#include "../glm/gtx/fast_square_root.hpp"
-#include "../glm/gtx/perpendicular.hpp"
+#include "../external_static/glm/glm.hpp"
+#include "../external_static/glm/gtx/projection.hpp"
+#include "../external_static/glm/gtc/matrix_transform.hpp"
+#include "../external_static/glm/gtx/fast_square_root.hpp"
+#include "../external_static/glm/gtx/perpendicular.hpp"
 
 static void setColorRgb(SDL_Color * color, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
     color->r = r;
@@ -145,7 +144,7 @@ main(int argc, char *argv[])
     }
 
     SDL_free(myColorListIterator);
-    myColorList->free();
+    myColorList->free_list();
 
 
     // non indexed....
@@ -223,8 +222,8 @@ main(int argc, char *argv[])
     }
 
 
-    myColorList->free();
-    myListClone->free();
+    myColorList->free_list();
+    myListClone->free_list();
 
     // todo: verify memory usage before and after.....
 
