@@ -49,7 +49,8 @@ int op_increase (int i) { return i*1.25; }
 typedef BOOL(__stdcall* pBegin_Monitor_Mouse_Position)(pt_type*);
 typedef BOOL(__stdcall* pEnd_Monitor_Mouse_Position)();
 //typedef pt_type* (__stdcall* pGet_Mouse_Position)();
-typedef bool(__stdcall* p_color_pick_win_api_getstatus)(pt_type* info);
+typedef void(__stdcall* p_color_pick_win_api_getstatus)(pt_type* info);
+typedef void(__stdcall* p_color_pick_win_api_set_select_status)(pt_type* info);
 typedef bool(__stdcall* p_color_pick_win_api_starturl)(char*);
 typedef bool(__stdcall* p_color_pick_win_api_toggle_picking)();
 typedef void(__stdcall* p_color_pick_win_api_get_screen_size)(pt_type* info);
@@ -60,6 +61,8 @@ pBegin_Monitor_Mouse_Position Begin_Monitor_Mouse_Position;
 pEnd_Monitor_Mouse_Position End_Monitor_Mouse_Position;
 //pGet_Mouse_Position Get_Mouse_Position;
 p_color_pick_win_api_getstatus color_pick_win_api_getstatus;
+p_color_pick_win_api_set_select_status color_pick_win_api_set_select_status;
+
 p_color_pick_win_api_starturl color_pick_win_api_starturl;
 p_color_pick_win_api_toggle_picking color_pick_win_api_toggle_picking;
 p_color_pick_win_api_get_screen_size color_pick_win_api_get_screen_size;
@@ -96,6 +99,7 @@ static bool regDllFunctionsIfNotRegistered() {
 		}
 		else {
 			color_pick_win_api_getstatus = (p_color_pick_win_api_getstatus)GetProcAddress(hDLL, "color_pick_win_api_getstatus");
+			color_pick_win_api_set_select_status = (p_color_pick_win_api_set_select_status)GetProcAddress(hDLL, "color_pick_win_api_set_select_status");
 			color_pick_win_api_starturl = (p_color_pick_win_api_starturl)GetProcAddress(hDLL, "color_pick_win_api_starturl");
 			color_pick_win_api_toggle_picking = (p_color_pick_win_api_toggle_picking)GetProcAddress(hDLL, "color_pick_win_api_toggle_picking");
 			color_pick_win_api_get_screen_size = (p_color_pick_win_api_get_screen_size)GetProcAddress(hDLL, "color_pick_win_api_get_screen_size");
@@ -241,6 +245,18 @@ static Uint32 check_active_picking_activities(Uint32 interval, void* parm) {
             colorPickState->last_thread_mousex = newmx;
             colorPickState->last_thread_mousey = newmy;
         }
+
+		if (m_clr_status->wheel != 0) {
+			if (m_clr_status->wheel > 0) {
+				openglContext->setFishScale(1.0, 1.10f);
+			}else {
+				openglContext->setFishScale(-1.0, 1.10f);
+			}
+			openglContext->renderShouldUpdate = true;
+			m_clr_status->wheel = 0;
+			color_pick_win_api_set_select_status(m_clr_status); // resets the "wheel" to whatever we provide...
+
+		}
 
 	} else {
 

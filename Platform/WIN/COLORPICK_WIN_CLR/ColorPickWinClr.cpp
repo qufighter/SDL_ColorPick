@@ -242,6 +242,13 @@ LRESULT CALLBACK CPick_Preview_WndProc(HWND hwnd, UINT message, WPARAM wparam, L
             EndPaint( hwnd, &ps );
         }
         break;
+	case WM_MOUSEWHEEL:
+		if (wparam != 0) {
+			m_clr_data->wheel = GET_Y_LPARAM(wparam) > 0 ? 1 : -1;
+			// printf(" %i %i %i \n", message, GET_Y_LPARAM(wparam), GET_Y_LPARAM(lparam));
+		}
+		break;
+
 	case WM_MOUSEMOVE:
 		
 		// maybe we can just use this? undecided...
@@ -457,6 +464,11 @@ extern "C" __declspec(dllexport) int  End_Monitor_Mouse_Position(void) {
 
 extern "C" __declspec(dllexport) void  color_pick_win_api_getstatus(pt_type* mpt) {
 	memcpy(mpt, m_clr_data, sizeof(pt_type));
+}
+
+extern "C" __declspec(dllexport) void  color_pick_win_api_set_select_status(pt_type* mpt) {
+	// the status we CAN reset (eg public ones) we'll just manually handle here...
+	m_clr_data->wheel = mpt->wheel;
 }
 
 ////Calling this function from VB simply ensures winMain gets called properly
