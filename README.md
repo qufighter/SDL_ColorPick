@@ -10,6 +10,8 @@ This will also complile into a:
  * ~Emscripten [demo](https://qufighter.github.io/ColorPick/Mobile/WebDemo/index.html)
  * ... more?
 
+![ColorPick SDL Screenshot!](screenshot.png "ColorPick SDL Screenshot")
+
 Before you contriubte, I suggest looking for forks of the project, to see if anyone else has move on with the work since I've left off.
 
 
