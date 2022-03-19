@@ -275,6 +275,25 @@ LRESULT CALLBACK CPick_Preview_WndProc(HWND hwnd, UINT message, WPARAM wparam, L
 
         switch( wparam )
         {
+		case VK_UP:
+			//printf("Up arrow detected.");
+			m_clr_data->Y -= 1;
+			break;
+		case VK_DOWN:
+			//printf("Dn arrow detected.");
+			m_clr_data->Y += 1;
+			break;
+		case VK_LEFT:
+			//printf("Left arrow detected");
+			m_clr_data->X -= 1;
+			break;
+		case VK_RIGHT:
+			//printf("Right arrow detected");
+			m_clr_data->X += 1;
+			break;
+		case VK_RETURN:
+			if (pick_mode_enabled) cpwinclr_instance->winTogglePicking(); // same as click...
+			break;
         case VK_ESCAPE:
 			//printf("ESCAPE key pressed...\n\n");
             //PostQuitMessage( 0 ); // no effect...
