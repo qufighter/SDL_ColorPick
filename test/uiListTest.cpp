@@ -110,6 +110,20 @@ main(int argc, char *argv[])
         return 1;
     }
 
+    myColorList->reindex();
+
+    if(myColorList->locate(red) != 2){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Reindex: Unexpected locate(red): %i\n",
+                     myColorList->locate(red) );
+        return 1;
+    }
+
+    if(myColorList->locate(blue) != 1){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Reindex:  Unexpected locate(blue): %i\n",
+                     myColorList->locate(blue) );
+        return 1;
+    }
+
 
     uiListIterator<uiList<SDL_Color, Uint8>, SDL_Color>* myColorListIterator = myColorList->iterate();
     SDL_Color* tmp;

@@ -101,6 +101,11 @@ struct uiList
 
     // helpful tip - don't return zero for more than a single value
     void index(int size, aIndexUpdateFn pindexOffsetGen){
+        // note: if _indexed==true already, we must free/clear the index first...
+        if( _indexed==true ){
+            SDL_Log("WARNING you are probably calling index 2+ times in ERROR; did you mean reindex...");
+            SDL_free(indexItself);
+        }
         // index is used to guarante unique entries (though not enforced by add) and locate entries
         _indexSize=size;
         indexOffsetGen=pindexOffsetGen;
@@ -111,15 +116,29 @@ struct uiList
 
         indexItself = (indexType*)SDL_malloc( sizeof(indexType) * _indexSize );
         _indexed=true;
-        clearIndex();
-        // todo: we could loop and update the index.... but it is empty right now
+        reindex();
+    }
 
+    void reindex(){
+        if(!_indexed){
+            return;
+            SDL_Log("Sorry reindex requires the list has previously been indexed...");
+        }
+        clearIndex();
+        // for properly initialized index (prior to list use), the following will never run (list size 0)
+        for( int x=0; x<=_largestIndex; x++ ){
+            _tmp_index_offset = indexOffsetGen(&listItself[x]);
+            if( indexItself[_tmp_index_offset] < maxSize ){
+                SDL_Log("Warning, you already have duplicates in your set, the index is going to point to the last entry...");
+            }
+            indexItself[_tmp_index_offset] = x;
+        }
     }
 
     uiList<genType, indexType>* clone(){
         // DOES NOT CLONE THE INDEX
         if( _indexed ){
-            SDL_Log("Sorry the index is NOT cloned - you have to index your clone if you want an indexed clone");
+            SDL_Log("Warning, Sorry the index is NOT cloned - you have to index your clone if you want an indexed clone");
         }
         uiList<genType, indexType>* newList = new uiList<genType, indexType>(maxSize);
 
@@ -139,15 +158,10 @@ struct uiList
     }
 
     void sort(aGenericComparitorFn p_ComparitorFn){
-        if( _indexed ){
-            SDL_Log("Sorry sort in indexed list not currently supported");
-            return;
-        }
-
         // NOTE: make sure your p_ComparitorFn for SDL_qsort is NON-RANDOM (i.e deterministic) esp on windows...
         SDL_qsort(listItself, total(), sizeof(genType), p_ComparitorFn);
 
-        //TODO: does not fix the index....
+        if( _indexed ){ reindex(); };
     }
 
     void randomize_order(){
@@ -164,10 +178,6 @@ struct uiList
         ///          up to the final one, it's less random (approx 0% chance any item ends up in the SAME position))
         ///          so if you specify a number lower than total()-2 you can provide more slots further up the list
         ///          MIGHT have the same value as before, thus INCREASING randomness...
-        if( _indexed ){
-            SDL_Log("Sorry randomize_order in indexed list not currently supported");
-            return;
-        }
         if( total()-1 >= SDL_MAX_UINT32 ){ // probably breaks before this point unless int is 64bit...
             SDL_Log("Sorry with Uint32 usage randomize_order will be broken by such a large list with %i items", total());
             return;
@@ -205,7 +215,7 @@ struct uiList
         SDL_free(takenSlots);
         SDL_free(newOrder);
 
-        //TODO: does not fix the index....
+        if( _indexed ){ reindex(); };
     }
 
     genType* listItself;
@@ -250,7 +260,7 @@ struct uiList
             }
         }else{
             // search whole array?
-            SDL_Log("Sorry locate in un-indexed list not currently supported");
+            SDL_Log("Sorry locateIndex in un-indexed list not currently supported");
         }
         return -1; // missing
     }
