@@ -57,7 +57,7 @@ main(int argc, char *argv[])
     SDL_Color black;
     setColorRgb(&black, 0, 0, 0, 255);
     SDL_Color white;
-    setColorRgb(&black, 255, 255, 255, 255);
+    setColorRgb(&white, 255, 255, 255, 255);
 
     if(myColorList->total() != 0){
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected total(): %i\n",
@@ -282,6 +282,56 @@ main(int argc, char *argv[])
 
     myColorList->free_list();
     myListClone->free_list();
+
+
+    // test SMALL indexed list...
+    myColorList = new uiList<SDL_Color, Uint8>(2);
+    myColorList->index(COLOR_INDEX_MAX, indexForColor);
+
+    myColorList->add(blue);
+    myColorList->add(red);
+
+    if(indexForColor(&black) != 0){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SMALL0 indexForColor(black): %i\n",
+                     indexForColor(&black) );
+        return 1;
+    }
+
+    if(myColorList->locate(red) != 1){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SMALL1 Unexpected locate(red): %i\n",
+                     myColorList->locate(red) );
+        return 1;
+    }
+
+    myColorList->add(black);
+
+    if(myColorList->locate(black) != 1){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SMALL2 Unexpected locate(black): %i\n",
+                     myColorList->locate(red) );
+        return 1;
+    }
+
+    if(myColorList->locate(red) != -1){ // expect missing
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SMALL3 Unexpected locate(red): %i\n",
+                     myColorList->locate(red) );
+        return 1;
+    }
+
+    myColorList->add(red);
+
+    if(myColorList->locate(red) != 1){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SMALL4 Unexpected locate(red): %i\n",
+                     myColorList->locate(red) );
+        return 1;
+    }
+
+    if(myColorList->locate(black) != -1){ // expect missing
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SMALL5 Unexpected locate(black): %i\n",
+                     myColorList->locate(red) );
+        return 1;
+    }
+
+    myColorList->free_list();
 
     // todo: verify memory usage before and after.....
 
