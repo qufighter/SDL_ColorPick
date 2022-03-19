@@ -366,7 +366,7 @@ struct MatchMaster{
         Ux::uiList<Ux::ColorList, Uint8>* myDestList;
 
         myColorList = myUxRef->minigameColorList->clone();
-        myColorList->sort(&Ux::randomSort);
+        myColorList->randomize_order(true, 1);
 
         int totalTiles = SDL_min(myColorList->total(), self->maxSwatches);
 
@@ -378,8 +378,7 @@ struct MatchMaster{
 
         myColorList = myDestList->clone();
 		//myColorList gets messed up around here on windows... observatoins: we use SDL_qsort and the list is _out_of_space	true - this means we haven't over-allocated in the slightest, and perhaps that messes up the sort????
-        myColorList->sort(&Ux::randomSort);
-        myColorList->sort(&Ux::randomSort);
+        myColorList->randomize_order(true, 1);
 
         float height = 1.0 / (totalTiles + 0.0f);
         self->tileHeight = height;

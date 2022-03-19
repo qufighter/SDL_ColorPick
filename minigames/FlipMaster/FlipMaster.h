@@ -349,7 +349,7 @@ struct FlipMaster{
         //Ux::uiList<Ux::ColorList, Uint8>* myDestList;
 
 //        myColorList = myUxRef->minigameColorList->clone();
-//        myColorList->sort(&Ux::randomSort);
+//        myColorList->randomize_order(true, 1);
 
         int totalTiles = SDL_min(myUxRef->minigameColorList->total(), self->maxSwatches * 0.5);
 
@@ -360,8 +360,7 @@ struct FlipMaster{
 
         }
 
-        myColorList->sort(&Ux::randomSort);
-        myColorList->sort(&Ux::randomSort);
+        myColorList->randomize_order(true, 1);
 
 
         //colorPickState->viewport_ratio

@@ -1047,6 +1047,9 @@ int main(int argc, char *argv[]) {
     /* seed random number generator */
     srand((int)time(NULL));
 
+//    srand((unsigned int)time(NULL));
+//    srand((unsigned int)clock());
+
 
 //    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
 //    SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);

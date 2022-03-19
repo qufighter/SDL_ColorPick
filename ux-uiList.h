@@ -4,6 +4,13 @@
 #ifndef ColorPick_iOS_SDL_uiList_h
 #define ColorPick_iOS_SDL_uiList_h
 
+#ifndef FREE_FOR_NEW
+#define FREE_FOR_NEW SDL_free
+#ifdef __WINDOWS__
+#define FREE_FOR_NEW free // on windows, using the new operator to consturct means we really CANNOT use SDL_Free, and its tough to detect... sprinked around the project this way!
+#endif
+#endif
+
 // TODO: move thse struct into the ohter struct and either build a static accessor or.... whatever....
 template <typename parentType, typename genType>
 struct uiListIterator
@@ -47,6 +54,9 @@ struct uiListLoopingIterator
     }
 };
 
+static int getRandomInt(int min, int max){ // sort of duplicate!  see randomInt(
+    return min + rand() % (max - min + 1);
+}
 
 // min
 template <typename genType, typename indexType>// index is optional...
@@ -133,18 +143,67 @@ struct uiList
             SDL_Log("Sorry sort in indexed list not currently supported");
             return;
         }
-		/*if(_out_of_space){
-            SDL_Log("Sorry sort may fail and cause heap corruption and cause inabliity to free memory of the list.. see elsewhere for theory...(clone)");
-        }*/
-		// we deteremined this does not work on windows... basically cause of all our problems!
 
-#ifndef __WIN32__
+        // NOTE: make sure your p_ComparitorFn for SDL_qsort is NON-RANDOM (i.e deterministic) esp on windows...
         SDL_qsort(listItself, total(), sizeof(genType), p_ComparitorFn);
-#else
-		//todo
 
+        //TODO: does not fix the index....
+    }
 
-#endif
+    void randomize_order(){
+        randomize_order(false);
+    }
+
+    void randomize_order(bool force){
+        randomize_order(force, _largestIndex);
+    }
+
+    void randomize_order(bool force, int forceFalloff){
+        /// force: may return in same order when false
+        /// forceFalloff: since force maximizes each position being different (
+        ///          up to the final one, it's less random (approx 0% chance any item ends up in the SAME position))
+        ///          so if you specify a number lower than total()-2 you can provide more slots further up the list
+        ///          MIGHT have the same value as before, thus INCREASING randomness...
+        if( _indexed ){
+            SDL_Log("Sorry randomize_order in indexed list not currently supported");
+            return;
+        }
+        if( total()-1 >= SDL_MAX_UINT32 ){ // probably breaks before this point unless int is 64bit...
+            SDL_Log("Sorry with Uint32 usage randomize_order will be broken by such a large list with %i items", total());
+            return;
+        }
+
+        if( total() == 1 ){ force = false; } // cannot force random when size 1
+
+        Uint8* takenSlots = (Uint8*)SDL_malloc( sizeof(Uint8) * total() ); // only needs bit, Uint8 overkill
+        Uint32* newOrder =   (Uint32*)SDL_malloc( sizeof(Uint32) * total() ); // NOTE: Uint32 here enforces a maximum list size... not necessary!
+        genType* newListItself = (genType*)SDL_malloc( sizeof(genType) * maxSize );
+        int reordering_completion = 0;
+
+        SDL_memset(takenSlots, 0, sizeof(Uint8) * total());
+
+        while(reordering_completion < total()){
+            int temp = getRandomInt(0, _largestIndex);
+            if( takenSlots[temp] == 0 && (!force || temp != reordering_completion)){
+                takenSlots[temp] = 1;
+                newOrder[reordering_completion] = temp;
+                reordering_completion++;
+                if( reordering_completion >= _largestIndex || reordering_completion >= forceFalloff ){
+                    force = false; // once we force one+ position, we MUST stop prior to the final one.. or we may infinite looop.. (eg sort 0,1,2 then 1,0,<only 2 remains>)
+                }
+            }
+        }
+
+        reordering_completion = 0;
+        while(reordering_completion < total()){
+            newListItself[reordering_completion] = listItself[newOrder[reordering_completion]];
+            reordering_completion++;
+        }
+        // copy results to source...
+        SDL_memcpy(listItself, newListItself, sizeof(genType)*total());
+        SDL_free(newListItself);
+        SDL_free(takenSlots);
+        SDL_free(newOrder);
 
         //TODO: does not fix the index....
     }

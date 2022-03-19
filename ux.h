@@ -377,9 +377,12 @@ static Ux* Singleton();
         return result;
     }
 
-    static int randomSort(const void *a, const void *b){
-        return randomInt(-100, 100);
-    }
+    // do NOT use this with SDL_qsort - will break on platforms that expect
+    // deterministic comparisons... (eg windows)
+    // instaed we added ->randomize_order(); to uiList
+//    static int randomSort(const void *a, const void *b){
+//        return randomInt(-100, 100);
+//    }
 
     static int compareColor(SDL_Color *a, SDL_Color *b){
         HSV_Color A, B;

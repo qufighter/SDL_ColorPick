@@ -195,8 +195,6 @@
 #include "external_static/glm/gtx/normal.hpp"
 
 
-// ^ glm possibly not needed for such simple project
-
 
 #ifndef COLORPICK_PLATFORM_DESKTOP
 #define OMIT_SCROLLBAR_ARROWS

@@ -500,7 +500,7 @@ struct MixMaster{
         Ux::uiList<Ux::ColorList, Uint8>* myDestList;
 
         myColorList = myUxRef->minigameColorList->clone();
-        myColorList->sort(&Ux::randomSort);
+        myColorList->randomize_order(true, 1);
 
         int totalTiles = SDL_min(myColorList->total(), self->maxSwatches);
 
@@ -511,8 +511,7 @@ struct MixMaster{
         myColorList->free_list();
 
         myColorList = myDestList->clone();
-        myColorList->sort(&Ux::randomSort);
-        myColorList->sort(&Ux::randomSort);
+        myColorList->randomize_order(true, 1);
 
         float height = 1.0 / (totalTiles + 0.0f);
         self->tileHeight = height;

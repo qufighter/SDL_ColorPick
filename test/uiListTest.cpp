@@ -39,7 +39,6 @@ bool operator==(const SDL_Color i, const SDL_Color f) {
     return i.r==f.r && i.g==f.g && i.b==f.b && i.a==f.a;
 }
 
-
 int
 main(int argc, char *argv[])
 {
@@ -173,6 +172,7 @@ main(int argc, char *argv[])
     }
 
 
+
     if(myColorList->locate(blue) != 0){
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected locate(blue): %i\n",
                      myColorList->locate(blue) );
@@ -193,6 +193,50 @@ main(int argc, char *argv[])
 
     uiList<SDL_Color, Uint8>* myListClone = myColorList->clone();
     //TODO we should test clone the indexed one too??
+
+    // WIP!!
+    srand((unsigned int)time(NULL));
+    srand((unsigned int)clock());
+
+    myColorList->randomize_order(true);
+
+    int newLocBlue = myColorList->locate(blue);
+    int newLocRed = myColorList->locate(red);
+    int newLocGreen = myColorList->locate(green);
+
+    SDL_Log("randomization result: %i %i %i\n", newLocBlue, newLocRed, newLocGreen );
+
+    if(newLocBlue == -1){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected missing locate(blue): %i\n",
+                     myColorList->locate(blue) );
+        return 1;
+    }
+
+    if(newLocRed == -1){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected missing locate(red): %i\n",
+                     myColorList->locate(red) );
+        return 1;
+    }
+
+    if(newLocGreen == -1){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected missing locate(green): %i\n",
+                     myColorList->locate(green) );
+        return 1;
+    }
+
+    if(newLocBlue == newLocRed || newLocBlue == newLocGreen || newLocRed == newLocGreen ){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "randomization broken: %i %i %i\n",
+                     newLocBlue, newLocRed, newLocGreen );
+        return 1;
+    }
+
+    if(newLocBlue == 0 && newLocRed == 1 && newLocGreen == 2 ){
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "randomization force broken: %i %i %i\n",
+                     newLocBlue, newLocRed, newLocGreen );
+        return 1;
+    }
+
+    // clone should not be changed though by our random steps above...
 
     if(myListClone->total() != 3){
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unexpected total(): %i\n",
