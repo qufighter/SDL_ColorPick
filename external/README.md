@@ -59,6 +59,20 @@ portable-file-dialogs
 
 We may integrate those into the build process with cmake instead...
 
+# Updating Header References
+
+This is a bit awkward... but if you DO clone the latest here... from pwd...
+
+(consider backing up the SDL2 and SDLImage folders one level up)
+```
+rm ../SDL/library/*
+cp SDL2/include/* ../SDL/library/
+
+rm ../SDLImage/library/*
+cp SDL2_image/SDL_image.h ../SDLImage/library/
+
+```
+
 # Linux platform COLORPICK_DYNAMIC_LINK requirements...
 
 Specific library names may vary by distribution... generally:
