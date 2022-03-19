@@ -199,12 +199,10 @@ static SDL_Surface* Create_SDL_Surface_From_CGImage(CGImageRef image_ref)
     SDL_Surface *myCoolSurface = Create_SDL_Surface_From_CGImage(img);
 
     OpenGLContext* openglContext = OpenGLContext::Singleton();
-	// by passing 0,0 we will ensure that we get the right snap step... trust me...  without it, there are some issues retrunign to pick mode, or even panning quick and ending up in the wrong place
-	// there are some alternate soltuions, to try to get the CORRECT mouse position (eg maybe we could pass in screen coord of the click that triggered this function call...)
+    ColorPickState* colorPickState = ColorPickState::Singleton();
 
-    SDL_Point gm_result = {0,0};
-    SDL_GetGlobalMouseState(&gm_result.x, &gm_result.y);
-    openglContext->imageWasSelectedCb(myCoolSurface, false, gm_result.x, gm_result.y);
+    SDL_GetGlobalMouseState(&colorPickState->last_thread_mousex, &colorPickState->last_thread_mousey);
+    openglContext->imageWasSelectedCb(myCoolSurface, false, colorPickState->last_thread_mousex, colorPickState->last_thread_mousey);
 
     CGImageRelease(img);
 }
@@ -216,7 +214,7 @@ static Uint32 color_pick_osx_timer_fire(Uint32 interval, void* parm){
 
     //SDL_Log("%f %f", mloc.x, mloc.y);
 
-//    OpenGLContext* openglContext = OpenGLContext::Singleton();
+//    OpenGLContext* openglContext = OpenGLContext::Singleton(); // we have this already?! (see below)
 //    ColorPickState* colorPickState = ColorPickState::Singleton();
 
 //    openglContext->position_x =(openglContext->fullPickImgSurface->clip_rect.w - (int)mloc.x) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
@@ -229,24 +227,32 @@ static Uint32 color_pick_osx_timer_fire(Uint32 interval, void* parm){
 //    colorPickState->movedxory = true;
 //    openglContext->renderShouldUpdate = true; // do not call renderScene from timer thread!
 
-    // todo: note we do not allocate new instnce of event, so do we push acopy or will bug continue to exist?
-    SDL_Event event;
-    SDL_UserEvent userevent;
-    SDL_Point* mmevent = new SDL_Point(); // note: we deallocate this on main thread...
+    int newmx=(openglContext->fullPickImgSurface->clip_rect.w - (int)mloc.x) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
+    int newmy=((int)mloc.y - openglContext->fullPickImgSurface->clip_rect.h) + (openglContext->fullPickImgSurface->clip_rect.h / 2);
 
-    mmevent->x = (openglContext->fullPickImgSurface->clip_rect.w - (int)mloc.x) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
-    mmevent->y = ((int)mloc.y - openglContext->fullPickImgSurface->clip_rect.h) + (openglContext->fullPickImgSurface->clip_rect.h / 2);
+    if( newmx!=colorPickState->last_thread_mousex || newmy!=colorPickState->last_thread_mousey ){
 
-    userevent.type = SDL_USEREVENT;
-    userevent.code = USER_EVENT_ENUM::PICK_AT_POSITION;
-    userevent.data1 = mmevent;
-    userevent.data2 = NULL;
+        SDL_Event event;
+        SDL_UserEvent userevent;
+        SDL_Point* mmevent = new SDL_Point(); // note: we deallocate this on main thread...
 
-    event.type = SDL_USEREVENT;
-    event.user = userevent;
+        mmevent->x = newmx;
+        mmevent->y = newmy;
 
-    //SDL_Log("mm event pos type %i", USER_EVENT_ENUM::PICK_AT_POSITION);
-    SDL_PushEvent(&event);
+        userevent.type = SDL_USEREVENT;
+        userevent.code = USER_EVENT_ENUM::PICK_AT_POSITION;
+        userevent.data1 = mmevent;
+        userevent.data2 = NULL;
+
+        event.type = SDL_USEREVENT;
+        event.user = userevent;
+
+        //SDL_Log("mm event pos type %i", USER_EVENT_ENUM::PICK_AT_POSITION);
+        SDL_PushEvent(&event);
+
+        colorPickState->last_thread_mousex = newmx;
+        colorPickState->last_thread_mousey = newmy;
+    }
 
 
     //    mloc.x+=mouse_point_offset.x,

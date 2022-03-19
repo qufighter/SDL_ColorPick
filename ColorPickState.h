@@ -24,6 +24,8 @@ public:
 
     bool movedxory;
 
+    int last_thread_mousex, last_thread_mousey; // for use on desktop platforms where PICK_FROM_SCREEN_ENABLED to avoid spamming the event queue where a timer is used to monitor position...
+
     float viewport_ratio;
     float ui_mmv_scale; // if we are low dpi 1.0, otherwise 2.0
 

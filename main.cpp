@@ -398,11 +398,13 @@ int MainThreadUserEventHandler(SDL_Event* p_event){
         {
             SDL_Log("USER EVENT - PICK_AT_POSITION");
             SDL_Point mmv_result = *((SDL_Point*)event.user.data1);
-            openglContext->position_x = mmv_result.x;
-            openglContext->position_y = mmv_result.y;
-            colorPickState->movedxory = true;
-            openglContext->renderShouldUpdate = true; // do not call renderScene from timer thread!
-            FREE_FOR_NEW(event.user.data1); // note: perhaps we should allocate this a different way so we can just use SDL_free (windows)
+            if( openglContext->position_x != mmv_result.x || openglContext->position_y != mmv_result.y ){
+                openglContext->position_x = mmv_result.x;
+                openglContext->position_y = mmv_result.y;
+                colorPickState->movedxory = true;
+                openglContext->renderShouldUpdate = true; // do not call renderScene from timer thread!
+            }
+            FREE_FOR_NEW(event.user.data1); // note: perhaps we should allocate this a different way so we can just use SDL_free (windows), keep in mind we allocate for each platform that sends this event...
             return 0;
         }
 

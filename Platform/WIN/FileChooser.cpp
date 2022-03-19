@@ -202,7 +202,7 @@ static Uint32 check_active_picking_activities(Uint32 interval, void* parm) {
 			return 0;
 		}
 
-//		ColorPickState* colorPickState = ColorPickState::Singleton();
+		ColorPickState* colorPickState = ColorPickState::Singleton();
 //
 //		// the position is pretty wierd sometimes (bg in correct position, fg not... I think I know WHY possibly???) we have to move a certian amount to fix the panning....
 //		openglContext->position_x = (openglContext->fullPickImgSurface->clip_rect.w - (int)m_clr_status->X) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
@@ -215,25 +215,32 @@ static Uint32 check_active_picking_activities(Uint32 interval, void* parm) {
 //		colorPickState->movedxory = true;
 //		openglContext->renderShouldUpdate = true; // do not call renderScene from timer thread!
 
+        int newmx=(openglContext->fullPickImgSurface->clip_rect.w - (int)m_clr_status->X) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
+        int newmy=(openglContext->fullPickImgSurface->clip_rect.h - (int)m_clr_status->Y) - (openglContext->fullPickImgSurface->clip_rect.h / 2);
 
-        SDL_Event event;
-        SDL_UserEvent userevent;
-        SDL_Point* mmevent = new SDL_Point(); // note: we deallocate this on main thread...
+        if( newmx!=colorPickState->last_thread_mousex || newmy!=colorPickState->last_thread_mousey ){
 
-        mmevent->x = (openglContext->fullPickImgSurface->clip_rect.w - (int)m_clr_status->X) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
-        mmevent->y = (openglContext->fullPickImgSurface->clip_rect.h - (int)m_clr_status->Y) - (openglContext->fullPickImgSurface->clip_rect.h / 2);
+            SDL_Event event;
+            SDL_UserEvent userevent;
+            SDL_Point* mmevent = new SDL_Point(); // note: we deallocate this on main thread...
 
-        userevent.type = SDL_USEREVENT;
-        userevent.code = USER_EVENT_ENUM::PICK_AT_POSITION;
-        userevent.data1 = mmevent;
-        userevent.data2 = NULL;
+            mmevent->x = newmx;
+            mmevent->y = newmy;
 
-        event.type = SDL_USEREVENT;
-        event.user = userevent;
+            userevent.type = SDL_USEREVENT;
+            userevent.code = USER_EVENT_ENUM::PICK_AT_POSITION;
+            userevent.data1 = mmevent;
+            userevent.data2 = NULL;
 
-        //SDL_Log("mm event pos type %i", USER_EVENT_ENUM::PICK_AT_POSITION);
-        SDL_PushEvent(&event);
+            event.type = SDL_USEREVENT;
+            event.user = userevent;
 
+            //SDL_Log("mm event pos type %i", USER_EVENT_ENUM::PICK_AT_POSITION);
+            SDL_PushEvent(&event);
+
+            colorPickState->last_thread_mousex = newmx;
+            colorPickState->last_thread_mousey = newmy;
+        }
 
 	} else {
 
@@ -270,11 +277,8 @@ void beginScreenshotSeleced(){
         return;
     }
 
-	// by passing 0,0 we will ensure that we get the right snap... trust me...  without it, there are some issues retrunign to pick mode, or even panning quick and ending up in the wrong place
-	// there are some alternate soltuions, to try to get the CORRECT mouse position (eg maybe we could pass in screen coord of the click that triggered this function call...)
-    SDL_Point gm_result = {0,0};
-    SDL_GetGlobalMouseState(&gm_result.x, &gm_result.y);
-    openglContext->imageWasSelectedCb(CopyEntireScreenToSurfaceWin(), false, gm_result.x, gm_result.y);
+    SDL_GetGlobalMouseState(&colorPickState->last_thread_mousex, &colorPickState->last_thread_mousey);
+    openglContext->imageWasSelectedCb(CopyEntireScreenToSurfaceWin(), false, colorPickState->last_thread_mousex, colorPickState->last_thread_mousey);
 
     if( !m_clr_status->picking_active){
 		win_TogglePicking();
