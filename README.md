@@ -2,13 +2,13 @@ https://vidsbee.com/ColorPick/Mobile/
 
 This will also complile into a:
 
-~100% working Mac OS app
-~100% wokring Linux app (for gtkmm-3.0 so far)
-~95% working/stable windows app (some errors observed)
-~IOS
-~Android
-~Emscripten
-... more?
+ * ~100% working Mac OS app
+ * ~100% wokring Linux app (for gtkmm-3.0 so far)
+ * ~95% working/stable windows app (some errors observed)
+ * ~IOS
+ * ~Android
+ * ~Emscripten [demo](https://qufighter.github.io/ColorPick/Mobile/WebDemo/index.html)
+ * ... more?
 
 Before you contriubte, I suggest looking for forks of the project, to see if anyone else has move on with the work since I've left off.
 
@@ -33,9 +33,8 @@ Just wanted to try to get this out there just in case!  You never know and I'm n
 see todo for some work...
 
 more TODO that are more on the top of mind:
-1) test if clone from here works (really can't say)
-2) move the 2 SDL library folders permanently into correct paths inside external folder
-3) other bookkeeping and organizing (a new directory external_static is planned)(wip)
+1) move the 2 SDL library folders permanently into correct paths inside external folder
+2) other bookkeeping and organizing (a new directory external_static is planned)(wip)
 
 Hopefully someone in the future finds hte project usefulf or personal use or decides to coontinue development/code cleanup/etc!,
 much love (and etc)
@@ -46,3 +45,5 @@ PS:
 
 see also, the chrome extension src:
 https://github.com/qufighter/ColorPick
+
+
