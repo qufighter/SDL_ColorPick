@@ -554,93 +554,93 @@ this is basically our 4x4 grid...
     textIndex = myDirectionalScan->indexGet2d(0,0); // center point
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                (SDL_Point){0,0}, 1 ) ){return 1;}
+                                SDL_Point{0,0}, 1 ) ){return 1;}
 
 
     textIndex = myDirectionalScan->indexGet2d(1,1);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){1,1}, 1 ) ){return 1;}
+                                 SDL_Point{1,1}, 1 ) ){return 1;}
     textIndex = myDirectionalScan->indexGet2d(2,2);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){1,1}, 2 ) ){return 1;}
+                                 SDL_Point{1,1}, 2 ) ){return 1;}
 
 
     textIndex = myDirectionalScan->indexGet2d(-1,-1);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){-1,-1}, 1 ) ){return 1;}
+                                 SDL_Point{-1,-1}, 1 ) ){return 1;}
     textIndex = myDirectionalScan->indexGet2d(-2,-2);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){-1,-1}, 2 ) ){return 1;}
+                                 SDL_Point{-1,-1}, 2 ) ){return 1;}
 
 
     textIndex = myDirectionalScan->indexGet2d(-1,1);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){-1,1}, 1 ) ){return 1;}
+                                 SDL_Point{-1,1}, 1 ) ){return 1;}
     textIndex = myDirectionalScan->indexGet2d(-2,2);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){-1,1}, 2 ) ){return 1;}
+                                 SDL_Point{-1,1}, 2 ) ){return 1;}
 
 
     textIndex = myDirectionalScan->indexGet2d(1,-1);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){1,-1}, 1 ) ){return 1;}
+                                 SDL_Point{1,-1}, 1 ) ){return 1;}
     textIndex = myDirectionalScan->indexGet2d(2,-2);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){1,-1}, 2 ) ){return 1;}
+                                 SDL_Point{1,-1}, 2 ) ){return 1;}
 
     textIndex = myDirectionalScan->indexGet2d(1,0);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){1,0}, 1 ) ){return 1;}
+                                 SDL_Point{1,0}, 1 ) ){return 1;}
     textIndex = myDirectionalScan->indexGet2d(2,0);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){1,0}, 2 ) ){return 1;}
+                                 SDL_Point{1,0}, 2 ) ){return 1;}
 
 
     textIndex = myDirectionalScan->indexGet2d(-1,0);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){-1,0}, 1 ) ){return 1;}
+                                 SDL_Point{-1,0}, 1 ) ){return 1;}
     textIndex = myDirectionalScan->indexGet2d(-2,0);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){-1,0}, 2 ) ){return 1;}
+                                 SDL_Point{-1,0}, 2 ) ){return 1;}
 
 
     textIndex = myDirectionalScan->indexGet2d(0,1);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){0,1}, 1 ) ){return 1;}
+                                 SDL_Point{0,1}, 1 ) ){return 1;}
     textIndex = myDirectionalScan->indexGet2d(0,2);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){0,1}, 2 ) ){return 1;}
+                                 SDL_Point{0,1}, 2 ) ){return 1;}
 
 
     textIndex = myDirectionalScan->indexGet2d(0,-1);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){0,-1}, 1 ) ){return 1;}
+                                 SDL_Point{0,-1}, 1 ) ){return 1;}
     textIndex = myDirectionalScan->indexGet2d(0,-2);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){0,-1}, 2 ) ){return 1;}
+                                 SDL_Point{0,-1}, 2 ) ){return 1;}
 
 
     // and one of the lone ones for good measure...
     textIndex = myDirectionalScan->indexGet2d(1,2);
     if( !vectorExpectationPasses( *myDirectionalScan->getVector(textIndex),
                                  myDirectionalScan->getVectorInterval(textIndex),
-                                 (SDL_Point){1,2}, 1 ) ){return 1;}
+                                 SDL_Point{1,2}, 1 ) ){return 1;}
 
     //DirectionalElement* elements  =
     // computing vectors is good because we can rule them out and whole sets of destinations
