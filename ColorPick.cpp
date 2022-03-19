@@ -1805,7 +1805,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
     if( colorFillPercent > fill_requirement ){
         // we make some preliminary write op to the stencil buffer...
 
-        glUniform4f(uniformLocations->color_additive, 0.0,0,0,0.0); // transparent draw so no visible output....  to debug you might use  eyedropper_stem->applyUniforms(uniformLocations);  (glass default)
+        glUniform4f(uniformLocations->color_additive, 0.0,0.0,0.0,0.0); // transparent draw so no visible output....  to debug you might use  eyedropper_stem->applyUniforms(uniformLocations);  (glass default)
         eyedropper_stem->render();
         //we write the depth buffer only ^
 
@@ -1825,7 +1825,7 @@ void OpenGLContext::render3dDropper(float colorFillPercent){ // todo: color arg 
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // really write to the stencil buffer?
         //glStencilFunc(GL_ALWAYS, 1, 0xFF); // all fragments should update the stencil buffer
 
-        glUniform4f(uniformLocations->color_additive, 1.0,0,0,0.0); // transparent draw so no visilble output (we write to stencil only right now) you might try red to visualize/debug the stencil buffer... 1.0,0,0,1.0
+        glUniform4f(uniformLocations->color_additive, 1.0,0.0,0.0,0.0); // transparent draw so no visilble output (we write to stencil only right now) you might try red to visualize/debug the stencil buffer... 1.0,0,0,1.0
         //glUniform4f(uniformLocations->color_additive, 1.0,0,0,1.0);
         eyedropper_stem->render();
 
