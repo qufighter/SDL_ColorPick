@@ -36,6 +36,8 @@
 #define MAX_FISHEYE_ZOOM 64.0f
 #define VIEW_MAX_CLIP_DISTANCE 100
 
+#define PAN_RECENTER_SNAP_AT_OFFSET 128
+
 //
 //typedef struct {
 //    float Position[3];

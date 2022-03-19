@@ -1295,7 +1295,7 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
         position_offset_x = position_cropped_x-position_x;
         position_offset_y = position_cropped_y-position_y;
 
-        if( fabs(position_offset_x) > 128 || fabs(position_offset_y) > 128 ){
+        if( fabs(position_offset_x) > PAN_RECENTER_SNAP_AT_OFFSET || fabs(position_offset_y) > PAN_RECENTER_SNAP_AT_OFFSET ){
             oggLoadTextureSized(fullPickImgSurface, textureNone, textureId_pickImage, textureSize, &position_x, &position_y);
         }else{
             // just lazy move it... no new texture to stream to GPU, we just move what we have there already...

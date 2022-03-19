@@ -34,6 +34,9 @@ static bool pick_mode_enabled=false;
 static bool gtk_init_complete=false;
 
 // TODO: we need non GTK variant support...
+// GNOME — GTK+ 2
+// KDE — Qt 3 graphical toolkit.
+// see how portable file dialogues auto detects this! auto desktop_name = std::getenv("XDG_SESSION_DESKTOP");
 #define COLORPICK_X11_GTK 1
 #ifdef COLORPICK_X11_GTK
 #include <gtk/gtk.h>

@@ -356,6 +356,7 @@ static Uint32 color_pick_osx_timer_fire(Uint32 interval, void* parm){
         }else{
             openglContext->setFishScale(-1.0, 1.10f);
         }
+        openglContext->renderShouldUpdate = true;
     }else if([keyPath isEqualToString:@"shield_mouseup"]){
         if(is_picking) [self togglePicking];
 
