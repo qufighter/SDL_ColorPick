@@ -34,9 +34,6 @@ static bool pick_mode_enabled=false;
 static bool gtk_init_complete=false;
 
 // TODO: we need non GTK variant support...
-// GNOME — GTK+ 2
-// KDE — Qt 3 graphical toolkit.
-// see how portable file dialogues auto detects this! auto desktop_name = std::getenv("XDG_SESSION_DESKTOP");
 #define COLORPICK_X11_GTK 1
 #ifdef COLORPICK_X11_GTK
 #include <gtk/gtk.h>
@@ -72,15 +69,15 @@ select_area_button_press (GtkWidget               *window,
 
 static gboolean
 select_area_motion_notify (GtkWidget               *window,
-                           GdkEventMotion          *event,
+                           GdkEventMotion          *g_event,
                            select_area_filter_data *data)
 {
 
 //    OpenGLContext* openglContext = OpenGLContext::Singleton();
 //    ColorPickState* colorPickState = ColorPickState::Singleton();
 //
-//    openglContext->position_x =(openglContext->fullPickImgSurface->clip_rect.w - (int)event->x_root) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
-//    openglContext->position_y =(openglContext->fullPickImgSurface->clip_rect.h - (int)event->y_root) - (openglContext->fullPickImgSurface->clip_rect.h / 2);
+//    openglContext->position_x =(openglContext->fullPickImgSurface->clip_rect.w - (int)g_event->x_root) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
+//    openglContext->position_y =(openglContext->fullPickImgSurface->clip_rect.h - (int)g_event->y_root) - (openglContext->fullPickImgSurface->clip_rect.h / 2);
 //
 //    // todo: note; theory; all 3 platforms suffer from the fact that this is occuring in another thread...
 //    // which means our position_x  position_y updates may or may not be consumed, or may change mid move...
@@ -94,8 +91,8 @@ select_area_motion_notify (GtkWidget               *window,
     SDL_UserEvent userevent;
     SDL_Point* mmevent = new SDL_Point(); // note: we deallocate this on main thread...
 
-    mmevent->x = (openglContext->fullPickImgSurface->clip_rect.w - (int)event->x_root) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
-    mmevent->y = (openglContext->fullPickImgSurface->clip_rect.h - (int)event->y_root) - (openglContext->fullPickImgSurface->clip_rect.h / 2);
+    mmevent->x = (openglContext->fullPickImgSurface->clip_rect.w - (int)g_event->x_root) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
+    mmevent->y = (openglContext->fullPickImgSurface->clip_rect.h - (int)g_event->y_root) - (openglContext->fullPickImgSurface->clip_rect.h / 2);
 
     userevent.type = SDL_USEREVENT;
     userevent.code = USER_EVENT_ENUM::PICK_AT_POSITION;
@@ -352,6 +349,8 @@ void beginScreenshotSeleced(){
         auto comppp = xcb_get_image_data_length(image.get()) / width / height;
         auto depth = comppp * 8;
 
+        //SDL_Log("screen image dimensions: %i %i", width, height);
+
         SDL_Surface* srf = SDL_CreateRGBSurfaceFrom(xcb_get_image_data(image.get()),
             width,
             height,
@@ -363,12 +362,24 @@ void beginScreenshotSeleced(){
             0x00000000
         );
 
+        //SDL_Log("srf bpp %i", srf->format->BitsPerPixel);
+
+        // NOTE while the above would be detected later as SDL_PIXELFORMAT_RGB888 srf->format->BitsPerPixel is (correctly for below?) 32...
+        // code to change the format should *probably* be common however picking the correct format for the platform would be a good plan.... see also isProbablyAndroid
+        SDL_Surface *surface2 = SDL_CreateRGBSurfaceWithFormat(0, srf->w, srf->h, srf->format->BitsPerPixel, SDL_PIXELFORMAT_ABGR8888);
+        int didBlit = SDL_BlitSurface(srf, NULL /*src rect entire surface*/, surface2, &srf->clip_rect);
+        if( didBlit != 0 ){
+            SDL_Log("Blit problem");
+            SDL_Log("%s", SDL_GetError());
+        }
+        SDL_FreeSurface(srf);
+
 		// by passing 0,0 we will ensure that we get the right snap... trust me...  without it, there are some issues retrunign to pick mode, or even panning quick and ending up in the wrong place
 		// there are some alternate soltuions, to try to get the CORRECT mouse position (eg maybe we could pass in screen coord of the click that triggered this function call...)
 
     SDL_Point gm_result = {0,0};
     SDL_GetGlobalMouseState(&gm_result.x, &gm_result.y);
-    openglContext->imageWasSelectedCb(srf, false, gm_result.x, gm_result.y);
+    openglContext->imageWasSelectedCb(surface2, false, gm_result.x, gm_result.y);
         xcb_disconnect(dsp);
     #endif
 

@@ -112,8 +112,9 @@ if(COLORPICK_DYNAMIC_LINK)
     find_package(SDL2_image REQUIRED)
 
 	#todo use system library directories instead..
-    include_directories(SDL/library SDLImage/library)
-
+   # include_directories(SDL/library SDLImage/library)
+    include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
+    
 else()
     message(STATUS " COLORPICK_DYNAMIC_LINK disabled STATIC LINK!")
 
