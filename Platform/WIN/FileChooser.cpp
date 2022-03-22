@@ -202,7 +202,14 @@ static Uint32 pick_again_soon(Uint32 interval, void* parm) {
 
 static Uint32 refocus_again_soon(Uint32 interval, void* parm) {
 	OpenGLContext* openglContext = OpenGLContext::Singleton();
+	//SDL_HideWindow(openglContext->getSdlWindow());
+	//SDL_ShowWindow(openglContext->getSdlWindow());
 	SDL_RaiseWindow(openglContext->getSdlWindow()); // timeout??? this seems to only work when using escape (eg picking_canceled)
+	//
+	//
+	//SDL_RestoreWindow(openglContext->getSdlWindow());
+
+	SDL_SetWindowInputFocus(nullptr);
 	SDL_SetWindowInputFocus(openglContext->getSdlWindow());
 	return 0;
 }
@@ -275,16 +282,20 @@ static Uint32 check_active_picking_activities(Uint32 interval, void* parm) {
 
 	} else {
 
-		SDL_RaiseWindow(openglContext->getSdlWindow()); // timeout??? this seems to only work when using escape (eg picking_canceled)
+		//SDL_RaiseWindow(openglContext->getSdlWindow()); // timeout??? this seems to only work when using escape (eg picking_canceled)
+		//SDL_MinimizeWindow(openglContext->getSdlWindow());
+
+		//SDL_RestoreWindow(openglContext->getSdlWindow());
 
 		// if we ended, depending on how (cancel vs click) we should push the color to history!s
 		if (!m_clr_status->picking_canceled) {
 			//OpenGLContext* openglContext = OpenGLContext::Singleton();
 			openglContext->generalUx->addCurrentToPickHistory();
 
-			SDL_AddTimer(250, refocus_again_soon, nullptr); // to handle fact that above does nto always work??
 
 		}
+		SDL_AddTimer(250, refocus_again_soon, nullptr); // to handle fact that above does nto always work??
+
 			//	SDL_SetWindowInputFocus(openglContext->getSdlWindow()); // does not help...
 
 
