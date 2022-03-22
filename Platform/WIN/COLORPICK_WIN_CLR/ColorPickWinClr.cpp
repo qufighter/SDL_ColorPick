@@ -42,11 +42,6 @@
 // evaluate - many above includes are NOT NEEDED AT ALL TODO TODO TODO
 
 
-
-static bool pick_mode_enabled=false; // dupe of m_clr_data->picking_active
-static bool pick_from_wnd_created=false; // dupe of m_clr_data->shield_created  - also recreate shield instaed...
-
-
 static HWND pick_from_hwnd=NULL;
 static HWND preview_hwnd=NULL;
 static HWND pick_zoom_hwnd=NULL;
@@ -263,7 +258,7 @@ LRESULT CALLBACK CPick_Preview_WndProc(HWND hwnd, UINT message, WPARAM wparam, L
     case WM_RBUTTONDOWN:
             // no instance?? we may need to use singleton to reach into here... possibly simply calling beginScreenshotSeleced() again would disable...
 
-        if(pick_mode_enabled) cpwinclr_instance->winTogglePicking(); // we'll likely be polling for some changes (mouse, etc) and we can just detect this state?
+        if(m_clr_data->picking_active) cpwinclr_instance->winTogglePicking(); // we'll likely be polling for some changes (mouse, etc) and we can just detect this state?
        //      openglContext = OpenGLContext::Singleton();
        //      openglContext->choosePickFromScreen(); //?
 //ShowWindow(pick_from_hwnd,SW_HIDE);//if we click on it, well we shouldn't click on it!  that is all - the window should never have focus
@@ -292,13 +287,13 @@ LRESULT CALLBACK CPick_Preview_WndProc(HWND hwnd, UINT message, WPARAM wparam, L
 			m_clr_data->X += 1;
 			break;
 		case VK_RETURN:
-			if (pick_mode_enabled) cpwinclr_instance->winTogglePicking(); // same as click...
+			if (m_clr_data->picking_active) cpwinclr_instance->winTogglePicking(); // same as click...
 			break;
         case VK_ESCAPE:
 			//printf("ESCAPE key pressed...\n\n");
             //PostQuitMessage( 0 ); // no effect...
 			m_clr_data->picking_canceled = true;
-			if (pick_mode_enabled) cpwinclr_instance->winTogglePicking(); // we'll likely be polling for some changes (mouse, etc) and we can just detect this state?
+			if (m_clr_data->picking_active) cpwinclr_instance->winTogglePicking(); // we'll likely be polling for some changes (mouse, etc) and we can just detect this state?
             break;
         default:
             break;
@@ -313,7 +308,7 @@ LRESULT CALLBACK CPick_Preview_WndProc(HWND hwnd, UINT message, WPARAM wparam, L
 
 
 static void initWinDesktopScreenshotPreviewWindow(){
-    if(pick_from_wnd_created)return;
+    if(m_clr_data->shield_created)return;
     WNDCLASSEX wcx;
         wcx.cbClsExtra = 0;
         wcx.cbSize = sizeof( WNDCLASSEX );  // 1.  NEW!  must know its own size.
@@ -354,7 +349,6 @@ static void initWinDesktopScreenshotPreviewWindow(){
 
 	//pick_from_cwnd = CWnd::FromHandle(pick_from_hwnd);
 
-	pick_from_wnd_created=true;
 	m_clr_data->shield_created = true;
 }
 
@@ -368,12 +362,11 @@ ColorPickWinClr* ColorPickWinClr::Singleton() {
 }
 
 bool ColorPickWinClr::winTogglePicking(){
-    if(pick_mode_enabled){
+    if(m_clr_data->picking_active){
 
         //preview_cwnd->SetActiveWindow();
 
         //if(pickUpdateThread && pickUpdateThread->IsAlive )pickUpdateThread->Abort();
-        pick_mode_enabled=false;
 		m_clr_data->picking_active = false;
 
         //threadLoopCount = 0;
@@ -382,10 +375,9 @@ bool ColorPickWinClr::winTogglePicking(){
         //End_Monitor_Mouse_Position();
         //mpt->m1=false;//intercepted event
 
-		if (pick_from_wnd_created) {
+		if (m_clr_data->shield_created) {
 			//ShowWindow(pick_from_hwnd, SW_HIDE); //destroy?
 			DestroyWindow(pick_from_hwnd);
-			pick_from_wnd_created = false;
 			m_clr_data->shield_created = false;
 		}
         //ShowWindow(preview_hwnd,SW_RESTORE);
@@ -403,7 +395,6 @@ bool ColorPickWinClr::winTogglePicking(){
 
         //Begin_Monitor_Mouse_Position(mpt);
         //mpt = Get_Mouse_Position();/*!*/
-        pick_mode_enabled=true;
 		m_clr_data->picking_active = true;
 		m_clr_data->picking_canceled = false;
 
@@ -425,7 +416,6 @@ bool ColorPickWinClr::winTogglePicking(){
             // we'd snap here...??? if we have not already...
 
             ShowWindow(pick_from_hwnd,SW_SHOW);
-            // next up? pick_mode_enabled
 
             // lets not draw to the "shield" window??? if possible??
 //            Gdiplus::Graphics* bmp_screen = new Gdiplus::Graphics(GetDC(pick_from_hwnd));
