@@ -51,7 +51,7 @@ static HWND pick_from_hwnd=NULL;
 static HWND preview_hwnd=NULL;
 static HWND pick_zoom_hwnd=NULL;
 //static CWnd* preview_cwnd=NULL;
-static CWnd* pick_from_cwnd=NULL;
+//static CWnd* pick_from_cwnd=NULL;
 
 static UINT uMyTimerId;
 
@@ -352,7 +352,7 @@ static void initWinDesktopScreenshotPreviewWindow(){
             NULL,NULL,GetModuleHandle(0),NULL
         );
 
-	pick_from_cwnd = CWnd::FromHandle(pick_from_hwnd);
+	//pick_from_cwnd = CWnd::FromHandle(pick_from_hwnd);
 
 	pick_from_wnd_created=true;
 	m_clr_data->shield_created = true;
@@ -382,8 +382,12 @@ bool ColorPickWinClr::winTogglePicking(){
         //End_Monitor_Mouse_Position();
         //mpt->m1=false;//intercepted event
 
-        if(pick_from_wnd_created) ShowWindow(pick_from_hwnd,SW_HIDE); //destroy?
-
+		if (pick_from_wnd_created) {
+			//ShowWindow(pick_from_hwnd, SW_HIDE); //destroy?
+			DestroyWindow(pick_from_hwnd);
+			pick_from_wnd_created = false;
+			m_clr_data->shield_created = false;
+		}
         //ShowWindow(preview_hwnd,SW_RESTORE);
         //preview_cwnd->SetActiveWindow();
         //preview_cwnd->ActivateTopParent();

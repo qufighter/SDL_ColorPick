@@ -174,10 +174,18 @@ SDL_Surface* CopyEntireScreenToSurfaceWin()
        0x00000000
    );
 
-	SDL_free(ret_bitm);
-	//SDL_free(ret_bitm_flipped); // whatever we give surface, cannot free it!
+	SDL_Surface* surface2 = SDL_CreateRGBSurfaceWithFormat(0, srf->w, srf->h, srf->format->BitsPerPixel, SDL_PIXELFORMAT_ABGR8888);
+	int didBlit = SDL_BlitSurface(srf, NULL /*src rect entire surface*/, surface2, &srf->clip_rect);
+	if (didBlit != 0) {
+		SDL_Log("Platform WIN FileChooser Blit problem");
+		SDL_Log("%s", SDL_GetError());
+	}
+	SDL_FreeSurface(srf);
 
-   return srf;
+	SDL_free(ret_bitm);
+	SDL_free(ret_bitm_flipped); // we can free this since we bilt?  or was this free'd by SDL_FreeSurface(srf); ?
+
+   return surface2;
 }
 
 static Uint32 pick_again_soon(Uint32 interval, void* parm) {
@@ -189,6 +197,13 @@ static Uint32 pick_again_soon(Uint32 interval, void* parm) {
 	event.type = SDL_USEREVENT;
 	event.user = userevent;
 	SDL_PushEvent(&event);
+	return 0;
+}
+
+static Uint32 refocus_again_soon(Uint32 interval, void* parm) {
+	OpenGLContext* openglContext = OpenGLContext::Singleton();
+	SDL_RaiseWindow(openglContext->getSdlWindow()); // timeout??? this seems to only work when using escape (eg picking_canceled)
+	SDL_SetWindowInputFocus(openglContext->getSdlWindow());
 	return 0;
 }
 
@@ -260,12 +275,18 @@ static Uint32 check_active_picking_activities(Uint32 interval, void* parm) {
 
 	} else {
 
+		SDL_RaiseWindow(openglContext->getSdlWindow()); // timeout??? this seems to only work when using escape (eg picking_canceled)
+
 		// if we ended, depending on how (cancel vs click) we should push the color to history!s
 		if (!m_clr_status->picking_canceled) {
-			OpenGLContext* openglContext = OpenGLContext::Singleton();
+			//OpenGLContext* openglContext = OpenGLContext::Singleton();
 			openglContext->generalUx->addCurrentToPickHistory();
+
+			SDL_AddTimer(250, refocus_again_soon, nullptr); // to handle fact that above does nto always work??
+
 		}
-		SDL_RaiseWindow(openglContext->getSdlWindow()); // timeout??? this seems to only work when using escape (eg picking_canceled)
+			//	SDL_SetWindowInputFocus(openglContext->getSdlWindow()); // does not help...
+
 
 		return 0; // end timer
 	}

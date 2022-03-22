@@ -369,7 +369,7 @@ void beginScreenshotSeleced(){
         SDL_Surface *surface2 = SDL_CreateRGBSurfaceWithFormat(0, srf->w, srf->h, srf->format->BitsPerPixel, SDL_PIXELFORMAT_ABGR8888);
         int didBlit = SDL_BlitSurface(srf, NULL /*src rect entire surface*/, surface2, &srf->clip_rect);
         if( didBlit != 0 ){
-            SDL_Log("Blit problem");
+            SDL_Log("Platform Linux FileChooser Blit problem");
             SDL_Log("%s", SDL_GetError());
         }
         SDL_FreeSurface(srf);
