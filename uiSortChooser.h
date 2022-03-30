@@ -178,7 +178,7 @@ struct uiSortChooser{
             }
             hist = pickHistoryIterator->nextLast();
         }
-        SDL_free(pickHistoryIterator);
+		FREE_FOR_NEW(pickHistoryIterator);
         // add them back in reverse
         int shiftedItems = tempList->total();
         pickHistoryIterator = tempList->iterate();
