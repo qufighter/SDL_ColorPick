@@ -75,25 +75,28 @@ cp SDL2_image/SDL_image.h ../SDLImage/library/
 
 # Linux platform COLORPICK_DYNAMIC_LINK requirements...
 
+Static linking on linux is not stricly working... mostly because it only tries to static link SDL and fails to set up other libraries for dynamic linking... could fix this probably... but the argument name needs refinement...
+
 Specific library names may vary by distribution... generally:
 
 ```
 sudo apt-get update
 apt list | grep sdl | grep dev
-apt list | grep gtk | grep mm
+apt list | grep gtkmm | grep mm
 ```
 
 If you don't see results you are missing the required packages, select the correct packages:
 ```
 apt-cache search sdl | grep 2 | grep dev
-apt-cache search gtk | grep mm | grep dev
+apt-cache search gtkmm | grep mm | grep dev
+apt-cache search libopengl | grep dev
 # once you identify the correct names for the 3 packages needed...
 sudo apt-get install <package1> <package2> <pacakge3>
 ```
 
 ## Packages
 
-In summary SDL2 dev, SDL2 image dev, and gtkmm-3.0 dev are the 3 main requirements...
+In summary SDL2 dev, SDL2 image dev, gtkmm-3.0 dev, libopengl dev are the 4 main requirements...
 
 XCB is also currently required although generally already available... if not install it!
 
@@ -101,3 +104,8 @@ XCB was chosen with hopes of backwards compatibility in the future of X... see C
 
 We only use gtk for an invisible window (shield to intercept movement and click)... see COLORPICK_X11_GTK as a port for alternatives is planned!
 
+Note: you have to in some cases install the dev library in additon to the library, so in one case it is:
+
+sudo apt-get install libopengl0 libopengl-dev
+
+but the package names will vary by distribution...

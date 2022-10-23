@@ -9,6 +9,7 @@ set (CMAKE_CXX_STANDARD 11)
 # 3) cmake .. #OR: cmake .. -D COLORPICK_DYNAMIC_LINK=1 -D CMAKE_BUILD_TYPE=Release
 # 3) make VERBOSE=1
 # of course, a better way might be to use the CMAKE gui to configure everything (set directories, click configure, click geneerate, then run make --VERBOSE from teh build folder...
+# 4) ./colorpick_main (or run the tests...)
 
 #known issue: enabling SUPPORT_WEBP seems to cause problems bundling GLUT on OSX, still working out the details...
 #make[2]: *** No rule to make target `/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/GLUT.framework/GLUT', needed by `external/SDL2_Image/external/libwebp-1.0.3/vwebp'.  Stop.
@@ -99,6 +100,9 @@ if(COLORPICK_DYNAMIC_LINK)
     message(STATUS " GTKMM_INCLUDE_DIRS:    ${GTKMM_INCLUDE_DIRS}")
     message(STATUS " GTKMM_LIBRARIES:     ${GTKMM_LIBRARIES}")
     include_directories(${GTKMM_INCLUDE_DIRS})
+    else()
+    message(STATUS " PROBMEM: no GTKMM_LIBRARIES:     ${GTKMM_LIBRARIES}")
+
     endif()
 
     message(STATUS " COLORPICK_DYNAMIC_LINK was detected!")
@@ -122,7 +126,7 @@ else()
     set( SDL_SHARED OFF CACHE BOOL "" FORCE )
     set( BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE )
     add_subdirectory( external/SDL2 )
-    add_subdirectory( external/SDL2_Image )
+    add_subdirectory( external/SDL2_image )
 
     if(WIN32)
         add_subdirectory( external/glew/build/cmake )
