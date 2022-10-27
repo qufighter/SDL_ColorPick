@@ -109,6 +109,13 @@ void buildMesh(Mesh* mesh, int vertex_items, float* vertices, float* normals, fl
         mesh->has_colors=true;
     }
 
+    // warning pertaining to mesh->has_colors: we have some issues with this on Linix test platforms... where even though we do not enable this,
+    // for one reason or some other (possibly some bug in our code) we are getting non zero data for color attribute
+    // since we don't use this feature or textures, maybe it does not matter and our current fix will suffice for now
+    // but one option may be to pass the boolean values for mesh->has_colors and mesh->has_texCoords to the vtx shader... and onwards
+    // to make the appropriate determination then....
+
+
     if( texCoords != nullptr ){
         glBindBuffer(GL_ARRAY_BUFFER, mesh->buffers[SHADER_TEXTURE]); // Bind our second Vertex Buffer Object
         glBufferData(GL_ARRAY_BUFFER, vertex_items * sizeof(GLfloat), texCoords, GL_STATIC_DRAW); // Set the size and data of our VBO and set it to STATIC_DRAW

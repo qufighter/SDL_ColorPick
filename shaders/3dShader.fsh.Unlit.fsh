@@ -14,7 +14,8 @@ void main()
 {
     vec4 ocolor;
     ocolor =  colorOut;
-    ocolor.rgb += color_additive.rgb;
+    //ocolor.rgb += color_additive.rgb;
+    ocolor = color_additive;
     ocolor.a = min( color_additive.a, ocolor.a );
     gl_FragColor = ocolor;
 }
