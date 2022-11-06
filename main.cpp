@@ -767,21 +767,21 @@ event is maybe going to have
                 break; // presumably we handled this or will plan to handle it.... above.... for now this makes silence on android....
             }
 
-#ifdef __WIN32__
-            if( event->type == SDL_POLLSENTINEL){
-                break; // presumably we handled this or will plan to handle it.... above.... for now this makes silence on android....
-            }
-#endif
+// #ifdef __WIN32__
+//             if( event->type == SDL_POLLSENTINEL){
+//                 break; // presumably we handled this or will plan to handle it.... above.... for now this makes silence on android....
+//             }
+// #endif
 
             if( event->type == SDL_USEREVENT ){
                 // handled elsewhere......
                 break;//return 0;
             }
 
-		// if actually needed on osx, add above... broke linux!
-            //if( event->type == SDL_POLLSENTINEL ){ // intenral, not sure why we see this... (debug build?)
-            //    break;
-            //}
+		    // this is an INTERNAL event that "Signals the end of an event poll cycle"
+            if( event->type == SDL_POLLSENTINEL ){
+               break; // noisy console logging
+            }
 
             // see instead (of the above) SDL_HINT_TOUCH_MOUSE_EVENTS (actually that broke android?)
             SDL_Log("unrecognized event; type %02x", event->type );
