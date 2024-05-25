@@ -81,7 +81,12 @@ void Ux::endCurrentModal(){
 }
 
 bool Ux::hasCurrentModal(){
-    return currentModal != rootUiObject && currentModal != nullptr;
+    return currentModal != nullptr && currentModal != rootUiObject;
+}
+
+
+bool Ux::modalWasFalseModal(){
+    return currentModal != nullptr && currentModal == returnToLastImgBtn;
 }
 
 uiKeyInteractions* Ux::getKeyInteractions(){

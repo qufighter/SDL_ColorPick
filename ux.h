@@ -479,6 +479,7 @@ static Ux* Singleton();
     void endModal(uiObject *oldModal); // this is to be called AFTER modal is hidden
     void endCurrentModal();
     bool hasCurrentModal();
+    bool modalWasFalseModal();
 
     uiKeyInteractions* getKeyInteractions();
 

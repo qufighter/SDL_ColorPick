@@ -572,7 +572,7 @@ event is maybe going to have
         case SDL_MOUSEWHEEL:
             //SDL_Log("Hello Wheel!!");
 
-            if( openglContext->generalUx->hasCurrentModal() ){
+            if( openglContext->generalUx->hasCurrentModal() && !openglContext->generalUx->modalWasFalseModal() ){
 
                 // we may need to see what item is under our pointer....
                 // only trouble comes if we are already clicked when scrolling ?
@@ -592,7 +592,7 @@ event is maybe going to have
         case SDL_MULTIGESTURE: // http://lazyfoo.net/tutorials/SDL/55_multitouch/index.php
             //SDL_Log("Hello Gesture!!");
 
-            if( openglContext->generalUx->hasCurrentModal() ){
+            if( openglContext->generalUx->hasCurrentModal() && !openglContext->generalUx->modalWasFalseModal() ){
 
                 // todo - send it to the modal.... (and or minigame as case may be ?)
             }else{
