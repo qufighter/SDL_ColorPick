@@ -127,9 +127,11 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
 
         historyPalleteHolder->setBoundaryRectForAnimState(&visible,&hidden );
 
-        historyPalleteScoreboardHolder->setBoundaryRect( 0.0, 1.015, 0.5, 0.075);
 
         if( uxInstance->widescreen ){
+
+
+            historyPalleteScoreboardHolder->setBoundaryRect( 1.1, 0.05, 0.5, 0.065);
 
 
             historyPalleteHolderTlEdgeShadow->resize(SQUARE_EDGE_ENUM::LEFT);
@@ -165,6 +167,9 @@ struct uiHistoryPalleteEditor{  // we will become uxInstance->historyPalleteEdit
             palleteSelectionColorPreview->resize(Float_Rect(0.0, 0.0, 1.0, 1.0));
 
         }else{
+
+            historyPalleteScoreboardHolder->setBoundaryRect( 0.0, 1.015, 0.5, 0.075);
+
 
             historyPalleteHolderTlEdgeShadow->resize(SQUARE_EDGE_ENUM::TOP);
             historyPalleteHolderBrEdgeShadow->resize(SQUARE_EDGE_ENUM::BOTTOM);
