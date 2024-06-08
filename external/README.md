@@ -94,7 +94,7 @@ apt-cache search libopengl | grep dev
 sudo apt-get install <package1> <package2> <pacakge3>
 ```
 
-## Packages
+## Packages (generic / GNOME GTK)
 
 In summary SDL2 dev, SDL2 image dev, gtkmm-3.0 dev, libopengl dev are the 4 main requirements...
 
@@ -109,3 +109,9 @@ Note: you have to in some cases install the dev library in additon to the librar
 sudo apt-get install libopengl0 libopengl-dev
 
 but the package names will vary by distribution...
+
+## Packages (KDE / Qt Build)
+
+sudo apt-get install extra-cmake-modules qt6-base-dev
+
+note support for KDE (except through GTK) is not yet complete.

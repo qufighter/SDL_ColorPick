@@ -85,11 +85,14 @@ include_directories(${OPENGL_INCLUDE_DIR})
 
 if(COLORPICK_DYNAMIC_LINK)
 
-    # This creates the C++ defines needed presently for compilation on linux
-    add_compile_definitions(COLORPICK_X11_GTK=1)
-    add_compile_definitions(COLORPICK_USE_XCB=1)
-
-
+    if(COLORPICK_KDE_QT)
+        add_compile_definitions(COLORPICK_X11_QT=1)
+        add_compile_definitions(COLORPICK_USE_XCB=1)
+    else()
+        # This creates the C++ defines needed presently for compilation on linux
+        add_compile_definitions(COLORPICK_X11_GTK=1)
+        add_compile_definitions(COLORPICK_USE_XCB=1)
+    endif()
 
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
     find_package(XCB)
@@ -100,16 +103,62 @@ if(COLORPICK_DYNAMIC_LINK)
     include_directories(${XCB_INCLUDE_DIR})
     endif()
 
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(GTKMM REQUIRED gtkmm-3.0)
-    if(GTKMM_FOUND)
-    message(STATUS " GTKMM_INCLUDE_DIRS:    ${GTKMM_INCLUDE_DIRS}")
-    message(STATUS " GTKMM_LIBRARIES:     ${GTKMM_LIBRARIES}")
-    include_directories(${GTKMM_INCLUDE_DIRS})
-    else()
-    message(STATUS " PROBMEM: no GTKMM_LIBRARIES:     ${GTKMM_LIBRARIES}")
 
+    if(COLORPICK_KDE_QT)
+        message(STATUS " IS COLORPICK_KDE_QT (not gtk, not gnome)")
+
+        set(QT_MIN_VERSION "6.6.0")
+        #set(KF_MIN_VERSION "5.240.0")
+        find_package(ECM ${KF_MIN_VERSION} REQUIRED NO_MODULE)
+
+        find_package(ECM REQUIRED NO_MODULE)
+        set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
+
+        # set up standard kde build settings
+
+        include(KDEInstallDirs)
+        include(KDECMakeSettings)
+        include(KDECompilerSettings NO_POLICY_SCOPE)
+
+        message(STATUS " IS COLORPICK_KDE_QT (not gtk, not gnome)")
+
+        # omiting ${QT_MIN_VERSION} as it not doing MIN match
+        find_package(
+            Qt6 CONFIG REQUIRED
+                Core
+                Concurrent
+                #Qml
+                #Quick
+                #QuickControls2
+                #QuickTemplates2
+                Widgets
+                #DBus
+                #PrintSupport
+                #Test
+                #WaylandClient
+                #Multimedia
+        )
+        # qt_policy(SET QTP0001 NEW)
+
+        pkg_check_modules(Qt6 REQUIRED)
+
+        message(STATUS " QT_INCLUDE_DIRS:    ${QT_INCLUDE_DIRS}")
+        message(STATUS " QT_LIBRARIES:     ${QT_LIBRARIES}")
+
+
+    else()
+        message(STATUS " NOT COLORPICK_KDE_QT (GTKMM Gnome)")
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(GTKMM REQUIRED gtkmm-3.0)
+        if(GTKMM_FOUND)
+        message(STATUS " GTKMM_INCLUDE_DIRS:    ${GTKMM_INCLUDE_DIRS}")
+        message(STATUS " GTKMM_LIBRARIES:     ${GTKMM_LIBRARIES}")
+        include_directories(${GTKMM_INCLUDE_DIRS})
+        else()
+        message(STATUS " PROBMEM: no GTKMM_LIBRARIES:     ${GTKMM_LIBRARIES}")
+        endif()
     endif()
+
 
     message(STATUS " COLORPICK_DYNAMIC_LINK was detected!")
     set( SDL_STATIC OFF CACHE BOOL "" FORCE )
@@ -214,7 +263,11 @@ set( SDL_VERSION_STATIC_OR_NOT "SDL2" )
 
 
 if(COLORPICK_DYNAMIC_LINK)
-    target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${XCB_LIBRARIES} ${GTKMM_LIBRARIES})
+    if(COLORPICK_KDE_QT)
+        target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${XCB_LIBRARIES} Qt6::Widgets)
+    else()
+        target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${XCB_LIBRARIES} ${GTKMM_LIBRARIES})
+    endif()
 else()
     set( SDL_VERSION_STATIC_OR_NOT "SDL2-static" )
 

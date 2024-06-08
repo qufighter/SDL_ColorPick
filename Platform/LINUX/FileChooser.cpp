@@ -28,10 +28,15 @@
 #define COLORPICK_USE_XCB 0
 #endif
 
-// this is presently set to 1 by cmake for all dynamic link builds...
+// this is presently set to 1 by cmake for all dynamic link builds with one exception for QT...
 #ifndef COLORPICK_X11_GTK
 #define COLORPICK_X11_GTK 0
 #endif
+#ifndef COLORPICK_X11_QT
+#define COLORPICK_X11_QT 0
+#endif
+
+
 
 #if COLORPICK_USE_XCB < 1
 #include <X11/Xlib.h> // warning not tested or confirmed to be fully working! (eg multi monitor support iffy)
@@ -48,10 +53,31 @@ static bool gtk_init_complete=false;
 // TODO: we need non GTK variant support...
 // GTK is for GNOME based desktop
 
+#if COLORPICK_X11_QT > 0
+
+// actually still just guessing which packages
+// to omit them and see if it still works later
+// but arguably we should be able to link any if build is configured correct
+// we'll keep trying...
+
+// #include <QFlags>
+// #include <QImage>
+// #include <QObject>
+// #include <KGlobalAccel>
+// #include <KLocalizedString>
+#include <QApplication>
+#include <qnamespace.h>
 
 
 
-#if COLORPICK_X11_GTK > 0
+static int thread_begin_pck_mode_linux(void* data){
+  //begin_pick_mode_linux(NULL);
+  SDL_Log("WE GOT THE thread_begin_pck_mode_linux for QT :)");
+  return 0;
+}
+
+// END COLORPICK_X11_QT > 0
+#elif COLORPICK_X11_GTK > 0
 #include <gtk/gtk.h>
 
 typedef struct {
@@ -302,9 +328,10 @@ gboolean begin_pick_mode_linux(gpointer user_data){ // mode_x11_gtk'[
 static int thread_begin_pck_mode_linux(void* data){
 	begin_pick_mode_linux(NULL);
 	return 0;
-}           
+}
 
-#endif // COLORPICK_X11_GTK
+#endif // COLORPICK_X11_GTK > 0
+
 
 void beginScreenshotSeleced(){
 
