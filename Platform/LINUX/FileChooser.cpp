@@ -23,9 +23,19 @@
 #include "SDL.h" // redundant?
 #include "stdlib.h" // for system() call
 
-#define COLORPICK_USE_XCB 1
+// this is presently set to 1 by cmake for all dynamic link builds...
 #ifndef COLORPICK_USE_XCB
-#include   <X11/Xlib.h>
+#define COLORPICK_USE_XCB 0
+#endif
+
+// this is presently set to 1 by cmake for all dynamic link builds...
+#ifndef COLORPICK_X11_GTK
+#define COLORPICK_X11_GTK 0
+#endif
+
+#if COLORPICK_USE_XCB < 1
+#include <X11/Xlib.h> // warning not tested or confirmed to be fully working! (eg multi monitor support iffy)
+      // tbd: obvious needs more includes?  XDestroyImage was not declared
 #else
 #include <xcb/xcb.h>
 #endif
@@ -33,9 +43,15 @@
 static bool pick_mode_enabled=false;
 static bool gtk_init_complete=false;
 
+// TODO: add KDE/Qt support
+
 // TODO: we need non GTK variant support...
-#define COLORPICK_X11_GTK 1
-#ifdef COLORPICK_X11_GTK
+// GTK is for GNOME based desktop
+
+
+
+
+#if COLORPICK_X11_GTK > 0
 #include <gtk/gtk.h>
 
 typedef struct {
@@ -292,7 +308,7 @@ static int thread_begin_pck_mode_linux(void* data){
 
 void beginScreenshotSeleced(){
 
-    #ifndef COLORPICK_USE_XCB
+    #if COLORPICK_USE_XCB < 1
         //Xlib.h // not fully implemented! see below...
         Display* dsp = XOpenDisplay(nullptr);
         Window root = RootWindow(dsp, DefaultScreen(dsp));
@@ -312,7 +328,7 @@ void beginScreenshotSeleced(){
         XCloseDisplay(dsp);
 
         //xcb.h
-    #else // ifdef COLORPICK_USE_XCB
+    #else //  COLORPICK_USE_XCB > 0
         xcb_connection_t* dsp = xcb_connect(nullptr, nullptr);
         xcb_window_t root =
         xcb_setup_roots_iterator(xcb_get_setup(dsp)).data->root;

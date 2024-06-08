@@ -85,6 +85,12 @@ include_directories(${OPENGL_INCLUDE_DIR})
 
 if(COLORPICK_DYNAMIC_LINK)
 
+    # This creates the C++ defines needed presently for compilation on linux
+    add_compile_definitions(COLORPICK_X11_GTK=1)
+    add_compile_definitions(COLORPICK_USE_XCB=1)
+
+
+
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
     find_package(XCB)
 
