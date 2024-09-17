@@ -67,14 +67,119 @@ static bool gtk_init_complete=false;
 // #include <KLocalizedString>
 #include <QApplication>
 #include <qnamespace.h>
+#include <QScreen>
+#include <QEventLoopLocker>
+#include <QObject>
+//#include <QQmlEngine>
+//#include <QQuickItem>
 
+#include <QQuickView>
+#include <QQmlContext>
+
+#include <QVariantAnimation>
+#include <QCommandLineParser>
+//#include <QDBusConnection>
+#include <QDir>
+#include <QSessionManager>
+
+//#include <KWindowSystem>
+
+#include <QScreen>
+
+#include "Qt/ColorpickQtWindow.h" 
+
+bool begin_pick_mode_linux(void* user_data){ // mode_x11_gtk'[
+  SDL_Log("begin pick mode actally called KDE/QT");
+    if( pick_mode_enabled ) return false;
+    //if( !gtk_init_complete ){gtk_init(NULL, NULL);gtk_init_complete=true;}
+    SDL_Log("begin pick mode actally called KDE/QT and pick_mode_enabled false");
+
+    //The following line creates a QApplication object. This object manages application-wide resources and is necessary to run any Qt program that uses Qt Widgets.
+    int mybox = 0;
+    QApplication app(mybox, nullptr);
+    // TBD do we need this? control it like gtk_init_complete if needed...
+
+    // will we create only one???
+    ColorPickQtWindow* cpqtwin = new ColorPickQtWindow();
+    
+    cpqtwin->setFlags({
+        Qt::Window, // the default window flag
+        Qt::FramelessWindowHint,
+        Qt::NoDropShadowWindowHint,
+        Qt::MaximizeUsingFullscreenGeometryHint // also use the areas where system UIs are
+    });
+
+    cpqtwin->setWindowStates(Qt::WindowFullScreen);
+
+    cpqtwin->setColor(Qt::transparent);
+
+    //window->setVisibility(visibility);
+    cpqtwin->requestActivate();
+
+    SDL_Log("wwwww");
+
+    app.exec(); // whenever we call this, our thread seems to HAULT.... hmmm well this is our QT infinite loop...
+
+    cpqtwin->show();
+
+    SDL_Log("wwwww");
+
+    
+
+    SDL_Log("wwwww");
+
+    // g_autoptr(GdkCursor) cursor = NULL;
+    // GdkDisplay *display;
+    // select_area_filter_data  data;
+    // GdkSeat *seat;
+
+    // data.rect.x = 0;
+    // data.rect.y = 0;
+    // data.rect.width  = 0;
+    // data.rect.height = 0;
+    // data.button_pressed = FALSE;
+    // data.aborted = FALSE;
+    // data.window = create_select_window();
+
+    // g_signal_connect (data.window, "key-press-event", G_CALLBACK (select_area_key_press), &data);
+    // g_signal_connect (data.window, "button-press-event", G_CALLBACK (select_area_button_press), &data);
+    // g_signal_connect (data.window, "button-release-event", G_CALLBACK (select_area_button_release), &data);
+    // g_signal_connect (data.window, "motion-notify-event", G_CALLBACK (select_area_motion_notify), &data);
+
+    // display = gtk_widget_get_display (data.window);
+    // cursor = gdk_cursor_new_for_display (display, GDK_CROSSHAIR);
+    // seat = gdk_display_get_default_seat (display);
+
+    // gdk_seat_grab (seat,
+    //                gtk_widget_get_window (data.window),
+    //                GDK_SEAT_CAPABILITY_ALL,
+    //                FALSE,
+    //                cursor,
+    //                NULL,
+    //                NULL,
+    //                NULL);
+                   
+    pick_mode_enabled = true;
+    
+    // gtk_main (); // locks everythign up!
+
+    // gdk_seat_ungrab (seat);
+
+    // gtk_widget_destroy (data.window);
+
+  SDL_Log("end pick mode actally called KDE/QT");
+
+    return true;
+}
 
 
 static int thread_begin_pck_mode_linux(void* data){
-  //begin_pick_mode_linux(NULL);
-  SDL_Log("WE GOT THE thread_begin_pck_mode_linux for QT :)");
+  begin_pick_mode_linux(NULL);
   return 0;
 }
+
+
+
 
 // END COLORPICK_X11_QT > 0
 #elif COLORPICK_X11_GTK > 0

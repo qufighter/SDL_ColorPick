@@ -128,7 +128,7 @@ if(COLORPICK_DYNAMIC_LINK)
                 Core
                 Concurrent
                 #Qml
-                #Quick
+                Quick
                 #QuickControls2
                 #QuickTemplates2
                 Widgets
@@ -264,7 +264,7 @@ set( SDL_VERSION_STATIC_OR_NOT "SDL2" )
 
 if(COLORPICK_DYNAMIC_LINK)
     if(COLORPICK_KDE_QT)
-        target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${XCB_LIBRARIES} Qt6::Widgets)
+        target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${XCB_LIBRARIES} Qt6::Widgets Qt6::Quick)
     else()
         target_link_libraries(colorpick_main SDL2main SDL2 SDL2_image ${OPENGL_LIBRARIES} ${XCB_LIBRARIES} ${GTKMM_LIBRARIES})
     endif()

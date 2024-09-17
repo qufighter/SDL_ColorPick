@@ -112,6 +112,10 @@ but the package names will vary by distribution...
 
 ## Packages (KDE / Qt Build)
 
-sudo apt-get install extra-cmake-modules qt6-base-dev
+sudo apt-get install extra-cmake-modules qt6-base-dev qt6-declarative-dev
+
+The following are yet to de determined as dependencies or not...
+
+sudo apt-get install libqt6quick6 qml6-module-qtquick 
 
 note support for KDE (except through GTK) is not yet complete.
