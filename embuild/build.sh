@@ -50,7 +50,7 @@ fi
 
 # define an ifdef....
 #  -D COLORPICK_BUILD_FOR_EXT=1 
-emcc ../*.cpp ../Platform/Emscripten/*.cpp -D $dDefines -s WASM=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s STB_IMAGE=1 -s TOTAL_MEMORY=1073741824 -s "BINARYEN_TRAP_MODE='clamp'" -s ERROR_ON_UNDEFINED_SYMBOLS=0 -I/Users/saml/git/emscripten-ports/SDL2/include -I/Users/saml/git/emscripten-ports/SDL2_image/ -o hello.html --preload-file ./fs@/ --exclude-file *.DS_Store  --use-preload-plugins -s ALLOW_MEMORY_GROWTH=1 $buildFlags #-s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' # --emrun
+emcc ../*.cpp ../Platform/Emscripten/*.cpp -D $dDefines -s WASM=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s STB_IMAGE=1 -s TOTAL_MEMORY=1073741824 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -I/Users/saml/git/emscripten-ports/SDL2/include -I/Users/saml/git/emscripten-ports/SDL2_image/ -o hello.html --preload-file ./fs@/ --exclude-file *.DS_Store  --use-preload-plugins -s ALLOW_MEMORY_GROWTH=1 $buildFlags #-s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' # --emrun
 
 if [[ $? -eq 0 ]]; then
 

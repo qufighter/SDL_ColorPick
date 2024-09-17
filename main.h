@@ -186,6 +186,12 @@
 #define CHAR_LIGHTENING_BOLT 150
 #define CHAR_OPEN_FILES 151
 
+
+
+#if __cplusplus > 199711L
+#define register      // Deprecated in C++11.
+#endif  // #if __cplusplus > 199711L
+
 // GLM include files
 #include "external_static/glm/glm.hpp"
 #include "external_static/glm/gtx/projection.hpp"
