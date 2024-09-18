@@ -5,6 +5,12 @@
 # DEBUG - first of two args, enables debug builds (console output)
 # EXT - make this an EXTENSION build (as in chrome extension) and copy the results there ( call publish-ext.sh )
 
+# use bash to execute it to save some headaches
+# bash build.sh DEBUG DEBUG
+
+# makes debug easier
+set -x
+
 rm -fr ./fs
 mkdir ./fs
 cp -R ../shaders ./fs/shaders
@@ -24,7 +30,7 @@ fi
 
 echo $dDefines
 
-test
+
 test $arg1 == "DEBUG" || test $arg2 == "DEBUG"
 if [[ $? -eq 0 ]]; then
     buildFlags=""
@@ -32,7 +38,7 @@ fi
 
 # The html page you are running is not emrun-capable. Stdout, stderr and exit(returncode) capture will not work. Recompile the application with the --emrun linker flag to enable this, or pass --no_emrun_detect to emrun to hide this check.
 
-
+echo "flags are "$buildFlags
 
 #emcc -I../SDL/library/* ../SDLImage/library/* ~/libs/SDL2-2.0.9/embuild/libSDL2.a  ~/libs/SDL2_image-2.0.4/embuild/libSDL2_image.a ../*.cpp -s WASM=1 -o hello.html
 
@@ -50,7 +56,7 @@ fi
 
 # define an ifdef....
 #  -D COLORPICK_BUILD_FOR_EXT=1 
-emcc ../*.cpp ../Platform/Emscripten/*.cpp -D $dDefines -s WASM=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s STB_IMAGE=1 -s TOTAL_MEMORY=1073741824 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -I/Users/saml/git/emscripten-ports/SDL2/include -I/Users/saml/git/emscripten-ports/SDL2_image/ -o hello.html --preload-file ./fs@/ --exclude-file *.DS_Store  --use-preload-plugins -s ALLOW_MEMORY_GROWTH=1 $buildFlags #-s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' # --emrun
+emcc ../*.cpp ../Platform/Emscripten/*.cpp -D $dDefines -lidbfs.js -s FORCE_FILESYSTEM=1 -s WASM=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s STB_IMAGE=1 -s TOTAL_MEMORY=1073741824 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -I/Users/saml/git/emscripten-ports/SDL2/include -I/Users/saml/git/emscripten-ports/SDL2_image/ -o hello.html --preload-file ./fs@/ --exclude-file *.DS_Store  --use-preload-plugins -s ALLOW_MEMORY_GROWTH=1 $buildFlags #-s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' # --emrun
 
 if [[ $? -eq 0 ]]; then
 

@@ -477,11 +477,15 @@ int EventFilter(void* userdata, SDL_Event* event){
 
 					// TODO: on windows this doesn't seem to trigger anythign, which is good actually, but we need to (in this case) stop any drag event that is panning...
 
+                    openglContext->generalUx->writeOutState();
+
                     return 0;
 
                 case SDL_WINDOWEVENT_FOCUS_LOST:
 
                     SDL_Log("\n SDL_WINDOWEVENT_FOCUS_LOST");
+
+                    openglContext->generalUx->writeOutState();
 
                     return 0;
 

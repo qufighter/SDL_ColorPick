@@ -31,7 +31,8 @@ Ux::~Ux(void) {
 
 }
 
-#if defined(__EMSCRIPTEN__) && defined(COLORPICK_BUILD_FOR_EXT)
+#if defined(__EMSCRIPTEN__) 
+#if defined(COLORPICK_BUILD_FOR_EXT)
 
 EM_JS(void, em_add_current_to_history, (int r, int g, int b), {
     addColorToHistory(r, g, b);
@@ -46,7 +47,16 @@ EM_JS(void, em_launch_extension_options, (), {
         launchExtensionOptions();
     }, 500); // we give the time for our animation engine to catch up... the first part of scale UP needs to complete BEFORE time starts accumulating.....
 });
+#else // __EMSCRIPTEN__ NOT COLORPICK_BUILD_FOR_EXT
 
+
+// EM_JS(void, em_save_settings, (const char* settingsBinName, const char* encodedSettings), {    
+//     localStorage['color_pick_settings_'+settingsBinName+'_bin_previous'] = localStorage['color_pick_settings_'+settingsBinName+'_bin_current']];
+//     localStorage['color_pick_settings_'+settingsBinName+'_bin_current'] = encodedSettings;
+// });
+
+
+#endif
 #endif
 
 
@@ -132,6 +142,19 @@ Ux::Ux(void) {
 
     char* preferencesPath = SDL_GetPrefPath("vidsbee", "colorpick");
 
+#if defined(__EMSCRIPTEN__) 
+#if defined(COLORPICK_BUILD_FOR_EXT)
+
+#else // __EMSCRIPTEN__ NOT COLORPICK_BUILD_FOR_EXT
+
+preferencesPath = (char*)"/vidsbeecolorpickdata/";
+
+#endif
+#endif
+
+
+    SDL_Log("Preferences Path: %s", preferencesPath);
+
     if( preferencesPath == nullptr ){
         preferencesPath = "";
     }
@@ -146,6 +169,26 @@ Ux::Ux(void) {
 //    GetPrefPath(preferencesPath, "spallete.bin", &palletePath);
 //    GetPrefPath(preferencesPath, "ssetting.bin", &settingPath);
 //    GetPrefPath(preferencesPath, "srecords.bin", &scoresPath);
+
+#if defined(__EMSCRIPTEN__) 
+#if defined(COLORPICK_BUILD_FOR_EXT)
+
+#else // __EMSCRIPTEN__ NOT COLORPICK_BUILD_FOR_EXT
+
+int r=EM_ASM_INT({
+    var js_prefs_path = UTF8ToString($0).replace(/\\/$/, '');
+    //js_prefs_path = "/libsdl";
+    console.log("EMSCRIPTEN Note Enabling IDBFS "+js_prefs_path);
+    FS.mkdir(js_prefs_path);
+    FS.mount(IDBFS, {autoPersist: true}, js_prefs_path);
+    console.log("EMSCRIPTEN Note enabled IDBFS "+js_prefs_path);
+    return 0;
+},preferencesPath);
+
+SDL_Log("IDBFS enabled now...");
+
+#endif
+#endif
 
 
     SDL_free(preferencesPath);
@@ -198,6 +241,7 @@ void Ux::readInState(char* filepath, void* dest, int destMaxSize, int* readSize)
 }
 
 void Ux::readInState(void){
+    // EMSCRIPTEN NOTE: with current version of dependencies, READ seems to potentially require double path to reach the data by key?
 
     int quantityBytesRead = 0;
     int eachElementSize = sizeof(SDL_Color);
@@ -316,7 +360,6 @@ void Ux::readInState(void){
 }
 
 
-
 void Ux::writeOutState(void){
 //    SDL_Log("Pref file path: %s", historyPath);
 //    SDL_Log("Pref file len: %i", SDL_strlen(historyPath));
@@ -395,7 +438,6 @@ void Ux::writeOutState(void){
     SDL_WriteBE32(fileref, defaultScoreDisplay->combo_chain);
     SDL_WriteLE32(fileref, defaultScoreDisplay->combo_chain);
     PERFORM_SDL_RWclose(fileref);
-
 }
 
 
