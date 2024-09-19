@@ -1,11 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
 # USAGE:
 # allowed args
 # DEBUG - first of two args, enables debug builds (console output)
 # EXT - make this an EXTENSION build (as in chrome extension) and copy the results there ( call publish-ext.sh )
 
-# use bash to execute it to save some headaches
+# sample execution:
 # bash build.sh DEBUG DEBUG
 
 # makes debug easier
