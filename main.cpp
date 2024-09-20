@@ -1007,10 +1007,11 @@ int main(int argc, char *argv[]) {
     //SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
 
 
+// TBD: evaluate use of IDBFS in the extension too??? this has to be toggled several places (here and in UX)
 #if defined(__EMSCRIPTEN__) && !defined(COLORPICK_BUILD_FOR_EXT)
 
-int r=EM_ASM_INT({
-    var js_prefs_path = UTF8ToString($0).replace(/\\/$/, '');
+EM_ASM({
+    var js_prefs_path = UTF8ToString($0).replace(/\\/$/, "");
     //js_prefs_path = "/libsdl";
     console.log("EMSCRIPTEN Note Enabling IDBFS "+js_prefs_path);
     FS.mkdir(js_prefs_path);
@@ -1024,8 +1025,7 @@ int r=EM_ASM_INT({
         __Z21try_reading_prefs_nowii();
         //  we should show loading screen until this occurs instead...
     });
-    return 0;
-},"/vidsbeecolorpickdata");
+},"/vidsbeecolorpickdata/");
 
 SDL_Log("IDBFS enabled now...");
 
@@ -1406,7 +1406,7 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
 #endif
 
         //ReshapeWindow();
-#ifndef __EMSCRIPTEN__ && !defined(COLORPICK_BUILD_FOR_EXT)
+#if !defined(__EMSCRIPTEN__) || defined(COLORPICK_BUILD_FOR_EXT)
         // we'll call this later when the IDBFS is synced to memmory for the first time... trace IDBFS_INITIAL_SYNC_COMPLETED
         openglContext->setupScene();
         ReshapeWindow();

@@ -2080,9 +2080,9 @@ void Ux::interactionVisitSettings(uiObject *interactionObj, uiInteraction *delta
 void Ux::interactionUpgradeFromBasic(uiObject *interactionObj, uiInteraction *delta){
     Ux* myUxRef = Ux::Singleton();
 #if __ANDROID__
-    myUxRef->doOpenURL("https://play.google.com/store/apps/details?id=com.vidsbee.colorpicksdl");
+    myUxRef->doOpenURL((char*)"https://play.google.com/store/apps/details?id=com.vidsbee.colorpicksdl");
 #else
-    myUxRef->doOpenURL("https://itunes.apple.com/us/app/colorpick-eyedropper/id1455143862");
+    myUxRef->doOpenURL((char*)"https://itunes.apple.com/us/app/colorpick-eyedropper/id1455143862");
 #endif
 }
 

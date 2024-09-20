@@ -111,7 +111,7 @@ void OpenGLContext::keyUp(Uint32 timestamp, SDL_Keycode k){
             break;
 #ifdef COLORPICK_DEBUG_MODE
         case SDLK_p:
-            textures->screenshot("test-snap.png", windowWidth, windowHeight);
+            textures->screenshot((char*)"test-snap.png", windowWidth, windowHeight);
             break;
 #endif
     }
