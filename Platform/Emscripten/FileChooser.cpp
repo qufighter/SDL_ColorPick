@@ -43,7 +43,6 @@ but this isn't like the tutorial...... so what gives with the name here??
 // TODO:
 // regarding the EMSCRIPTEN_KEEPALIVE and AKA's below...
 // FYI the correct way is to read https://emscripten.org/docs/getting_started/FAQ.html?highlight=exported_runtime_methods#why-do-i-get-typeerror-module-something-is-not-a-function
-// which says to use emcc args: emcc -sEXPORTED_FUNCTIONS=_main,_my_func ... then you will find them on Module.<func>
 
 
 EMSCRIPTEN_KEEPALIVE
@@ -181,9 +180,13 @@ EM_JS(void, em_get_file, (), {
             //alert('the image is drawn');
 
             //Module["preloadedImages"][fauxPath] = cvs;
-            Module["preloadedImages"]['/latest-custom-img'] = cvs;
+            //Module["preloadedImages"]['/latest-custom-img'] = cvs;
 
             //  hmmm above now seems broken, see maybe Module.FS_createPreloadedFile  ???
+            //FS.createDataFile
+            //function createDataFile(parent, name, data, canRead, canWrite, canOwn)
+            // actually it's still there and still seems to be the most direct way...
+            preloadedImages['/latest-custom-img'] = cvs;
 
             //alert('now handoff to sdl IMG_Load and cross fingers...');
 
