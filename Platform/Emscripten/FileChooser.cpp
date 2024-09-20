@@ -40,6 +40,11 @@ but this isn't like the tutorial...... so what gives with the name here??
 
  */
 
+// TODO:
+// regarding the EMSCRIPTEN_KEEPALIVE and AKA's below...
+// FYI the correct way is to read https://emscripten.org/docs/getting_started/FAQ.html?highlight=exported_runtime_methods#why-do-i-get-typeerror-module-something-is-not-a-function
+// which says to use emcc args: emcc -sEXPORTED_FUNCTIONS=_main,_my_func ... then you will find them on Module.<func>
+
 
 EMSCRIPTEN_KEEPALIVE
 void load_img_canvas_now(int x, int y){ // AKA __Z19load_img_canvas_nowii
@@ -71,6 +76,23 @@ bool is_program_booted(){
     return openglContext->isProgramBooted();
 }
 
+EMSCRIPTEN_KEEPALIVE
+void try_reading_prefs_now(int x, int y){ // AKA __Z21try_reading_prefs_nowii 
+
+    //openglContext->generalUx->readInState();
+    // this has to occur in main thread again... 
+    //openglContext->setupScene(); // this ultimately calls the above...  creates the UX and reads prefs... 
+    // todo: we can refactor this so we can use the UX to show a loading screen though... in the meantime
+
+    SDL_Event event;
+    SDL_UserEvent userevent;
+    userevent.type = SDL_USEREVENT;
+    userevent.code = USER_EVENT_ENUM::IDBFS_INITIAL_SYNC_COMPLETED;
+    event.type = SDL_USEREVENT;
+    event.user = userevent;
+    SDL_PushEvent(&event);
+
+}
 //
 //EMSCRIPTEN_KEEPALIVE int testversion() {
 //    return 55;
@@ -160,6 +182,8 @@ EM_JS(void, em_get_file, (), {
 
             //Module["preloadedImages"][fauxPath] = cvs;
             Module["preloadedImages"]['/latest-custom-img'] = cvs;
+
+            //  hmmm above now seems broken, see maybe Module.FS_createPreloadedFile  ???
 
             //alert('now handoff to sdl IMG_Load and cross fingers...');
 

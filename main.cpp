@@ -408,6 +408,15 @@ int MainThreadUserEventHandler(SDL_Event* p_event){
             return 0;
         }
 
+
+        case USER_EVENT_ENUM::IDBFS_INITIAL_SYNC_COMPLETED:
+        {
+            openglContext->setupScene();
+            ReshapeWindow();
+            return 0;
+        }
+
+
     }
 
     //return 1; // not handled, leave it in the queue ?????? only really makes sense if we process events elsewhere right?  tough to say for sure but we'd have to make sure all platforms handle the other events somehow...
@@ -824,6 +833,7 @@ void ShowFrame(void*)
     }
 #endif
 
+    if( !openglContext->isProgramBooted() ) return SDL_Delay(250); // LOADING STILL (emscripten..)
 
     //SDL_Log("RENDER SCENE....");
 
@@ -996,6 +1006,30 @@ int main(int argc, char *argv[]) {
 #endif
     //SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
 
+
+#if defined(__EMSCRIPTEN__) && !defined(COLORPICK_BUILD_FOR_EXT)
+
+int r=EM_ASM_INT({
+    var js_prefs_path = UTF8ToString($0).replace(/\\/$/, '');
+    //js_prefs_path = "/libsdl";
+    console.log("EMSCRIPTEN Note Enabling IDBFS "+js_prefs_path);
+    FS.mkdir(js_prefs_path);
+    FS.mount(IDBFS, {autoPersist: true}, js_prefs_path);
+    console.log("EMSCRIPTEN Note enabled IDBFS "+js_prefs_path);
+
+    // populate the memfs with the IDBFS files
+    FS.syncfs(true, function (err) {
+      // handle callback
+        console.log("EMSCRIPTEN Note enabled IDBFS synced with POPULATE TRUE");
+        __Z21try_reading_prefs_nowii();
+        //  we should show loading screen until this occurs instead...
+    });
+    return 0;
+},"/vidsbeecolorpickdata");
+
+SDL_Log("IDBFS enabled now...");
+
+#endif
 
 
     //    SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "1");
@@ -1372,8 +1406,13 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
 #endif
 
         //ReshapeWindow();
+#ifndef __EMSCRIPTEN__ && !defined(COLORPICK_BUILD_FOR_EXT)
+        // we'll call this later when the IDBFS is synced to memmory for the first time... trace IDBFS_INITIAL_SYNC_COMPLETED
         openglContext->setupScene();
         ReshapeWindow();
+#endif
+
+
     }
 
 

@@ -142,21 +142,19 @@ Ux::Ux(void) {
 
     char* preferencesPath = SDL_GetPrefPath("vidsbee", "colorpick");
 
-#if defined(__EMSCRIPTEN__) 
-#if defined(COLORPICK_BUILD_FOR_EXT)
+#if defined(__EMSCRIPTEN__) && !defined(COLORPICK_BUILD_FOR_EXT)
 
-#else // __EMSCRIPTEN__ NOT COLORPICK_BUILD_FOR_EXT
-
+// tbd can we just use the above?  Seems to error out... we hard coded THIS PATH in main...
+// TBD: refactor to share path?  the js alreayd trims any trailing slash...
 preferencesPath = (char*)"/vidsbeecolorpickdata/";
 
-#endif
 #endif
 
 
     SDL_Log("Preferences Path: %s", preferencesPath);
 
     if( preferencesPath == nullptr ){
-        preferencesPath = "";
+        preferencesPath = (char*)"";
     }
 
     GetPrefPath(preferencesPath, "history.bin", &historyPath);
@@ -165,31 +163,16 @@ preferencesPath = (char*)"/vidsbeecolorpickdata/";
     GetPrefPath(preferencesPath, "records.bin", &scoresPath);
 
 
+    SDL_Log("Preferences Path: %s", historyPath);
+    SDL_Log("Preferences Path: %s", palletePath);
+    SDL_Log("Preferences Path: %s", settingPath);
+    SDL_Log("Preferences Path: %s", scoresPath);
+
+
 //    GetPrefPath(preferencesPath, "shistory.bin", &historyPath);
 //    GetPrefPath(preferencesPath, "spallete.bin", &palletePath);
 //    GetPrefPath(preferencesPath, "ssetting.bin", &settingPath);
 //    GetPrefPath(preferencesPath, "srecords.bin", &scoresPath);
-
-#if defined(__EMSCRIPTEN__) 
-#if defined(COLORPICK_BUILD_FOR_EXT)
-
-#else // __EMSCRIPTEN__ NOT COLORPICK_BUILD_FOR_EXT
-
-int r=EM_ASM_INT({
-    var js_prefs_path = UTF8ToString($0).replace(/\\/$/, '');
-    //js_prefs_path = "/libsdl";
-    console.log("EMSCRIPTEN Note Enabling IDBFS "+js_prefs_path);
-    FS.mkdir(js_prefs_path);
-    FS.mount(IDBFS, {autoPersist: true}, js_prefs_path);
-    console.log("EMSCRIPTEN Note enabled IDBFS "+js_prefs_path);
-    return 0;
-},preferencesPath);
-
-SDL_Log("IDBFS enabled now...");
-
-#endif
-#endif
-
 
     SDL_free(preferencesPath);
 }
@@ -222,7 +205,7 @@ void Ux::PERFORM_SDL_RWclose(SDL_RWops* fileref){
 }
 
 void Ux::readInState(char* filepath, void* dest, int destMaxSize, int* readSize){
-    //SDL_Log("READING: %s", filepath);
+    SDL_Log("READING: %s", filepath);
     SDL_RWops* fileref = GET_SDL_RWFromFile(filepath, "r");
     if( fileref == NULL ){
         SDL_Log("ERR READING: %s", SDL_GetError());
@@ -361,6 +344,14 @@ void Ux::readInState(void){
 
 
 void Ux::writeOutState(void){
+
+    OpenGLContext* ogg=OpenGLContext::Singleton();
+    if( !ogg->isProgramBooted() ){
+        SDL_Log("Skipping preference write, program not booted yet...");
+        return;
+    }else{
+        SDL_Log("Saving preferences...");
+    }
 //    SDL_Log("Pref file path: %s", historyPath);
 //    SDL_Log("Pref file len: %i", SDL_strlen(historyPath));
 //    SDL_Log("Pref file path: %s", palletePath);

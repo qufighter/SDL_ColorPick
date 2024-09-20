@@ -231,6 +231,7 @@ typedef enum  {
     ANIMATE_MAIN_THREAD,
     PICK_AGAIN_NOW, // for after "refresh" and wish to pick again as though we never stopped (desktop only) PICK_FROM_SCREEN_ENABLED
     PICK_AT_POSITION,
+    IDBFS_INITIAL_SYNC_COMPLETED,
 } USER_EVENT_ENUM; // these may not be supported as of now on IOS ... ??
 
 
