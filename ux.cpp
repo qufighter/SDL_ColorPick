@@ -115,6 +115,29 @@ void Ux::GetPrefPath(char* preferencesPath, const char* filename, char** resultD
  */
 Ux::Ux(void) {
 
+    pickHistoryList = new uiList<ColorList, Uint8>(pickHistoryMax); // WARN - do not enable index if using Uint8 - max Uint8 is far less than pickHistoryMax
+    palleteList = new uiList<ColorList, Uint8>(palleteMax);
+    palleteList->index(COLOR_INDEX_MAX, indexForColor);
+
+    minigameColorList = new uiList<ColorList, Uint8>(minigameColorListMax);
+    minigameColorList->index(COLOR_INDEX_MAX, indexForColor);
+
+ //    pickHistoryListState = new uiList<ColorListState, Uint8>(pickHistoryMax);
+ //    palleteListState = new uiList<ColorListState, Uint8>(palleteMax);
+
+    uxAnimations = new UxAnim();
+
+//    rootUiObject->hasForeground = true; // render texture
+//    Ux::setColor(&rootUiObject->foregroundColor, 0, 255, 0, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+//    Ux::setColor(&rootUiObject->foregroundColor, 0, 0, 0, 0); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
+//    rootUiObject->hasForeground = false; // render texture
+ //     make this color the selected color ! ! ! ! !! ^ ^ ^
+
+    // moved here to support loading screen being possible...
+    rootUiObject = new uiObject();
+    rootUiObject->isRoot = true;
+    rootUiObject->setBackgroundColor(0, 0, 0, 0); // transparent 0
+
     controllerCursorModeEnabled = false;
     controllerCursorLockedToObject=false;
     controllerCursorTemporarilyDisabledForAnimatedChange=false;
@@ -685,35 +708,30 @@ int Ux::indexForColor(ColorList* cli){
     return indexForColor(&cli->color);
 }
 
+Ux::uiObject* Ux::create_loading_screen(void){
+    loadingScreen = new uiObject();
+    loadingScreen->hasForeground = true;
+    //loadingScreen->setBackgroundColor(0, 255, 0, 50); // this renders but we did not set hasBackground.... interesting?/
+    loadingScreen->setRoundedCorners(0.5); // collision check will be "circular"
+    printCharToUiObject(loadingScreen, CHAR_APP_ICON, DO_NOT_RESIZE_NOW); // the shadow on the icon is typically hidden by the black background... 
+    rootUiObject->addChild(loadingScreen);
+    loadingScreen->storeControllerCursor = false; // this modal is indistinguishable from root ???
+    loadingScreen->setBoundaryRect(0.4, 0.4, 0.2, 0.2);
+    loadingScreen->squarify(); // don't skew icon center it in the space "defubed"
+
+    loadingScreen->matrixInheritedByDescendants = true; // allows hacky override matrix way, we should instead just translate the matrix on the object... and then we don't need a seperate render function for loading screen...
+    rootUiObject->matrixInheritedByDescendants = true; // allows hacky override matrix way
+
+    updateRenderPositions();
+    currentModal = rootUiObject;// used for cusror tracking.... we could remove some nullptr checks elsewhere with this here...
+    return rootUiObject;
+}
+
 // todo - either tons of 1off create functions, or return and define outside
 Ux::uiObject* Ux::create(void){
 
-
-    pickHistoryList = new uiList<ColorList, Uint8>(pickHistoryMax); // WARN - do not enable index if using Uint8 - max Uint8 is far less than pickHistoryMax
-    palleteList = new uiList<ColorList, Uint8>(palleteMax);
-    palleteList->index(COLOR_INDEX_MAX, indexForColor);
-
-    minigameColorList = new uiList<ColorList, Uint8>(minigameColorListMax);
-    minigameColorList->index(COLOR_INDEX_MAX, indexForColor);
-
- //    pickHistoryListState = new uiList<ColorListState, Uint8>(pickHistoryMax);
- //    palleteListState = new uiList<ColorListState, Uint8>(palleteMax);
-
-    uxAnimations = new UxAnim();
-
-
-    rootUiObject = new uiObject();
-    rootUiObject->isRoot = true;
-
-    rootUiObject->setBackgroundColor(0, 0, 0, 0); // transparent 0
-
-//    rootUiObject->hasForeground = true; // render texture
-//    Ux::setColor(&rootUiObject->foregroundColor, 0, 255, 0, 255); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-//    Ux::setColor(&rootUiObject->foregroundColor, 0, 0, 0, 0); // control texture color/opacity, multiplied (Default 255, 255, 255, 255)
-//    rootUiObject->hasForeground = false; // render texture
-
-
- //     make this color the selected color ! ! ! ! !! ^ ^ ^
+    rootUiObject->empty();
+    rootUiObject->matrixInheritedByDescendants = false;
 
 
     screenRenderQuadObj = new uiObject(); // an orphan, it is a root of sorts...

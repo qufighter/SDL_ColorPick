@@ -53,6 +53,8 @@ OpenGLContext::OpenGLContext(void) {
     // lets get our singleton references loaded now... (ux not yet ??)
     meshes = Meshes::Singleton();
     textures = Textures::Singleton();
+    generalUx = Ux::Singleton(); // new Ux();
+
 }
 
 SDL_Window* OpenGLContext::getSdlWindow(){
@@ -71,6 +73,36 @@ bool OpenGLContext::createContext(SDL_Window *PsdlWindow) {
 
     return true; // We have successfully created a context, return true
 }
+
+void OpenGLContext::loadShadersAndRenderPrerequisites(){
+
+    resetMatricies();
+
+    //glEnable (GL_DEPTH_TEST);
+    // we may need to dynamify our shader paths too in case its in the bundle [[NSBundle mainBundle] pathForResource:@"Shader" ofType:@"vsh"];
+
+    loadShaders();
+    debugGLerror("shaders completely loaded");
+
+    square_mesh = createSquare();
+    debugGLerror("createSquare completely done");
+
+    // it is for the loading screen, so we basically need it here
+    textureId_fonts = textures->LoadTexture("textures/ascii.png");
+}
+
+void OpenGLContext::resetMatricies(){
+    matrixModel = glm::mat4(1.0f);
+    matrixViews = glm::mat4(1.0f);
+    matrixPersp = glm::mat4(1.0f);
+
+    matrixViews = glm::lookAt(glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0)); // eye, center, up
+
+    minigameCounterMatrix = glm::mat4(1.0f);
+    minigameCounterMatrix = glm::rotate(minigameCounterMatrix, -45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+    minigameCounterMatrix = glm::translate(minigameCounterMatrix, glm::vec3(0.0f, 2.3f, 9.0f));
+}
+
 
 void OpenGLContext::destroyContext() {
      SDL_GL_DeleteContext(gl);
@@ -530,8 +562,13 @@ void OpenGLContext::prepareForHuePickerMode(bool fromHueGradient) {
     }
 }
 
+
+void OpenGLContext::createLoadingUI(void) {
+    // NOTE currently this is NOT CALLED ON ALL PLATOFRMS so be careful with anything done here... FIXME (always call it even though it's never rendered)?
+    rootUiObject = generalUx->create_loading_screen();
+}
+
 void OpenGLContext::createUI(void) {
-    generalUx = Ux::Singleton(); // new Ux();
     rootUiObject = generalUx->create(); // if all create function are 1off... no ret needed?
     /*minigames = */ new Minigames(); // this sets the reference on ogg automatically... commented out pointlessly but also because its already assigned.. neat right?
 }
@@ -542,30 +579,9 @@ void OpenGLContext::setupScene(void) {
 //    glDepthMask(GL_TRUE);
 
     createUI();
-
     setFishScale(0.0, 1.0);
 
-    matrixModel = glm::mat4(1.0f);
-    matrixViews = glm::mat4(1.0f);
-    matrixPersp = glm::mat4(1.0f);
-
-    matrixViews = glm::lookAt(glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0)); // eye, center, up
-
-    minigameCounterMatrix = glm::mat4(1.0f);
-    minigameCounterMatrix = glm::rotate(minigameCounterMatrix, -45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-    minigameCounterMatrix = glm::translate(minigameCounterMatrix, glm::vec3(0.0f, 2.3f, 9.0f));
-
-
- //glEnable (GL_DEPTH_TEST);
-    // we may need to dynamify our shader paths too in case its in the bundle [[NSBundle mainBundle] pathForResource:@"Shader" ofType:@"vsh"];
-
-
-
-    loadShaders();
-    debugGLerror("shaders completely loaded");
-
-    square_mesh = createSquare();
-    debugGLerror("createSquare completely done");
+    resetMatricies(); // probably excessive operations occur here, loading screen rendering uxes very little, see renderLoadingUI
 
 //    eyedropper_bulb=meshes->LoadObjectSTL("textures/models/eyedropper_bulb.stl");
 //    eyedropper_stem=meshes->LoadObjectSTL("textures/models/eyedropper_stem.stl");
@@ -795,7 +811,6 @@ void OpenGLContext::setupScene(void) {
 //    c.b=0;
 //    pickerForHue(&c);
 
-    textureId_fonts = textures->LoadTexture("textures/ascii.png");
 
 
 
@@ -1414,6 +1429,45 @@ void OpenGLContext::renderZoomedPickerBg(void) { // update and render....
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     debugGLerror("renderZoomedPickerBg our renderinng done");
+
+}
+
+
+// this is possibly no different from calling renderUi... 
+void OpenGLContext::renderLoadingUI(void){
+    uniformLocations = shader_ui_shader_default->bind(); // Bind our shader
+
+
+    debugGLerror("renderUi ui shader bound");
+
+
+    glUniform1i(uniformLocations->textureSampler, 0);
+    //glUniform1i(uniformLocations->textureSampler2, 1);
+    // glUniform1i(uniformLocations->textureSampler3, 1);
+
+    debugGLerror("renderUi ui texture uniform set");
+
+
+    glActiveTexture( GL_TEXTURE0 + 0);
+    glBindTexture(GL_TEXTURE_2D,  textureId_fonts);
+
+    debugGLerror("renderUi ui textureId_fonts bound");
+
+
+//    glBindBuffer(GL_ARRAY_BUFFER, rect_vboID[0]);
+
+    square_mesh->bind();
+
+    // tobd if the loading object is accessible, we can just rotate the matrix on that object
+    // or just rotate the root object's matrix (and reset it later inside Ux::create())
+    // not sure why we are using the model matrix here... this ends up requriing 
+    // an extra call to resetMatricies inside setupScene which we can totally avoid and do not need
+
+    // rotate left implies loading HISTORY so it's logical right?  takes longer for more history... etc...
+    matrixModel = glm::rotate(matrixModel, 1.0f,  glm::vec3(0.0f, 0.0f, 1.0f));
+
+
+    generalUx->renderObjects(uniformLocations, rootUiObject, matrixModel); 
 
 }
 

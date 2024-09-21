@@ -445,6 +445,7 @@ static Ux* Singleton();
     void resizeUiElements(void);
 
     uiObject* create();
+    uiObject* create_loading_screen();
 
     void GetPrefPath(char* preferencesPath, const char* filename, char** historyPath);
 
@@ -609,6 +610,8 @@ static Ux* Singleton();
     uiObject *screenRenderQuadObj;
 
     uiObject *rootUiObject; // there is a root ui object
+
+    uiObject *loadingScreen;
 
     uiObject *mainUiContainer;
     uiObject *minigamesUiContainer;

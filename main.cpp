@@ -833,7 +833,12 @@ void ShowFrame(void*)
     }
 #endif
 
-    if( !openglContext->isProgramBooted() ) return SDL_Delay(250); // LOADING STILL (emscripten..)
+    if( !openglContext->isProgramBooted() ){ // LOADING STILL (emscripten..) see IDBFS_INITIAL_SYNC_COMPLETED
+        SDL_Log("loading....screen....");
+        //openglContext->renderUi(); // either one works really...
+        openglContext->renderLoadingUI();
+        return SDL_Delay(66); // render slomo...
+    }
 
     //SDL_Log("RENDER SCENE....");
 
@@ -1007,29 +1012,6 @@ int main(int argc, char *argv[]) {
     //SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
 
 
-// TBD: evaluate use of IDBFS in the extension too??? this has to be toggled several places (here and in UX)
-#if defined(__EMSCRIPTEN__) && !defined(COLORPICK_BUILD_FOR_EXT)
-
-EM_ASM({
-    var js_prefs_path = UTF8ToString($0).replace(/\\/$/, "");
-    //js_prefs_path = "/libsdl";
-    console.log("EMSCRIPTEN Note Enabling IDBFS "+js_prefs_path);
-    FS.mkdir(js_prefs_path);
-    FS.mount(IDBFS, {autoPersist: true}, js_prefs_path);
-    console.log("EMSCRIPTEN Note enabled IDBFS "+js_prefs_path);
-
-    // populate the memfs with the IDBFS files
-    FS.syncfs(true, function (err) {
-      // handle callback
-        console.log("EMSCRIPTEN Note enabled IDBFS synced with POPULATE TRUE");
-        __Z21try_reading_prefs_nowii();
-        //  we should show loading screen until this occurs instead...
-    });
-},"/vidsbeecolorpickdata/");
-
-SDL_Log("IDBFS enabled now...");
-
-#endif
 
 
     //    SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "1");
@@ -1405,11 +1387,41 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
         SDL_AddEventWatch(EventFilter, nullptr); // second param is provided to filter which runs in different thread... void* userdata
 #endif
 
+        openglContext->loadShadersAndRenderPrerequisites();
+
+
+// TBD: evaluate use of IDBFS in the extension too??? this has to be toggled several places (here and in UX)
+#if defined(__EMSCRIPTEN__) && !defined(COLORPICK_BUILD_FOR_EXT)
+
+EM_ASM({
+    var js_prefs_path = UTF8ToString($0).replace(/\\/$/, "");
+    //js_prefs_path = "/libsdl";
+    console.log("EMSCRIPTEN Note Enabling IDBFS "+js_prefs_path);
+    FS.mkdir(js_prefs_path);
+    FS.mount(IDBFS, {autoPersist: true}, js_prefs_path);
+    console.log("EMSCRIPTEN Note enabled IDBFS "+js_prefs_path);
+
+    // populate the memfs with the IDBFS files
+    FS.syncfs(true, function (err) {
+      // handle callback
+        console.log("EMSCRIPTEN Note enabled IDBFS synced with POPULATE TRUE");
+        __Z21try_reading_prefs_nowii();
+        //  we should show loading screen until this occurs instead...
+    });
+},"/vidsbeecolorpickdata/");
+
+SDL_Log("IDBFS enabled now...");
+
+#endif
+
+
         //ReshapeWindow();
 #if !defined(__EMSCRIPTEN__) || defined(COLORPICK_BUILD_FOR_EXT)
         // we'll call this later when the IDBFS is synced to memmory for the first time... trace IDBFS_INITIAL_SYNC_COMPLETED
         openglContext->setupScene();
         ReshapeWindow();
+#else
+        openglContext->createLoadingUI();
 #endif
 
 

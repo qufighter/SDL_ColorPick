@@ -92,6 +92,9 @@ public:
     bool createContext(SDL_Window *sdlWindow); // Creation of our OpenGL 3.x context
     void destroyContext();
     void prepareForHuePickerMode(bool fromHueGradient);
+    void loadShadersAndRenderPrerequisites(void);
+    void resetMatricies(void);
+    void createLoadingUI(void);
     void createUI(void);
     void setupScene(void); // All scene information can be setup here
     glm::vec3 worldToScreenSpace(glm::vec3 obj);
@@ -101,6 +104,7 @@ public:
     void renderScene(void); // Render scene (display method from previous OpenGL tutorials)
 
     void renderZoomedPickerBg(void);
+    void renderLoadingUI(void);
     void renderUi(void);
 
     void setLight(void);
