@@ -772,7 +772,11 @@ Ux::uiObject* Ux::create(void){
 #ifdef PICK_FROM_SCREEN_ENABLED
     pickScreenBtn->setForegroundColor(255, 255, 255, 255);
     pickScreenBtn->setClickInteractionCallback(&Ux::interactionPickFromScreen); // TODO rename me
+# ifdef __EMSCRIPTEN__
+     printCharToUiObject(pickScreenBtn, '@', DO_NOT_RESIZE_NOW); // totall different than pick from fullscreen mode, but triggers closest thing achievable...
+# else
      printCharToUiObject(pickScreenBtn, '+', DO_NOT_RESIZE_NOW);
+# endif
  //   printCharToUiObject(pickScreenBtn, CHAR_OPEN_FILES, DO_NOT_RESIZE_NOW);
     pickScreenBtn->squarify();
 
@@ -815,9 +819,6 @@ Ux::uiObject* Ux::create(void){
  //     stacked bottom bar elements...
     bottomBarRightStack->addChildStackedRight(addHistoryBtn);
 #ifdef PICK_FROM_SCREEN_ENABLED
-#ifdef __EMSCRIPTEN__
-     printCharToUiObject(pickScreenBtn, '@', DO_NOT_RESIZE_NOW); // TBD it needs a "capture screenshot" icon...
-#endif
     bottomBarRightStack->addChildStackedRight(pickScreenBtn);
 #endif
     bottomBarRightStack->addChildStackedRight(pickSourceBtn);
