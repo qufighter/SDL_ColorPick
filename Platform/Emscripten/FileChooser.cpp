@@ -270,10 +270,12 @@ EM_JS(void, em_screenshot_as_file, (), {
 
     var do_cleanup_focus_beh = function(){
         //console.log(track, controller); // DEBUG!!!
-        if( controller != null && track && track.label && track.label.substring(0, 5) != 'scree'){
+        if( controller != null && track && (!track.label || track.label.substring(0, 5) != 'scree')){
             //console.warn(controller, track); // ONGOING DEBUG!!!  (magic property hunt to avoid/suppress uncatchable error below!)
             try{
-                controller.setFocusBehavior("no-focus-change");
+                if(track.readyState != "ended"){
+                    controller.setFocusBehavior("no-focus-change");
+                }
                 // this is sort of dumb/broken, setFocusBehavior triggers error on the getDisplayMedia promise !(instead of being handled/caught here ^^) ..., so we scree the error out above
             }catch(invalidStateEx){}
         }
@@ -297,7 +299,7 @@ EM_JS(void, em_screenshot_as_file, (), {
     }).then(function(mediaStream){
 
         //document.querySelector("video").srcObject = mediaStream; // fake fullscreen video window for interactivity??? maybe???
-        // probelm being it would only work for "fullscreen" type, do we know what type we got here?
+        // probelm being it would only work for "fullscreen" type, do we know what type we got here? (sort of; see track.label tests above)
         track = mediaStream.getVideoTracks()[0];
 
         //console.log(track, controller); //DEBUG!!!
