@@ -29,7 +29,7 @@
 #endif
 
 
-#if defined(__MACOSX__) || defined(__LINUX__) || defined(__WIN32__)
+#if defined(__MACOSX__) || defined(__LINUX__) || defined(__WIN32__) || defined(__EMSCRIPTEN__)
 #define PICK_FROM_SCREEN_ENABLED = true
 #endif
 

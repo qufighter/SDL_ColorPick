@@ -815,6 +815,9 @@ Ux::uiObject* Ux::create(void){
  //     stacked bottom bar elements...
     bottomBarRightStack->addChildStackedRight(addHistoryBtn);
 #ifdef PICK_FROM_SCREEN_ENABLED
+#ifdef __EMSCRIPTEN__
+     printCharToUiObject(pickScreenBtn, '@', DO_NOT_RESIZE_NOW); // TBD it needs a "capture screenshot" icon...
+#endif
     bottomBarRightStack->addChildStackedRight(pickScreenBtn);
 #endif
     bottomBarRightStack->addChildStackedRight(pickSourceBtn);

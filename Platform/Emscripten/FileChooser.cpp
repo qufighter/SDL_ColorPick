@@ -258,6 +258,92 @@ void beginImageSelector()
 }
 
 
+EM_JS(void, em_screenshot_as_file, (), {
+
+    var track = null;
+
+    var controller = null;
+
+    try{
+        controller = new CaptureController();
+    }catch(controllerEx){}
+
+    var do_cleanup_focus_beh = function(){
+        //console.log(track, controller); // DEBUG!!!
+        if( controller != null && track && track.label && track.label.substring(0, 5) != 'scree'){
+            //console.warn(controller, track); // ONGOING DEBUG!!!  (magic property hunt to avoid/suppress uncatchable error below!)
+            try{
+                controller.setFocusBehavior("no-focus-change");
+                // this is sort of dumb/broken, setFocusBehavior triggers error on the getDisplayMedia promise !(instead of being handled/caught here ^^) ..., so we scree the error out above
+            }catch(invalidStateEx){}
+        }
+    };
+    // so the CaptureController interface is also causing a lot of problematic testing being needed, and throws unnecessary erros, while not revealing it's state very clearly to avoid those; when it should just work...
+
+    var do_cleanup = function(){
+        if( track != null){
+            track.stop();
+        }
+        do_cleanup_focus_beh();
+    };
+
+    navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        controller: controller,
+        preferCurrentTab: false,
+        selfBrowserSurface: "exclude",
+        surfaceSwitching: "exclude",
+        monitorTypeSurfaces: "include",
+    }).then(function(mediaStream){
+
+        //document.querySelector("video").srcObject = mediaStream; // fake fullscreen video window for interactivity??? maybe???
+        // probelm being it would only work for "fullscreen" type, do we know what type we got here?
+        track = mediaStream.getVideoTracks()[0];
+
+        //console.log(track, controller); //DEBUG!!!
+
+        // well this is embarrasing to use, unimplementable race condition of an interface... like focus ALREADY CHANGED now right? (test it?)
+        //alert('the kracken arrived just now instead'); // so yes in firefox the focus changed on the platform testing...
+        do_cleanup_focus_beh(); // maybe quickly undoes the focus change needed for screenshot?  anyway it'd be better to see if getDisplayMedia options support a keep focus as an alternative...
+
+        imageCapture = new ImageCapture(track);
+
+        imageCapture.grabFrame().then(function(imgBmp){
+            do_cleanup(); // video no longer needed, sorry JS engine garbage collector.. would pass track, capture as args but that will probably interfere with a differnt garbage collector...
+
+            var cvs = document.createElement('canvas');
+            cvs.width = imgBmp.width;
+            cvs.height= imgBmp.height;
+            var ctx = cvs.getContext('2d');
+            ctx.drawImage(imgBmp, 0,0);
+            preloadedImages['/latest-custom-img'] = cvs;
+            __Z19load_img_canvas_nowii();
+
+
+        }).catch(function(error){
+            do_cleanup();
+            console.error("grabFrame() error: ", error);
+            alert(error + " \n\n See also, ImageCapture.grabFrame browser compatibility chart: \n https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture/grabFrame#browser_compatibility")
+        });
+        //return imageCapture.getPhotoCapabilities();
+    }).catch(function(error){
+        do_cleanup();
+        console.error("getDisplayMedia() error: ", error);
+        alert(error + " \n\n See also, ImageCapture browser compatibility chart: \n https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture#browser_compatibility")
+
+    });
+    // TBD if error; under no condition will we be able to determine that we can defnitely now remove this completely broken button form the UX on this platform...
+    // in theory a property on track or capture could allow us to detect a "maybe retry will work" state?
+    // if track and capture are both undefined, that COULD VERY WELL BE a "this ain't gonna work" state... we should handle with button removal event/call
+});
+
+
+void beginScreenshotSeleced(){
+    // tbd the icon that triggers this needs to be unique to the platform as it does not opperate like others
+    // just opens a screenshot more like beginImageSelector
+    // no cursor on icon...
+    em_screenshot_as_file();
+}
 
 
 EM_JS(void, em_open_url, (char* url), {
