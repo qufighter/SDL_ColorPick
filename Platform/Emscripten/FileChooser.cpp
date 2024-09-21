@@ -12,6 +12,18 @@
 #ifdef __EMSCRIPTEN__
 #import "EmscriptenFileChooser.h"
 
+/*
+Next fixes:
+1) loading screen for IDBFS would be good ?  probably easy enough... icon spin matrix, icon in ascii
+2) we have detected BAD ANIMATOINS can occur if the app is in the background and not focused... leading to timing anomolies... (eg pick button can go to orbit if you BG the app before/around with dropper goes away, or maybe just after interacting, maybe other times) I love these and notfixing them (msot of the real fun in the app is based on these combinable animations)... however when the app is in the bg we need to just count that time too and subtrract it from the animation time... (IF the bg time span is after the animation start time and animation is not ended)
+
+anyway neither fix is a true release blocker except maybe loading screen and only because it takes so long to load now...
+releasing the capture from screenshot button on Firefox feels so hollow thouhg because its totally broken
+suppose we could run a javascript check to suppress the button or find an alternative (create <video> element and check for capture interfaces)
+
+    disabled From version 35: this feature is behind the dom.imagecapture.enabled preference (needs to be set to true). To change preferences in Firefox, visit about:config.
+https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture
+*/
 
 
 void getImagePathFromMainThread(){
@@ -343,7 +355,7 @@ EM_JS(void, em_screenshot_as_file, (), {
 void beginScreenshotSeleced(){
     // tbd the icon that triggers this needs to be unique to the platform as it does not opperate like others
     // just opens a screenshot more like beginImageSelector
-    // no cursor on icon...
+    // no cursor on icon...??? actually cursor may be appropriate, crosshair is removed...
     em_screenshot_as_file();
 }
 
