@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DEST="../../../../git/qufighter.github.io/ColorPick/Mobile/WebDemo/"
+DEST="../../qufighter.github.io/ColorPick/Mobile/WebDemo/"
 
 echo $DEST
 
