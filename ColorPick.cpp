@@ -1815,6 +1815,8 @@ void OpenGLContext::render3dDropperAnimation(void) {
             // animation is "done" lets mark it as such
             animationDropper3dId = DROPPER_ANIMATION_ENUM::NO_ANIMATION;
             // bounce the add icon when our animation is done....
+
+            // IF APP IS IN BG this sends the icon to orbit... (nvm fixed)
             generalUx->uxAnimations->scale_bounce(generalUx->addHistoryBtn, 0.005);
         }
         return; // custom progress handling.... for repeat of animations

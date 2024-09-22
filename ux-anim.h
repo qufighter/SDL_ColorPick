@@ -358,6 +358,8 @@ struct uiAnimation
 
         if( scale_velocity_set ){
 
+
+
             myUiObject->matrix = glm::scale(myUiObject->matrix, glm::vec3(1.0-(svx * elapsedMs),1.0-(svy * elapsedMs),1.0));
 
             svx -= (friction_factor * svx) * elapsedMs;
@@ -365,8 +367,13 @@ struct uiAnimation
 
             //SDL_Log("%f %f ljkljkljklj", svx, svy);
 
-            if( svx < threshold && svx > negThreshold ){ svx  = 0; ani_done_count++; }
-            if( svy < threshold && svy > negThreshold ){ svy  = 0; ani_done_count++; }
+            // orbit in fact!  easy noorbitfix is too basic... dislike 
+            // basically before the reset matrix, we get huge elapsed ms way greater than duration ms, and never advance from there, while dest reset matrix is time boxed and solves for it, we never detect the animation is complete because the threshold check window is miniscule and easily never reached
+            // so this might be terrible because we never reached thed esired state, but thanks to matrix reset as next chain it will never matter!
+            // unfortunatley matrix reset will resist any duplicate animations more strongly than we want...
+            // so arguably a duplicate scale bounce would splice itself in and cancel any reset, if you really want that effect... hack the returned animation chain...
+            if( (svx < threshold && svx > negThreshold) || elapsedMs > durationMs ){ svx  = 0; ani_done_count++; }
+            if( (svy < threshold && svy > negThreshold) || elapsedMs > durationMs ){ svy  = 0; ani_done_count++; }
 
             required_done_count+=2;
 
@@ -568,7 +575,7 @@ struct UxAnim
         for( int x=0,l=animChainIndex; x<l; x++ ){
 
 			newXposition = x - animChainsDeletedCount;
-            animChains[newXposition] = animChains[x]; // we hope this will copy teh reference....
+            animChains[newXposition] = animChains[x]; // we hope this will copy teh reference.... and yes it worked as expected (i mean you can think move, but now 2 plaes would refrence the same value, we're doing a move)... pointers to nice size boxed structure types are super nice (we is my neural network, who is you?  when acces is granted the universe es broken, no bueno.  close the channel.  ah network initegrity restored.)
 
 			if (newXposition < x) {
 				animChains[x] = nullptr;
@@ -582,11 +589,11 @@ struct UxAnim
                 animChainsDeletedCount++;
             }
 
-        }
+        }// so why do you care?  yes this is a super smart way to collapse update and clean with a single loop without any edge cases... don't touch it.  it works because we always already advanced beyond the new positon in the array.
+        // and yes I know you might think the now empty placeholders may point to de-allocated things, but the only thing that will ever happen to those is re-assigment... so it's safe... (nevertheless we set thos eto nullptr for sanity sake) OBEY animChainIndex or else suffer heap corruption fool!
+        // and sure it could always check for nullptr or something silly easy but why do that slow unnecessary thing if you know it will have no impact... perf ftw (never mind we don't have a high precision timer and the animations will all look bad thanks to speculitve execution attack prevention loool)
 
         animChainIndex -= animChainsDeletedCount; // we shifted everythign after deleted items into position
-        // but while we do this we could be loosing references to items that are not yet free'd!
-        // I gues we cannot delete anything so hastily in teh multi threaded universe, we MUST leave it to the thread, removing threading is a TODO though
 
         shouldUpdate = true; // main loop render will check this - not ideal... but works - can likely be modified later!!!!!! TODO
         wasUpdating = true;

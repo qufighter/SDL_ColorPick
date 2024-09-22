@@ -15,9 +15,7 @@
 /*
 Next fixes:
 1a) fix loading screen init to always occur to to avoid platform bugs later...
-2) we have detected BAD ANIMATOINS can occur if the app is in the background and not focused... leading to timing anomolies... (eg pick button can go to orbit if you BG the app before/around with dropper goes away, or maybe just after interacting, maybe other times) I love these and notfixing them (msot of the real fun in the app is based on these combinable animations)... however when the app is in the bg we need to just count that time too and subtrract it from the animation time... (IF the bg time span is after the animation start time and animation is not ended).... reproduce in wa browser?/ how? tbd
 3) release is not respecting logging conditions during loading screen in release build???
-3) version incfrement!!
 
 4) keyboard mode game usability issue needs to be fixed, we know the giltch CAN OCCUR and logic dictates it must be fixable given what it was when it happened...
         suspect moved item to exactly the wrong pixel so that it was exactly dead on the >< match and missed the object??
