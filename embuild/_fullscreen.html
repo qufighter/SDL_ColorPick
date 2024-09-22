@@ -34,12 +34,16 @@ function winResized(){
 window.addEventListener('resize', winResized)
 
 function firstRezie(){
-	if( spinnerElement.style.display != 'none' ){
+	if( spinnerElement.style.display != 'none' || typeof(__Z21resize_img_canvas_nowii) != 'function' ){
 		setTimeout(firstRezie, 250);
 	}else{
 		if( statusElement.innerHTML == '' ){
 			document.getElementById('hide-these').style.display="none";
 			winResized();
+		}else{
+			// keep waiting???
+			console.warn('firstRezie: still waiting...');
+			setTimeout(firstRezie, 250);
 		}
 	}
 }
