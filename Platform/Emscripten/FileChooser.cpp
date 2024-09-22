@@ -21,8 +21,6 @@ Next fixes:
 3) version incfrement!!
 
 
-
-
     disabled From version 35: this feature is behind the dom.imagecapture.enabled preference (needs to be set to true). To change preferences in Firefox, visit about:config.
 https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture
 NOT TESTED WITH^

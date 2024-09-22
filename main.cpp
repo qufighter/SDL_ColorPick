@@ -425,6 +425,10 @@ int MainThreadUserEventHandler(SDL_Event* p_event){
 
 int EventFilter(void* userdata, SDL_Event* event){
 
+    if( !openglContext->isProgramBooted() ){ // LOADING STILL - tbd we could jsut fitler out some types of events, known crash causing events include mouse interactions presently...
+        return 1;
+    }
+
     //SDL_Log("WE GOT AN EVENT; type %i", event->type );
     switch ( event->type ){
 
