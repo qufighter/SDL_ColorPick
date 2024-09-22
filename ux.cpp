@@ -104,12 +104,31 @@ uiKeyInteractions* Ux::getKeyInteractions(){
     return &ogg->keyInteractions;
 }// TODO: eventually a helper on uxInstance should handle this... computing for either mouse, finger, or key durations and returining the appropriate multipler
 
-void Ux::GetPrefPath(char* preferencesPath, const char* filename, char** resultDest){
+char* Ux::GetPrefPath(){
+    char* preferencesPath = SDL_GetPrefPath("vidsbee", "colorpick");
+
+#if defined(__EMSCRIPTEN__) && !defined(COLORPICK_BUILD_FOR_EXT)
+
+    if( preferencesPath != nullptr ){
+        SDL_free(preferencesPath); // we better free this before we re-assign
+    }
+
+    preferencesPath = (char*)((const char*)"/vidsbee.colorpick.store/"); // wow this works even after we free the return value!  added casting to justify why it maybe works but it's not needed... guess it copies!?  wierd.  dissatisfied I wanted heap corruptin and program crash at second call here, and instaed all I have is questions... so it's a smart compiler is my guess, and it does a memcpy behind the scenes to a new allocation.
+
+#endif
+
+    if( preferencesPath == nullptr ){
+        preferencesPath = (char*)"";
+    }
+    SDL_Log("Preferences Path: %s", preferencesPath);
+
+    return preferencesPath;
+}
+void Ux::CreatePrefPath(char* preferencesPath, const char* filename, char** resultDest){
     size_t len = SDL_strlen(preferencesPath) + SDL_strlen(filename) + 4;
     *resultDest = (char*)SDL_malloc( sizeof(char) * len );
     SDL_snprintf(*resultDest, len, "%s%s", preferencesPath, filename);
 }
-
 /**
  Default constructor
  */
@@ -163,27 +182,14 @@ Ux::Ux(void) {
 //        palleteColorsIndex[x] = palleteMax; //-1; // largest Uint..
 //    }
 
-    char* preferencesPath = SDL_GetPrefPath("vidsbee", "colorpick");
-
-#if defined(__EMSCRIPTEN__) && !defined(COLORPICK_BUILD_FOR_EXT)
-
-// tbd can we just use the above?  Seems to error out... we hard coded THIS PATH in main...
-// TBD: refactor to share path?  the js alreayd trims any trailing slash...
-preferencesPath = (char*)"/vidsbeecolorpickdata/";
-
-#endif
+    char* preferencesPath = GetPrefPath();
 
 
-    SDL_Log("Preferences Path: %s", preferencesPath);
 
-    if( preferencesPath == nullptr ){
-        preferencesPath = (char*)"";
-    }
-
-    GetPrefPath(preferencesPath, "history.bin", &historyPath);
-    GetPrefPath(preferencesPath, "pallete.bin", &palletePath);
-    GetPrefPath(preferencesPath, "setting.bin", &settingPath);
-    GetPrefPath(preferencesPath, "records.bin", &scoresPath);
+    CreatePrefPath(preferencesPath, "history.bin", &historyPath);
+    CreatePrefPath(preferencesPath, "pallete.bin", &palletePath);
+    CreatePrefPath(preferencesPath, "setting.bin", &settingPath);
+    CreatePrefPath(preferencesPath, "records.bin", &scoresPath);
 
 
     SDL_Log("Preferences Path: %s", historyPath);
@@ -192,10 +198,10 @@ preferencesPath = (char*)"/vidsbeecolorpickdata/";
     SDL_Log("Preferences Path: %s", scoresPath);
 
 
-//    GetPrefPath(preferencesPath, "shistory.bin", &historyPath);
-//    GetPrefPath(preferencesPath, "spallete.bin", &palletePath);
-//    GetPrefPath(preferencesPath, "ssetting.bin", &settingPath);
-//    GetPrefPath(preferencesPath, "srecords.bin", &scoresPath);
+//    CreatePrefPath(preferencesPath, "shistory.bin", &historyPath);
+//    CreatePrefPath(preferencesPath, "spallete.bin", &palletePath);
+//    CreatePrefPath(preferencesPath, "ssetting.bin", &settingPath);
+//    CreatePrefPath(preferencesPath, "srecords.bin", &scoresPath);
 
     SDL_free(preferencesPath);
 }

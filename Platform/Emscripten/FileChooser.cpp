@@ -14,11 +14,13 @@
 
 /*
 Next fixes:
-1) evaluate preferencesPath = (char*)"/vidsbeecolorpickdata as once we pick a path we can never change it later..., 
 1a) fix loading screen init to always occur to to avoid platform bugs later...
 2) we have detected BAD ANIMATOINS can occur if the app is in the background and not focused... leading to timing anomolies... (eg pick button can go to orbit if you BG the app before/around with dropper goes away, or maybe just after interacting, maybe other times) I love these and notfixing them (msot of the real fun in the app is based on these combinable animations)... however when the app is in the bg we need to just count that time too and subtrract it from the animation time... (IF the bg time span is after the animation start time and animation is not ended).... reproduce in wa browser?/ how? tbd
 3) release is not respecting logging conditions during loading screen in release build???
 3) version incfrement!!
+
+4) keyboard mode game usability issue needs to be fixed, we know the giltch CAN OCCUR and logic dictates it must be fixable given what it was when it happened...
+        suspect moved item to exactly the wrong pixel so that it was exactly dead on the >< match and missed the object??
 
 
     disabled From version 35: this feature is behind the dom.imagecapture.enabled preference (needs to be set to true). To change preferences in Firefox, visit about:config.
@@ -32,30 +34,10 @@ void getImagePathFromMainThread(){
 
 }
 
-/*
-need to look.. we cann call this but its odddddd
 
- Module.cwrap('_Z11testversionv', 'number', [])()
- 55
 
- or
-
- __Z11testversionv()
- 55
-
-but this isn't like the tutorial...... so what gives with the name here??
-
- TODO: test with and without cwrap export
-
- all this is find-able in hello.js (cwrap,testversion etc)
-
- also see if this needs to be in the .h or not... lots to check...
-
- */
-
-// TODO:
 // regarding the EMSCRIPTEN_KEEPALIVE and AKA's below...
-// FYI the correct way is to read https://emscripten.org/docs/getting_started/FAQ.html?highlight=exported_runtime_methods#why-do-i-get-typeerror-module-something-is-not-a-function
+// read https://emscripten.org/docs/getting_started/FAQ.html?highlight=exported_runtime_methods#why-do-i-get-typeerror-module-something-is-not-a-function
 // but its named deterministically I think this is wontfix and arguably in testing there is nootherway actually.. remaping the name is even less intuitive as tracing the code becomes thatmuchmore confusing
 
 EMSCRIPTEN_KEEPALIVE

@@ -447,7 +447,8 @@ static Ux* Singleton();
     uiObject* create();
     uiObject* create_loading_screen();
 
-    void GetPrefPath(char* preferencesPath, const char* filename, char** historyPath);
+    char* GetPrefPath();
+    void CreatePrefPath(char* preferencesPath, const char* filename, char** historyPath);
 
     SDL_RWops* GET_SDL_RWFromFile(const char *file, const char *mode);
     void PERFORM_SDL_RWclose(SDL_RWops* fileref);

@@ -1397,6 +1397,8 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
 // TBD: evaluate use of IDBFS in the extension too??? this has to be toggled several places (here and in UX)
 #if defined(__EMSCRIPTEN__) && !defined(COLORPICK_BUILD_FOR_EXT)
 
+char* pref_path_alloc = openglContext->generalUx->GetPrefPath();
+
 EM_ASM({
     var js_prefs_path = UTF8ToString($0).replace(/\\/$/, "");
     //js_prefs_path = "/libsdl";
@@ -1412,7 +1414,9 @@ EM_ASM({
         __Z21try_reading_prefs_nowii();
         //  we should show loading screen until this occurs instead...
     });
-},"/vidsbeecolorpickdata/");
+},pref_path_alloc);
+
+SDL_free(pref_path_alloc);
 
 SDL_Log("IDBFS enabled now...");
 

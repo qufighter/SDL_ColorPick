@@ -30,12 +30,12 @@ struct uiSettingsScroller{  // we will become uxInstance->settingsScroller - and
 
 #if defined(__EMSCRIPTEN__)
 #if defined(COLORPICK_BUILD_FOR_EXT)
-    const char* appVersion = "ColorPick 1.3 WAsmEXT";
+    const char* appVersion = "ColorPick 1.4 WAsmEXT";
 #else
-    const char* appVersion = "ColorPick 1.3 WAsm";
+    const char* appVersion = "ColorPick 1.4 WAsm";
 #endif
 #else
-    const char* appVersion = "ColorPick 1.3";
+    const char* appVersion = "ColorPick 1.4";
 #endif
 
 
