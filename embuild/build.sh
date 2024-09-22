@@ -56,21 +56,9 @@ echo "flags are "$buildFlags
 
 # define an ifdef....
 #  -D COLORPICK_BUILD_FOR_EXT=1 
-emcc ../*.cpp ../Platform/Emscripten/*.cpp -D $dDefines -lidbfs.js -s FORCE_FILESYSTEM=1 -s WASM=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s STB_IMAGE=1 -s TOTAL_MEMORY=1073741824 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -I/Users/saml/git/emscripten-ports/SDL2/include -I/Users/saml/git/emscripten-ports/SDL2_image/ -o hello.html --preload-file ./fs@/ --exclude-file *.DS_Store  --use-preload-plugins -s ALLOW_MEMORY_GROWTH=1 $buildFlags #-s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' # --emrun
+emcc ../*.cpp ../Platform/Emscripten/*.cpp -D $dDefines -lidbfs.js -s FORCE_FILESYSTEM=1 -s WASM=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s STB_IMAGE=1 -s TOTAL_MEMORY=1073741824 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -o hello.html --preload-file ./fs@/ --exclude-file *.DS_Store  --use-preload-plugins -s ALLOW_MEMORY_GROWTH=1 $buildFlags #-s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' # --emrun
 
 if [[ $? -eq 0 ]]; then
-
-# thats a debug build (without -O2 ?  see $buildFlags)... we performed many hacks to ~/.emscripten_ports/sdl2_image/SDL2_image-version_4 to make it work, so the headers we specified above simply match
-# hacks documented
-# cd ~/.emscripten_ports/sdl2_image/SDL2_image-version_4
-# cp ../../sdl2/SDL2-version_17/include/* .
-# next we hack two files.... 
-# IMG.c
-# + #include <stdlib.h>
-# SDL_rwops.h
-# + include <stdio.h>
-# + define HAVE_STDIO_H
-
 
     # output to console is supplied by  --emrun
     test "$arg1" == "EXT"
