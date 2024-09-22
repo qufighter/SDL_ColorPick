@@ -23,7 +23,7 @@ dDefines="HUHITSDEFTHENHULLNOEFFECTIGUESS" #some string needed for -D so we make
 buildFlags="-O2"
 echo $arg1
 
-test $arg1 == "EXT"
+test "$arg1" == "EXT"
 if [[ $? -eq 0 ]]; then
     dDefines="COLORPICK_BUILD_FOR_EXT=1"
 fi
@@ -31,7 +31,7 @@ fi
 echo $dDefines
 
 
-test $arg1 == "DEBUG" || test $arg2 == "DEBUG"
+test "$arg1" == "DEBUG" || test "$arg2" == "DEBUG"
 if [[ $? -eq 0 ]]; then
     buildFlags=""
 fi
@@ -73,7 +73,7 @@ if [[ $? -eq 0 ]]; then
 
 
     # output to console is supplied by  --emrun
-    test $arg1 == "EXT"
+    test "$arg1" == "EXT"
     if [[ $? -eq 0 ]]; then
         ./publish-ext.sh
         echo "publish done..."

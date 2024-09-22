@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DEST="../../../../git/ColorPickTabletExtension/src/webasm/"
+DEST="../../ColorPickTabletExtension/src/webasm/"
 
 echo $DEST
 
