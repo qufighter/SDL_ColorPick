@@ -952,9 +952,16 @@ void OpenGLContext::reshapeWindow(int w, int h) {
     /// hmm... drawable width is passed in.... same ratio though right?
     matrixPersp = glm::perspective(60.0f, (float)colorPickState->windowWidth / (float)colorPickState->windowHeight, 0.5f, 100.0f);  // Create our perspective projection matrix
 
+    if( !openglContext->isProgramBooted() ){ // LOADING STILL (emscripten..) see IDBFS_INITIAL_SYNC_COMPLETED
+        SDL_Log("reshape: not booted"); // updateStageDimension requires more initalizations to work
+        return;
+    }
+
     generalUx->updateStageDimension(windowWidth, windowHeight);
 
     renderShouldUpdate = true;
+
+
 
 
     // TODO: are we leaking any GL memory on reshape?  i think not... but its possible we should delete and re-allocate teh texture... etc ?
@@ -1467,8 +1474,7 @@ void OpenGLContext::renderLoadingUI(void){
     matrixModel = glm::rotate(matrixModel, 1.0f,  glm::vec3(0.0f, 0.0f, 1.0f));
 
 
-    generalUx->renderObjects(uniformLocations, rootUiObject, matrixModel); 
-
+    generalUx->renderObjects(uniformLocations, rootUiObject, matrixModel);
 }
 
 void OpenGLContext::renderUi(void) {

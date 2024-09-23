@@ -19,7 +19,10 @@ Next fixes:
 
 4) keyboard mode game usability issue needs to be fixed, we know the giltch CAN OCCUR and logic dictates it must be fixable given what it was when it happened...
         suspect moved item to exactly the wrong pixel so that it was exactly dead on the >< match and missed the object??
+5) SEE:  probably excessive operations occur here, loading screen rendering uxes very little, see renderLoadingUI
 
+6) finish review of https://github.com/qufighter/SDL_ColorPick/commit/3258cf8e5993e61e76ae9a613165ccd385ff345a
+    -> ux constructor -> does too much stuff !!!!! now delay that stuff?
 
     disabled From version 35: this feature is behind the dom.imagecapture.enabled preference (needs to be set to true). To change preferences in Firefox, visit about:config.
 https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture
@@ -317,13 +320,13 @@ EM_JS(void, em_screenshot_as_file, (), {
         }).catch(function(error){
             do_cleanup();
             console.error("grabFrame() error: ", error);
-            alert(error + " \n\n See also, ImageCapture.grabFrame browser compatibility chart: \n https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture/grabFrame#browser_compatibility \n\n If the error is related to ImageCapture you may be able to enable this experimental feature in your browser. \n\n Try taking the screenshot with a different program instead and open it with the other button.")
+            alert(error + " \n\n See also, ImageCapture.grabFrame browser compatibility chart: \n https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture/grabFrame#browser_compatibility \n\n Try taking the screenshot with a different program instead and open it with the other button.")
         });
         //return imageCapture.getPhotoCapabilities();
     }).catch(function(error){
         do_cleanup();
         console.error("getDisplayMedia() error: ", error);
-        alert(error + " \n\n See also, ImageCapture browser compatibility chart: \n https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture#browser_compatibility")
+        alert(error + " \n\n See also, ImageCapture browser compatibility chart: \n https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture#browser_compatibility \n\n Try taking the screenshot with a different program instead and open it with the other button.")
 
     });
     // TBD if error; under no condition will we be able to determine that we can defnitely now remove this completely broken button form the UX on this platform...

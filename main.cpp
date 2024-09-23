@@ -840,6 +840,8 @@ void ShowFrame(void*)
     if( !openglContext->isProgramBooted() ){ // LOADING STILL (emscripten..) see IDBFS_INITIAL_SYNC_COMPLETED
         SDL_Log("loading....screen....");
         //openglContext->renderUi(); // either one works really...
+        ReshapeWindow(); // we won't presently get events though except via js... this makes centering work as the app enters fullscreen
+        openglContext->generalUx->updateRenderPositions(); // needed after reshape
         openglContext->renderLoadingUI();
         return SDL_Delay(66); // render slomo...
     }
@@ -1198,10 +1200,10 @@ int main(int argc, char *argv[]) {
 
     result = openglContext->createContext(sdl_Window);
     if( !result ){
-        printf("Could not create context\n");
+        printf("ERROR: Could not create context\n");
         SDL_Log("%s", SDL_GetError());
         return 1;
-    }else{
+    }
 
     SDL_Log("context created -----------------------");
 #ifdef __WINDOWS__
@@ -1234,14 +1236,14 @@ int main(int argc, char *argv[]) {
 #endif
 
 
-        // we will check the memories now... 3d might be too much...
-        GLint resultInt = 0;
+    // we will check the memories now... 3d might be too much...
+    GLint resultInt = 0;
 
 
-        glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &resultInt);
-        SDL_Log("We got GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX as: %i", resultInt);
-        glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, &resultInt);
-        SDL_Log("We got TEXTURE_FREE_MEMORY_ATI as: %i", resultInt);
+    glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &resultInt);
+    SDL_Log("We got GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX as: %i", resultInt);
+    glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, &resultInt);
+    SDL_Log("We got TEXTURE_FREE_MEMORY_ATI as: %i", resultInt);
 
 
 //#define stringify(x) _stringify(x)
@@ -1252,9 +1254,9 @@ int main(int argc, char *argv[]) {
 //SDL_Log("contexts %s %i", stringify(literalAttrib), resultInt); \
 //} while(0)
 
-        if( !openglContext->canMesh() ){
-            openglContext->meshes->mesh3d_enabled = false;
-        }
+    if( !openglContext->canMesh() ){
+        openglContext->meshes->mesh3d_enabled = false;
+    }
 
 #define logGottenGlAtrib(literalAttrib) SDL_GL_GetAttribute(literalAttrib, &resultInt); \
 SDL_Log("contexts %s %i", #literalAttrib, resultInt);
@@ -1262,117 +1264,117 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
 
 #define logGottenGlString(literalAttrib) SDL_Log("glcontexts %s %s", #literalAttrib, glGetString(literalAttrib));
 
-        logGottenGlAtrib(SDL_GL_DEPTH_SIZE);
-        if( resultInt < 1 ){
-            openglContext->meshes->mesh3d_enabled = false; // no depth buffer = no meshes...
-            SDL_Log("DISABLED MESH 3D no depth");
-        }
-        logGottenGlAtrib(SDL_GL_STENCIL_SIZE);
-        if( resultInt < 1 ){
-            openglContext->meshes->mesh3d_enabled = false; // no stencil buffer = no meshes...
-            SDL_Log("DISABLED MESH 3D no stencil");
-        }
-        logGottenGlAtrib(SDL_GL_DOUBLEBUFFER);
-        logGottenGlAtrib(SDL_GL_RETAINED_BACKING);
+    logGottenGlAtrib(SDL_GL_DEPTH_SIZE);
+    if( resultInt < 1 ){
+        openglContext->meshes->mesh3d_enabled = false; // no depth buffer = no meshes...
+        SDL_Log("DISABLED MESH 3D no depth");
+    }
+    logGottenGlAtrib(SDL_GL_STENCIL_SIZE);
+    if( resultInt < 1 ){
+        openglContext->meshes->mesh3d_enabled = false; // no stencil buffer = no meshes...
+        SDL_Log("DISABLED MESH 3D no stencil");
+    }
+    logGottenGlAtrib(SDL_GL_DOUBLEBUFFER);
+    logGottenGlAtrib(SDL_GL_RETAINED_BACKING);
 
-        logGottenGlAtrib(SDL_GL_BUFFER_SIZE);
+    logGottenGlAtrib(SDL_GL_BUFFER_SIZE);
 //
-        logGottenGlAtrib(SDL_GL_RED_SIZE);
-        logGottenGlAtrib(SDL_GL_GREEN_SIZE);
-        logGottenGlAtrib(SDL_GL_BLUE_SIZE);
-        logGottenGlAtrib(SDL_GL_ALPHA_SIZE);
+    logGottenGlAtrib(SDL_GL_RED_SIZE);
+    logGottenGlAtrib(SDL_GL_GREEN_SIZE);
+    logGottenGlAtrib(SDL_GL_BLUE_SIZE);
+    logGottenGlAtrib(SDL_GL_ALPHA_SIZE);
 
-        logGottenGlAtrib(SDL_GL_CONTEXT_EGL);
-        logGottenGlAtrib(SDL_GL_CONTEXT_FLAGS);
-        logGottenGlAtrib(SDL_GL_CONTEXT_PROFILE_MASK);
-        logGottenGlAtrib(SDL_GL_ACCELERATED_VISUAL);
+    logGottenGlAtrib(SDL_GL_CONTEXT_EGL);
+    logGottenGlAtrib(SDL_GL_CONTEXT_FLAGS);
+    logGottenGlAtrib(SDL_GL_CONTEXT_PROFILE_MASK);
+    logGottenGlAtrib(SDL_GL_ACCELERATED_VISUAL);
 
-        logGottenGlAtrib(SDL_GL_CONTEXT_MAJOR_VERSION);
-        logGottenGlAtrib(SDL_GL_CONTEXT_MINOR_VERSION);
+    logGottenGlAtrib(SDL_GL_CONTEXT_MAJOR_VERSION);
+    logGottenGlAtrib(SDL_GL_CONTEXT_MINOR_VERSION);
 
-        logGottenGlAtrib(SDL_GL_MULTISAMPLEBUFFERS);
-        logGottenGlAtrib(SDL_GL_MULTISAMPLESAMPLES);
+    logGottenGlAtrib(SDL_GL_MULTISAMPLEBUFFERS);
+    logGottenGlAtrib(SDL_GL_MULTISAMPLESAMPLES);
 
-        logGottenGlString(GL_EXTENSIONS);
-        logGottenGlString(GL_VENDOR);
-        logGottenGlString(GL_RENDERER);
-        logGottenGlString(GL_VERSION);
+    logGottenGlString(GL_EXTENSIONS);
+    logGottenGlString(GL_VENDOR);
+    logGottenGlString(GL_RENDERER);
+    logGottenGlString(GL_VERSION);
 
-        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &resultInt);
-        SDL_Log("Max Texture Size %i", resultInt); // BIG TODO HERE - we can by dyanmic about this :)
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &resultInt);
+    SDL_Log("Max Texture Size %i", resultInt); // BIG TODO HERE - we can by dyanmic about this :)
 
-        int maxSupportedTextureSize = resultInt;
-        if( maxSupportedTextureSize > 0 ){
-            if(maxSupportedTextureSize < 2048){ // TODO move this messagebox code someplace else!
+    int maxSupportedTextureSize = resultInt;
+    if( maxSupportedTextureSize > 0 ){
+        if(maxSupportedTextureSize < 2048){ // TODO move this messagebox code someplace else!
 
-                int selected;
-                SDL_MessageBoxData messagebox;
-                SDL_MessageBoxButtonData buttons[] = {
+            int selected;
+            SDL_MessageBoxData messagebox;
+            SDL_MessageBoxButtonData buttons[] = {
 //                    {   0,  SDL_ASSERTION_RETRY,            "Continue" },
-                    {   SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, SDL_ASSERTION_IGNORE,           "Ignore" },
+                {   SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, SDL_ASSERTION_IGNORE,           "Ignore" },
 //                    {   SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,  SDL_ASSERTION_BREAK,            "Report" },
-                    {   0,  SDL_ASSERTION_ABORT,            "Quit" }
-                };
+                {   0,  SDL_ASSERTION_ABORT,            "Quit" }
+            };
 
-                SDL_zero(messagebox);
-                messagebox.flags = SDL_MESSAGEBOX_WARNING;
-                messagebox.window = sdl_Window;
-                messagebox.title = "Error - 2048x Textures Required";
-                messagebox.message = "ColorPick Requires support for 2048 pixel textures.";// "test message1";
-                messagebox.numbuttons = SDL_arraysize(buttons);
-                messagebox.buttons = buttons;
-                if (SDL_ShowMessageBox(&messagebox, &selected) == 0) {
-                    //SDL_Log("--- itz %d", selected);
+            SDL_zero(messagebox);
+            messagebox.flags = SDL_MESSAGEBOX_WARNING;
+            messagebox.window = sdl_Window;
+            messagebox.title = "Error - 2048x Textures Required";
+            messagebox.message = "ColorPick Requires support for 2048 pixel textures.";// "test message1";
+            messagebox.numbuttons = SDL_arraysize(buttons);
+            messagebox.buttons = buttons;
+            if (SDL_ShowMessageBox(&messagebox, &selected) == 0) {
+                //SDL_Log("--- itz %d", selected);
 
-                    if( selected == SDL_ASSERTION_ABORT ){
-                        // quit...
-                        SDL_Quit();
-                        exit(1);
-                        return 0;
+                if( selected == SDL_ASSERTION_ABORT ){
+                    // quit...
+                    SDL_Quit();
+                    exit(1);
+                    return 0;
 //                    }else if(selected == SDL_ASSERTION_BREAK ){
 //                        // report
 //                        const char* urlBase = "http://www.vidsbee.com/Contact/?browserinfo=App:NativeColorPick";
 //                        SDL_snprintf(shader_error_report, REPORT_SIZE, "%s:%s\n%s", urlBase, file, buffer);
 //                        ogg->doOpenURL(shader_error_report); // TODO: we really need to defer this....
-                    }else if(selected == SDL_ASSERTION_IGNORE ){
+                }else if(selected == SDL_ASSERTION_IGNORE ){
 //                        ogg->no_more_shader_message_boxes=true;
-                    }else{
-                        // shrug SDL_ASSERTION_RETRY
-                    }
+                }else{
+                    // shrug SDL_ASSERTION_RETRY
                 }
-
             }
+
         }
+    }
 
         /*
          #define glGenVertexArrays glGenVertexArraysOES // danger - use will break rendering on fire TV
          #define glBindVertexArray glBindVertexArrayOES // danger
          #define glDeleteVertexArrays glDeleteVertexArraysOES // d
          */
-        if (SDL_GL_ExtensionSupported("glBindVertexArrayOES")) {
-            SDL_Log("We apparently have glBindVertexArrayOES" );
-        }
-        if (SDL_GL_ExtensionSupported("glGenVertexArraysOES")) {
-            SDL_Log("We apparently have glGenVertexArraysOES" );
-        }
-        if (SDL_GL_ExtensionSupported("glBindVertexArray")) {
-            SDL_Log("We apparently have glBindVertexArray" );
-        }
-        if (SDL_GL_ExtensionSupported("glGenVertexArrays")) {
-            SDL_Log("We apparently have glGenVertexArrays" );
-        }
-        if (SDL_GL_ExtensionSupported("GL_EXT_glBindVertexArray")) {
-            SDL_Log("We apparently have GL_EXT_glBindVertexArray" );
-        }
-        if (SDL_GL_ExtensionSupported("GL_EXT_glGenVertexArrays")) {
-            SDL_Log("We apparently have GL_EXT_glGenVertexArrays" );
-        }
-        if (SDL_GL_ExtensionSupported("GL_EXT_glBindVertexArrayOES")) {
-            SDL_Log("We apparently have GL_EXT_glBindVertexArrayOES" );
-        }
-        if (SDL_GL_ExtensionSupported("GL_EXT_glGenVertexArraysOES")) {
-            SDL_Log("We apparently have GL_EXT_glGenVertexArraysOES" );
-        }
+    if (SDL_GL_ExtensionSupported("glBindVertexArrayOES")) {
+        SDL_Log("We apparently have glBindVertexArrayOES" );
+    }
+    if (SDL_GL_ExtensionSupported("glGenVertexArraysOES")) {
+        SDL_Log("We apparently have glGenVertexArraysOES" );
+    }
+    if (SDL_GL_ExtensionSupported("glBindVertexArray")) {
+        SDL_Log("We apparently have glBindVertexArray" );
+    }
+    if (SDL_GL_ExtensionSupported("glGenVertexArrays")) {
+        SDL_Log("We apparently have glGenVertexArrays" );
+    }
+    if (SDL_GL_ExtensionSupported("GL_EXT_glBindVertexArray")) {
+        SDL_Log("We apparently have GL_EXT_glBindVertexArray" );
+    }
+    if (SDL_GL_ExtensionSupported("GL_EXT_glGenVertexArrays")) {
+        SDL_Log("We apparently have GL_EXT_glGenVertexArrays" );
+    }
+    if (SDL_GL_ExtensionSupported("GL_EXT_glBindVertexArrayOES")) {
+        SDL_Log("We apparently have GL_EXT_glBindVertexArrayOES" );
+    }
+    if (SDL_GL_ExtensionSupported("GL_EXT_glGenVertexArraysOES")) {
+        SDL_Log("We apparently have GL_EXT_glGenVertexArraysOES" );
+    }
 
 
         //        typedef void (APIENTRY * glDebugMessageCallbackKHR_Func)(GLDEBUGPROCKHR callback, const void *userParam);
@@ -1388,10 +1390,10 @@ SDL_Log("contexts %s %i", #literalAttrib, resultInt);
 
 
 #ifdef USE_EVENT_WATCH_FOR_EVENTS
-        SDL_AddEventWatch(EventFilter, nullptr); // second param is provided to filter which runs in different thread... void* userdata
+    SDL_AddEventWatch(EventFilter, nullptr); // second param is provided to filter which runs in different thread... void* userdata
 #endif
 
-        openglContext->loadShadersAndRenderPrerequisites();
+    openglContext->loadShadersAndRenderPrerequisites();
 
 
 // TBD: evaluate use of IDBFS in the extension too??? this has to be toggled several places (here and in UX)
@@ -1402,15 +1404,15 @@ char* pref_path_alloc = openglContext->generalUx->GetPrefPath();
 EM_ASM({
     var js_prefs_path = UTF8ToString($0).replace(/\\/$/, "");
     //js_prefs_path = "/libsdl";
-    console.log("EMSCRIPTEN Note Enabling IDBFS "+js_prefs_path);
+    console.log("Note: Enabling IDBFS "+js_prefs_path);
     FS.mkdir(js_prefs_path);
     FS.mount(IDBFS, {autoPersist: true}, js_prefs_path);
-    console.log("EMSCRIPTEN Note enabled IDBFS "+js_prefs_path);
+    //console.log("Note: enabled IDBFS "+js_prefs_path);
 
     // populate the memfs with the IDBFS files
     FS.syncfs(true, function (err) {
       // handle callback
-        console.log("EMSCRIPTEN Note enabled IDBFS synced with POPULATE TRUE");
+        console.log("Note: enabled IDBFS (Indexed DB based settings store) synced with POPULATE TRUE, now loading prefrences & color palette history...");
         __Z21try_reading_prefs_nowii();
         //  we should show loading screen until this occurs instead...
     });
@@ -1423,24 +1425,14 @@ SDL_Log("IDBFS enabled now...");
 #endif
 
 
-        //ReshapeWindow();
 #if !defined(__EMSCRIPTEN__) || defined(COLORPICK_BUILD_FOR_EXT)
         // we'll call this later when the IDBFS is synced to memmory for the first time... trace IDBFS_INITIAL_SYNC_COMPLETED
-        openglContext->setupScene();
-        ReshapeWindow();
+    openglContext->setupScene();
 #else
-        openglContext->createLoadingUI();
+    openglContext->createLoadingUI();
 #endif
 
-
-    }
-
-
-
-
-
-
-
+    ReshapeWindow();
 
 
     SDL_EnableScreenSaver(); // this may set some of the above hints automagically

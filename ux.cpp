@@ -134,6 +134,11 @@ void Ux::CreatePrefPath(char* preferencesPath, const char* filename, char** resu
  */
 Ux::Ux(void) {
 
+#ifndef COLORPICK_DEBUG_MODE
+    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_ERROR);
+    // this will be set again in main()
+#endif
+
     pickHistoryList = new uiList<ColorList, Uint8>(pickHistoryMax); // WARN - do not enable index if using Uint8 - max Uint8 is far less than pickHistoryMax
     palleteList = new uiList<ColorList, Uint8>(palleteMax);
     palleteList->index(COLOR_INDEX_MAX, indexForColor);
