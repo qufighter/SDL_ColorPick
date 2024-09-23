@@ -155,93 +155,10 @@ EM_JS(void, em_get_file, (), {
     //document.body.appendChild(i); // << this may be optional - plus we need to clean up if we leave these in the doc...
 
     i.addEventListener('change', function(ev){
-
-//        console.log('3gotten', i, i.value);
-//
-//        console.log('3gotten', i.data);
-
-        var fauxPath = "customfiles/"+i.files[0].name;
-
-        var img = new Image;
-        // todo: error handling??? maybe it already is...
-        img.onload = function() {
-
-            var cvs = document.createElement('canvas');
-            cvs.width = img.naturalWidth;
-            cvs.height= img.naturalHeight;
-            var ctx = cvs.getContext('2d');
-            ctx.drawImage(img, 0,0);
-            //alert('the image is drawn');
-
-            //Module["preloadedImages"][fauxPath] = cvs;
-            //Module["preloadedImages"]['/latest-custom-img'] = cvs;
-
-            //  hmmm above now seems broken, see maybe Module.FS_createPreloadedFile  ???
-            //FS.createDataFile
-            //function createDataFile(parent, name, data, canRead, canWrite, canOwn)
-            // actually it's still there and still seems to be the most direct way...
-            preloadedImages['/latest-custom-img'] = cvs;
-
-            //alert('now handoff to sdl IMG_Load and cross fingers...');
-
-            //document.body.appendChild(cvs);
-
-//            const p = __Z11filenameBufi(fauxPath.length);
-//            Module.HEAP8.set(fauxPath, p);
-//
-//            __Z19load_img_canvas_nowPKc(p);
-            __Z19load_img_canvas_nowii();
-        };
-        img.src = URL.createObjectURL(i.files[0]);
-
-
-//        var reader = new FileReader();
-//        reader.onload = function(){
-//
-//            //
-//
-//            //console.log('this, i, reader', this, i, reader);
-//
-//            var arrayBuffer = reader.result;
-//            var array = new Uint8Array(arrayBuffer);
-//
-//            console.log(array);
-//
-//
-//            const p = __Z14create8_bufferi(array.length);
-//            Module.HEAPU8.set(array, p);
-//            //Module.HEAP8.set(array, p);
-//
-//            __Z33load_8buffer_to_image_and_destroyPhi(p, array.length);
-//
-//            //var binaryString = String.fromCharCode.apply(null, array);
-//            //console.log(binaryString); // for fancy visual repr... not actually useful?....
-//
-//
-//            console.log(__Z11testversionv());
-//
-//        };
-//        reader.readAsArrayBuffer(i.files[0]);
-
+        em_screenshot_load_from_url(URL.createObjectURL(i.files[0]));
     });
     i.click();
 
-//    setTimeout(function(){
-//        console.log('gotten', i, i.value);
-//
-//        console.log('gotten', i.data);
-//
-//    },250);
-//
-//    console.log('2gotten', i, i.value);
-//
-//    console.log('2gotten', i.data);
-
-
-    //return i.value;
-
-    // maybe this function is bool instead?  and we return true if we got a file's data ready to go, otherwise false
-    // note - click() doens't block... so it can't return crap
 });
 
 
@@ -252,11 +169,34 @@ void beginImageSelector()
 }
 
 
+
+EM_JS(void, em_screenshot_load_from_url, (int* data), {
+    //console.log(data); // when we call from JS data will just be a simple string datatype
+    var img = new Image;
+    // todo: error handling??? maybe it already is...
+    img.onload = function() {
+        em_screenshot_load_from_img(img);
+    };
+    img.src = data;
+});
+
+EM_JS(void, em_screenshot_load_from_img, (int* imgOrImgBmp), {
+    var cvs = document.createElement('canvas');
+    cvs.width = imgOrImgBmp.naturalWidth || imgOrImgBmp.width;
+    cvs.height= imgOrImgBmp.naturalHeight || imgOrImgBmp.height;
+    var ctx = cvs.getContext('2d');
+    ctx.drawImage(imgOrImgBmp, 0,0);
+    preloadedImages['/latest-custom-img'] = cvs;
+    __Z19load_img_canvas_nowii();
+});
+
+
+
 EM_JS(void, em_screenshot_as_file, (), {
 
     var track = null;
-
     var controller = null;
+    var imageCapture = null;
 
     try{
         controller = new CaptureController();
@@ -303,24 +243,33 @@ EM_JS(void, em_screenshot_as_file, (), {
 
         imageCapture = new ImageCapture(track);
 
-        imageCapture.grabFrame().then(function(imgBmp){
-            do_cleanup(); // video no longer needed, sorry JS engine garbage collector.. would pass track, capture as args but that will probably interfere with a differnt garbage collector...
+        if( true || typeof(imageCapture.grabFrame) == "function") {
 
-            var cvs = document.createElement('canvas');
-            cvs.width = imgBmp.width;
-            cvs.height= imgBmp.height;
-            var ctx = cvs.getContext('2d');
-            ctx.drawImage(imgBmp, 0,0);
-            preloadedImages['/latest-custom-img'] = cvs;
-            __Z19load_img_canvas_nowii();
+            imageCapture.grabFrame().then(function(imgBmp){
+                do_cleanup(); // video no longer needed, sorry JS engine garbage collector.. would pass track, capture as args but that will probably interfere with a differnt garbage collector...
+                em_screenshot_load_from_img(imgBmp);
+            }).catch(function(error){
+                do_cleanup();
+                console.error("grabFrame() error: ", error);
+                alert(error + " \n\n See also, ImageCapture.grabFrame browser compatibility chart: \n https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture/grabFrame#browser_compatibility \n\n Try taking the screenshot with a different program instead and open it with the other button.")
+            });
+        }else{
+            console.log('take photo callback... ', imageCapture, typeof(imageCapture.takePhoto));
+            // funny, looks defined to me! but it errors out...
+            // even in chrome, may just need valid settings...
+            // https://github.com/GoogleChromeLabs/imagecapture-polyfill/issues/15#issuecomment-378645852
+            // looks like it goes away actually, hence locking out this block
+            imageCapture.takePhoto({imageWidth: 800, imageHeight: 600}).then(function(blob){
+                do_cleanup();
+                em_screenshot_load_from_url(URL.createObjectURL(blob));
+            }).catch(function(error){
+                do_cleanup();
+                console.error("takePhoto() error: ", error);
+                alert(error + " \n\n See also, ImageCapture.takePhoto browser compatibility chart: \n https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture/takePhoto#browser_compatibility \n\n Try taking the screenshot with a different program instead and open it with the other button.")
+            });
+        }
 
-
-        }).catch(function(error){
-            do_cleanup();
-            console.error("grabFrame() error: ", error);
-            alert(error + " \n\n See also, ImageCapture.grabFrame browser compatibility chart: \n https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture/grabFrame#browser_compatibility \n\n Try taking the screenshot with a different program instead and open it with the other button.")
-        });
-        //return imageCapture.getPhotoCapabilities();
+        //return imageCapture.getPhotoCapabilities(); // to chain promises...
     }).catch(function(error){
         do_cleanup();
         console.error("getDisplayMedia() error: ", error);
