@@ -176,6 +176,7 @@ EM_JS(void, em_screenshot_load_from_url, (int* data), {
     // todo: error handling??? maybe it already is...
     img.onload = function() {
         em_screenshot_load_from_img(img);
+        URL.revokeObjectURL(data); // cleanup/release object url
     };
     img.src = data;
 });
@@ -241,33 +242,41 @@ EM_JS(void, em_screenshot_as_file, (), {
         //alert('the kracken arrived just now instead'); // so yes in firefox the focus changed on the platform testing...
         do_cleanup_focus_beh(); // maybe quickly undoes the focus change needed for screenshot?  anyway it'd be better to see if getDisplayMedia options support a keep focus as an alternative...
 
-        imageCapture = new ImageCapture(track);
-
-        if( true || typeof(imageCapture.grabFrame) == "function") {
-
-            imageCapture.grabFrame().then(function(imgBmp){
-                do_cleanup(); // video no longer needed, sorry JS engine garbage collector.. would pass track, capture as args but that will probably interfere with a differnt garbage collector...
-                em_screenshot_load_from_img(imgBmp);
-            }).catch(function(error){
-                do_cleanup();
-                console.error("grabFrame() error: ", error);
-                alert(error + " \n\n See also, ImageCapture.grabFrame browser compatibility chart: \n https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture/grabFrame#browser_compatibility \n\n Try taking the screenshot with a different program instead and open it with the other button.")
-            });
+        if( typeof(window.ImageCapture) == "function" ){
+            imageCapture = new ImageCapture(track);
         }else{
-            console.log('take photo callback... ', imageCapture, typeof(imageCapture.takePhoto));
-            // funny, looks defined to me! but it errors out...
-            // even in chrome, may just need valid settings...
-            // https://github.com/GoogleChromeLabs/imagecapture-polyfill/issues/15#issuecomment-378645852
-            // looks like it goes away actually, hence locking out this block
-            imageCapture.takePhoto({imageWidth: 800, imageHeight: 600}).then(function(blob){
-                do_cleanup();
-                em_screenshot_load_from_url(URL.createObjectURL(blob));
-            }).catch(function(error){
-                do_cleanup();
-                console.error("takePhoto() error: ", error);
-                alert(error + " \n\n See also, ImageCapture.takePhoto browser compatibility chart: \n https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture/takePhoto#browser_compatibility \n\n Try taking the screenshot with a different program instead and open it with the other button.")
-            });
+            imageCapture = {
+                grabFrame: function(){return new Promise(function(resolve, reject){
+                    var videoElm = document.createElement('video');
+                    var canvas = document.createElement('canvas');
+                    var context = canvas.getContext('2d');
+
+                    videoElm.addEventListener('loadeddata', async function(){
+                        canvas.width = videoElm.videoWidth;
+                        canvas.height = videoElm.videoHeight;
+                        try{
+                            await videoElm.play();
+                            context.drawImage(videoElm, 0, 0, videoElm.videoWidth, videoElm.videoHeight);
+                            canvas.toBlob(function(blb){resolve(createImageBitmap(blb));}, 'image/png');
+                        }catch(er){
+                            reject(er);
+                        }
+                    });
+                    videoElm.srcObject = mediaStream; // but not track !?!?! tbd learn how to assing or construct from track... 
+                })}
+            }
         }
+
+        imageCapture.grabFrame().then(function(imgBmp){
+            // console.log("worked????", imgBmp); // DEBUG!!!
+            do_cleanup(); // video no longer needed, sorry JS engine garbage collector.. would pass track, capture as args but that will probably interfere with a differnt garbage collector...
+            em_screenshot_load_from_img(imgBmp);
+        }).catch(function(error){
+            do_cleanup();
+            console.error("grabFrame() error: ", error);
+            alert(error + " \n\n See also, ImageCapture.grabFrame browser compatibility chart: \n https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture/grabFrame#browser_compatibility \n\n Try taking the screenshot with a different program instead and open it with the other button.")
+        });
+
 
         //return imageCapture.getPhotoCapabilities(); // to chain promises...
     }).catch(function(error){
