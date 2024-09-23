@@ -14,19 +14,17 @@
 
 /*
 Next fixes:
-1a) fix loading screen init to always occur to to avoid platform bugs later...
-3) release is not respecting logging conditions during loading screen in release build???
 
 4) keyboard mode game usability issue needs to be fixed, we know the giltch CAN OCCUR and logic dictates it must be fixable given what it was when it happened...
         suspect moved item to exactly the wrong pixel so that it was exactly dead on the >< match and missed the object??
-5) SEE:  probably excessive operations occur here, loading screen rendering uxes very little, see renderLoadingUI
 
 6) finish review of https://github.com/qufighter/SDL_ColorPick/commit/3258cf8e5993e61e76ae9a613165ccd385ff345a
     -> ux constructor -> does too much stuff !!!!! now delay that stuff?
 
     disabled From version 35: this feature is behind the dom.imagecapture.enabled preference (needs to be set to true). To change preferences in Firefox, visit about:config.
 https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture
-NOT TESTED WITH^
+ actualy did test and still doesn not work, but maybe takePhoto() does... 
+
 */
 
 

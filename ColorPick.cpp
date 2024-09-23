@@ -581,7 +581,7 @@ void OpenGLContext::setupScene(void) {
     createUI();
     setFishScale(0.0, 1.0);
 
-    resetMatricies(); // probably excessive operations occur here, loading screen rendering uxes very little, see renderLoadingUI
+    resetMatricies();
 
 //    eyedropper_bulb=meshes->LoadObjectSTL("textures/models/eyedropper_bulb.stl");
 //    eyedropper_stem=meshes->LoadObjectSTL("textures/models/eyedropper_stem.stl");
