@@ -268,7 +268,6 @@ EM_JS(void, em_screenshot_as_file, (), {
         }
 
         imageCapture.grabFrame().then(function(imgBmp){
-            // console.log("worked????", imgBmp); // DEBUG!!!
             do_cleanup(); // video no longer needed, sorry JS engine garbage collector.. would pass track, capture as args but that will probably interfere with a differnt garbage collector...
             em_screenshot_load_from_img(imgBmp);
         }).catch(function(error){
