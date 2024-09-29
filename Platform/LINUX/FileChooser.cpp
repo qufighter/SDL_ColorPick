@@ -47,6 +47,7 @@
 
 static bool pick_mode_enabled=false;
 static bool gtk_init_complete=false;
+static bool kqt_init_complete=false;
 
 // TODO: add KDE/Qt support
 
@@ -88,90 +89,69 @@ static bool gtk_init_complete=false;
 
 #include "Qt/ColorpickQtWindow.h" 
 
-bool begin_pick_mode_linux(void* user_data){ // mode_x11_gtk'[
-  SDL_Log("begin pick mode actally called KDE/QT");
+// int mybox = 0;
+// QApplication qtApp(mybox, nullptr);
+static QApplication* qtApp = nullptr;
+static int box_ctr = -1;
+static ColorPickQtWindow* cpqtwin = nullptr;
+
+
+static int qt_init_thread(void* data){
+  SDL_Log("Qt init thread triggered...");
+  box_ctr+= 1;
+  QApplication app(box_ctr, nullptr);
+  qtApp = &app;
+  kqt_init_complete = true;
+  qtApp->exec(); // this is our QT infinite loop...
+  SDL_Log("qtApp->exec bypassed!  exiting Qt app"); // seems we cannot re-init the app after exit, so we will avoid this
+  return 0;
+}
+
+
+
+bool begin_pick_mode_linux(void* user_data){ // mode KDE qt'[
+    SDL_Log("begin pick mode actally called KDE/QT");
     if( pick_mode_enabled ) return false;
-    //if( !gtk_init_complete ){gtk_init(NULL, NULL);gtk_init_complete=true;}
     SDL_Log("begin pick mode actally called KDE/QT and pick_mode_enabled false");
 
-    //The following line creates a QApplication object. This object manages application-wide resources and is necessary to run any Qt program that uses Qt Widgets.
-    int mybox = 0;
-    QApplication app(mybox, nullptr);
-    // TBD do we need this? control it like gtk_init_complete if needed...
+    if( !kqt_init_complete ){
+        SDL_Thread* thread = SDL_CreateThread(qt_init_thread, "qt_init_thread", nullptr);
+        SDL_DetachThread(thread);
+    } 
+
+    while( !kqt_init_complete ){
+      SDL_Delay(100);
+      SDL_Log("init incomplete..."); 
+    }
+    SDL_Log("init complete..."); 
+
 
     // will we create only one???
-    ColorPickQtWindow* cpqtwin = new ColorPickQtWindow();
-    
-    cpqtwin->setFlags({
-        Qt::Window, // the default window flag
-        Qt::FramelessWindowHint,
-        Qt::NoDropShadowWindowHint,
-        Qt::MaximizeUsingFullscreenGeometryHint // also use the areas where system UIs are
-    });
+    if( cpqtwin == nullptr ){
+      cpqtwin = new ColorPickQtWindow();
+    }else{
+      cpqtwin->syncGeometryWithScreen();
+    }
 
-    cpqtwin->setWindowStates(Qt::WindowFullScreen);
+    // tbd this is actually very bad, as key features are only called in the CONSTRUCTOR right now...
+    // need antoher way..
 
-    cpqtwin->setColor(Qt::transparent);
-
-    //window->setVisibility(visibility);
     cpqtwin->requestActivate();
 
-    SDL_Log("wwwww");
+    //cpqtwin->show();
+    cpqtwin->showFullScreen();
 
-    app.exec(); // whenever we call this, our thread seems to HAULT.... hmmm well this is our QT infinite loop...
-
-    cpqtwin->show();
-
-    SDL_Log("wwwww");
-
-    
-
-    SDL_Log("wwwww");
-
-    // g_autoptr(GdkCursor) cursor = NULL;
-    // GdkDisplay *display;
-    // select_area_filter_data  data;
-    // GdkSeat *seat;
-
-    // data.rect.x = 0;
-    // data.rect.y = 0;
-    // data.rect.width  = 0;
-    // data.rect.height = 0;
-    // data.button_pressed = FALSE;
-    // data.aborted = FALSE;
-    // data.window = create_select_window();
-
-    // g_signal_connect (data.window, "key-press-event", G_CALLBACK (select_area_key_press), &data);
-    // g_signal_connect (data.window, "button-press-event", G_CALLBACK (select_area_button_press), &data);
-    // g_signal_connect (data.window, "button-release-event", G_CALLBACK (select_area_button_release), &data);
-    // g_signal_connect (data.window, "motion-notify-event", G_CALLBACK (select_area_motion_notify), &data);
-
-    // display = gtk_widget_get_display (data.window);
-    // cursor = gdk_cursor_new_for_display (display, GDK_CROSSHAIR);
-    // seat = gdk_display_get_default_seat (display);
-
-    // gdk_seat_grab (seat,
-    //                gtk_widget_get_window (data.window),
-    //                GDK_SEAT_CAPABILITY_ALL,
-    //                FALSE,
-    //                cursor,
-    //                NULL,
-    //                NULL,
-    //                NULL);
-                   
     pick_mode_enabled = true;
-    
-    // gtk_main (); // locks everythign up!
 
-    // gdk_seat_ungrab (seat);
+    SDL_Log("pick_mode_enabled");
 
-    // gtk_widget_destroy (data.window);
-
-  SDL_Log("end pick mode actally called KDE/QT");
 
     return true;
 }
 
+static void stop_picking_mode(){
+    pick_mode_enabled = false;
+}
 
 static int thread_begin_pck_mode_linux(void* data){
   begin_pick_mode_linux(NULL);

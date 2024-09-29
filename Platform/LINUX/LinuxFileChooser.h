@@ -23,5 +23,10 @@ bool openURL(char* &url);
 void requestReview();
 
 
+
+static void stop_picking_mode();
+
+
+
 #endif
 #endif
