@@ -23,7 +23,7 @@ bool openURL(char* &url);
 void requestReview();
 
 
-
+static Uint32 pick_again_soon(Uint32 interval, void* parm);
 static void stop_picking_mode();
 
 

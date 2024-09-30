@@ -56,54 +56,20 @@ static bool kqt_init_complete=false;
 
 #if COLORPICK_X11_QT > 0
 
-// actually still just guessing which packages
-// to omit them and see if it still works later
-// but arguably we should be able to link any if build is configured correct
-// we'll keep trying...
-
-// #include <QFlags>
-// #include <QImage>
-// #include <QObject>
-// #include <KGlobalAccel>
-// #include <KLocalizedString>
-#include <QApplication>
-#include <qnamespace.h>
-#include <QScreen>
-#include <QEventLoopLocker>
-#include <QObject>
-//#include <QQmlEngine>
-//#include <QQuickItem>
-
-#include <QQuickView>
-#include <QQmlContext>
-
-#include <QVariantAnimation>
-#include <QCommandLineParser>
-//#include <QDBusConnection>
-#include <QDir>
-#include <QSessionManager>
-
-//#include <KWindowSystem>
-
-#include <QScreen>
-
 #include "Qt/ColorpickQtWindow.h" 
 
-// int mybox = 0;
-// QApplication qtApp(mybox, nullptr);
 static QApplication* qtApp = nullptr;
-static int box_ctr = -1;
 static ColorPickQtWindow* cpqtwin = nullptr;
 
 
 static int qt_init_thread(void* data){
   SDL_Log("Qt init thread triggered...");
-  box_ctr+= 1;
+  int box_ctr = 0;
   QApplication app(box_ctr, nullptr);
   qtApp = &app;
   kqt_init_complete = true;
   qtApp->exec(); // this is our QT infinite loop...
-  SDL_Log("qtApp->exec bypassed!  exiting Qt app"); // seems we cannot re-init the app after exit, so we will avoid this
+  SDL_Log("qtApp->exec bypassed!  exiting Qt app"); // seems we cannot re-init the app after qtApp-> quit/exit, so we will avoid this
   return 0;
 }
 
@@ -125,32 +91,21 @@ bool begin_pick_mode_linux(void* user_data){ // mode KDE qt'[
     }
     SDL_Log("init complete..."); 
 
-
-    // will we create only one???
     if( cpqtwin == nullptr ){
       cpqtwin = new ColorPickQtWindow();
-    }else{
-      cpqtwin->syncGeometryWithScreen();
     }
 
-    // tbd this is actually very bad, as key features are only called in the CONSTRUCTOR right now...
-    // need antoher way..
-
-    cpqtwin->requestActivate();
-
-    //cpqtwin->show();
-    cpqtwin->showFullScreen();
-
+    cpqtwin->setShapeAndBegin();
     pick_mode_enabled = true;
-
-    SDL_Log("pick_mode_enabled");
-
+    SDL_Log("Qt pick_mode_enabled");
 
     return true;
 }
 
 static void stop_picking_mode(){
+    cpqtwin->hide();
     pick_mode_enabled = false;
+    SDL_Log("Qt pick_mode_disabled");
 }
 
 static int thread_begin_pck_mode_linux(void* data){
@@ -259,18 +214,6 @@ select_area_button_release (GtkWidget               *window,
         openglContext->generalUx->addCurrentToPickHistory();
 
   return TRUE;
-}
-
-static Uint32 pick_again_soon(Uint32 interval, void* parm) {
-    // to make just this timer, fire on main thread - push event!
-    SDL_Event event;
-    SDL_UserEvent userevent;
-    userevent.type = SDL_USEREVENT;
-    userevent.code = USER_EVENT_ENUM::PICK_AGAIN_NOW;
-    event.type = SDL_USEREVENT;
-    event.user = userevent;
-    SDL_PushEvent(&event);
-    return 0;
 }
 
 static gboolean
@@ -417,6 +360,19 @@ static int thread_begin_pck_mode_linux(void* data){
 
 #endif // COLORPICK_X11_GTK > 0
 
+
+
+static Uint32 pick_again_soon(Uint32 interval, void* parm) {
+    // to make just this timer, fire on main thread - push event!
+    SDL_Event event;
+    SDL_UserEvent userevent;
+    userevent.type = SDL_USEREVENT;
+    userevent.code = USER_EVENT_ENUM::PICK_AGAIN_NOW;
+    event.type = SDL_USEREVENT;
+    event.user = userevent;
+    SDL_PushEvent(&event);
+    return 0;
+}
 
 void beginScreenshotSeleced(){
 
