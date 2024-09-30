@@ -26,4 +26,9 @@ ordered from most to less important...
 
 ## Mobile
 
-* pinch should zoom
+ * pinch should zoom
+
+## What about build
+
+Wrong folder, see external folder for dependency and platform instructions...
+Also, See CMakeLists.txt for more info... on how to build and set build arguments...

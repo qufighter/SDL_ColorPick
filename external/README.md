@@ -110,6 +110,11 @@ sudo apt-get install libopengl0 libopengl-dev
 
 but the package names will vary by distribution...
 
+```
+mkdir BUILD && cd BUILD
+cmake .. -D COLORPICK_DYNAMIC_LINK=1 -D CMAKE_BUILD_TYPE=Release
+```
+
 ## Packages (KDE / Qt Build)
 
 sudo apt-get install extra-cmake-modules qt6-base-dev qt6-declarative-dev
@@ -119,3 +124,25 @@ The following are yet to de determined as dependencies or not...
 sudo apt-get install libqt6quick6 qml6-module-qtquick 
 
 note support for KDE (except through GTK) is not yet complete.
+
+When building use
+
+```
+mkdir BUILD && cd BUILD
+cmake .. -D COLORPICK_DYNAMIC_LINK=1 -D COLORPICK_KDE_QT=1 -D CMAKE_BUILD_TYPE=Release
+```
+
+## What about windows?
+
+It's up to you, but I'd follow the clone steps and just static link it!
+
+```
+mkdir BUILD && cd BUILD
+cmake ..
+```
+
+Release build on windows - does it finally not crash?  I don't know!
+
+## Other
+
+Delete the build folder and try again...

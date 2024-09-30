@@ -173,8 +173,8 @@ select_area_motion_notify (GtkWidget               *window,
     SDL_UserEvent userevent;
     SDL_Point* mmevent = new SDL_Point(); // note: we deallocate this on main thread...
 
-    mmevent->x = (openglContext->fullPickImgSurface->clip_rect.w - (int)g_event->x_root) - (openglContext->fullPickImgSurface->clip_rect.w / 2);
-    mmevent->y = (openglContext->fullPickImgSurface->clip_rect.h - (int)g_event->y_root) - (openglContext->fullPickImgSurface->clip_rect.h / 2);
+    mmevent->x = (openglContext->fullPickImgSurface->clip_rect.w - (int)g_event->x_root) - (openglContext->fullPickImgSurface->clip_rect.w / 2) - 1;
+    mmevent->y = (openglContext->fullPickImgSurface->clip_rect.h - (int)g_event->y_root) - (openglContext->fullPickImgSurface->clip_rect.h / 2) - 1;
 
     userevent.type = SDL_USEREVENT;
     userevent.code = USER_EVENT_ENUM::PICK_AT_POSITION;
@@ -221,8 +221,7 @@ select_area_key_press (GtkWidget               *window,
                        GdkEventKey             *event,
                        select_area_filter_data *data)
 {
-  if (event->keyval == GDK_KEY_Escape)
-    {
+  if (event->keyval == GDK_KEY_Escape) {
       data->rect.x = 0;
       data->rect.y = 0;
       data->rect.width  = 0;
@@ -231,8 +230,7 @@ select_area_key_press (GtkWidget               *window,
 
         stop_picking_mode();
 
-    }
-  if (event->keyval == GDK_KEY_r || event->keyval == GDK_KEY_j){
+  }else if (event->keyval == GDK_KEY_r || event->keyval == GDK_KEY_j){
   	// TODO: a better method might be, drop out of pick mode, to give some time, then screenshot
   	// TODO: also note, when we ener pick mode OR here, we loose some position information...
   	//beginScreenshotSeleced();
@@ -248,6 +246,8 @@ static gboolean
 select_window_draw (GtkWidget *window, cairo_t *cr, gpointer unused)
 {
   return TRUE; // why draw at all?? ?curious... guess we don't show a selection rect, so why bother?
+  // one reason would be to validate the positioning and size of the shield window itself, so that click an dmovement interception works...
+  // but yes, ultimately we will not draw anything... wehn done testing
   /*
   GtkStyleContext *style;
 
