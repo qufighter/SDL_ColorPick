@@ -217,12 +217,7 @@ SDL_RWops* Ux::GET_SDL_RWFromFile(const char *file, const char *mode){
 
 #if defined(__EMSCRIPTEN__)
     if( possibly_fileref == NULL ){
-
-        // read this setting from local storage...
-        // and then create a new SDL_RWFromMem for this....
-
-        // OR create a new SDL_RWFromMem
-        // and later write it to local storage...
+        SDL_Log("Problem reading file... %s", file);
     }
 #endif
 
@@ -233,7 +228,7 @@ void Ux::PERFORM_SDL_RWclose(SDL_RWops* fileref){
     // ONLY call this on "files" that we want to persist to local storage (on emscripten).... before we close them!
     // so for EG only during WRITE operation...
     #if defined(__EMSCRIPTEN__)
-
+        // actually we are using IDBFS, {autoPersist: true}
     #endif
     SDL_RWclose(fileref);
 }
@@ -1397,7 +1392,7 @@ void Ux::navigateControllerCursor(int x, int y){
         }
     }
 
-    // find the best matching object out of the objects perpendicular to the desired direction that is within '0.2f' of the closest directional match
+    // find the best matching object out of the objects perpendicular to the desired direction; that is within; say '0.2f' of the closest directional match
     if( controllerCursorObjects->total() > 2 ){
         float startPoint = isY ? curObj->collisionRect.centerY() : curObj->collisionRect.centerX();
         float startDimension = isY ? curObj->collisionRect.h : curObj->collisionRect.w;
@@ -1416,7 +1411,33 @@ void Ux::navigateControllerCursor(int x, int y){
         nextDistance = SDL_fabs( isY ? startPoint - newObj->collisionRect.centerY() : startPoint - newObj->collisionRect.centerX() );
 
         computeNextDistance
+
         while( nextDistance <= objectDistance /*0.2f*/ ){ // NOTE this is how far we would go to stay on the same plane we are moving in vs jumping laterally to a different object....
+
+        // anyway rename dist to otherDimensionDist we need to clarify varible names to trace this better..
+
+        // indeed its still bad, eg moving laterally X to X that Y is selected even when NOT on bottom row...
+        // X   X
+        // X   X
+        // X   X
+        //   Y
+
+        // so in the origional issue
+        //   Y   Y
+        //     X
+        //   Y   Y
+        // so next imagien it gets even WORSER to detect...
+        //   Y               Y
+        //           X
+        //   Y               Y
+
+        // anyway the plan is one of two:
+        // somehow allow a diagonal move mode OR give some alternate mode when moving right or down so it works differently than left or up, such that X is selectable in
+        // conditions when surrounded by Y's
+        // and create a completely seperate minigame that can be used to stage these scenarios, to help verify them.... along with a way to trigger the minigame at launch?
+        // *(maybe some scenarios need a custom game to produce the intended testing difficulties...)
+
+        // act
 
             if( newObj != curObj ){ // we looped, so this mode is fruitless ?
                 float dist = SDL_fabs( isY ? curObj->collisionRect.centerX() - newObj->collisionRect.centerX() : curObj->collisionRect.centerY() - newObj->collisionRect.centerY() );

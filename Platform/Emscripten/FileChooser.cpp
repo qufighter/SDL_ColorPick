@@ -16,7 +16,7 @@
 Next fixes:
 
 4) keyboard mode game usability issue needs to be fixed, we know the giltch CAN OCCUR and logic dictates it must be fixable given what it was when it happened...
-        suspect moved item to exactly the wrong pixel so that it was exactly dead on the >< match and missed the object??
+        suspect moved item to exactly the wrong pixel so that it was exactly dead on the >< match and missed the object?? @navigateControllerCursor
 
 6) finish review of https://github.com/qufighter/SDL_ColorPick/commit/3258cf8e5993e61e76ae9a613165ccd385ff345a
     -> ux constructor -> does too much stuff !!!!! now delay that stuff?
