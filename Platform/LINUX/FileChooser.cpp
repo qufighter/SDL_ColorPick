@@ -494,7 +494,7 @@ bool openURL(char* &url)
     //system("x-www-browser http://www.google.com");
     //SDL_Log("%s", url);
     
-    char * sysLaunchCmd = "xdg-open ";
+    const char* sysLaunchCmd = "xdg-open ";
     size_t len = SDL_strlen(sysLaunchCmd) + SDL_strlen(url) + 4;
     char* fullCmdDest = (char*)SDL_malloc( sizeof(char) * len );
     SDL_snprintf(fullCmdDest, len, "%s%s", sysLaunchCmd, url);
