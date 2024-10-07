@@ -146,25 +146,17 @@ struct uiNavArrows{
         dn->identity();
         if( vx > 0 ){
             if( vx > cap ){vx = cap;}
-//#ifndef __EMSCRIPTEN__ // EMSCRIPTEN has no threading, so we run out of animation chains somehow.... canfix
             lf->setAnimation( uxInstance->uxAnimations->scale_bounce(lf, (scaler*vx)));
-//#endif
         }else if( vx < 0 ){
             if( vx < -cap ){vx = -cap;}
-//#ifndef __EMSCRIPTEN__
             rt->setAnimation( uxInstance->uxAnimations->scale_bounce(rt, -(scaler*vx)));
-//#endif
         }
         if( vy > 0 ){
             if( vy > cap ){vy = cap;}
-//#ifndef __EMSCRIPTEN__
             up->setAnimation( uxInstance->uxAnimations->scale_bounce(up, (scaler*vy)));
-//#endif
         }else if( vy < 0 ){
             if( vy < -cap ){vy = -cap;}
-//#ifndef __EMSCRIPTEN__
             dn->setAnimation( uxInstance->uxAnimations->scale_bounce(dn, -(scaler*vy)));
-//#endif
         }
     }
 
