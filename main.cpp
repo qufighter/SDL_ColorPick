@@ -128,7 +128,7 @@ uiInteraction* beginInteraction(SDL_Event* event, bool isStart){
     SDL_Point tmp = getMouseXYforEvent(event);
     tx = tmp.x; ty=tmp.y; // TODO: lets remove tx ty too...
     openglContext->pixelInteraction.begin(event->common.timestamp, tx, ty);
-    //openglContext->generalUx->currentInteraction.begin( (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h ); // deprecated....
+    //openglContext->generalUx->currentInteraction.begin( (tx*colorPickState->ui_mmv_scale)/win_w, (ty*colorPickState->ui_mmv_scale)/win_h ); // deprecated....
 
     uiInteraction* fingerInteraction = openglContext->generalUx->interactionForPointerEvent(event);
 
@@ -139,7 +139,7 @@ uiInteraction* beginInteraction(SDL_Event* event, bool isStart){
         return fingerInteraction; //
     }
 
-    fingerInteraction->begin(event->common.timestamp, (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h );
+    fingerInteraction->begin(event->common.timestamp, (tx*colorPickState->ui_mmv_scale)/win_w, (ty*colorPickState->ui_mmv_scale)/win_h );
     if( isStart ){
         fingerInteraction->fingerStateDown = true; // maybe use an integer for better tracking?  fingers only have one button though....
         openglContext->pixelInteraction.fingerStateDown = true;
@@ -223,7 +223,7 @@ void mouseMoveEvent(SDL_Event* event){
             //colorPickState->mmovey = event->motion.yrel;
 //            SDL_Point tmp = getMouseXYforEvent(event);
 //            tx = tmp.x; ty=tmp.y;
-            fingerInteraction->update(event->common.timestamp, (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h); // < we COULD update this regardless.. moving it above the IF...  -> not recommended... causes issues where mousup out of the blue (without mouse down) can trigger things....
+            fingerInteraction->update(event->common.timestamp, (tx*colorPickState->ui_mmv_scale)/win_w, (ty*colorPickState->ui_mmv_scale)/win_h); // < we COULD update this regardless.. moving it above the IF...  -> not recommended... causes issues where mousup out of the blue (without mouse down) can trigger things....
 
             //SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
             //SDL_Log("MOUSE xy delta %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
@@ -254,7 +254,7 @@ void mouseUpEvent(SDL_Event* event){
 
     if( /*didInteract*/ fingerInteraction->didCollideWithObject ){
         // we may be able to add this, but we need to track velocity better
-        fingerInteraction->update(event->common.timestamp, (tx*ui_mmv_scale)/win_w, (ty*ui_mmv_scale)/win_h);
+        fingerInteraction->update(event->common.timestamp, (tx*colorPickState->ui_mmv_scale)/win_w, (ty*colorPickState->ui_mmv_scale)/win_h);
         //SDL_Log("MOUSE xy perc %f %f", openglContext->generalUx->currentInteraction.px, openglContext->generalUx->currentInteraction.py );
         //SDL_Log("MOUSE xy delta %f %f", openglContext->generalUx->currentInteraction.dx, openglContext->generalUx->currentInteraction.dy );
     }else{
@@ -911,16 +911,16 @@ void ReshapeWindow(bool fromMain){
 
     if( win_w <= colorPickState->drawableWidth ) {
         // low dpi?
-        ui_mmv_scale = 1.0;
+        colorPickState->ui_mmv_scale = 1.0;
     }else{
-        ui_mmv_scale = 2.0;
+        colorPickState->ui_mmv_scale = 2.0;
         // even if win_w == SCREEN_WIDTH
         //  not guaranteed to be hidpi !~!!! !
     }
-    SDL_Log("UI Retna Density Scale:  %f", ui_mmv_scale );
+    SDL_Log("UI Retna Density Scale:  %f", colorPickState->ui_mmv_scale );
 
 
-    colorPickState->ui_mmv_scale=ui_mmv_scale;
+    //colorPickState->ui_mmv_scale=ui_mmv_scale;
 
 
 #ifdef DEVELOPER_TEST_MODE
@@ -965,9 +965,9 @@ void ReshapeWindow(bool fromMain){
             \t Usable Bounds Rect(%i): %i %i %i %i \n\
             finally then %i %i" ,
             displayIndex, dpi_result, ddpi, hdpi, vdpi,
-            size_result, miScreen.x, miScreen.y, miScreen.w, miScreen.h, ui_mmv_scale,
+            size_result, miScreen.x, miScreen.y, miScreen.w, miScreen.h, colorPickState->ui_mmv_scale,
             bounds_result, usableBounds.x, usableBounds.y, usableBounds.w, usableBounds.h,
-            int(miScreen.w*ui_mmv_scale), int(miScreen.h*ui_mmv_scale));
+            int(miScreen.w*colorPickState->ui_mmv_scale), int(miScreen.h*colorPickState->ui_mmv_scale));
 #endif
     //if( )
 

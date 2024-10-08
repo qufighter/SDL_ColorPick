@@ -48,7 +48,7 @@ ColorPickState::ColorPickState(void) {
     appInForeground = true;
 
     viewport_ratio = 1.0;
-
+    ui_mmv_scale = 1.0;
 }
 
 void ColorPickState::updateComputedSizes(void) {

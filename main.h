@@ -322,12 +322,7 @@ static int win_h = SCREEN_HEIGHT;
 //static Uint32 lastTimerTime = 0;
 //static Uint32 currentTime;
 
-
-
-// TODO: sdl to provide the device scale?
-static float ui_mmv_scale = 2.0; // Device Scale!?
-
-
+//static float magic_float_probably_important = 9000.0;
 
 //static bool didInteract; instead each interaction will have one of these!
 
