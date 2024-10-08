@@ -396,7 +396,7 @@ int MainThreadUserEventHandler(SDL_Event* p_event){
 
         case USER_EVENT_ENUM::PICK_AT_POSITION:
         {
-            SDL_Log("USER EVENT - PICK_AT_POSITION");
+            // SDL_Log("USER EVENT - PICK_AT_POSITION"); // too noisy!
             SDL_Point mmv_result = *((SDL_Point*)event.user.data1);
             if( openglContext->position_x != mmv_result.x || openglContext->position_y != mmv_result.y ){
                 openglContext->position_x = mmv_result.x;
@@ -903,7 +903,7 @@ void ReshapeWindow(bool fromMain){
 
     //colorPickState->viewport_ratio = (win_w+1.0f)/win_h;
     SDL_Log("SDL_GetWindowSize %d %d %f", win_w,win_h, colorPickState->viewport_ratio);
-
+    SDL_Log("SDL_GL_GetDrawableSize %d %d %f", colorPickState->drawableWidth,colorPickState->drawableHiehgt, colorPickState->viewport_ratio);
 
     // NOTE: this log is dangerous since division by zero, and also not dangerous thanks to optimization
     //SDL_Log("SDL_GL_GetDrawableSize %d %d %f", colorPickState->drawableWidth,colorPickState->drawableHiehgt, (colorPickState->drawableWidth+1.0f)/colorPickState->drawableHiehgt);

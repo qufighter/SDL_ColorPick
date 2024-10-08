@@ -120,6 +120,9 @@ static int thread_begin_pck_mode_linux(void* data){
 #elif COLORPICK_X11_GTK > 0
 #include <gtk/gtk.h>
 
+// todo, https://docs.gtk.org/gdk3/signal.Screen.monitors-changed.html
+// https://docs.gtk.org/gdk3/signal.Screen.size-changed.html
+
 typedef struct {
   GdkRectangle  rect;
   gboolean      button_pressed;
@@ -173,8 +176,21 @@ select_area_motion_notify (GtkWidget               *window,
     SDL_UserEvent userevent;
     SDL_Point* mmevent = new SDL_Point(); // note: we deallocate this on main thread...
 
-    mmevent->x = (openglContext->fullPickImgSurface->clip_rect.w - (int)g_event->x_root) - (openglContext->fullPickImgSurface->clip_rect.w / 2) - 1;
-    mmevent->y = (openglContext->fullPickImgSurface->clip_rect.h - (int)g_event->y_root) - (openglContext->fullPickImgSurface->clip_rect.h / 2) - 1;
+    float screen_mmv_scale = 1.0;
+
+    int device_x;
+    int device_y;
+    GdkScreen* screen;
+    gdk_device_get_position(g_event->device, &screen, &device_x, &device_y);
+
+
+    int scale_factor = gdk_monitor_get_scale_factor(  gdk_display_get_monitor_at_point(gdk_screen_get_display(screen), device_x, device_y) );
+    screen_mmv_scale *= scale_factor;
+
+    /// hmm this translate code is now everywhere...? < see note, but is untrue now here...
+    //g_event->x_root, g_event->y_root
+    mmevent->x = (openglContext->fullPickImgSurface->clip_rect.w - (int)(device_x * screen_mmv_scale)) - (openglContext->fullPickImgSurface->clip_rect.w / 2) - 1;
+    mmevent->y = (openglContext->fullPickImgSurface->clip_rect.h - (int)(device_y * screen_mmv_scale)) - (openglContext->fullPickImgSurface->clip_rect.h / 2) - 1;
 
     userevent.type = SDL_USEREVENT;
     userevent.code = USER_EVENT_ENUM::PICK_AT_POSITION;
