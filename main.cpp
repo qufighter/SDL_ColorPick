@@ -987,6 +987,7 @@ void ReshapeWindow(bool fromMain){
 int main(int argc, char *argv[]) {
 
 
+
 #ifdef COLORPICK_DEBUG_MODE
     // we consider this the "debug" build.... ?
 #else
@@ -1017,6 +1018,7 @@ int main(int argc, char *argv[]) {
 #endif
     //SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
 
+    SDL_Log("hints -----------------------");
 
 
 
@@ -1054,11 +1056,14 @@ int main(int argc, char *argv[]) {
      */
     //
 
+
     /* initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_GAMECONTROLLER) < 0) {
         printf("Could not initialize SDL\n");
         return 1;
     }
+
+    SDL_Log("init -----------------------");
 
     if( SDL_NumJoysticks() > 0 ){
         SDL_Log("joysticks found %i", SDL_NumJoysticks());
@@ -1070,6 +1075,8 @@ int main(int argc, char *argv[]) {
             SDL_Log("joystick open");
         }
     }
+
+    SDL_Log("joy -----------------------");
 
     /* seed random number generator */
     srand((int)time(NULL));
@@ -1092,6 +1099,7 @@ int main(int argc, char *argv[]) {
 //    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
 // UX read settings begin....
+    SDL_Log("ticks -----------------------");
 
 #if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__) 
     // OES (egl?) is already core?? (ish?)
@@ -1106,6 +1114,8 @@ int main(int argc, char *argv[]) {
 //    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
 #endif
+
+    SDL_Log("stencil -----------------------");
 
 //    SDL_Log("setting depth size....");
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24); // NOTE: some CRUMMY_ANDROID may not support 24 here?
@@ -1160,6 +1170,8 @@ int main(int argc, char *argv[]) {
     win_pos_x=10;
     win_pos_y=30;
 #endif
+
+    SDL_Log("window main -----------------------");
 
     /* create window and renderer */
     sdl_Window =
