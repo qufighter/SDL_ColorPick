@@ -152,6 +152,7 @@ EM_JS(void, em_get_file, (), {
     //alert('bai');
     var i=document.createElement('input');
     i.type='file';
+    i.setAttribute('accept', 'image/jpg, image/jpeg, image/png');
     //document.body.appendChild(i); // << this may be optional - plus we need to clean up if we leave these in the doc...
 
     i.addEventListener('change', function(ev){
